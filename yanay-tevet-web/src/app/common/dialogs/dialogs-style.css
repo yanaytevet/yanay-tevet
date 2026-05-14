@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@import "../../../styles.css";
+
+.dialog-container {
+  @apply p-6 bg-layer-2 text-writing rounded-xl w-full max-h-[90vh] overflow-y-auto;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
+}
+
+.dark .dialog-container {
+  border-color: rgba(255,255,255,0.08);
+}
+
+.dialog-container h2 {
+  @apply text-xl font-bold mb-4 text-writing;
+}
+
+.dialog-container p {
+  @apply text-writing-minor mb-4;
+}
+
+/* Dialog buttons container */
+.dialog-buttons-container {
+  @apply flex justify-end space-x-2 mt-4;
+}
+
+.dialog-buttons-container button {
+  @apply py-2 px-4 text-sm;
+}

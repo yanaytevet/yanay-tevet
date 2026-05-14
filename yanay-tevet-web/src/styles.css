@@ -1,0 +1,199 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body {
+  max-height: 100%;
+}
+
+
+@theme {
+  /* Warm neutral layers */
+  --color-layer-1: #f6f5f4;       /* warm white — page background */
+  --color-layer-2: #ffffff;        /* pure white — card/panel surface */
+  --color-layer-3: #eeece9;       /* warm light gray — borders, inner surfaces */
+  --color-layer-4: #e0ddd8;       /* warm medium gray — stronger dividers */
+
+  /* Notion-style soft multi-layer shadows */
+  --shadow-1: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+  --shadow-2: rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
+  --shadow-3: rgba(0,0,0,0.02) 0px 1px 3px, rgba(0,0,0,0.03) 0px 3px 7px, rgba(0,0,0,0.03) 0px 7px 15px, rgba(0,0,0,0.05) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
+
+  /* Whisper border */
+  --color-outline-border-1: rgba(0,0,0,0.1);
+
+  /* Primary text — near-black warm */
+  --color-primary-500: rgba(0,0,0,0.95);
+  /* Secondary text — warm gray */
+  --color-secondary-400: #615d59;
+  --color-secondary-500: #615d59;
+  /* Muted text */
+  --color-muted-300: #a39e98;
+
+  /* Writing aliases */
+  --color-text-primary: rgba(0,0,0,0.95);
+  --color-writing: rgba(0,0,0,0.95);
+  --color-writing-minor: #615d59;
+  --color-writing-least: #a39e98;
+
+  /* Notion Blue — the only saturated CTA color */
+  --color-notion-blue: #0075de;
+  --color-notion-blue-active: #005bab;
+
+  /* Brand */
+  --color-logo-1: #0075de;
+  --color-logo-2: #005bab;
+
+  /* Hover overlay */
+  --color-layer-overlay: rgba(0,0,0,0.05);
+
+  /* Scrollbar */
+  --color-scrollbar-thumb: rgba(0,0,0,0.12);
+  --color-scrollbar-thumb-hover: rgba(0,0,0,0.22);
+}
+
+@layer theme {
+  .dark {
+    --color-layer-1: #1a1917;
+    --color-layer-2: #31302e;
+    --color-layer-3: #3d3c3a;
+    --color-layer-4: #4a4845;
+
+    --shadow-1: rgba(0,0,0,0.25) 0px 4px 18px, rgba(0,0,0,0.18) 0px 2.025px 7.84688px, rgba(0,0,0,0.12) 0px 0.8px 2.925px, rgba(0,0,0,0.06) 0px 0.175px 1.04062px;
+    --shadow-2: rgba(0,0,0,0.2) 0px 1px 3px, rgba(0,0,0,0.25) 0px 3px 7px, rgba(0,0,0,0.25) 0px 7px 15px, rgba(0,0,0,0.3) 0px 14px 28px, rgba(0,0,0,0.35) 0px 23px 52px;
+    --shadow-3: rgba(0,0,0,0.25) 0px 1px 3px, rgba(0,0,0,0.3) 0px 3px 7px, rgba(0,0,0,0.3) 0px 7px 15px, rgba(0,0,0,0.35) 0px 14px 28px, rgba(0,0,0,0.4) 0px 23px 52px;
+
+    --color-outline-border-1: rgba(255,255,255,0.1);
+
+    --color-primary-500: rgba(255,255,255,0.95);
+    --color-secondary-400: #a39e98;
+    --color-secondary-500: #a39e98;
+    --color-muted-300: rgba(255,255,255,0.3);
+
+    --color-text-primary: rgba(255,255,255,0.95);
+    --color-writing: rgba(255,255,255,0.95);
+    --color-writing-minor: #a39e98;
+    --color-writing-least: rgba(255,255,255,0.2);
+
+    --color-notion-blue: #62aef0;
+    --color-notion-blue-active: #0075de;
+
+    --color-logo-1: #62aef0;
+    --color-logo-2: #0075de;
+
+    --color-layer-overlay: rgba(255,255,255,0.08);
+
+    --color-scrollbar-thumb: rgba(255,255,255,0.1);
+    --color-scrollbar-thumb-hover: rgba(255,255,255,0.2);
+  }
+}
+
+*::-webkit-scrollbar {
+  width: 4px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-scrollbar-thumb);
+  border-radius: 2px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-scrollbar-thumb-hover);
+}
+
+.check-pop-in {
+  animation: checkPopIn 350ms ease-out;
+}
+
+@keyframes checkPopIn {
+  0%   { transform: scale(0.6); opacity: 0; }
+  60%  { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+.check-pop-out {
+  animation: checkPopOut 140ms ease-in;
+}
+
+@keyframes checkPopOut {
+  0%   { transform: scale(1);   opacity: 1; }
+  100% { transform: scale(0.6); opacity: 0; }
+}
+
+@keyframes diceWiggle {
+  0%   { transform: rotate(0deg) translateY(0) scale(1); }
+  20%  { transform: rotate(-6deg) translateY(-1px) scale(1.02); }
+  40%  { transform: rotate(6deg) translateY(0) scale(1.03); }
+  60%  { transform: rotate(-4deg) translateY(1px) scale(1.02); }
+  80%  { transform: rotate(4deg) translateY(0) scale(1.01); }
+  100% { transform: rotate(0deg) translateY(0) scale(1); }
+}
+
+@keyframes dicePop {
+  0%   { transform: scale(0.92); }
+  60%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* CDK Drag & Drop */
+.cdk-drag-preview {
+  border-radius: 6px;
+  /* Symmetric shadow: negative y-offset layer ensures shadow above the element too */
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 -3px 8px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.13), 0 2px 6px rgba(0,0,0,0.07);
+  opacity: 0.97;
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.cdk-drop-list-dragging .cdk-drag:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Soft action buttons */
+.soft-green-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(16,185,129,0.15);
+  color: #10b981;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  transition: background 150ms;
+}
+
+.soft-green-btn:hover {
+  background: rgba(16,185,129,0.25);
+}
+
+.soft-red-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: none;
+  background: rgba(239,68,68,0.1);
+  color: #ef4444;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  font-weight: 600;
+  transition: background 150ms;
+}
+
+.soft-red-btn:hover {
+  background: rgba(239,68,68,0.2);
+}

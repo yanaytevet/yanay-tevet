@@ -1,0 +1,24 @@
+<div class="max-w-3xl mx-auto px-6 py-20">
+
+  <h1 class="text-[40px] font-bold text-primary-500 tracking-[-1px] leading-tight mb-3">
+    Coming soon
+  </h1>
+  <p class="text-[16px] text-secondary-400 mb-16">
+    Here's a look at what we're building next for Yanay Tevet.
+  </p>
+
+  <div class="flex flex-col gap-6">
+    @for (feature of features; track feature.title) {
+      <div class="card flex gap-6 items-start p-6">
+        <div class="flex-shrink-0 w-10 h-10 rounded-xl bg-[rgba(0,117,222,0.08)] flex items-center justify-center mt-0.5">
+          <ng-icon [name]="feature.icon" class="text-[#0075de]" size="20"></ng-icon>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <h2 class="text-[17px] font-semibold text-primary-500">{{ feature.title }}</h2>
+          <p class="text-[15px] text-secondary-400 leading-relaxed">{{ feature.description }}</p>
+        </div>
+      </div>
+    }
+  </div>
+
+</div>

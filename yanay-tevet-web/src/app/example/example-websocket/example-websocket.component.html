@@ -1,0 +1,33 @@
+<div class="mb-4">
+</div>
+<div class="p-4">
+    <h1 class="text-2xl font-bold mb-4">WebSocket Example</h1>
+
+    <div class="mb-4 flex space-x-4">
+        <button (click)="triggerEventA()"
+                [disabled]="!isActive"
+                class="btn bg-blue-500 hover:bg-blue-700 text-white">
+            Trigger Event A
+        </button>
+        <button (click)="triggerEventB()"
+                [disabled]="!isActive"
+                class="btn bg-green-500 hover:bg-green-700 text-white">
+            Trigger Event B
+        </button>
+    </div>
+
+    <div class="mt-6">
+        <h2 class="text-xl font-semibold mb-2">Events:</h2>
+        <div class="mt-4 p-6 bg-layer-2 rounded-xl shadow-1">
+            @if (events.length === 0) {
+                <p>No events yet</p>
+            } @else {
+                <ul class="list-disc pl-5">
+                    @for (event of events; track $index) {
+                        <li class="mb-1">{{ event }}</li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>

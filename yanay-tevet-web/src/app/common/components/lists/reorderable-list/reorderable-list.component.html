@@ -1,0 +1,64 @@
+<div cdkDropList (cdkDropListDropped)="onDrop($event)" class="flex flex-col">
+  @for (item of localItems(); track item.id; let i = $index; let count = $count) {
+    <div cdkDrag [cdkDragDisabled]="disabled()">
+
+      <!-- Placeholder shown in the drop target slot -->
+      <div *cdkDragPlaceholder class="h-8 rounded bg-layer-2 border border-dashed border-writing-least w-full"></div>
+
+      <!-- Row content -->
+      <div class="flex items-center group gap-1 py-0.5">
+        @if (!disabled()) {
+          <button class="icon-btn opacity-20 group-hover:opacity-60 transition-opacity cursor-grab active:cursor-grabbing shrink-0 touch-none"
+                  cdkDragHandle
+                  title="Drag to reorder">
+            <ng-icon [svg]="bootstrapGripVertical" size="14"></ng-icon>
+          </button>
+
+          <div class="flex flex-col shrink-0">
+            <button class="icon-btn opacity-20 group-hover:opacity-60 transition-opacity" [disabled]="i === 0" (click)="moveUp(i)">
+              <ng-icon [svg]="bootstrapChevronUp" size="11"></ng-icon>
+            </button>
+            <button class="icon-btn opacity-20 group-hover:opacity-60 transition-opacity" [disabled]="i === count - 1" (click)="moveDown(i)">
+              <ng-icon [svg]="bootstrapChevronDown" size="11"></ng-icon>
+            </button>
+          </div>
+
+          <div class="flex flex-col flex-1 min-w-0">
+            <span class="text-writing-minor truncate">{{ item.text }}</span>
+            @if (item.description) {
+              <span class="text-writing-least text-xs whitespace-pre-line">{{ item.description }}</span>
+            }
+          </div>
+        } @else {
+          <div class="flex flex-col flex-1 min-w-0">
+            <span class="text-writing-minor truncate">{{ item.text }}</span>
+            @if (item.description) {
+              <span class="text-writing-least text-xs whitespace-pre-line">{{ item.description }}</span>
+            }
+          </div>
+        }
+
+        @for (tag of item.tags ?? []; track tag.text) {
+          <span class="text-[10px] px-1.5 py-0.5 rounded-full shrink-0"
+                [style.color]="tag.color ?? '#0075de'"
+                [style.background]="(tag.color ?? '#0075de') + '1a'">{{ tag.text }}</span>
+        }
+
+        @for (btn of item.iconButtons ?? []; track $index) {
+          <button class="icon-btn opacity-20 group-hover:opacity-60 transition-opacity shrink-0"
+                  [ngClass]="btn.className"
+                  [title]="btn.title ?? ''"
+                  (click)="btn.onClick()">
+            <ng-icon [svg]="btn.svg"></ng-icon>
+          </button>
+        }
+      </div>
+
+      @if (i < count - 1) {
+        <hr class="border-writing-least my-1">
+      }
+    </div>
+  } @empty {
+    <span class="text-writing-minor text-sm">{{ emptyMessage() }}</span>
+  }
+</div>

@@ -1,0 +1,45 @@
+<div class="max-w-2xl mx-auto px-6 py-20">
+
+  <h1 class="text-[40px] font-bold text-primary-500 tracking-[-1px] leading-tight mb-3">
+    Frequently asked questions
+  </h1>
+  <p class="text-[16px] text-secondary-400 mb-12">
+    Everything you need to know about Yanay Tevet.
+  </p>
+
+  <div class="flex flex-col gap-0">
+    @for (item of items; track item.question; let i = $index) {
+
+      <div class="border-b border-[rgba(0,0,0,0.1)]">
+        <button
+          type="button"
+          class="w-full flex items-center justify-between gap-4 py-5 text-left cursor-pointer bg-transparent border-none"
+          (click)="toggle(i)"
+        >
+          <span class="text-[16px] font-500 text-primary-500 leading-snug">{{ item.question }}</span>
+          <span class="text-muted-300 flex-shrink-0 transition-transform duration-200"
+                [class.rotate-180]="openIndex() === i">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </span>
+        </button>
+        @if (openIndex() === i) {
+          <p class="text-[15px] text-secondary-400 leading-relaxed pb-5 mt-[-4px]">
+            {{ item.answer }}
+          </p>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="mt-16 pt-8 border-t border-[rgba(0,0,0,0.1)] text-center">
+    <p class="text-[15px] font-medium text-primary-500 mb-1">Still have questions?</p>
+    <p class="text-[14px] text-secondary-400">
+      Reach out at
+      <a [href]="'mailto:' + supportEmail" class="text-[#0075de] hover:underline">{{ supportEmail }}</a>
+    </p>
+  </div>
+
+</div>

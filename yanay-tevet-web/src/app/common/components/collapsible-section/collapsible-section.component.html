@@ -1,0 +1,18 @@
+<div class="flex flex-col gap-3">
+  <button type="button"
+          class="flex items-center gap-2 text-left group w-fit"
+          (click)="toggle()">
+    <ng-icon
+      class="text-writing-minor transition-transform duration-200"
+      [svg]="isOpen() ? bootstrapChevronDown : bootstrapChevronRight"
+      size="14">
+    </ng-icon>
+    <span class="text-writing font-semibold text-sm uppercase tracking-wide group-hover:text-primary-500 transition-colors">
+      {{ title() }}
+    </span>
+  </button>
+
+  @if (isOpen()) {
+    <ng-content></ng-content>
+  }
+</div>

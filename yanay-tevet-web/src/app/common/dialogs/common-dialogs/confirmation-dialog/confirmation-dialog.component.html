@@ -1,0 +1,9 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button class="btn cancel-btn" (click)="emitClose(false)">{{ data.cancelActionName ?? 'Cancel' }}</button>
+        <button class="btn accept-btn" (click)="emitClose(true)">{{ data.confirmActionName ?? 'Submit' }}</button>
+    </div>
+</div>

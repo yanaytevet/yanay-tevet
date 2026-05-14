@@ -1,0 +1,7 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "reportIncompatibleMethodOverride": "none",
+  "reportArgumentType": "none",
+  "reportOptionalMemberAccess": "none"
+}

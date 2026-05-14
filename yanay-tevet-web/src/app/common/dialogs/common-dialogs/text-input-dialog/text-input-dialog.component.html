@@ -1,0 +1,47 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+
+    <form [formGroup]="form">
+        <div class="mb-4 flex flex-col">
+            <span class="input-label">Input {{ data.label }}</span>
+            @if (!data.isTextArea) {
+                <input
+                        [type]="data.inputType || 'text'"
+                        formControlName="inputValue"
+                        class="w-full main-input mt-2"
+                        [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
+                        [maxlength]="data.maxLength"
+                        (keydown.enter)="onConfirm()"
+                >
+            } @else {
+                <textarea
+                        formControlName="inputValue"
+                        class="w-full main-input mt-2"
+                        [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
+                        [rows]="data.textAreaRows || 4"
+                        [maxlength]="data.maxLength"
+                        (keydown.enter)="data.isTextArea ? null : onConfirm()"
+                ></textarea>
+            }
+
+            @if (getErrorMessage() && (inputControl?.touched || inputControl?.dirty)) {
+                <p class="text-red-500 text-xs italic mt-1">{{ getErrorMessage() }}</p>
+            }
+        </div>
+    </form>
+
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button
+                class="btn cancel-btn"
+                (click)="emitClose(null)">
+            {{ data.cancelActionName ?? 'Cancel' }}
+        </button>
+        <app-confirmation-button
+                [disabled]="form.invalid"
+                [text]="data.confirmActionName ?? 'Submit'"
+                (clicked)="onConfirm()">
+        </app-confirmation-button>
+    </div>
+</div>

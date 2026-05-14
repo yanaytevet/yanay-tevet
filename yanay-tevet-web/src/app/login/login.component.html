@@ -1,0 +1,141 @@
+<div class="login-page">
+
+  <!-- Atmospheric top glow -->
+  <div class="atmo-glow"></div>
+
+  <!-- Content -->
+  <div class="login-content">
+
+    <!-- Logo lockup -->
+    <a routerLink="/" class="logo-lockup no-underline">
+      <img src="yanay_tevet_icon.jpg" width="60" height="60" class="app-icon" alt="Yanay Tevet" />
+      <div class="logo-text">
+        <div class="app-name">Yanay Tevet</div>
+        <div class="app-subtitle">Sign in to your account</div>
+      </div>
+    </a>
+
+    <!-- Card -->
+    <div class="login-card">
+
+      <!-- Error notice -->
+      @if (error()) {
+        <div class="error-notice">{{ error() }}</div>
+      }
+
+      <!-- Google sign-in (primary) -->
+      <div class="google-btn-container">
+        <button
+          type="button"
+          class="google-btn"
+          [disabled]="isGoogleLoading()"
+          (click)="onGoogleLogin()">
+          @if (isGoogleLoading()) {
+            <span>Signing in…</span>
+          } @else {
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+              <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            <span>Continue with Google</span>
+          }
+        </button>
+      </div>
+
+      <div class="register-note">
+        Google is currently the only way to create an account.
+        Email and other options are coming soon.
+      </div>
+
+      <div class="passkey-divider">
+        <div class="divider-line"></div>
+        <span class="divider-text">or sign in with password</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <div class="fields">
+
+        <!-- Username -->
+        <div class="field-group">
+          <span class="field-label">Username</span>
+          <input
+            type="text"
+            class="dark-input"
+            [class.focused]="usernameFocused()"
+            placeholder="your_username"
+            [value]="username()"
+            (input)="username.set($any($event.target).value)"
+            (focus)="usernameFocused.set(true)"
+            (blur)="usernameFocused.set(false)"
+          />
+        </div>
+
+        <!-- Password -->
+        <div class="field-group">
+          <span class="field-label">Password</span>
+          <div class="password-wrapper">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              class="dark-input password-input"
+              [class.focused]="passwordFocused()"
+              placeholder="••••••••"
+              [value]="password()"
+              (input)="password.set($any($event.target).value)"
+              (focus)="passwordFocused.set(true)"
+              (blur)="passwordFocused.set(false)"
+              (keydown)="onPasswordKeyDown($event)"
+            />
+            <button type="button" class="eye-toggle" (click)="togglePassword()">
+              @if (showPassword()) {
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/>
+                  <path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/>
+                  <path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709z"/>
+                  <path fill-rule="evenodd" d="M13.646 14.354l-12-12 .708-.708 12 12-.708.708z"/>
+                </svg>
+              } @else {
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/>
+                  <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="button" class="signin-btn" (click)="onSubmit()">Sign in</button>
+
+      </div>
+
+      @if (passkeySupported()) {
+        <div class="passkey-divider">
+          <div class="divider-line"></div>
+          <span class="divider-text">or</span>
+          <div class="divider-line"></div>
+        </div>
+
+        @if (passkeyFailed()) {
+          <div class="error-notice">Passkey sign-in failed — please use your password.</div>
+        } @else {
+          <button
+            type="button"
+            class="passkey-btn"
+            (click)="tryPasskeyLogin()"
+            [disabled]="isPasskeyLoading()">
+            @if (isPasskeyLoading()) {
+              <span>Authenticating…</span>
+            } @else {
+              <svg width="15" height="15" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+              </svg>
+              <span>Sign in with Passkey</span>
+            }
+          </button>
+        }
+      }
+    </div>
+  </div>
+</div>

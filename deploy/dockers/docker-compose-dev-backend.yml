@@ -1,0 +1,52 @@
+name: yanay_tevet
+services:
+  yanay_tevet_backend:
+    build:
+      context: ../../yanay_tevet_backend/
+      dockerfile: Dockerfile
+    container_name: yanay_tevet_backend
+    environment:
+      ENVIRONMENT: ${ENVIRONMENT}
+      DEBUG: ${DEBUG}
+
+      FRONTEND_URL: ${FRONTEND_URL}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_PORT: ${DATABASE_PORT}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_CACHEOPS_DB: ${REDIS_CACHEOPS_DB}
+
+#      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      BREVO_API_KEY: ${BREVO_API_KEY}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../yanay_tevet_backend:/app
+      - logs:/var/log/yanay_tevet/
+    entrypoint: ["/venv/bin/python", "manage.py", "runserver", "0.0.0.0:8000"]
+    networks:
+      - common-network
+
+volumes:
+  logs:
+
+networks:
+  common-network:
+    external: true

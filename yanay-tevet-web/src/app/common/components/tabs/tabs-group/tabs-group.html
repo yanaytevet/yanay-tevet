@@ -1,0 +1,65 @@
+<div class="flex flex-col gap-2 overflow-hidden">
+  <div class="relative group">
+    @if (canScrollLeft()) {
+      <div
+        animate.enter="check-pop-in"
+        animate.leave="check-pop-out"
+        class="absolute left-0 top-0 bottom-0 z-10 w-12 flex items-center justify-start bg-gradient-to-r from-layer-1 to-transparent pointer-events-none">
+        <button
+          (click)="scroll('left')"
+          class="p-1 text-writing-minor hover:text-writing pointer-events-auto transition-colors">
+          <ng-icon [svg]="heroChevronLeft"></ng-icon>
+        </button>
+      </div>
+    }
+
+    <div
+      #scrollContainer
+      (scroll)="checkScroll()"
+      class="flex gap-1 border-b border-outline-border-1 overflow-x-auto overflow-y-hidden no-scrollbar px-1">
+      @for (tab of tabs(); track $index) {
+
+        @if (tab.link()) {
+          <a [routerLink]="tab.link()" class="px-4 py-2 text-writing-minor hover:text-writing
+        transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent">
+            @if (tab.icon()) {
+              <ng-icon [svg]="tab.icon()"></ng-icon>
+            }
+            <span class="capitalize select-none">{{ tab.label() }}</span>
+          </a>
+        } @else {
+          <div
+            class="cursor-pointer px-4 py-2 text-writing-minor hover:text-writing
+        transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent"
+            (click)="tabClicked(tab)"
+            [class.text-writing]="currentTab()?.name() === tab.name()"
+            [class.!border-notion-blue]="currentTab()?.name() === tab.name()">
+            @if (tab.icon()) {
+              <ng-icon [svg]="tab.icon()"></ng-icon>
+            }
+            <span class="capitalize select-none">{{ tab.label() }}</span>
+          </div>
+        }
+      }
+      <div class="shrink-0 w-4"></div>
+    </div>
+
+    @if (canScrollRight()) {
+      <div
+        animate.enter="check-pop-in"
+        animate.leave="check-pop-out"
+        class="absolute right-0 top-0 bottom-0 z-10 w-12 flex items-center justify-end bg-gradient-to-l from-layer-1 to-transparent pointer-events-none">
+        <button
+          (click)="scroll('right')"
+          class="p-1 text-writing-minor hover:text-writing pointer-events-auto transition-colors">
+          <ng-icon [svg]="heroChevronRight"></ng-icon>
+        </button>
+      </div>
+    }
+  </div>
+  <div class="p-2">
+    @if (currentTab()) {
+      <ng-container [ngTemplateOutlet]="currentTab()!.contentTpl()"></ng-container>
+    }
+  </div>
+</div>

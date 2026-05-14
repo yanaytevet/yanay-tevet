@@ -1,0 +1,47 @@
+
+name: yanay_tevet
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    networks:
+      - common-network
+
+  yanay_tevet_backend:
+    env_file:
+      - /etc/yanay-tevet/env/prod.env
+    build:
+      context: ../../yanay_tevet_backend/
+      dockerfile: Dockerfile
+    container_name: yanay_tevet_backend
+    volumes:
+      - ../../yanay_tevet_backend:/app
+      - logs:/var/log/yanay_tevet/
+      - staticfiles:/static
+    networks:
+      - common-network
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../nginx/conf.d:/etc/nginx/conf.d:ro
+      - /etc/yanay-tevet/certs/cloudflare:/etc/ssl/cf:ro
+      - staticfiles:/static:ro
+    depends_on:
+      - yanay_tevet_backend
+    networks:
+      - common-network
+
+volumes:
+  db_data:
+  logs:
+  staticfiles:
+
+networks:
+  common-network:
+    driver: bridge
+    name: common-network

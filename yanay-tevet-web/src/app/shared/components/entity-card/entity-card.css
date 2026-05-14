@@ -1,0 +1,71 @@
+.entity-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border: 1px solid rgba(0,0,0,0.1);
+  background-color: #ffffff;
+  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+}
+
+:global(.dark) .entity-card {
+  border-color: rgba(255,255,255,0.08);
+  background-color: #31302e;
+  box-shadow: rgba(0,0,0,0.25) 0px 4px 18px, rgba(0,0,0,0.18) 0px 2.025px 7.84688px, rgba(0,0,0,0.12) 0px 0.8px 2.925px, rgba(0,0,0,0.06) 0px 0.175px 1.04062px;
+}
+
+.entity-card:hover {
+  transform: translateY(-2px);
+  box-shadow: rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
+}
+
+.image-with-overlay {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+}
+
+.placeholder-bg {
+  background: linear-gradient(135deg, #e8e6e3 0%, #d4d1cc 50%, #c8c4be 100%);
+}
+
+:global(.dark) .placeholder-bg {
+  background: linear-gradient(135deg, #3d3c3a 0%, #31302e 50%, #2a2927 100%);
+}
+
+.image-name-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 60%, transparent 100%);
+  padding: 28px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.image-overlay-name {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.875rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.image-overlay-subtitle {
+  color: rgba(255,255,255,0.75);
+  font-size: 0.75rem;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}

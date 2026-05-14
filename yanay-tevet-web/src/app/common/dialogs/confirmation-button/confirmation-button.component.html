@@ -1,0 +1,8 @@
+<button
+  class="btn accept-btn"
+  (click)="onClick()"
+  [disabled]="disabled()"
+  [class.opacity-50]="disabled()"
+  [class.cursor-not-allowed]="disabled()">
+  {{ text() }}
+</button>

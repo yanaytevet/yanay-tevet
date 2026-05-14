@@ -1,0 +1,30 @@
+
+<div class="p-6">
+  <h1 class="text-2xl font-bold mb-6">Example Files</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Download Blocks Count -->
+    <div class="bg-layer-2 p-6 rounded-lg shadow-1">
+      <h2 class="text-xl font-semibold mb-4">Download Blocks Count</h2>
+      <p class="mb-4">Download an Excel file containing the count of blocks in the system.</p>
+      <button
+        (click)="downloadBlocksCount()"
+        class="btn btn-primary"
+      >
+        Download Blocks Count
+      </button>
+    </div>
+
+    <!-- Upload Files Sum Size -->
+    <div class="bg-layer-2 p-6 rounded-lg shadow-1">
+      <h2 class="text-xl font-semibold mb-4">Upload Files Size Calculator</h2>
+      <p class="mb-4">Upload files to calculate their total size in bytes.</p>
+      <button
+        (click)="uploadFilesAndCalculateSize()"
+        class="btn btn-primary"
+      >
+        Upload Files
+      </button>
+    </div>
+  </div>
+</div>

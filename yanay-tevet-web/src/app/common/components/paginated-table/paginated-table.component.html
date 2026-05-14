@@ -1,0 +1,46 @@
+<ng-template #actionTmpl let-row="row">
+        <app-menu-button
+                [color]="themeService.darkMode() ? 'gray-100' : 'gray-800'"
+                [icon]="bootstrapThreeDotsVertical" [actions]="getActions(row)"></app-menu-button>
+</ng-template>
+
+<ng-template #colHeader let-column="column">
+    <div class="flex items-center justify-between w-full">
+        <span class="flex-1 whitespace-nowrap overflow-hidden truncate"
+              [appTooltip]="column.name">{{ column.name }}</span>
+        <app-column-filter
+                [filter]="column.filter"
+                [paginatedDataHandler]="paginatedDataHandler()">
+        </app-column-filter>
+    </div>
+</ng-template>
+
+<!-- ngx-datatable removed: library dropped, pending replacement with a compatible alternative -->
+<div class="flex items-center justify-center h-full text-secondary-400 text-[14px] italic">
+    Table view temporarily unavailable — library update in progress.
+</div>
+
+<!--
+<ngx-datatable
+        class="{{themeService.darkMode() ? 'dark' : 'material'}} h-full scroll-auto"
+        [rows]="(paginationDataSignal()?.data) ?? []"
+        [columns]="realColumns()"
+        [columnMode]="ColumnMode.force"
+        [scrollbarH]="true"
+        [scrollbarV]="!!(paginationDataSignal()?.data)"
+        [virtualization]="false"
+        [rowHeight]="40"
+        [headerHeight]="50"
+        [footerHeight]="50"
+        [externalPaging]="true"
+        [sortType]="SortType.multi"
+        [externalSorting]="true"
+        [count]="paginationDataSignal()?.total_amount"
+        [offset]="paginationDataSignal()?.page"
+        [limit]="paginationDataSignal()?.page_size ?? 10"
+        [ghostLoadingIndicator]="paginatedDataHandler()?.isLoading()"
+        (page)="setPage($event)"
+        (sort)="setSort($event)"
+>
+</ngx-datatable>
+-->

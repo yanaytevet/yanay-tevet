@@ -1,0 +1,219 @@
+<div class="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-6">
+
+  <!-- Profile Image -->
+  <div class="card p-6 flex flex-col gap-4">
+    <h2 class="text-[16px] font-semibold text-primary-500">Profile Image</h2>
+    <div class="flex items-center gap-5">
+      @if (authService.user()?.pic_url) {
+        <img
+          [src]="authService.user().pic_url"
+          alt="Profile"
+          referrerpolicy="no-referrer"
+          class="rounded-full object-cover border border-outline-border-1">
+      } @else {
+        <div class="w-20 h-20 rounded-full bg-layer-3 flex items-center justify-center text-[28px] font-semibold text-primary-500 border border-outline-border-1">
+          {{ authService.userInitials() }}
+        </div>
+      }
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="isUploadingImage()"
+        (click)="uploadProfileImage()">
+        @if (isUploadingImage()) {
+          Uploading...
+        } @else {
+          Change Photo
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile Details -->
+  <div class="card p-6 flex flex-col gap-4">
+    <h2 class="text-[16px] font-semibold text-primary-500">Profile Details</h2>
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">First Name</span>
+        <input
+          class="main-input"
+          type="text"
+          [ngModel]="firstName()"
+          (ngModelChange)="firstName.set($event)"
+          placeholder="First name">
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">Last Name</span>
+        <input
+          class="main-input"
+          type="text"
+          [ngModel]="lastName()"
+          (ngModelChange)="lastName.set($event)"
+          placeholder="Last name">
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">Email Address</span>
+        <input
+          class="main-input"
+          type="email"
+          [ngModel]="email()"
+          (ngModelChange)="email.set($event)"
+          placeholder="Email address">
+      </div>
+    </div>
+    <div class="flex justify-end">
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isSavingName()"
+        (click)="saveProfile()">
+        @if (isSavingName()) {
+          Saving...
+        } @else {
+          Save Changes
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Change Password / Set Password -->
+  <div class="card p-6 flex flex-col gap-4">
+    <h2 class="text-[16px] font-semibold text-primary-500">
+      {{ hasUsablePassword() ? 'Change Password' : 'Set Password' }}
+    </h2>
+    @if (!hasUsablePassword()) {
+      <p class="text-[13px] text-writing-minor leading-relaxed">
+        Your account doesn't have a password set. You can set one here to also be able to log in with email and password.
+      </p>
+    }
+    <div class="flex flex-col gap-3">
+      @if (hasUsablePassword()) {
+        <div class="flex flex-col gap-1">
+          <span class="text-[13px] font-medium text-secondary-400">Current Password</span>
+          <input
+            class="main-input"
+            type="password"
+            [ngModel]="oldPassword()"
+            (ngModelChange)="oldPassword.set($event)"
+            placeholder="Current password">
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">New Password</span>
+        <input
+          class="main-input"
+          type="password"
+          [ngModel]="newPassword()"
+          (ngModelChange)="newPassword.set($event)"
+          placeholder="New password">
+        @if (newPassword().length > 0) {
+          <div class="flex flex-col gap-0.75 mt-2">
+            @for (rule of passwordRules(); track rule.label) {
+              <div class="flex items-center gap-2">
+                <span class="text-[11px] font-bold w-3 text-center"
+                      [class.text-green-500]="rule.met"
+                      [class.text-secondary-400]="!rule.met">
+                  {{ rule.met ? '✓' : '·' }}
+                </span>
+                <span class="text-[12px]"
+                      [class.text-green-500]="rule.met"
+                      [class.text-secondary-400]="!rule.met">
+                  {{ rule.label }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">Confirm New Password</span>
+        <input
+          class="main-input"
+          type="password"
+          [ngModel]="confirmNewPassword()"
+          (ngModelChange)="confirmNewPassword.set($event)"
+          placeholder="Confirm new password">
+        @if (passwordMismatch()) {
+          <span class="text-[12px] text-red-500 mt-1">Passwords do not match</span>
+        }
+      </div>
+    </div>
+    <div class="flex items-center justify-end gap-4">
+      @if (passwordChangedSuccess()) {
+        <span class="text-[13px] font-medium text-green-600">Password changed successfully</span>
+      }
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="isChangingPassword() || !canChangePassword()"
+        (click)="changePassword()">
+        @if (isChangingPassword()) {
+          Changing...
+        } @else {
+          Change Password
+        }
+      </button>
+    </div>
+  </div>
+
+  <!-- Support -->
+  <div class="card p-6 flex flex-col gap-2">
+    <h2 class="text-[16px] font-semibold text-primary-500">Need Help?</h2>
+    <p class="text-[14px] text-writing-minor leading-relaxed">
+      If you have questions or run into any issues, contact us at
+      <a [href]="'mailto:' + supportEmail" class="text-[#0075de] hover:underline">{{ supportEmail }}</a>
+    </p>
+  </div>
+
+  <!-- Passkeys -->
+  <div id="passkeys-section" class="card p-6 flex flex-col gap-4 transition-shadow duration-300"
+       [style.box-shadow]="passkeysHighlighted() ? '0 0 0 2px #0075de' : null">
+    <h2 class="text-[16px] font-semibold text-primary-500">Passkeys</h2>
+
+    @if (authService.credentials()?.credentials?.length) {
+      <div class="flex flex-col gap-2">
+        @for (credential of authService.credentials().credentials; track credential.id) {
+          <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
+            <div class="flex flex-col">
+              <span class="text-[14px] font-medium text-primary-500">Passkey</span>
+              <span class="text-[12px] text-secondary-400">Added {{ formatDate(credential.created_at) }}</span>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary text-[13px]"
+              [disabled]="isDeletingPasskey() === credential.id"
+              (click)="deletePasskey(credential.credential_id, credential.id)">
+              @if (isDeletingPasskey() === credential.id) {
+                Removing...
+              } @else {
+                Remove
+              }
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="text-[14px] text-secondary-400">No passkeys registered.</p>
+    }
+
+    <div class="flex items-center justify-between">
+      @if (!canRegisterPasskey()) {
+        <span class="text-[13px] text-secondary-400">Maximum of 3 passkeys reached.</span>
+      } @else {
+        <span></span>
+      }
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="isRegisteringPasskey() || !canRegisterPasskey()"
+        (click)="registerPasskey()">
+        @if (isRegisteringPasskey()) {
+          Registering...
+        } @else {
+          Register New Passkey
+        }
+      </button>
+    </div>
+  </div>
+
+</div>

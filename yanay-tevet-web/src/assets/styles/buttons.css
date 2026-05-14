@@ -1,0 +1,179 @@
+@reference "../../styles.css";
+
+button {
+    @apply cursor-pointer;
+}
+
+.btn {
+    @apply font-semibold py-2 px-4 rounded text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer bg-black/5 text-writing;
+}
+
+.btn:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+
+.btn:active {
+    transform: scale(0.95);
+}
+
+.btn-primary {
+    background-color: #0075de;
+    color: #ffffff;
+    border: 1px solid transparent;
+}
+
+.btn-primary:hover {
+    background-color: #005bab;
+}
+
+.btn-secondary {
+    @apply bg-black/5 text-writing;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+
+.small-btn {
+    @apply py-1 px-3;
+}
+
+.icon-btn {
+    @apply cursor-pointer hover:opacity-70 transition-opacity flex items-center justify-center;
+}
+
+.icon-btn:disabled, .btn:disabled {
+    @apply opacity-40 cursor-auto;
+}
+
+.indigo-btn {
+    background-color: #0075de;
+    color: #ffffff;
+}
+
+.indigo-btn:hover {
+    background-color: #005bab;
+}
+
+.emerald-btn {
+    @apply bg-emerald-600 hover:bg-emerald-700 text-white;
+}
+
+.violet-btn {
+    @apply bg-violet-600 hover:bg-violet-700 text-white;
+}
+
+.red-btn {
+    @apply bg-rose-600 hover:bg-rose-700 text-white;
+}
+
+.yellow-btn {
+    @apply bg-yellow-600 hover:bg-yellow-700 text-white;
+}
+
+.orange-btn {
+    @apply bg-orange-600 hover:bg-orange-700 text-white;
+}
+
+.pink-btn {
+    @apply bg-pink-600 hover:bg-pink-700 text-white;
+}
+
+.purple-btn {
+    @apply bg-purple-600 hover:bg-purple-700 text-white;
+}
+
+.teal-btn {
+    @apply bg-teal-600 hover:bg-teal-700 text-white;
+}
+
+.blue-btn {
+    background-color: #0075de;
+    color: #ffffff;
+}
+
+.blue-btn:hover {
+    background-color: #005bab;
+}
+
+.transparent-btn {
+    @apply bg-transparent text-writing border border-none cursor-pointer flex items-center gap-2 p-1;
+}
+
+.accept-btn {
+    background-color: #0075de;
+    color: #ffffff;
+}
+
+.accept-btn:hover {
+    background-color: #005bab;
+}
+
+.cancel-btn {
+    @apply bg-black/5 text-writing;
+}
+
+.cancel-btn:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+
+.dark .cancel-btn {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.dark .cancel-btn:hover {
+    background-color: rgba(255,255,255,0.13);
+}
+
+.dark .btn-secondary {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.dark .btn-secondary:hover {
+    background-color: rgba(255,255,255,0.13);
+}
+
+.dark .cancel-btn {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.dark .cancel-btn:hover {
+    background-color: rgba(255,255,255,0.13);
+}
+
+.selected-btn {
+    background-color: #0075de;
+    color: #ffffff;
+    border: 1px solid #005bab;
+}
+
+.selected-btn:hover {
+    background-color: #005bab;
+}
+
+.selected-pill {
+    background-color: #0075de;
+    color: #ffffff;
+    border-color: #005bab;
+}
+
+.selected-pill:hover {
+    background-color: #005bab;
+}
+
+.unselected-pill {
+    @apply bg-black/5 text-writing border-outline-border-1;
+}
+
+.unselected-pill:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+
+
+.dark .unselected-pill {
+    background-color: rgba(255,255,255,0.08);
+}
+
+.dark .unselected-pill:hover {
+    background-color: rgba(255,255,255,0.13);
+}

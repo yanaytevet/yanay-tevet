@@ -1,0 +1,32 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+
+    <form [formGroup]="form">
+        <div class="mb-4 flex flex-col">
+            <span class="input-label">Input {{ data.label }}</span>
+            <input type="number"
+                   formControlName="inputValue"
+                   class="mt-2 main-input"
+                   [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
+            >
+            @if (getErrorMessage() && (inputControl?.touched || inputControl?.dirty)) {
+                <p class="text-red-500 text-xs italic mt-2">{{ getErrorMessage() }}</p>
+            }
+        </div>
+    </form>
+
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button
+                class="btn cancel-btn"
+                (click)="emitClose(null)">
+            {{ data.cancelActionName ?? 'Cancel' }}
+        </button>
+        <app-confirmation-button
+                [disabled]="form.invalid"
+                [text]="data.confirmActionName ?? 'Submit'"
+                (clicked)="onConfirm()">
+        </app-confirmation-button>
+    </div>
+</div>

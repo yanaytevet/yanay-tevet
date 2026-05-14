@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{% trans 'Emails' %}</a>
+  &rsaquo; {% trans 'Email Templates' %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  {% if email_classes %}
+  <table id="result_list">
+    <thead>
+      <tr>
+        <th scope="col">Class</th>
+        <th scope="col">Template</th>
+        <th scope="col">Subject</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ec in email_classes %}
+      <tr class="{% cycle 'row1' 'row2' %}">
+        <td>
+          <a href="{% url 'admin:emails_emailtemplate_preview' ec.name %}">
+            {{ ec.name }}
+          </a>
+        </td>
+        <td>{{ ec.template_name }}</td>
+        <td>{{ ec.subject }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No email templates found in <code>emails/email_templates/</code>.</p>
+  {% endif %}
+</div>
+{% endblock %}

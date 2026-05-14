@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git checkout:*)",
+      "Bash(deploy/dev_scripts/run_manage.sh makemigrations:*)",
+      "Read(//Users/yanaytevet/dev/**)",
+      "Bash(bash run_manage.sh makemigrations)",
+      "Bash(bash run_manage.sh migrate)",
+      "Bash(bash run_manage.sh makemigrations --check)"
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+<div class="mb-4">
+</div>
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Example Dialogs</h2>
+
+  <div class="flex flex-wrap gap-4 mb-6">
+    @for (action of actions; track action.display; let i = $index) {
+      <button
+        (click)="action.callback()"
+        class="px-4 py-2 btn text-white"
+        [ngClass]="{
+          'bg-blue-500 hover:bg-blue-600': i % 10 === 0,
+          'bg-green-500 hover:bg-green-600': i % 10 === 1,
+          'bg-red-500 hover:bg-red-600': i % 10 === 2,
+          'bg-yellow-500 hover:bg-yellow-600': i % 10 === 3,
+          'bg-purple-500 hover:bg-purple-600': i % 10 === 4,
+          'bg-pink-500 hover:bg-pink-600': i % 10 === 5,
+          'bg-indigo-500 hover:bg-indigo-600': i % 10 === 6,
+          'bg-teal-500 hover:bg-teal-600': i % 10 === 7,
+          'bg-orange-500 hover:bg-orange-600': i % 10 === 8,
+          'bg-gray-500 hover:bg-gray-600': i % 10 === 9
+        }">
+        @if (action.icon) {
+          <ng-icon [svg]="action.icon"></ng-icon>
+        }
+        {{ action.display }}
+      </button>
+    }
+  </div>
+
+  <div class="mt-4 p-6 bg-layer-2 rounded-xl shadow-1">
+    <h3 class="text-lg font-semibold mb-2">Result Data:</h3>
+    <div class="whitespace-pre-wrap">{{ data() }}</div>
+    @if (!data()) {
+      <div class="italic">No data yet. Click a button above to see results.</div>
+    }
+  </div>
+</div>

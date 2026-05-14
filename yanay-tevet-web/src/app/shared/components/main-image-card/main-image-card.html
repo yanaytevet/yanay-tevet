@@ -1,0 +1,88 @@
+<!-- Mobile hero -->
+@if (mainImage() || isEditing()) {
+  <div class="relative group @lg:hidden -mx-2 -mt-2 mb-2">
+    @if (mainImage() && !isUploading()) {
+      <app-mobile-image-hero
+        [publicId]="mainImage().image_public_id"
+        [alt]="entityName()"
+      ></app-mobile-image-hero>
+      @if (isEditing()) {
+        <div
+          class="absolute inset-0 opacity-0 group-hover:opacity-100 bg-[rgba(0,0,0,0.35)] flex items-center justify-center transition-opacity rounded-xl"
+          (click)="mobileFileInput.click()">
+          <ng-icon [svg]="heroCamera" class="text-3xl text-white"></ng-icon>
+        </div>
+      }
+    } @else if (isEditing() && !isUploading()) {
+      <div
+        class="w-full bg-layer-1 flex items-center justify-center rounded-xl cursor-pointer"
+        style="height: 220px;"
+        (click)="mobileFileInput.click()">
+        <ng-icon [svg]="heroCamera" class="text-4xl text-writing-least"></ng-icon>
+      </div>
+    }
+    <input #mobileFileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+  </div>
+}
+
+<!-- Desktop card -->
+@if (isEditing() || mainImage()) {
+  <div class="hidden @lg:block">
+    <div
+      class="relative rounded-xl overflow-hidden aspect-square shadow-[0_0_0_1px_rgba(0,0,0,0.08),0_4px_24px_rgba(0,0,0,0.12)] group"
+      [class.cursor-pointer]="isEditing()"
+      [class.animate-pulse]="isUploading()">
+
+      @if (mainImage() && !isUploading()) {
+        <app-cloudinary-image
+          [publicId]="mainImage().image_public_id"
+          [alt]="entityName()"
+          cssClass="w-full h-full object-cover"
+        ></app-cloudinary-image>
+      } @else if (!isUploading()) {
+        <div class="w-full h-full bg-layer-1 flex items-center justify-center text-writing-least">
+          <ng-icon [svg]="heroCamera" class="text-4xl"></ng-icon>
+        </div>
+      }
+
+      @if (isEditing() && !isUploading()) {
+        <div
+          class="absolute inset-0 opacity-0 group-hover:opacity-100 bg-[rgba(0,0,0,0.35)] flex items-center justify-center transition-opacity"
+          (click)="desktopFileInput.click()">
+          <ng-icon [svg]="heroCamera" class="text-3xl text-white"></ng-icon>
+        </div>
+      }
+
+      @if (mainImage() && isEditing() && !isUploading()) {
+        <button
+          class="absolute top-2 right-2 bg-[rgba(255,255,255,0.88)] rounded-full p-1.5 text-[#0075de] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          title="Unset as main"
+          (click)="$event.stopPropagation(); toggleMain.emit(mainImage().id)">
+          <ng-icon [svg]="bootstrapStarFill" class="text-sm"></ng-icon>
+        </button>
+      }
+
+      @if (showVisibility() && mainImage() && isEditing() && !isUploading()) {
+        @if (mainImage().is_visible) {
+          <button
+            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[rgba(255,255,255,0.88)] text-[#31302e] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            title="Hide from players"
+            (click)="$event.stopPropagation(); toggleVisibility.emit(mainImage().id)">
+            <ng-icon [svg]="bootstrapEye" class="text-xs"></ng-icon>
+            <span>Visible</span>
+          </button>
+        } @else {
+          <button
+            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[rgba(0,0,0,0.62)] text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            title="Show to players"
+            (click)="$event.stopPropagation(); toggleVisibility.emit(mainImage().id)">
+            <ng-icon [svg]="bootstrapEyeSlash" class="text-xs"></ng-icon>
+            <span>Hidden</span>
+          </button>
+        }
+      }
+
+      <input #desktopFileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+    </div>
+  </div>
+}

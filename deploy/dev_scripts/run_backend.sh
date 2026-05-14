@@ -1,0 +1,1 @@
+docker-compose -f ../dockers/docker-compose-dev-backend.yml up yanay_tevet_backend

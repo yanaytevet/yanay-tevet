@@ -1,0 +1,4 @@
+echo "🔍 Checking Angular build (production)..."
+cd yanay-tevet-web || exit 1
+npm run build:prod || exit 1
+cd - > /dev/null || exit 1

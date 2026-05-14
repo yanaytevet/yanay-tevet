@@ -1,0 +1,27 @@
+<a class="entity-card" [routerLink]="link()">
+  @if (imagePublicId()) {
+    <div class="image-with-overlay">
+      <app-cloudinary-image
+        [publicId]="imagePublicId()"
+        [alt]="name()"
+        cssClass="w-full h-full object-cover"
+        [width]="400"
+      ></app-cloudinary-image>
+      <div class="image-name-overlay">
+        <span class="image-overlay-name">{{ name() }}</span>
+        @if (subtitle()) {
+          <span class="image-overlay-subtitle">{{ subtitle() }}</span>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="image-with-overlay placeholder-bg">
+      <div class="image-name-overlay">
+        <span class="image-overlay-name">{{ name() }}</span>
+        @if (subtitle()) {
+          <span class="image-overlay-subtitle">{{ subtitle() }}</span>
+        }
+      </div>
+    </div>
+  }
+</a>

@@ -1,0 +1,30 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+
+    <form [formGroup]="form">
+        <div class="mb-4 flex flex-col">
+            <span class="input-label">Type "{{ data.validationText }}" below to confirm</span>
+            <input
+                    type="text"
+                    formControlName="inputValue"
+                    class="w-full main-input mt-2"
+                    (keydown.enter)="onConfirm()"
+            >
+        </div>
+    </form>
+
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button
+                class="btn cancel-btn"
+                (click)="onCancel()">
+            {{ data.cancelActionName ?? 'Cancel' }}
+        </button>
+        <app-confirmation-button
+                [disabled]="form.invalid"
+                [text]="data.confirmActionName ?? 'Confirm'"
+                (clicked)="onConfirm()">
+        </app-confirmation-button>
+    </div>
+</div>

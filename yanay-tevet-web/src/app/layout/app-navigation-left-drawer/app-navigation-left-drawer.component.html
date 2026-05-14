@@ -1,0 +1,130 @@
+<div
+    class="absolute top-0 left-0 h-full w-64 bg-layer-2 z-50 -translate-x-full transform transition-transform duration-300 flex flex-col shadow-[0_4px_24px_rgba(0,0,0,0.15)]"
+    [class.translate-x-0]="layoutService.isLeftDrawerOpen()">
+
+    <div class="flex-1 py-2 overflow-y-auto">
+
+        <!-- Home Link -->
+        <a
+            class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+            [routerLink]="routingService.getHomeUrl()"
+            routerLinkActive="bg-layer-overlay"
+            [routerLinkActiveOptions]="{exact: true}"
+            (click)="layoutService.closeBothDrawers()">
+            Home
+        </a>
+
+        @if (authService.isLoggedIn()) {
+
+            <!-- About / Website Section -->
+            <div class="flex flex-col">
+                <div
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors cursor-pointer"
+                    (click)="toggleAboutFold()">
+                    <span class="flex-1">About</span>
+                    <ng-icon
+                        [svg]="bootstrapChevronRight"
+                        class="transition-transform duration-200"
+                        [class.rotate-90]="!isAboutFolded()">
+                    </ng-icon>
+                </div>
+
+                @if (!isAboutFolded()) {
+                    <div class="flex flex-col ml-4 border-l border-outline-border-1">
+                        <a
+                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                            routerLink="/faq"
+                            routerLinkActive="bg-layer-overlay !text-writing"
+                            (click)="layoutService.closeBothDrawers()">
+                            FAQ
+                        </a>
+                        <a
+                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                            routerLink="/upcoming-features"
+                            routerLinkActive="bg-layer-overlay !text-writing"
+                            (click)="layoutService.closeBothDrawers()">
+                            Coming soon
+                        </a>
+                        <a
+                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                            [routerLink]="routingService.getContactUrl()"
+                            routerLinkActive="bg-layer-overlay !text-writing"
+                            (click)="layoutService.closeBothDrawers()">
+                            Contact Us
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <!-- User Menu -->
+            <div class="mt-4 border-t border-outline-border-1 pt-4">
+                <div class="px-6 py-1 text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">
+                    User ({{ authService.userInitials() }})
+                </div>
+
+                <a
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                    [routerLink]="routingService.getUserSettingsUrl()"
+                    routerLinkActive="bg-layer-overlay"
+                    (click)="layoutService.closeBothDrawers()">
+                    Account Settings
+                </a>
+
+                <a
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                    [routerLink]="['/user-settings']"
+                    fragment="passkeys"
+                    (click)="layoutService.closeBothDrawers()">
+                    Manage Passkeys
+                </a>
+
+                <button
+                    class="w-full flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors bg-transparent border-none cursor-pointer font-[inherit]"
+                    (click)="logout()">
+                    Logout
+                </button>
+            </div>
+        } @else {
+
+            <!-- Logged-out navigation -->
+            <a
+                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                routerLink="/faq"
+                routerLinkActive="bg-layer-overlay"
+                (click)="layoutService.closeBothDrawers()">
+                FAQ
+            </a>
+            <a
+                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                routerLink="/upcoming-features"
+                routerLinkActive="bg-layer-overlay"
+                (click)="layoutService.closeBothDrawers()">
+                Coming soon
+            </a>
+
+            <div class="mt-4 border-t border-outline-border-1 pt-4 px-4">
+                <a
+                    routerLink="/login"
+                    class="w-full flex items-center justify-center px-4 py-[10px] text-[15px] font-semibold bg-notion-blue text-white rounded hover:bg-notion-blue-active transition-colors no-underline"
+                    (click)="layoutService.closeBothDrawers()">
+                    Sign in
+                </a>
+            </div>
+
+        }
+    </div>
+
+    <!-- Footer: Theme Toggle -->
+    <div class="p-3 border-t border-outline-border-1">
+        <button
+            class="w-full flex items-center justify-between px-3 py-[10px] rounded-lg bg-layer-3 hover:bg-layer-overlay transition-colors border-none cursor-pointer font-[inherit] text-[15px] font-medium text-writing"
+            (click)="darkModeService.toggleDarkMode()">
+            <span>Theme</span>
+            @if (darkModeService.darkMode()) {
+                <ng-icon [svg]="bootstrapSunFill" class="h-5 w-5 text-yellow-500"></ng-icon>
+            } @else {
+                <ng-icon [svg]="bootstrapMoonFill" class="h-5 w-5 text-gray-700"></ng-icon>
+            }
+        </button>
+    </div>
+</div>

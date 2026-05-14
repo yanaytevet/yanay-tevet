@@ -1,0 +1,49 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+
+    <form [formGroup]="form">
+        <div class="mb-4">
+            <!-- Filter input -->
+            @if (data.filterOptions) {
+                <div class="mb-4">
+                    <input
+                        type="text"
+                        [(ngModel)]="filterText"
+                        (ngModelChange)="filterOptions()"
+                        placeholder="Filter options..."
+                        class="shadow appearance-none border rounded w-full py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+                        [ngModelOptions]="{standalone: true}"
+                    />
+                </div>
+            }
+            <div class="flex flex-col space-y-2">
+                @for (option of filteredOptions; track option.value; let i = $index) {
+                    <app-selectable-box
+                        [isSelected]="isSelected(data.options.indexOf(option))"
+                        [text]="option.display"
+                        (click)="toggleOption(data.options.indexOf(option))"
+                    ></app-selectable-box>
+                }
+            </div>
+
+            @if (getErrorMessage()) {
+                <p class="text-red-500 text-xs italic mt-1">{{ getErrorMessage() }}</p>
+            }
+        </div>
+    </form>
+
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button
+                (click)="emitClose(null)"
+                class="btn cancel-btn">
+            {{ data.cancelActionName ?? 'Cancel' }}
+        </button>
+        <app-confirmation-button
+                [disabled]="optionsFormArray.invalid"
+                [text]="data.confirmActionName ?? 'Submit'"
+                (clicked)="onConfirm()">
+        </app-confirmation-button>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+<div class="flex flex-col items-center justify-center gap-8 select-none py-16">
+
+  <!-- Arcane ring + icon -->
+  <div class="relative w-24 h-24 flex items-center justify-center">
+
+    <!-- Rotating dashed outer ring -->
+    <div class="ring-spin absolute inset-0 rounded-full"></div>
+    <!-- Contra-rotating inner ring (slower, opposite direction) -->
+    <div class="ring-spin-reverse absolute inset-2 rounded-full"></div>
+
+    <!-- Icon circle with pulse glow -->
+    <div class="icon-glow absolute inset-4 rounded-full bg-layer-2 shadow-2 flex items-center justify-center">
+      <div
+        class="transition-all duration-300 ease-in-out"
+        [class.opacity-0]="!iconVisible()"
+        [class.scale-75]="!iconVisible()"
+      >
+        <ng-icon [name]="currentIcon()" class="text-3xl text-notion-blue" />
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Wave text -->
+  <div class="flex items-end text-muted-300 text-xs font-medium tracking-widest uppercase">
+    @for (char of textChars; track $index) {
+      @if (char === ' ') {
+        <span class="inline-block w-1.5"></span>
+      } @else {
+        <span
+          class="wave-char"
+          [style.animation-delay]="($index * 0.055) + 's'"
+        >{{ char }}</span>
+      }
+    }
+  </div>
+
+</div>

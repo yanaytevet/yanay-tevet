@@ -1,0 +1,7 @@
+/* ngx-datatable removed — styles kept for future replacement
+:host ::ng-deep .ngx-datatable.material .datatable-body-cell {
+    padding: 0.5rem 1.2rem !important;
+    font-size: 13px !important;
+    font-weight: unset !important;
+}
+*/

@@ -1,0 +1,72 @@
+@if (authService.isLoggedIn()) {
+
+  <div class="flex-1 overflow-y-auto px-6 py-8">
+    <div class="mx-auto w-full max-w-100">
+
+      <div class="text-center mb-8">
+        <h1 class="text-[26px] font-bold text-writing tracking-[-0.75px] mb-2">
+          Welcome to Yanay Tevet
+        </h1>
+        <p class="text-[15px] text-writing-minor leading-normal">
+          You're signed in. Start building something great.
+        </p>
+      </div>
+
+      <div class="mt-12 pt-6 border-t border-[rgba(0,0,0,0.1)] text-center">
+        <p class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+          Learn more
+        </p>
+        <div class="flex items-center justify-center gap-3 text-[13px] flex-wrap">
+          <a [routerLink]="routingService.getFaqUrl()"
+             class="text-writing-minor hover:text-writing transition-colors no-underline">
+            FAQ
+          </a>
+          <span class="text-writing-minor opacity-60">·</span>
+          <a routerLink="/upcoming-features"
+             class="text-writing-minor hover:text-writing transition-colors no-underline">
+            Coming soon
+          </a>
+          <span class="text-writing-minor opacity-60">·</span>
+          <a [routerLink]="routingService.getContactUrl()"
+             class="text-writing-minor hover:text-writing transition-colors no-underline">
+            Contact
+          </a>
+          <span class="text-writing-minor opacity-60">·</span>
+          <a [routerLink]="routingService.getPrivacyUrl()"
+             class="text-writing-minor hover:text-writing transition-colors no-underline">
+            Privacy
+          </a>
+          <span class="text-writing-minor opacity-60">·</span>
+          <a [routerLink]="routingService.getTermsUrl()"
+             class="text-writing-minor hover:text-writing transition-colors no-underline">
+            Terms
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+} @else {
+
+  <section class="hero-section">
+    <div class="hero-glow"></div>
+    <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
+
+      <h1 class="hero-heading">
+        Yanay Tevet
+      </h1>
+
+      <p class="hero-sub">
+        Sign in to get started.
+      </p>
+
+      <div class="flex items-center gap-3 mt-10">
+        <a routerLink="/login" class="cta-primary">Sign in</a>
+        <a routerLink="/faq" class="cta-secondary">Learn more</a>
+      </div>
+
+    </div>
+  </section>
+
+}

@@ -1,0 +1,49 @@
+<div class="relative">
+  <!-- Search input -->
+  <input
+    #searchInput
+    type="text"
+    class="w-full px-3 py-2 border border-layer-3 rounded focus:outline-none focus:ring-2 focus:ring-primary"
+    [value]="searchText()"
+    (input)="onSearchChange($event)"
+    (focus)="openDropdown()"
+    (keydown)="onKeyDown($event)"
+    placeholder="Search users..."
+  />
+
+  <!-- Dropdown -->
+  @if (isDropdownOpen()) {
+    <div class="absolute z-10 w-full mt-1 bg-layer-1 border border-layer-3 rounded shadow-1 max-h-80 overflow-y-auto">
+      <!-- Loading indicator -->
+      @if (paginationHandler.isLoading()) {
+        <div class="p-3 text-center text-writing-minor">
+          Loading...
+        </div>
+      } @else {
+        <!-- No results -->
+        @if (paginationHandler.isEmpty) {
+          <div class="p-3 text-center text-writing-minor">
+            No users found
+          </div>
+        } @else {
+          <!-- User list -->
+          @for (user of paginationHandler.itemsSignal(); track user.id; let i = $index) {
+            <div class="p-3 cursor-pointer flex items-center"
+              [ngClass]="{'bg-layer-2': highlightedIndex() === i,
+                         'hover:bg-layer-3': highlightedIndex() !== i}"
+              (click)="selectUser(user)"
+            >
+              <div class="flex flex-col">
+                <div class="font-medium">{{ user.username }}</div>
+                <div class="text-sm text-writing-minor">{{ user.full_name }}</div>
+              </div>
+              @if (user.is_admin) {
+                <span class="ml-auto px-2 py-1 text-xs bg-primary-100 text-primary-700 rounded">Admin</span>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+  }
+</div>

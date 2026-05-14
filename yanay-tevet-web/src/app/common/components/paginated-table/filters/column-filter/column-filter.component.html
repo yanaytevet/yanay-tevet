@@ -1,0 +1,19 @@
+<div class="inline-flex items-center ml-2">
+  <button
+    class="bg-transparent border-0 cursor-pointer p-1 flex items-center justify-center rounded transition-colors duration-200 hover:bg-black/10 dark:hover:bg-white/10"
+    [class.text-blue-500]="isActive()"
+    [class.dark:text-blue-400]="isActive()"
+    (click)="openFilterDialog()"
+    title="Filter">
+    <ng-icon [svg]="bootstrapFunnel" class="h-4 w-4"></ng-icon>
+  </button>
+
+  @if (isActive()) {
+    <button
+      class="bg-transparent border-0 cursor-pointer p-1 flex items-center justify-center rounded transition-colors duration-200 hover:bg-black/10 dark:hover:bg-white/10 ml-1"
+      (click)="clearFilter()"
+      title="Clear filter">
+      <ng-icon [svg]="bootstrapX" class="h-4 w-4"></ng-icon>
+    </button>
+  }
+</div>

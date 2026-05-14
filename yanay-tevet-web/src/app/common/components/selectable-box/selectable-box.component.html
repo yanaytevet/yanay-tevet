@@ -1,0 +1,12 @@
+<div
+        (click)="onClick()"
+        class="transition duration-300 ease-in-out flex items-center px-4 py-2 border rounded bg-layer-2 hover:bg-layer-3 cursor-pointer"
+        [class.selected-btn]="isSelected()"
+>
+    <div class="flex-grow min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{{ text() }}</div>
+    <div class="flex-shrink-0 ml-2">
+        @if (isSelected()) {
+            <ng-icon [svg]="checkIcon" class="h-5 w-5 text-white"></ng-icon>
+        }
+    </div>
+</div>

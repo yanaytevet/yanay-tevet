@@ -1,0 +1,52 @@
+@reference "../../styles.css";
+
+.main-input {
+    @apply w-full bg-layer-2 text-writing rounded appearance-none disabled:opacity-60 disabled:cursor-not-allowed;
+    padding: 6px 8px;
+    border: 1px solid #dddddd;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.main-input::placeholder {
+    color: #a39e98;
+}
+
+.main-input:focus {
+    outline: none;
+    border-color: #0075de;
+    box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
+}
+
+.dark .main-input {
+    border-color: rgba(255,255,255,0.12);
+    background-color: #31302e;
+}
+
+.dark .main-input:focus {
+    border-color: #62aef0;
+    box-shadow: 0 0 0 2px rgba(98,174,240,0.15);
+}
+
+.input-label {
+    @apply block text-sm font-medium text-writing-minor;
+}
+
+/* Chrome, Safari, Edge */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* IE, Edge Legacy */
+input[type=number]::-ms-clear,
+input[type=number]::-ms-reveal {
+    display: none;
+}

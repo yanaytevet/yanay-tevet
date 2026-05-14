@@ -1,0 +1,55 @@
+@reference "../../styles.css";
+
+.cdk-overlay-black-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.mask-edges {
+  @apply
+  [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
+  [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
+}
+
+.page {
+  @apply flex flex-col h-full overflow-y-auto p-2
+  [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
+  [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
+}
+
+.tooltip-box {
+  @apply bg-layer-2 text-writing text-xs rounded py-1 px-2 whitespace-nowrap pointer-events-none z-50 absolute;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+}
+
+/* Notion-style card */
+.card {
+  @apply bg-layer-2 text-writing rounded-xl;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+}
+
+.dark .card {
+  border-color: rgba(255,255,255,0.08);
+}
+
+.card-layer-2 {
+  @apply bg-layer-2 text-writing rounded-xl;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.1);
+  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+}
+
+.dark .card-layer-2 {
+  border-color: rgba(255,255,255,0.08);
+}
+
+.card-layer-3 {
+  @apply bg-layer-3 text-writing rounded-xl;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.dark .card-layer-3 {
+  border-color: rgba(255,255,255,0.06);
+}

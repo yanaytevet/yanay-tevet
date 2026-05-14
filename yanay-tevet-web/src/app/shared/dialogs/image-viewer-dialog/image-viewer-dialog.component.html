@@ -1,0 +1,37 @@
+<div class="dialog-container flex flex-col gap-4" style="min-width: min(90vw, 600px)">
+  @if (image.name) {
+    <h2 class="m-0">{{ image.name }}</h2>
+  }
+
+  @if (isHidden) {
+    <div class="w-full rounded-lg bg-layer-1 flex items-center justify-center p-8">
+      <span class="text-sm text-secondary-400 italic">The GM has set this image to hidden.</span>
+    </div>
+  } @else {
+    <div class="w-full rounded-lg overflow-hidden bg-layer-1">
+      <app-cloudinary-image
+        [publicId]="image.image_public_id"
+        [alt]="image.name || 'Image'"
+        cssClass="w-full object-contain max-h-[60vh]"
+      ></app-cloudinary-image>
+    </div>
+
+    @if (image.description) {
+      <p class="text-sm text-writing-minor whitespace-pre-line m-0">{{ image.description }}</p>
+    }
+  }
+
+  <div class="dialog-buttons-container">
+    <button class="btn cancel-btn" (click)="emitClose()">Close</button>
+    @if (canSendToChat) {
+      <button
+        class="btn btn-primary flex items-center gap-2"
+        [class.opacity-50]="isSending()"
+        [class.pointer-events-none]="isSending()"
+        (click)="onSendToChat()">
+        <ng-icon [svg]="bootstrapChatDots" size="14"></ng-icon>
+        <span>{{ isSending() ? 'Sending...' : 'Send to Chat' }}</span>
+      </button>
+    }
+  </div>
+</div>

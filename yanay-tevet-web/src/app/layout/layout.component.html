@@ -1,0 +1,113 @@
+<div class="h-screen bg-layer-1 flex flex-col relative overflow-hidden">
+  <!-- Header -->
+  <div class="flex items-center bg-layer-2 border-b border-outline-border-1 sticky top-0 z-40 px-3 h-14 gap-2">
+
+    <!-- Left: hamburger + logo + breadcrumb -->
+    <div class="flex items-center gap-1 min-w-0 flex-1">
+      <button
+        class="hover:bg-layer-overlay cursor-pointer transition-colors duration-200 flex items-center justify-center p-2 rounded-lg shrink-0"
+        (click)="layoutService.toggleLeftDrawer()">
+        <ng-icon [svg]="bootstrapList" class="h-6 w-6 text-primary-500"></ng-icon>
+      </button>
+      @if (layoutService.breadcrumbParentSegment(); as parent) {
+        <a [routerLink]="parent.link"
+           class="sm:hidden flex items-center justify-center p-2 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors no-underline shrink-0"
+           [title]="parent.label">
+          <ng-icon [svg]="bootstrapArrowLeft" class="h-5 w-5"></ng-icon>
+        </a>
+        <a routerLink="/" class="hidden sm:flex items-center gap-2 no-underline ml-1 shrink-0" aria-label="Yanay Tevet — Home">
+          <img src="yanay_tevet_icon.jpg" width="24" height="24" alt="Yanay Tevet" class="rounded-md" />
+        </a>
+      } @else {
+        <a routerLink="/" class="flex items-center gap-2 no-underline ml-1 shrink-0" aria-label="Yanay Tevet — Home">
+          <img src="yanay_tevet_icon.jpg" width="24" height="24" alt="Yanay Tevet" class="rounded-md" />
+        </a>
+      }
+      <div class="flex-1 min-w-0 ml-2">
+        <app-breadcrumb/>
+      </div>
+    </div>
+
+    <!-- Right: utility icons + auth action / right drawer -->
+    <div class="flex items-center gap-1 shrink-0">
+      <a routerLink="/faq"
+         routerLinkActive="!text-primary-500 !bg-layer-overlay"
+         class="p-2 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-layer-overlay transition-colors flex items-center justify-center no-underline"
+         title="FAQ"
+         aria-label="FAQ">
+        <ng-icon [svg]="bootstrapQuestionCircle" class="h-5 w-5"></ng-icon>
+      </a>
+      <a routerLink="/upcoming-features"
+         routerLinkActive="!text-primary-500 !bg-layer-overlay"
+         class="p-2 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-layer-overlay transition-colors flex items-center justify-center no-underline"
+         title="Coming soon"
+         aria-label="Coming soon">
+        <ng-icon [svg]="bootstrapStars" class="h-5 w-5"></ng-icon>
+      </a>
+      @if (!authService.isLoggedIn()) {
+        <a routerLink="/login"
+           class="ml-1 px-4 py-1.5 text-[14px] font-semibold bg-notion-blue text-white rounded hover:bg-notion-blue-active transition-colors no-underline">
+          Sign in
+        </a>
+      } @else if (layoutService.isRightDrawerVisible()) {
+        <button
+          class="relative p-2 rounded-lg hover:bg-layer-overlay cursor-pointer transition-colors duration-300 flex items-center justify-center"
+          (click)="layoutService.toggleRightDrawer()">
+          <ng-icon [svg]="layoutService.rightDrawerIcon()" class="h-6 w-6 text-primary-500"></ng-icon>
+          @if (layoutService.rightDrawerBadge()) {
+            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75"></span>
+            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500"></span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content and Drawer Container -->
+  <div class="flex-1 flex overflow-hidden relative">
+    <!-- Left Drawer Overlay -->
+    @if (layoutService.isLeftDrawerOpen()) {
+      <div
+        class="absolute inset-0 bg-black/50 z-40 transition-opacity duration-300"
+        (click)="layoutService.toggleLeftDrawer()">
+      </div>
+    }
+
+    <!-- Navigation Drawer -->
+    <app-navigation-left-drawer/>
+
+    <!-- Main Content Area -->
+    <div class="@container flex-1 overflow-auto p-0 flex flex-col">
+      <div class="flex-1 overflow-auto p-0">
+        <router-outlet/>
+      </div>
+      <app-footer/>
+    </div>
+
+    <!-- Right Drawer (inline, pushes content) -->
+    @if (layoutService.isRightDrawerVisible()) {
+      <div
+        class="flex flex-col bg-layer-2 transition-[width] duration-300 overflow-hidden border-l border-outline-border-1 shrink-0"
+        [ngClass]="layoutService.isRightDrawerOpen() ? 'w-full md:w-96' : 'w-0'">
+
+        <!-- Drawer Header -->
+        <div class="flex items-center justify-between bg-layer-2 border-b border-outline-border-1 px-4 py-3 shrink-0">
+          <h2 class="text-xl font-bold text-primary-500 overflow-hidden whitespace-nowrap">
+            {{ layoutService.rightDrawerTitle() }}
+          </h2>
+
+          <button (click)="layoutService.toggleRightDrawer()"
+                  class="icon-btn">
+            <ng-icon [svg]="bootstrapChevronRight" size="24" class="text-primary-500"></ng-icon>
+          </button>
+        </div>
+
+        <!-- Drawer Content -->
+        <div class="flex-1 flex flex-col min-h-0 h-full"
+             [ngClass]="layoutService.isRightDrawerOpen() ? 'opacity-100' : 'opacity-0'">
+          <ng-container #drawerHost/>
+        </div>
+      </div>
+    }
+  </div>
+</div>

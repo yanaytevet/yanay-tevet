@@ -1,0 +1,13 @@
+<div class="page">
+    <div class="mb-4">
+    </div>
+    <div class="flex gap-4 mb-4">
+        <input class="main-input flex-grow" placeholder="Search..." [formControl]="searchDebouncer.ctrl"/>
+        <button type="button" class="btn btn-primary min-w-[160px]" (click)="createBlock()">Create Block</button>
+    </div>
+    <app-paginated-table
+            class="flex-grow h-0"
+            [columns]="columns"
+            [actions]="actions"
+            [paginatedDataHandler]="paginatedDataHandler"></app-paginated-table>
+</div>

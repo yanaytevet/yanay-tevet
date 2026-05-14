@@ -1,0 +1,48 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+
+    <form [formGroup]="form">
+        <div class="mb-4 flex flex-col">
+            <span class="input-label">{{ data.minLabel || 'Minimum Value' }}</span>
+            <input type="number"
+                   formControlName="minValue"
+                   class="mt-2 main-input"
+                   [class.border-red-500]="getErrorMessage('min') && (minControl?.touched || minControl?.dirty)"
+            >
+            @if (getErrorMessage('min') && (minControl?.touched || minControl?.dirty)) {
+                <p class="text-red-500 text-xs italic mt-2">{{ getErrorMessage('min') }}</p>
+            }
+        </div>
+
+        <div class="mb-4 flex flex-col">
+            <span class="input-label">{{ data.maxLabel || 'Maximum Value' }}</span>
+            <input type="number"
+                   formControlName="maxValue"
+                   class="mt-2 main-input"
+                   [class.border-red-500]="getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)"
+            >
+            @if (getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)) {
+                <p class="text-red-500 text-xs italic mt-2">{{ getErrorMessage('max') }}</p>
+            }
+        </div>
+
+        @if (getFormErrorMessage() && form.touched) {
+            <p class="text-red-500 text-xs italic mt-2 mb-4">{{ getFormErrorMessage() }}</p>
+        }
+    </form>
+
+    <div class="dialog-buttons-container">
+        <span class="flex-1"></span>
+        <button
+                class="btn cancel-btn"
+                (click)="emitClose(null)">
+            {{ data.cancelActionName ?? 'Cancel' }}
+        </button>
+        <app-confirmation-button
+                [disabled]="form.invalid || (!data.allowEmpty && minControl?.value === null && maxControl?.value === null)"
+                [text]="data.confirmActionName ?? 'Apply'"
+                (clicked)="onConfirm()">
+        </app-confirmation-button>
+    </div>
+</div>

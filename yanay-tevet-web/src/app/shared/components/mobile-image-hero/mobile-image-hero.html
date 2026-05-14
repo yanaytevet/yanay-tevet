@@ -1,0 +1,19 @@
+<div class="block @lg:hidden relative overflow-hidden rounded-xl -mx-2 -mt-2 mb-2" style="height: 220px;">
+  <div
+    class="absolute inset-0 w-full h-full"
+    [style.transform]="'scale(' + scale() + ')'"
+    [style.transform-origin]="'center top'"
+    style="will-change: transform;"
+  >
+    <app-cloudinary-image
+      [publicId]="publicId()"
+      [alt]="alt()"
+      cssClass="w-full h-full object-cover"
+    ></app-cloudinary-image>
+  </div>
+  <div
+    class="absolute inset-0 bg-black pointer-events-none"
+    [style.opacity]="darkOverlayOpacity()"
+  ></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-layer-1 pointer-events-none"></div>
+</div>

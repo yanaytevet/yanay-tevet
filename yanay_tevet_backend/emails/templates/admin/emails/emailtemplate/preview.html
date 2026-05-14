@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{% trans 'Emails' %}</a>
+  &rsaquo; <a href="{% url 'admin:emails_emailtemplate_changelist' %}">{% trans 'Email Templates' %}</a>
+  &rsaquo; {{ class_name }}
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <table class="form-table" style="margin-bottom:16px;border-collapse:collapse;">
+    <tr><th style="text-align:left;padding:4px 12px 4px 0;">Subject</th><td>{{ subject }}</td></tr>
+    <tr><th style="text-align:left;padding:4px 12px 4px 0;">Template</th><td>{{ template_name }}.html</td></tr>
+  </table>
+
+  <form method="post" action="{% url 'admin:emails_emailtemplate_render' class_name %}" target="_blank">
+    {% csrf_token %}
+
+    <fieldset class="module aligned">
+      <h2>Context</h2>
+
+      {% if form_fields %}
+        {% for field in form_fields %}
+        <div class="form-row">
+          <div>
+            <label for="id_{{ field.name }}">
+              {{ field.name }}{% if field.required %}&thinsp;<span style="color:#ba2121">*</span>{% endif %}
+            </label>
+            {% if field.input_type == 'checkbox' %}
+              <input type="checkbox" name="{{ field.name }}" id="id_{{ field.name }}"
+                     {% if field.default %}checked{% endif %}>
+            {% elif field.input_type == 'json' %}
+              <textarea name="{{ field.name }}" id="id_{{ field.name }}"
+                        rows="4" style="width:60%;font-family:monospace;font-size:13px;">{{ field.default }}</textarea>
+            {% else %}
+              <input type="{{ field.input_type }}" name="{{ field.name }}" id="id_{{ field.name }}"
+                     value="{{ field.default }}" {% if field.required %}required{% endif %}>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="form-row">
+          <p style="color:#666;font-style:italic;">This email has no context fields.</p>
+        </div>
+      {% endif %}
+    </fieldset>
+
+    <div class="submit-row">
+      <input type="submit" value="Preview Email ↗" class="default">
+    </div>
+  </form>
+</div>
+{% endblock %}

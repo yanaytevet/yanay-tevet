@@ -1,0 +1,11 @@
+<div class="dialog-container">
+    <h2>{{ data.title }}</h2>
+    <p>{{ data.text }}</p>
+    <div class="dialog-buttons-container">
+        @if (data.showCopyButton) {
+            <button class="btn" (click)="copyToClipboard()">Copy</button>
+        }
+        <span class="flex-1"></span>
+        <button class="btn accept-btn" (click)="emitClose()">{{ data.confirmActionName ?? 'OK' }}</button>
+    </div>
+</div>
