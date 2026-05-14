@@ -36,7 +36,7 @@ class PaginateDreamDiaryEntriesView(PaginateItemsAPIView):
         return DreamDiaryEntry
 
     @classmethod
-    async def apply_initial_filter_and_order(cls, request: APIRequest, queryset: QuerySet,
+    async def apply_initial_filter_and_order(cls, queryset: QuerySet, request: APIRequest,
                                               query: Query, path: Path) -> QuerySet:
         user = await request.future_user
         return queryset.filter(user=user).order_by('-time')

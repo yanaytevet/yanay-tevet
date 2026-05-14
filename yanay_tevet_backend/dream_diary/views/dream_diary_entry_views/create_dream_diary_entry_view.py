@@ -3,19 +3,16 @@ from typing import Type, Optional
 
 from django.db.models import Model
 from ninja import Schema, Path
-from pydantic import ConfigDict
-
 from dream_diary.models.dream_diary_entry import DreamDiaryEntry
 from dream_diary.serializers.dream_diary_entry_serializers.dream_diary_entry_serializer import DreamDiaryEntrySerializer
 from common.simple_api.api_request import APIRequest
+from common.simple_api.schemas.schema_config import hidden_fields_config
 from common.simple_api.serializers.serializer import Serializer
 from common.simple_api.views.create_views.create_item_api_view import CreateItemAPIView
 
 
 class CreateDreamDiaryEntrySchema(Schema):
-    model_config = ConfigDict(
-        json_schema_extra=lambda schema: schema.get('properties', {}).pop('user_id', None),
-    )
+    model_config = hidden_fields_config('user_id')
     user_id: Optional[int] = None
     title: Optional[str] = ''
     text: str
