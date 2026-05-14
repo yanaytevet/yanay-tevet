@@ -3,6 +3,7 @@ from typing import Type, Optional
 
 from django.db.models import Model
 from ninja import Schema, Path
+from pydantic import ConfigDict
 
 from dream_diary.models.dream_diary_entry import DreamDiaryEntry
 from dream_diary.serializers.dream_diary_entry_serializers.dream_diary_entry_serializer import DreamDiaryEntrySerializer
@@ -12,6 +13,10 @@ from common.simple_api.views.create_views.create_item_api_view import CreateItem
 
 
 class CreateDreamDiaryEntrySchema(Schema):
+    model_config = ConfigDict(
+        json_schema_extra=lambda schema: schema.get('properties', {}).pop('user_id', None),
+    )
+    user_id: Optional[int] = None
     title: Optional[str] = ''
     text: str
     time: datetime
@@ -35,11 +40,6 @@ class CreateDreamDiaryEntryView(CreateItemAPIView):
         return DreamDiaryEntry
 
     @classmethod
-    async def create_object(cls, request: APIRequest, data: CreateDreamDiaryEntrySchema, path: Path) -> DreamDiaryEntry:
-        user = await request.future_user
-        return await DreamDiaryEntry.objects.acreate(
-            user_id=user.id,
-            title=data.title or '',
-            text=data.text,
-            time=data.time,
-        )
+    async def modify_creation_data(cls, request: APIRequest, data: CreateDreamDiaryEntrySchema, path: Path) -> CreateDreamDiaryEntrySchema:
+        data.user_id = (await request.future_user).id
+        return data

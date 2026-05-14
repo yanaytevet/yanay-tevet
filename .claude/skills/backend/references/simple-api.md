@@ -125,20 +125,31 @@ class CreatePostView(CreateItemAPIView):
     async def check_permitted_before_creation(cls, request, data, path):
         pass  # router-level checker handles it
 
-    # Override create_object to inject FK fields (like user) not in the schema.
-    # Never add user_id to the schema — override create_object instead.
+    # To inject FK fields (like user_id) that must not be user-supplied:
+    # Add them to the schema as Optional[int] = None, hidden from the API schema via
+    # model_config, then set in modify_creation_data.
     @classmethod
-    async def create_object(cls, request, data, path) -> Post:
-        user = await request.future_user
-        return await Post.objects.acreate(
-            owner_id=user.id,
-            title=data.title,
-            text=data.text,
-        )
+    async def modify_creation_data(cls, request, data, path):
+        data.owner_id = (await request.future_user).id
+        return data
 
     @classmethod
     async def run_after_creation(cls, request, obj, data, path):
         await PostInitializer(obj).initialize()
+```
+
+To hide an internal field (e.g. `owner_id`) from the OpenAPI schema while still allowing `modify_creation_data` to set it, use `model_config`:
+
+```python
+from pydantic import ConfigDict
+
+class CreatePostInput(Schema):
+    model_config = ConfigDict(
+        json_schema_extra=lambda schema: schema.get('properties', {}).pop('owner_id', None),
+    )
+    owner_id: Optional[int] = None  # set in modify_creation_data, hidden from API
+    title: str
+    text: str
 ```
 
 ---

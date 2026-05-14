@@ -9,7 +9,8 @@ import {
 import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
 import {CreateDreamDiaryEntryDialogComponent} from './dialogs/create-dream-diary-entry-dialog/create-dream-diary-entry-dialog.component';
-import {featherDelete, featherUpload} from '@ng-icons/feather-icons';
+import {EditDreamDiaryEntryDialogComponent} from './dialogs/edit-dream-diary-entry-dialog/edit-dream-diary-entry-dialog.component';
+import {featherDelete, featherEdit, featherUpload} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 
 interface CalendarDay {
@@ -27,7 +28,7 @@ const WEEK_COUNT = 4;
   selector: 'app-dream-diary',
   standalone: true,
   imports: [NgIcon],
-  providers: [provideIcons({featherDelete, featherUpload})],
+  providers: [provideIcons({featherDelete, featherUpload, featherEdit})],
   templateUrl: './dream-diary.component.html',
   styleUrl: './dream-diary.component.css',
 })
@@ -41,6 +42,7 @@ export class DreamDiaryComponent {
   isLoadingEntries = signal<boolean>(false);
   isLoadingMore = signal<boolean>(false);
   loggedDates = signal<string[]>([]);
+  uploadingId = signal<number | null>(null);
 
   hasMore = computed(() => this.entries().length < this.totalAmount());
 
@@ -67,6 +69,7 @@ export class DreamDiaryComponent {
   readonly weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   readonly featherDelete = featherDelete;
   readonly featherUpload = featherUpload;
+  readonly featherEdit = featherEdit;
 
   constructor() {
     this.loadCalendar();
@@ -124,6 +127,14 @@ export class DreamDiaryComponent {
     await this.loadCalendar();
   }
 
+  async openEditDialog(entry: DreamDiaryEntrySchema): Promise<void> {
+    const updated = await this.dialogService.open(EditDreamDiaryEntryDialogComponent, entry);
+    if (!updated) {
+      return;
+    }
+    this.entries.update(prev => prev.map(e => (e.id === updated.id ? updated : e)));
+  }
+
   async deleteEntry(entry: DreamDiaryEntrySchema): Promise<void> {
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: 'Delete Entry',
@@ -152,6 +163,7 @@ export class DreamDiaryComponent {
       const updated = await this.filesUploadService.uploadFile<DreamDiaryEntrySchema>(
         'image/*',
         async (files: File[]) => {
+          this.uploadingId.set(entry.id);
           const res = await uploadDreamDiaryEntryImageView({
             body: {files},
             path: {object_id: entry.id},
@@ -167,6 +179,8 @@ export class DreamDiaryComponent {
         title: 'Error',
         text: `Failed to upload image: ${err}`,
       });
+    } finally {
+      this.uploadingId.set(null);
     }
   }
 
