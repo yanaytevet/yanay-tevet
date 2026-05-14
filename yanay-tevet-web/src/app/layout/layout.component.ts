@@ -1,7 +1,7 @@
 import {Component, effect, inject, viewChild, ViewContainerRef} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {RoutingService} from '../shared/services/routing.service';
-import {bootstrapArrowLeft, bootstrapChevronRight, bootstrapList, bootstrapQuestionCircle, bootstrapStars} from '@ng-icons/bootstrap-icons';
+import {bootstrapArrowLeft, bootstrapChevronRight, bootstrapList, bootstrapQuestionCircle} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {LayoutService} from './layout-service';
@@ -52,5 +52,4 @@ export class LayoutComponent {
   protected readonly bootstrapList = bootstrapList;
   protected readonly bootstrapChevronRight = bootstrapChevronRight;
   protected readonly bootstrapQuestionCircle = bootstrapQuestionCircle;
-  protected readonly bootstrapStars = bootstrapStars;
 }

@@ -40,17 +40,10 @@
                         </a>
                         <a
                             class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            routerLink="/upcoming-features"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            Coming soon
-                        </a>
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
                             [routerLink]="routingService.getContactUrl()"
                             routerLinkActive="bg-layer-overlay !text-writing"
                             (click)="layoutService.closeBothDrawers()">
-                            Contact Us
+                            Contact
                         </a>
                     </div>
                 }
@@ -94,14 +87,6 @@
                 (click)="layoutService.closeBothDrawers()">
                 FAQ
             </a>
-            <a
-                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                routerLink="/upcoming-features"
-                routerLinkActive="bg-layer-overlay"
-                (click)="layoutService.closeBothDrawers()">
-                Coming soon
-            </a>
-
             <div class="mt-4 border-t border-outline-border-1 pt-4 px-4">
                 <a
                     routerLink="/login"

@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component} from '@angular/core';
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 import {CheckboxInputComponent} from '../../common/components/inputs/checkbox-input/checkbox-input.component';

@@ -18,16 +18,12 @@ export class FaqComponent {
 
   readonly items: FaqItem[] = [
     {
-      question: 'What is Yanay Tevet?',
-      answer: 'Yanay Tevet is a private platform. Access is by invitation only.',
+      question: 'What is this place?',
+      answer: 'A personal platform where I build and host my projects — some are public, some are private. Think of it as my corner of the internet.',
     },
     {
-      question: 'How do I get access?',
-      answer: `Reach out directly at ${SUPPORT_EMAIL} to request access.`,
-    },
-    {
-      question: 'I already have an account — how do I get support?',
-      answer: `Sign in and contact us at ${SUPPORT_EMAIL}. We'll get back to you as soon as possible.`,
+      question: 'How do I sign in?',
+      answer: 'Just hit "Sign in" and use your Google account. That\'s it — no registration, no forms.',
     },
   ];
 

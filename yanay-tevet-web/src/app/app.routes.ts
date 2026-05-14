@@ -38,12 +38,6 @@ export const routes: Routes = [
                     import('./privacy/privacy.component').then(m => m.PrivacyComponent),
             },
             {
-                path: 'upcoming-features',
-                loadComponent: () =>
-                    import('./upcoming-features/upcoming-features.component').then(m => m.UpcomingFeaturesComponent),
-                canActivate: [loggedInGuard],
-            },
-            {
                 path: 'contact',
                 loadComponent: () =>
                     import('./contact/contact.component').then(m => m.ContactComponent),
