@@ -14,7 +14,7 @@ export type EmptySchema = {
 /**
  * Permissions
  */
-export type Permissions = 'admin' | 'editor';
+export type Permissions = 'admin' | 'editor' | 'dream_diary';
 
 /**
  * SubscriptionLimitsSchema

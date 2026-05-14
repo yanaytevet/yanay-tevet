@@ -1,0 +1,145 @@
+<div class="page p-6 max-w-3xl mx-auto">
+
+    <!-- Calendar: last 4 weeks -->
+    <div class="card mb-6 p-4">
+        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+            Last 4 Weeks
+        </div>
+
+        <!-- Week-day headers -->
+        <div class="grid grid-cols-7 gap-1 mb-1">
+            @for (label of weekDayLabels; track label) {
+                <div class="text-center text-[11px] font-semibold text-writing-minor">{{ label }}</div>
+            }
+        </div>
+
+        <!-- Day cells -->
+        <div class="grid grid-cols-7 gap-1">
+            @for (day of calendarDays(); track day.date) {
+                <div
+                    class="aspect-square flex items-center justify-center rounded-full text-[13px] font-medium transition-colors"
+                    [class.bg-notion-blue]="day.isLogged"
+                    [class.text-white]="day.isLogged"
+                    [class.ring-2]="day.isToday"
+                    [class.ring-notion-blue]="day.isToday && !day.isLogged"
+                    [class.ring-white]="day.isToday && day.isLogged"
+                    [class.text-writing-minor]="!day.isLogged && !day.isCurrentMonth"
+                    [class.text-primary-500]="!day.isLogged && day.isCurrentMonth">
+                    {{ day.dayOfMonth }}
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- New Entry Form -->
+    <div class="card mb-6 p-4">
+        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+            New Entry
+        </div>
+        <input
+            class="main-input w-full mb-2"
+            placeholder="Title (optional)"
+            [formControl]="titleCtrl" />
+        <textarea
+            class="main-input w-full mb-2 min-h-[100px] resize-y"
+            placeholder="Describe your dream..."
+            [formControl]="textCtrl"></textarea>
+        <div class="flex items-center gap-3">
+            <input
+                type="datetime-local"
+                class="main-input flex-1"
+                [formControl]="timeCtrl" />
+            <button
+                type="button"
+                class="btn btn-primary min-w-[120px]"
+                [disabled]="isCreating() || !textCtrl.value?.trim()"
+                (click)="createEntry()">
+                @if (isCreating()) {
+                    Saving...
+                } @else {
+                    Save Dream
+                }
+            </button>
+        </div>
+    </div>
+
+    <!-- Entries Header -->
+    <div class="flex items-center justify-between mb-4">
+        <span class="text-[15px] font-semibold text-primary-500">
+            {{ totalAmount() }} {{ totalAmount() === 1 ? 'entry' : 'entries' }}
+        </span>
+    </div>
+
+    <!-- Loading state -->
+    @if (isLoadingEntries()) {
+        <div class="text-center text-writing-minor text-[14px] py-8">Loading...</div>
+    }
+
+    <!-- Entries list -->
+    @if (!isLoadingEntries()) {
+        @for (entry of entries(); track entry.id) {
+            <div class="card mb-4 overflow-hidden">
+                <!-- Image -->
+                @if (entry.image_url) {
+                    <img
+                        [src]="entry.image_url"
+                        alt="Dream image"
+                        class="w-full h-48 object-cover" />
+                }
+
+                <div class="p-4">
+                    <!-- Header row -->
+                    <div class="flex items-start justify-between gap-3 mb-2">
+                        <div class="min-w-0">
+                            @if (entry.title) {
+                                <div class="text-[16px] font-bold text-primary-500 truncate">{{ entry.title }}</div>
+                            }
+                            <div class="text-[12px] text-writing-minor mt-0.5">{{ formatTime(entry.time) }}</div>
+                        </div>
+
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                title="Upload image"
+                                (click)="uploadImage(entry)">
+                                <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                title="Delete entry"
+                                (click)="deleteEntry(entry)">
+                                <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Text -->
+                    <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+                </div>
+            </div>
+        }
+
+        @empty {
+            <div class="text-center text-writing-minor text-[14px] py-8">No entries yet. Log your first dream above.</div>
+        }
+
+        <!-- Load more -->
+        @if (hasMore()) {
+            <div class="flex justify-center mt-4">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    [disabled]="isLoadingMore()"
+                    (click)="loadMore()">
+                    @if (isLoadingMore()) {
+                        Loading...
+                    } @else {
+                        Load More
+                    }
+                </button>
+            </div>
+        }
+    }
+</div>

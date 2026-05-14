@@ -78,6 +78,12 @@ export const routes: Routes = [
                     import('./user-settings/user-settings-page').then(m => m.UserSettingsPage),
                 canActivate: [loggedInGuard],
             },
+            {
+                path: 'dream-diary',
+                loadComponent: () =>
+                    import('./dream-diary/dream-diary.component').then(m => m.DreamDiaryComponent),
+                canActivate: [loggedInGuard],
+            },
         ],
     },
 ];

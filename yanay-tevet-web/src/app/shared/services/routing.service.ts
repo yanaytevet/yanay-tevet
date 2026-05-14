@@ -110,4 +110,13 @@ export class RoutingService {
   navigateToExampleFiles(): Promise<boolean> {
     return this.router.navigateByUrl(this.getExampleFilesUrl());
   }
+
+  // Dream Diary
+  getDreamDiaryUrl(): UrlTree {
+    return this.router.createUrlTree(['/dream-diary']);
+  }
+
+  navigateToDreamDiary(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getDreamDiaryUrl());
+  }
 }

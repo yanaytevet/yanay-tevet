@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     'configurations',
     'blocks',
     'emails',
+    'dream_diary',
 ]
 
 MIDDLEWARE = [

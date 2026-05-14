@@ -3,6 +3,7 @@ import {client as authClient} from '../../../generated-files/auth/client.gen';
 import {client as api_usersClient} from '../../../generated-files/api/users/client.gen';
 import {client as api_configurationsClient} from '../../../generated-files/api/configurations/client.gen';
 import {client as api_blocksClient} from '../../../generated-files/api/blocks/client.gen';
+import {client as api_dreamdiaryClient} from '../../../generated-files/api/dream-diary/client.gen';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {environment} from '../../../environments/environment';
 
@@ -10,7 +11,7 @@ import {environment} from '../../../environments/environment';
     providedIn: 'root'
 })
 export class ApiConfigService {
-    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient];
+    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient, api_dreamdiaryClient];
     authService = inject(AuthenticationService);
 
   getBaseUrl(): string {
