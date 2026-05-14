@@ -2,10 +2,14 @@
 
 ## Router Setup
 
+Pass a `PermissionsChecker` to gate the **entire router** — every endpoint inherits it automatically. When you do this, individual views `pass` in all `check_permitted*` methods; they only add object-level ownership checks.
+
 ```python
 from common.django_utils.api_router_creator import ApiRouterCreator
+from myapp.permissions_checkers.my_feature_permission_checker import MyFeaturePermissionChecker
 
-api, router = ApiRouterCreator.create_api_and_router('items')
+# Gate the whole router with a permission:
+api, router = ApiRouterCreator.create_api_and_router('items', MyFeaturePermissionChecker())
 
 CreateItemView.register_post(router)
 GetItemByIdView.register_get_by_id(router)
@@ -119,15 +123,50 @@ class CreatePostView(CreateItemAPIView):
 
     @classmethod
     async def check_permitted_before_creation(cls, request, data, path):
-        user = await request.future_user
-        await LoginPermissionChecker().async_raise_exception_if_not_valid(user)
+        pass  # router-level checker handles it
 
+    # Override create_object to inject FK fields (like user) not in the schema.
+    # Never add user_id to the schema — override create_object instead.
     @classmethod
-    async def modify_creation_data(cls, request, data, path):
-        data.owner_id = (await request.future_user).id
-        return data
+    async def create_object(cls, request, data, path) -> Post:
+        user = await request.future_user
+        return await Post.objects.acreate(
+            owner_id=user.id,
+            title=data.title,
+            text=data.text,
+        )
 
     @classmethod
     async def run_after_creation(cls, request, obj, data, path):
         await PostInitializer(obj).initialize()
+```
+
+---
+
+## Ownership Permission Checker Pattern
+
+When a model belongs to a user, create a checker that accepts the loaded object and verifies ownership. Always pair with a router-level app permission checker.
+
+```python
+# myapp/permissions_checkers/own_post_permission_checker.py
+class OwnPostPermissionChecker(PermissionsChecker):
+    def __init__(self, post: Post) -> None:
+        self.post = post
+
+    async def async_raise_exception_if_not_valid(self, user: User | None) -> None:
+        if self.post.owner_id != user.id:
+            raise RestAPIException(
+                status_code=StatusCode.HTTP_403_FORBIDDEN,
+                message='You do not own this post.',
+                error_code='not_owner',
+            )
+
+# In the delete / update / run-action view:
+@classmethod
+async def check_permitted_before_object(cls, request, data, path) -> None:
+    pass  # router handles app-level permission
+
+@classmethod
+async def check_permitted_after_object(cls, request, obj, data, path) -> None:
+    await OwnPostPermissionChecker(obj).async_raise_exception_if_not_valid(await request.future_user)
 ```

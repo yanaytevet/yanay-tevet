@@ -1,5 +1,5 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
-import {AuthSchema, authView, loginView, logoutView, UserSchema} from '../../../generated-files/auth';
+import {AuthSchema, authView, loginView, logoutView, Permissions, UserSchema} from '../../../generated-files/auth';
 import {googleLoginView} from '../../../generated-files/auth';
 import {CredentialsSchema} from '../../../generated-files/auth';
 import {toObservable} from '@angular/core/rxjs-interop';
@@ -18,6 +18,11 @@ export class AuthenticationService {
   isLoggedIn = computed<boolean>(() => this.auth()?.is_authenticated ?? null);
   accessToken = computed<string>(() => this.auth()?.access_token ?? null);
   userInitials = computed<string>(() => this.user()?.initials?.toUpperCase() ?? null);
+
+  hasPermission(permission: Permissions): boolean {
+    const u = this.user();
+    return u?.is_admin || u?.permissions?.includes(permission) || false;
+  }
 
   private router = inject(Router);
   private webAuthnService = inject(WebAuthnAuthService);

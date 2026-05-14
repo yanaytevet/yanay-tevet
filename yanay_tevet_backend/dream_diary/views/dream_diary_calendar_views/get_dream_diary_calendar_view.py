@@ -3,7 +3,6 @@ from typing import Type
 from ninja import Schema, Query, Path
 
 from dream_diary.managers.dream_diary_entry_manager import DreamDiaryEntryManager
-from dream_diary.permissions_checkers.dream_diary_permission_checker import DreamDiaryPermissionChecker
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
 
@@ -19,7 +18,7 @@ class GetDreamDiaryCalendarView(SimpleGetAPIView):
 
     @classmethod
     async def check_permitted(cls, api_request: APIRequest, query: Query = None, path: Path = None) -> None:
-        await DreamDiaryPermissionChecker().async_raise_exception_if_not_valid(await api_request.future_user)
+        pass
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: Path = None) -> DreamDiaryCalendarSchema:

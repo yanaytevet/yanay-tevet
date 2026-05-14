@@ -1,17 +1,15 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {
-  createDreamDiaryEntryView,
   deleteDreamDiaryEntryView,
   getDreamDiaryCalendarView,
   paginateDreamDiaryEntriesView,
   uploadDreamDiaryEntryImageView,
   DreamDiaryEntrySchema,
 } from '../../generated-files/api/dream-diary';
-import {BasePageComponent} from '../common/components/base-page-component';
 import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
-import {featherBookOpen, featherDelete, featherUpload} from '@ng-icons/feather-icons';
+import {CreateDreamDiaryEntryDialogComponent} from './dialogs/create-dream-diary-entry-dialog/create-dream-diary-entry-dialog.component';
+import {featherDelete, featherUpload} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 
 interface CalendarDay {
@@ -28,8 +26,8 @@ const WEEK_COUNT = 4;
 @Component({
   selector: 'app-dream-diary',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({featherDelete, featherUpload, featherBookOpen})],
+  imports: [NgIcon],
+  providers: [provideIcons({featherDelete, featherUpload})],
   templateUrl: './dream-diary.component.html',
   styleUrl: './dream-diary.component.css',
 })
@@ -42,14 +40,9 @@ export class DreamDiaryComponent {
   currentPage = signal<number>(0);
   isLoadingEntries = signal<boolean>(false);
   isLoadingMore = signal<boolean>(false);
-  isCreating = signal<boolean>(false);
   loggedDates = signal<string[]>([]);
 
   hasMore = computed(() => this.entries().length < this.totalAmount());
-
-  titleCtrl = new FormControl<string>('');
-  textCtrl = new FormControl<string>('');
-  timeCtrl = new FormControl<string>(this.getTodayLocalDatetimeString());
 
   calendarDays = computed<CalendarDay[]>(() => {
     const logged = new Set(this.loggedDates());
@@ -72,7 +65,6 @@ export class DreamDiaryComponent {
   });
 
   readonly weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   readonly featherDelete = featherDelete;
   readonly featherUpload = featherUpload;
 
@@ -83,12 +75,6 @@ export class DreamDiaryComponent {
 
   private toDateString(d: Date): string {
     return d.toISOString().slice(0, 10);
-  }
-
-  private getTodayLocalDatetimeString(): string {
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
   }
 
   private async loadCalendar(): Promise<void> {
@@ -128,37 +114,14 @@ export class DreamDiaryComponent {
     }
   }
 
-  async createEntry(): Promise<void> {
-    const text = this.textCtrl.value?.trim();
-    if (!text) {
+  async openCreateDialog(): Promise<void> {
+    const entry = await this.dialogService.open(CreateDreamDiaryEntryDialogComponent);
+    if (!entry) {
       return;
     }
-    this.isCreating.set(true);
-    try {
-      const time = this.timeCtrl.value
-        ? new Date(this.timeCtrl.value).toISOString()
-        : new Date().toISOString();
-      const entry = await createDreamDiaryEntryView({
-        body: {
-          title: this.titleCtrl.value?.trim() || '',
-          text,
-          time,
-        },
-      });
-      this.entries.update(prev => [entry.data, ...prev]);
-      this.totalAmount.update(n => n + 1);
-      this.titleCtrl.setValue('');
-      this.textCtrl.setValue('');
-      this.timeCtrl.setValue(this.getTodayLocalDatetimeString());
-      await this.loadCalendar();
-    } catch (err) {
-      await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to create entry: ${err}`,
-      });
-    } finally {
-      this.isCreating.set(false);
-    }
+    this.entries.update(prev => [entry, ...prev]);
+    this.totalAmount.update(n => n + 1);
+    await this.loadCalendar();
   }
 
   async deleteEntry(entry: DreamDiaryEntrySchema): Promise<void> {

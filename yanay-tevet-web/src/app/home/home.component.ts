@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, computed, inject} from '@angular/core';
 import {RoutingService} from '../shared/services/routing.service';
 import {BasePageComponent} from '../common/components/base-page-component';
 import {RouterLink} from '@angular/router';
@@ -13,4 +13,6 @@ import {AuthenticationService} from '../common/authentication/authentication.ser
 export class HomeComponent extends BasePageComponent {
   readonly routingService = inject(RoutingService);
   readonly authService = inject(AuthenticationService);
+
+  readonly hasDreamDiary = computed(() => this.authService.hasPermission('dream_diary'));
 }

@@ -3,6 +3,7 @@ import {LayoutComponent} from './layout/layout.component';
 import {HomeComponent} from './home/home.component';
 import {loggedInGuard} from './common/authentication/logged-in.guard';
 import {notLoggedInGuard} from './common/authentication/not-logged-in.guard';
+import {hasPermissionGuard} from './common/authentication/has-permission.guard';
 
 export const routes: Routes = [
     // Login
@@ -82,7 +83,7 @@ export const routes: Routes = [
                 path: 'dream-diary',
                 loadComponent: () =>
                     import('./dream-diary/dream-diary.component').then(m => m.DreamDiaryComponent),
-                canActivate: [loggedInGuard],
+                canActivate: [hasPermissionGuard('dream_diary')],
             },
         ],
     },

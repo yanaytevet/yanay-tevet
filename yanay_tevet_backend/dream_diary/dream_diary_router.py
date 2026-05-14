@@ -1,4 +1,5 @@
 from common.django_utils.api_router_creator import ApiRouterCreator
+from dream_diary.permissions_checkers.dream_diary_permission_checker import DreamDiaryPermissionChecker
 from dream_diary.views.dream_diary_calendar_views.get_dream_diary_calendar_view import GetDreamDiaryCalendarView
 from dream_diary.views.dream_diary_entry_views.create_dream_diary_entry_view import CreateDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.delete_dream_diary_entry_view import DeleteDreamDiaryEntryView
@@ -6,7 +7,7 @@ from dream_diary.views.dream_diary_entry_views.paginate_dream_diary_entries_view
 from dream_diary.views.dream_diary_entry_views.update_dream_diary_entry_view import UpdateDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.upload_dream_diary_entry_image_view import UploadDreamDiaryEntryImageView
 
-api, router = ApiRouterCreator.create_api_and_router('dream-diary')
+api, router = ApiRouterCreator.create_api_and_router('dream-diary', DreamDiaryPermissionChecker())
 
 PaginateDreamDiaryEntriesView.register_get(router, '')
 CreateDreamDiaryEntryView.register_post(router)

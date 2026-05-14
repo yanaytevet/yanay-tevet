@@ -12,6 +12,28 @@
         </p>
       </div>
 
+      <!-- Apps the user has access to -->
+      @if (hasDreamDiary()) {
+        <div class="mb-8">
+          <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+            Your Apps
+          </div>
+          <div class="grid grid-cols-1 gap-3">
+            @if (hasDreamDiary()) {
+              <a
+                [routerLink]="routingService.getDreamDiaryUrl()"
+                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                <div class="text-3xl">🌙</div>
+                <div>
+                  <div class="text-[15px] font-semibold text-primary-500">Dream Diary</div>
+                  <div class="text-[13px] text-writing-minor">Log and explore your dreams</div>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
       <div class="mt-12 pt-6 border-t border-[rgba(0,0,0,0.1)] text-center">
         <p class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
           Learn more
