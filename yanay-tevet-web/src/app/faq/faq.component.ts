@@ -19,15 +19,15 @@ export class FaqComponent {
   readonly items: FaqItem[] = [
     {
       question: 'What is Yanay Tevet?',
-      answer: 'Yanay Tevet is a web application. Sign in to get started.',
+      answer: 'Yanay Tevet is a private platform. Access is by invitation only.',
     },
     {
-      question: 'Is Yanay Tevet free to use?',
-      answer: 'Yes — Yanay Tevet is currently in open beta and free to use.',
+      question: 'How do I get access?',
+      answer: `Reach out directly at ${SUPPORT_EMAIL} to request access.`,
     },
     {
-      question: 'How do I get support?',
-      answer: `If you have questions or run into any issues, reach out to us at ${SUPPORT_EMAIL}.`,
+      question: 'I already have an account — how do I get support?',
+      answer: `Sign in and contact us at ${SUPPORT_EMAIL}. We'll get back to you as soon as possible.`,
     },
   ];
 

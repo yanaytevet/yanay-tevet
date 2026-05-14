@@ -41,6 +41,7 @@ export const routes: Routes = [
                 path: 'upcoming-features',
                 loadComponent: () =>
                     import('./upcoming-features/upcoming-features.component').then(m => m.UpcomingFeaturesComponent),
+                canActivate: [loggedInGuard],
             },
             {
                 path: 'contact',

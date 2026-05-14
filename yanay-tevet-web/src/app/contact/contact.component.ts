@@ -9,5 +9,4 @@ import {SUPPORT_EMAIL} from '../common/constants/app-constants';
 })
 export class ContactComponent {
   readonly supportEmail = SUPPORT_EMAIL;
-  readonly discordUrl = 'https://discord.gg/ysUcCA2AR8';
 }
