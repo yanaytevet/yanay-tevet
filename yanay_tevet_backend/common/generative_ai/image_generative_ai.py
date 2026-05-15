@@ -18,8 +18,8 @@ class ImageGenerativeAI:
         cls,
         prompt: str,
         size: ImageSize = ImageSize.SQUARE_1024,
-        quality: ImageQuality = ImageQuality.STANDARD,
-        model: GenerativeAiModel = GenerativeAiModel.DALL_E_3,
+        quality: ImageQuality = ImageQuality.MEDIUM,
+        model: GenerativeAiModel = GenerativeAiModel.GPT_IMAGE_1,
     ) -> str:
         try:
             return await cls._async_generate_image(prompt, size, quality, model)
@@ -43,6 +43,5 @@ class ImageGenerativeAI:
             size=size.value,
             quality=quality.value,
             n=1,
-            response_format="b64_json",
         )
         return response.data[0].b64_json
