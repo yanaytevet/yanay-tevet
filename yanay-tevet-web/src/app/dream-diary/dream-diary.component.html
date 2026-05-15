@@ -64,8 +64,14 @@
                     <!-- Interpretation -->
                     @if (entry.interpretation) {
                         <div class="mt-4 p-3 rounded-lg bg-layer-1 border border-[rgba(0,0,0,0.06)]">
-                            <div class="text-[11px] font-semibold uppercase tracking-[0.08em] text-writing-minor mb-1.5">Dream Analysis</div>
-                            <p class="text-[13px] text-secondary-400 leading-relaxed whitespace-pre-wrap">{{ entry.interpretation }}</p>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.08em] text-writing-minor">Dream Analysis</div>
+                                <button type="button" class="text-[11px] text-writing-minor hover:text-primary-500 transition-colors" (click)="toggleInterpretation(entry.id)">
+                                    {{ interpretationExpanded()[entry.id] ? 'Show less' : 'Show more' }}
+                                </button>
+                            </div>
+                            <p class="text-[13px] text-secondary-400 leading-relaxed whitespace-pre-wrap"
+                               [class.line-clamp-1]="!interpretationExpanded()[entry.id]">{{ entry.interpretation }}</p>
                         </div>
                     }
 
