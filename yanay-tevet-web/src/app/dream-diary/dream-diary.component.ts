@@ -10,6 +10,7 @@ import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
 import {CreateDreamDiaryEntryDialogComponent} from './dialogs/create-dream-diary-entry-dialog/create-dream-diary-entry-dialog.component';
 import {EditDreamDiaryEntryDialogComponent} from './dialogs/edit-dream-diary-entry-dialog/edit-dream-diary-entry-dialog.component';
+import {ViewImageDialogComponent} from './dialogs/view-image-dialog/view-image-dialog.component';
 import {featherDelete, featherEdit, featherUpload} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 
@@ -19,6 +20,7 @@ interface CalendarDay {
   isLogged: boolean;
   isToday: boolean;
   isCurrentMonth: boolean;
+  isEmpty: boolean;
 }
 
 const PAGE_SIZE = 10;
@@ -50,18 +52,34 @@ export class DreamDiaryComponent {
     const logged = new Set(this.loggedDates());
     const today = new Date();
     const todayStr = this.toDateString(today);
+
+    // Earliest day in the 28-day window
+    const firstDay = new Date(today);
+    firstDay.setDate(today.getDate() - (WEEK_COUNT * 7 - 1));
+
+    // Walk back to the Sunday of that week so columns align with headers
+    const cursor = new Date(firstDay);
+    cursor.setDate(firstDay.getDate() - firstDay.getDay());
+
     const days: CalendarDay[] = [];
-    for (let i = WEEK_COUNT * 7 - 1; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const dateStr = this.toDateString(d);
+    while (cursor <= today) {
+      const dateStr = this.toDateString(cursor);
+      const inRange = cursor >= firstDay;
       days.push({
         date: dateStr,
-        dayOfMonth: d.getDate(),
-        isLogged: logged.has(dateStr),
+        dayOfMonth: cursor.getDate(),
+        isLogged: inRange && logged.has(dateStr),
         isToday: dateStr === todayStr,
-        isCurrentMonth: d.getMonth() === today.getMonth(),
+        isCurrentMonth: cursor.getMonth() === today.getMonth(),
+        isEmpty: !inRange,
       });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    // Pad the final row so the grid stays rectangular
+    while (days.length % 7 !== 0) {
+      const dateStr = this.toDateString(cursor);
+      days.push({date: dateStr, dayOfMonth: cursor.getDate(), isLogged: false, isToday: false, isCurrentMonth: false, isEmpty: true});
+      cursor.setDate(cursor.getDate() + 1);
     }
     return days;
   });
@@ -125,6 +143,10 @@ export class DreamDiaryComponent {
     this.entries.update(prev => [entry, ...prev]);
     this.totalAmount.update(n => n + 1);
     await this.loadCalendar();
+  }
+
+  async openImageDialog(imageUrl: string): Promise<void> {
+    await this.dialogService.open(ViewImageDialogComponent, imageUrl, 75);
   }
 
   async openEditDialog(entry: DreamDiaryEntrySchema): Promise<void> {

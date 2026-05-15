@@ -1,4 +1,4 @@
-<div class="page p-6 max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto w-full p-6">
 
     <!-- Calendar: last 4 weeks -->
     <div class="card mb-6 p-4">
@@ -12,17 +12,21 @@
         </div>
         <div class="grid grid-cols-7 gap-1">
             @for (day of calendarDays(); track day.date) {
-                <div
-                    class="aspect-square flex items-center justify-center rounded-full text-[13px] font-medium transition-colors"
-                    [class.bg-notion-blue]="day.isLogged"
-                    [class.text-white]="day.isLogged"
-                    [class.ring-2]="day.isToday"
-                    [class.ring-notion-blue]="day.isToday && !day.isLogged"
-                    [class.ring-white]="day.isToday && day.isLogged"
-                    [class.text-writing-minor]="!day.isLogged && !day.isCurrentMonth"
-                    [class.text-primary-500]="!day.isLogged && day.isCurrentMonth">
-                    {{ day.dayOfMonth }}
-                </div>
+                @if (day.isEmpty) {
+                    <div class="aspect-square"></div>
+                } @else {
+                    <div
+                        class="aspect-square flex items-center justify-center rounded-full text-[13px] font-medium transition-colors"
+                        [class.bg-notion-blue]="day.isLogged"
+                        [class.text-white]="day.isLogged"
+                        [class.ring-2]="day.isToday"
+                        [class.ring-notion-blue]="day.isToday && !day.isLogged"
+                        [class.ring-white]="day.isToday && day.isLogged"
+                        [class.text-writing-minor]="!day.isLogged && !day.isCurrentMonth"
+                        [class.text-primary-500]="!day.isLogged && day.isCurrentMonth">
+                        {{ day.dayOfMonth }}
+                    </div>
+                }
             }
         </div>
     </div>
@@ -48,51 +52,49 @@
                 <!-- Content section -->
                 <div class="p-4">
 
-                    <!-- Header row: title + time + action buttons -->
-                    <div class="flex items-start justify-between gap-3 mb-3">
-                        <div class="flex-1 min-w-0">
-                            @if (entry.title) {
-                                <div class="text-[16px] font-bold text-primary-500 truncate">{{ entry.title }}</div>
-                            }
-                            <div class="text-[12px] text-writing-minor mt-0.5">{{ formatTime(entry.time) }}</div>
-                        </div>
-                        <div class="flex items-center gap-1 shrink-0">
-                            <button
-                                type="button"
-                                class="icon-btn"
-                                title="Upload image"
-                                [disabled]="uploadingId() === entry.id"
-                                (click)="uploadImage(entry)">
-                                @if (uploadingId() === entry.id) {
-                                    <span class="text-[11px] text-writing-minor font-medium">Uploading...</span>
-                                } @else {
-                                    <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
-                                }
-                            </button>
-                            <button
-                                type="button"
-                                class="icon-btn"
-                                title="Edit entry"
-                                (click)="openEditDialog(entry)">
-                                <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                            </button>
-                            <button
-                                type="button"
-                                class="icon-btn"
-                                title="Delete entry"
-                                (click)="deleteEntry(entry)">
-                                <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Title + time -->
+                    @if (entry.title) {
+                        <div class="text-[16px] font-bold text-primary-500 truncate mb-0.5">{{ entry.title }}</div>
+                    }
+                    <div class="text-[12px] text-writing-minor mb-3">{{ formatTime(entry.time) }}</div>
 
                     <!-- Dream text -->
                     <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+
+                    <!-- Action buttons -->
+                    <div class="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)]">
+                        <button
+                            type="button"
+                            class="icon-btn"
+                            title="Upload image"
+                            [disabled]="uploadingId() === entry.id"
+                            (click)="uploadImage(entry)">
+                            @if (uploadingId() === entry.id) {
+                                <span class="text-[11px] text-writing-minor font-medium">Uploading...</span>
+                            } @else {
+                                <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
+                            }
+                        </button>
+                        <button
+                            type="button"
+                            class="icon-btn"
+                            title="Edit entry"
+                            (click)="openEditDialog(entry)">
+                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                        </button>
+                        <button
+                            type="button"
+                            class="icon-btn"
+                            title="Delete entry"
+                            (click)="deleteEntry(entry)">
+                            <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Image below content, fading in from white -->
+                <!-- Image below content, fading in from white, clickable -->
                 @if (entry.image_url) {
-                    <div class="relative">
+                    <div class="relative cursor-pointer" (click)="openImageDialog(entry.image_url)">
                         <div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
                         <img
                             [src]="entry.image_url"
@@ -110,7 +112,7 @@
         }
 
         @if (hasMore()) {
-            <div class="flex justify-center mt-4">
+            <div class="flex justify-center mt-4 mb-4">
                 <button
                     type="button"
                     class="btn btn-secondary"

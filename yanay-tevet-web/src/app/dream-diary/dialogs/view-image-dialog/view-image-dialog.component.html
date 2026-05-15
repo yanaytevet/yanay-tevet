@@ -1,0 +1,12 @@
+<div class="relative rounded-xl overflow-hidden bg-black">
+    <button
+        type="button"
+        class="absolute top-3 right-3 z-10 flex items-center justify-center w-8 h-8 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        (click)="emitClose(null)">
+        <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+    </button>
+    <img
+        [src]="data"
+        alt="Dream image"
+        class="w-full object-contain max-h-[80vh]" />
+</div>
