@@ -18,6 +18,7 @@ class DreamDiaryEntry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dream_diary_entries')
     title = models.CharField(max_length=255, blank=True, default='')
     text = models.TextField()
+    interpretation = models.TextField(blank=True, default='')
     time = models.DateTimeField(default=timezone.now)
     image_url = models.CharField(max_length=1024, blank=True, null=True)
 

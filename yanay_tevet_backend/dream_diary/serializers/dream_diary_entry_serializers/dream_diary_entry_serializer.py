@@ -11,6 +11,7 @@ class DreamDiaryEntrySchema(Schema):
     id: int
     title: str
     text: str
+    interpretation: str
     time: datetime
     image_url: Optional[str]
 
@@ -21,6 +22,7 @@ class DreamDiaryEntrySerializer(Serializer[DreamDiaryEntrySchema]):
             id=obj.id,
             title=obj.title,
             text=obj.text,
+            interpretation=obj.interpretation,
             time=obj.time,
             image_url=obj.image_url,
         )

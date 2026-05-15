@@ -6,11 +6,17 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.utils import timezone
 from ninja import UploadedFile
+from pydantic import BaseModel
 
 from common.generative_ai.image_generative_ai import ImageGenerativeAI
 from common.generative_ai.text_generative_ai import TextGenerativeAI
 from dream_diary.models.dream_diary_entry import DreamDiaryEntry
 from users.models import User
+
+
+class DreamAnalysisSchema(BaseModel):
+    title: str
+    interpretation: str
 
 
 class DreamDiaryEntryManager:
@@ -34,13 +40,22 @@ class DreamDiaryEntryManager:
         entry.image_url = res['secure_url']
         await entry.asave()
 
-    async def generate_title(self, entry: DreamDiaryEntry) -> None:
+    async def generate_title_and_interpretation(self, entry: DreamDiaryEntry) -> None:
         prompt = (
-            f"Generate a short, evocative title (5 words or fewer) for this dream journal entry. "
-            f"Return only the title, no quotes, no explanation.\n\nDream: {entry.text}"
+            f"Analyze this dream journal entry and return a JSON object with two fields:\n"
+            f"- title: a short, evocative title (5 words or fewer)\n"
+            f"- interpretation: a thoughtful interpretation of the dream drawing on multiple psychological "
+            f"theories (e.g. Freudian symbolism, Jungian archetypes, cognitive theories, emotional processing). "
+            f"Keep the interpretation to 2-4 paragraphs.\n\n"
+            f"Dream: {entry.text}"
         )
-        title = await TextGenerativeAI.generate_text(prompt, system_prompt="You are a poetic dream journal assistant.")
-        entry.title = title.strip().strip('"').strip("'")
+        result = await TextGenerativeAI.generate_schema(
+            prompt,
+            DreamAnalysisSchema,
+            system_prompt="You are a knowledgeable dream analyst with expertise in psychology and psychoanalysis.",
+        )
+        entry.title = result.title
+        entry.interpretation = result.interpretation
         await entry.asave()
 
     async def generate_image(self, entry: DreamDiaryEntry) -> None:

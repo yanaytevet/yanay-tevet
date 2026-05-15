@@ -45,4 +45,4 @@ class CreateDreamDiaryEntryView(CreateItemAPIView):
     @classmethod
     async def run_after_creation(cls, request: APIRequest, obj: DreamDiaryEntry, data: Schema, path: Path) -> None:
         user = await request.future_user
-        await DreamDiaryEntryManager(user).generate_title(obj)
+        await DreamDiaryEntryManager(user).generate_title_and_interpretation(obj)

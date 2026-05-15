@@ -43,4 +43,4 @@ class UpdateDreamDiaryEntryView(UpdateItemByIdAPIView):
     async def run_after_update(cls, request: APIRequest, obj: DreamDiaryEntry, data: Schema, path: Path) -> None:
         if data.text is not None:
             user = await request.future_user
-            await DreamDiaryEntryManager(user).generate_title(obj)
+            await DreamDiaryEntryManager(user).generate_title_and_interpretation(obj)
