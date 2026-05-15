@@ -33,6 +33,7 @@ DEBUG = os.environ.get("DEBUG", 'true').lower() == 'true'
 FRONTEND_URL = os.environ.get("FRONTEND_URL", 'http://localhost:4200')
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+CHATGPT_API_KEY = os.environ.get("CHATGPT_API_KEY")
 WEBAUTHN_RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Yanay Tevet")
 WEBAUTHN_ORIGIN = FRONTEND_URL
 WEBAUTHN_RP_ID = FRONTEND_URL.replace('https://', '').replace('http://', '').replace(':4200', '')

@@ -97,10 +97,6 @@ export type PaginationOutputDreamDiaryEntrySchema = {
  */
 export type CreateDreamDiaryEntrySchema = {
     /**
-     * Title
-     */
-    title?: string | null;
-    /**
      * Text
      */
     text: string;
@@ -124,10 +120,6 @@ export type ItemByIdPath = {
  * UpdateDreamDiaryEntrySchema
  */
 export type UpdateDreamDiaryEntrySchema = {
-    /**
-     * Title
-     */
-    title?: string | null;
     /**
      * Text
      */
@@ -265,6 +257,27 @@ export type UploadDreamDiaryEntryImageViewResponses = {
 };
 
 export type UploadDreamDiaryEntryImageViewResponse = UploadDreamDiaryEntryImageViewResponses[keyof UploadDreamDiaryEntryImageViewResponses];
+
+export type GenerateDreamDiaryEntryImageViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/dream-diary/{object_id}/generate-image/';
+};
+
+export type GenerateDreamDiaryEntryImageViewResponses = {
+    /**
+     * OK
+     */
+    200: DreamDiaryEntrySchema;
+};
+
+export type GenerateDreamDiaryEntryImageViewResponse = GenerateDreamDiaryEntryImageViewResponses[keyof GenerateDreamDiaryEntryImageViewResponses];
 
 export type GetDreamDiaryCalendarViewData = {
     body?: never;

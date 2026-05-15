@@ -1,6 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {
   deleteDreamDiaryEntryView,
+  generateDreamDiaryEntryImageView,
   getDreamDiaryCalendarView,
   paginateDreamDiaryEntriesView,
   uploadDreamDiaryEntryImageView,
@@ -11,7 +12,7 @@ import {FilesUploadService} from '../common/services/files-upload.service';
 import {CreateDreamDiaryEntryDialogComponent} from './dialogs/create-dream-diary-entry-dialog/create-dream-diary-entry-dialog.component';
 import {EditDreamDiaryEntryDialogComponent} from './dialogs/edit-dream-diary-entry-dialog/edit-dream-diary-entry-dialog.component';
 import {ViewImageDialogComponent} from './dialogs/view-image-dialog/view-image-dialog.component';
-import {featherDelete, featherEdit, featherUpload} from '@ng-icons/feather-icons';
+import {featherDelete, featherEdit, featherUpload, featherZap} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 
 interface CalendarDay {
@@ -30,7 +31,7 @@ const WEEK_COUNT = 4;
   selector: 'app-dream-diary',
   standalone: true,
   imports: [NgIcon],
-  providers: [provideIcons({featherDelete, featherUpload, featherEdit})],
+  providers: [provideIcons({featherDelete, featherUpload, featherEdit, featherZap})],
   templateUrl: './dream-diary.component.html',
   styleUrl: './dream-diary.component.css',
 })
@@ -45,6 +46,7 @@ export class DreamDiaryComponent {
   isLoadingMore = signal<boolean>(false);
   loggedDates = signal<string[]>([]);
   uploadingId = signal<number | null>(null);
+  generatingImageId = signal<number | null>(null);
 
   hasMore = computed(() => this.entries().length < this.totalAmount());
 
@@ -88,6 +90,7 @@ export class DreamDiaryComponent {
   readonly featherDelete = featherDelete;
   readonly featherUpload = featherUpload;
   readonly featherEdit = featherEdit;
+  readonly featherZap = featherZap;
 
   constructor() {
     this.loadCalendar();
@@ -203,6 +206,23 @@ export class DreamDiaryComponent {
       });
     } finally {
       this.uploadingId.set(null);
+    }
+  }
+
+  async generateImage(entry: DreamDiaryEntrySchema): Promise<void> {
+    this.generatingImageId.set(entry.id);
+    try {
+      const res = await generateDreamDiaryEntryImageView({
+        path: {object_id: entry.id},
+      });
+      this.entries.update(prev => prev.map(e => (e.id === entry.id ? res.data : e)));
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({
+        title: 'Error',
+        text: `Failed to generate image: ${err}`,
+      });
+    } finally {
+      this.generatingImageId.set(null);
     }
   }
 

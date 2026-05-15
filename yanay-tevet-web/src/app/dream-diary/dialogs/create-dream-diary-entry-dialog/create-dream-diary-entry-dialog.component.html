@@ -2,14 +2,6 @@
     <h2>New Dream Entry</h2>
 
     <div class="mb-3 flex flex-col gap-1">
-        <span class="input-label">Title (optional)</span>
-        <input
-            class="main-input w-full"
-            placeholder="Give your dream a title..."
-            [formControl]="titleCtrl" />
-    </div>
-
-    <div class="mb-3 flex flex-col gap-1">
         <span class="input-label">Dream *</span>
         <textarea
             class="main-input w-full"
@@ -30,7 +22,7 @@
         <span class="flex-1"></span>
         <button type="button" class="btn cancel-btn" (click)="emitClose(null)">Cancel</button>
         <app-confirmation-button
-            [disabled]="!canSave"
+            [disabled]="!canSave()"
             [text]="isSaving ? 'Saving...' : 'Save Dream'"
             (clicked)="onConfirm()">
         </app-confirmation-button>

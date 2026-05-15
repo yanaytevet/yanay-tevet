@@ -66,6 +66,18 @@
                         <button
                             type="button"
                             class="icon-btn"
+                            title="Generate image with AI"
+                            [disabled]="generatingImageId() === entry.id"
+                            (click)="generateImage(entry)">
+                            @if (generatingImageId() === entry.id) {
+                                <span class="text-[11px] text-writing-minor font-medium">Generating...</span>
+                            } @else {
+                                <ng-icon [svg]="featherZap" class="h-4 w-4"></ng-icon>
+                            }
+                        </button>
+                        <button
+                            type="button"
+                            class="icon-btn"
                             title="Upload image"
                             [disabled]="uploadingId() === entry.id"
                             (click)="uploadImage(entry)">

@@ -3,6 +3,8 @@ from typing import Type, Optional
 
 from django.db.models import Model
 from ninja import Schema, Path
+
+from dream_diary.managers.dream_diary_entry_manager import DreamDiaryEntryManager
 from dream_diary.models.dream_diary_entry import DreamDiaryEntry
 from dream_diary.serializers.dream_diary_entry_serializers.dream_diary_entry_serializer import DreamDiaryEntrySerializer
 from common.simple_api.api_request import APIRequest
@@ -14,7 +16,6 @@ from common.simple_api.views.create_views.create_item_api_view import CreateItem
 class CreateDreamDiaryEntrySchema(Schema):
     model_config = hidden_fields_config('user_id')
     user_id: Optional[int] = None
-    title: Optional[str] = ''
     text: str
     time: datetime
 
@@ -40,3 +41,8 @@ class CreateDreamDiaryEntryView(CreateItemAPIView):
     async def modify_creation_data(cls, request: APIRequest, data: CreateDreamDiaryEntrySchema, path: Path) -> CreateDreamDiaryEntrySchema:
         data.user_id = (await request.future_user).id
         return data
+
+    @classmethod
+    async def run_after_creation(cls, request: APIRequest, obj: DreamDiaryEntry, data: Schema, path: Path) -> None:
+        user = await request.future_user
+        await DreamDiaryEntryManager(user).generate_title(obj)
