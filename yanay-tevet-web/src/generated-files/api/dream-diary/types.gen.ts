@@ -57,6 +57,10 @@ export type DreamDiaryEntrySchema = {
      */
     text: string;
     /**
+     * Interpretation
+     */
+    interpretation: string;
+    /**
      * Time
      */
     time: string;
@@ -259,7 +263,7 @@ export type UploadDreamDiaryEntryImageViewResponses = {
 export type UploadDreamDiaryEntryImageViewResponse = UploadDreamDiaryEntryImageViewResponses[keyof UploadDreamDiaryEntryImageViewResponses];
 
 export type GenerateDreamDiaryEntryImageViewData = {
-    body?: EmptySchema | null;
+    body: EmptySchema;
     path: {
         /**
          * Object Id

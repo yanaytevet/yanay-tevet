@@ -61,6 +61,14 @@
                     <!-- Dream text -->
                     <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
 
+                    <!-- Interpretation -->
+                    @if (entry.interpretation) {
+                        <div class="mt-4 p-3 rounded-lg bg-layer-1 border border-[rgba(0,0,0,0.06)]">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.08em] text-writing-minor mb-1.5">Dream Analysis</div>
+                            <p class="text-[13px] text-secondary-400 leading-relaxed whitespace-pre-wrap">{{ entry.interpretation }}</p>
+                        </div>
+                    }
+
                     <!-- Action buttons -->
                     <div class="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)]">
                         <button
