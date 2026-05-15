@@ -43,60 +43,63 @@
 
     @if (!isLoadingEntries()) {
         @for (entry of entries(); track entry.id) {
-            <div class="card mb-4 p-4">
+            <div class="card mb-4 overflow-hidden">
 
-                <!-- Header row: meta + image thumbnail + action buttons -->
-                <div class="flex items-start gap-3 mb-3">
+                <!-- Content section -->
+                <div class="p-4">
 
-                    <!-- Left: title + time -->
-                    <div class="flex-1 min-w-0">
-                        @if (entry.title) {
-                            <div class="text-[16px] font-bold text-primary-500 truncate">{{ entry.title }}</div>
-                        }
-                        <div class="text-[12px] text-writing-minor mt-0.5">{{ formatTime(entry.time) }}</div>
+                    <!-- Header row: title + time + action buttons -->
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div class="flex-1 min-w-0">
+                            @if (entry.title) {
+                                <div class="text-[16px] font-bold text-primary-500 truncate">{{ entry.title }}</div>
+                            }
+                            <div class="text-[12px] text-writing-minor mt-0.5">{{ formatTime(entry.time) }}</div>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                title="Upload image"
+                                [disabled]="uploadingId() === entry.id"
+                                (click)="uploadImage(entry)">
+                                @if (uploadingId() === entry.id) {
+                                    <span class="text-[11px] text-writing-minor font-medium">Uploading...</span>
+                                } @else {
+                                    <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
+                                }
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                title="Edit entry"
+                                (click)="openEditDialog(entry)">
+                                <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                title="Delete entry"
+                                (click)="deleteEntry(entry)">
+                                <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Center: image thumbnail (secondary) -->
-                    @if (entry.image_url) {
+                    <!-- Dream text -->
+                    <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+                </div>
+
+                <!-- Image below content, fading in from white -->
+                @if (entry.image_url) {
+                    <div class="relative">
+                        <div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
                         <img
                             [src]="entry.image_url"
                             alt="Dream image"
-                            class="w-20 h-20 object-cover rounded-lg shrink-0 border border-[rgba(0,0,0,0.1)]" />
-                    }
-
-                    <!-- Right: action buttons -->
-                    <div class="flex items-center gap-1 shrink-0">
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Upload image"
-                            [disabled]="uploadingId() === entry.id"
-                            (click)="uploadImage(entry)">
-                            @if (uploadingId() === entry.id) {
-                                <span class="text-[11px] text-writing-minor font-medium">Uploading...</span>
-                            } @else {
-                                <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
-                            }
-                        </button>
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Edit entry"
-                            (click)="openEditDialog(entry)">
-                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                        </button>
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Delete entry"
-                            (click)="deleteEntry(entry)">
-                            <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
-                        </button>
+                            class="w-full object-cover max-h-64" />
                     </div>
-                </div>
-
-                <!-- Dream text (primary content) -->
-                <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+                }
             </div>
         }
 

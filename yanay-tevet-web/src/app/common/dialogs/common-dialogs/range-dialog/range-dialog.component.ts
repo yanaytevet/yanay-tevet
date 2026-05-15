@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
@@ -34,10 +34,7 @@ export class RangeDialogComponent extends BaseDialogComponent<
   RangeDialogOutput | null
 > implements OnInit {
   form: FormGroup;
-
-  constructor(private fb: FormBuilder) {
-    super();
-  }
+  readonly fb = inject(FormBuilder)
 
   ngOnInit(): void {
     this.form = this.fb.group({

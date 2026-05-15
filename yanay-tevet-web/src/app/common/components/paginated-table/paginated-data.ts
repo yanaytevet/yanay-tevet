@@ -5,4 +5,4 @@ export interface PaginatedData<T> {
     page: number;
     page_size: number;
     data: T[];
-};
+}

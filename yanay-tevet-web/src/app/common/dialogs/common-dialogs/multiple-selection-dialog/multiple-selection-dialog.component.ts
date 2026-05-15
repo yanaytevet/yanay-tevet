@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, inject, OnInit} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
 import {AbstractControl, FormArray, FormBuilder, FormGroup, ReactiveFormsModule} from '@angular/forms';
 
@@ -37,10 +37,7 @@ export class MultipleSelectionDialogComponent extends BaseDialogComponent<
   filterText = '';
   filteredOptions: MultipleSelectionOption[] = [];
   protected readonly checkIcon = bootstrapCheck;
-
-  constructor(private fb: FormBuilder) {
-    super();
-  }
+  readonly fb = inject(FormBuilder)
 
   ngOnInit(): void {
     const optionsArray = this.fb.array(

@@ -2,8 +2,8 @@ import {Component, effect, ElementRef, HostListener, input, output, signal, View
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {PaginatedTableHandler} from '../../paginated-table/paginated-table-handler';
-import {AdminUsersPaginationViewData, ShortUserOutput} from '../../../../../generated-files/api/users/types.gen';
-import {adminUsersPaginationView} from '../../../../../generated-files/api/users/sdk.gen';
+import {AdminUsersPaginationViewData, ShortUserOutput} from '../../../../../generated-files/api/users';
+import {adminUsersPaginationView} from '../../../../../generated-files/api/users';
 
 @Component({
   selector: 'app-admin-all-users-autocomplete',

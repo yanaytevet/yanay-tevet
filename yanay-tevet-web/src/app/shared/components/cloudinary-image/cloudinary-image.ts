@@ -1,4 +1,4 @@
-import {Component, computed, inject, input, output} from '@angular/core';
+import {Component, computed, inject, input} from '@angular/core';
 import {CloudinaryService} from '../../services/cloudinary.service';
 
 @Component({

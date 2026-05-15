@@ -6,7 +6,7 @@ import {
     webAuthnLoginVerifyView,
     webAuthnRegisterOptionsView,
     webAuthnRegisterVerifyView,
-} from '../../../generated-files/auth/sdk.gen';
+} from '../../../generated-files/auth';
 import type {
     AuthSchema,
     CredentialsSchema,
@@ -14,7 +14,7 @@ import type {
     LoginVerifyInput,
     RegistrationOptionsSchema,
     RegistrationVerifyInput,
-} from '../../../generated-files/auth/types.gen';
+} from '../../../generated-files/auth';
 
 interface WebAuthnUser {
     id: string;

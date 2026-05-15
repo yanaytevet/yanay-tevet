@@ -9,18 +9,18 @@
   cursor: pointer;
   border: 1px solid rgba(0,0,0,0.1);
   background-color: #ffffff;
-  box-shadow: rgba(0,0,0,0.04) 0px 4px 18px, rgba(0,0,0,0.027) 0px 2.025px 7.84688px, rgba(0,0,0,0.02) 0px 0.8px 2.925px, rgba(0,0,0,0.01) 0px 0.175px 1.04062px;
+  box-shadow: rgba(0,0,0,0.04) 0 4px 18px, rgba(0,0,0,0.027) 0 2.025px 7.84688px, rgba(0,0,0,0.02) 0 0.8px 2.925px, rgba(0,0,0,0.01) 0 0.175px 1.04062px;
 }
 
 :global(.dark) .entity-card {
   border-color: rgba(255,255,255,0.08);
   background-color: #31302e;
-  box-shadow: rgba(0,0,0,0.25) 0px 4px 18px, rgba(0,0,0,0.18) 0px 2.025px 7.84688px, rgba(0,0,0,0.12) 0px 0.8px 2.925px, rgba(0,0,0,0.06) 0px 0.175px 1.04062px;
+  box-shadow: rgba(0,0,0,0.25) 0 4px 18px, rgba(0,0,0,0.18) 0 2.025px 7.84688px, rgba(0,0,0,0.12) 0 0.8px 2.925px, rgba(0,0,0,0.06) 0 0.175px 1.04062px;
 }
 
 .entity-card:hover {
   transform: translateY(-2px);
-  box-shadow: rgba(0,0,0,0.01) 0px 1px 3px, rgba(0,0,0,0.02) 0px 3px 7px, rgba(0,0,0,0.02) 0px 7px 15px, rgba(0,0,0,0.04) 0px 14px 28px, rgba(0,0,0,0.05) 0px 23px 52px;
+  box-shadow: rgba(0,0,0,0.01) 0 1px 3px, rgba(0,0,0,0.02) 0 3px 7px, rgba(0,0,0,0.02) 0 7px 15px, rgba(0,0,0,0.04) 0 14px 28px, rgba(0,0,0,0.05) 0 23px 52px;
 }
 
 .image-with-overlay {
