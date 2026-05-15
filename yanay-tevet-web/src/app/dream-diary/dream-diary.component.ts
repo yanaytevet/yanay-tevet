@@ -213,6 +213,7 @@ export class DreamDiaryComponent {
     this.generatingImageId.set(entry.id);
     try {
       const res = await generateDreamDiaryEntryImageView({
+        body: {},
         path: {object_id: entry.id},
       });
       this.entries.update(prev => prev.map(e => (e.id === entry.id ? res.data : e)));
