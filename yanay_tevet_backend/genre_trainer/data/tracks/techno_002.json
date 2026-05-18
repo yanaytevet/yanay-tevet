@@ -1,0 +1,113 @@
+{
+  "id": "techno_002",
+  "genre": "techno",
+  "bpm": 138,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.065,
+          "octaves": 9,
+          "envelope": {"attack": 0.001, "decay": 0.48, "sustain": 0.01, "release": 1.5}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "snare",
+      "role": "snare",
+      "volume": -6,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.18, "sustain": 0, "release": 0.06}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 0.4}, "wet": 0.25}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -15,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 480,
+          "envelope": {"attack": 0.001, "decay": 0.04, "release": 0.02},
+          "harmonicity": 4.5,
+          "modulationIndex": 28,
+          "resonance": 4600,
+          "octaves": 1.5
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -7,
+      "note_duration": "4n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.03, "decay": 0.35, "sustain": 0.35, "release": 0.3},
+          "filterEnvelope": {
+            "attack": 0.03,
+            "decay": 0.45,
+            "sustain": 0.15,
+            "release": 0.3,
+            "baseFrequency": 90,
+            "octaves": 2.2
+          }
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["E1",null,null,null,null,null,null,null,"D1",null,null,null,null,null,null,null,"E1",null,null,null,null,null,null,null,"B0",null,null,null,null,null,null,null]
+      }
+    },
+    {
+      "id": "synth_pad",
+      "role": "lead",
+      "volume": -20,
+      "note_duration": "2n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.3, "decay": 0.4, "sustain": 0.5, "release": 0.6}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 3.5, "preDelay": 0.04}, "wet": 0.7},
+        {"type": "Chorus", "options": {"frequency": 0.8, "delayTime": 4, "depth": 0.6}, "wet": 0.4}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["E3",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,"D3",null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]
+      }
+    }
+  ]
+}

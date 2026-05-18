@@ -12,6 +12,24 @@
         </p>
       </div>
 
+      <!-- Public Apps -->
+      <div class="mb-8">
+        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+          Public Apps
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <a
+            [routerLink]="routingService.getGenreTrainerUrl()"
+            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+            <div class="text-3xl">🎧</div>
+            <div>
+              <div class="text-[15px] font-semibold text-primary-500">Genre Trainer</div>
+              <div class="text-[13px] text-writing-minor">Train your ear on electronic music genres</div>
+            </div>
+          </a>
+        </div>
+      </div>
+
       <!-- Apps the user has access to -->
       @if (hasDreamDiary()) {
         <div class="mb-8">
@@ -81,6 +99,21 @@
       <div class="flex items-center gap-3 mt-10">
         <a routerLink="/login" class="cta-primary">Sign in</a>
         <a routerLink="/faq" class="cta-secondary">Learn more</a>
+      </div>
+
+      <div class="mt-12 w-full max-w-sm">
+        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3 text-left">
+          Try for free
+        </div>
+        <a
+          [routerLink]="routingService.getGenreTrainerUrl()"
+          class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow text-left">
+          <div class="text-3xl">🎧</div>
+          <div>
+            <div class="text-[15px] font-semibold text-primary-500">Genre Trainer</div>
+            <div class="text-[13px] text-writing-minor">Train your ear on electronic music genres</div>
+          </div>
+        </a>
       </div>
 
     </div>

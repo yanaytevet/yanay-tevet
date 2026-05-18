@@ -1,0 +1,66 @@
+{
+  "id": "hightek_003",
+  "genre": "hightek",
+  "bpm": 180,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 2,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.018,
+          "octaves": 17,
+          "envelope": {"attack": 0.001, "decay": 0.15, "sustain": 0.01, "release": 0.5}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.85}, "wet": 0.65}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -10,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 900,
+          "envelope": {"attack": 0.001, "decay": 0.01, "release": 0.006},
+          "harmonicity": 10.0,
+          "modulationIndex": 65,
+          "resonance": 8000,
+          "octaves": 2.2
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "snare",
+      "role": "snare",
+      "volume": -9,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.06, "sustain": 0, "release": 0.02}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,"C2",null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null]
+      }
+    }
+  ]
+}

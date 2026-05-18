@@ -1,0 +1,116 @@
+{
+  "id": "goa_002",
+  "genre": "goa",
+  "bpm": 142,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": -1,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.07,
+          "octaves": 9,
+          "envelope": {"attack": 0.001, "decay": 0.45, "sustain": 0.01, "release": 1.5}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -16,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 450,
+          "envelope": {"attack": 0.001, "decay": 0.03, "release": 0.02},
+          "harmonicity": 5.0,
+          "modulationIndex": 32,
+          "resonance": 4500,
+          "octaves": 1.3
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -7,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.01, "decay": 0.15, "sustain": 0.5, "release": 0.3},
+          "filterEnvelope": {
+            "attack": 0.01,
+            "decay": 0.2,
+            "sustain": 0.45,
+            "release": 0.3,
+            "baseFrequency": 160,
+            "octaves": 3
+          }
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["D1",null,"D1",null,"F1",null,"D1",null,"C1",null,"D1",null,"A1",null,"G1",null,"D1",null,"D1",null,"F1",null,"A1",null,"G1",null,"F1",null,"D1",null,"C1",null]
+      }
+    },
+    {
+      "id": "lead",
+      "role": "lead",
+      "volume": -11,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "triangle"},
+          "envelope": {"attack": 0.01, "decay": 0.4, "sustain": 0.3, "release": 0.6}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 2.5, "preDelay": 0.02}, "wet": 0.55},
+        {"type": "Chorus", "options": {"frequency": 1.5, "delayTime": 3.5, "depth": 0.7}, "wet": 0.3}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["D5",null,null,"F5",null,null,"A5",null,"G5",null,null,null,"F5",null,"D5",null,"D5",null,null,"F5",null,"G5",null,"A5",null,"C6",null,null,"A5",null,"G5",null]
+      }
+    },
+    {
+      "id": "arp",
+      "role": "arp",
+      "volume": -18,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "sine"},
+          "envelope": {"attack": 0.005, "decay": 0.15, "sustain": 0.0, "release": 0.2}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 3.0, "preDelay": 0.03}, "wet": 0.7},
+        {"type": "FeedbackDelay", "options": {"delayTime": "8n.", "feedback": 0.35}, "wet": 0.3}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["D6",null,"A5",null,"F5",null,"D5",null,"D6",null,"A5",null,"C6",null,"A5",null,"D6",null,"A5",null,"F5",null,"D5",null,"G5",null,"F5",null,"D5",null,"A4",null]
+      }
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "drum_and_bass_001",
+  "genre": "drum_and_bass",
+  "bpm": 174,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.06,
+          "octaves": 8,
+          "envelope": {"attack": 0.001, "decay": 0.3, "sustain": 0.01, "release": 1.0}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,null,null,null,null,null,"C1",null,null,null,null,null,null,"C1",null,null,"C1",null,null,null,null,null,"C1",null,null,null,null,null,null]
+      }
+    },
+    {
+      "id": "snare",
+      "role": "snare",
+      "volume": -3,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.14, "sustain": 0, "release": 0.08}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 0.6}, "wet": 0.25}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -14,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 600,
+          "envelope": {"attack": 0.001, "decay": 0.04, "release": 0.02},
+          "harmonicity": 4.0,
+          "modulationIndex": 22,
+          "resonance": 5000,
+          "octaves": 1.2
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "reese_bass",
+      "role": "bass",
+      "volume": -5,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "AMSynth",
+        "options": {
+          "harmonicity": 0.5,
+          "envelope": {"attack": 0.01, "decay": 0.2, "sustain": 0.8, "release": 0.2},
+          "modulationEnvelope": {"attack": 0.3, "decay": 0.2, "sustain": 0.9, "release": 0.2}
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.3}, "wet": 0.4},
+        {"type": "Filter", "options": {"type": "lowpass", "frequency": 900, "Q": 3}, "wet": 1.0}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["A1",null,"A1",null,"G1","A1",null,null,"E1","A1",null,"G1","A1",null,null,null,"A1",null,"C2","A1","G1",null,"A1",null,"E1",null,"D1","E1","G1","A1",null,null]
+      }
+    }
+  ]
+}

@@ -119,4 +119,13 @@ export class RoutingService {
   navigateToDreamDiary(): Promise<boolean> {
     return this.router.navigateByUrl(this.getDreamDiaryUrl());
   }
+
+  // Genre Trainer
+  getGenreTrainerUrl(): UrlTree {
+    return this.router.createUrlTree(['/genre-trainer']);
+  }
+
+  navigateToGenreTrainer(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getGenreTrainerUrl());
+  }
 }

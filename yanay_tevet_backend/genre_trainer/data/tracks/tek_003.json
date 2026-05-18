@@ -1,0 +1,70 @@
+{
+  "id": "tek_003",
+  "genre": "tek",
+  "bpm": 158,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 2,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.025,
+          "octaves": 15,
+          "envelope": {"attack": 0.001, "decay": 0.22, "sustain": 0.01, "release": 0.75}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.7}, "wet": 0.55}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -12,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 750,
+          "envelope": {"attack": 0.001, "decay": 0.015, "release": 0.01},
+          "harmonicity": 8.0,
+          "modulationIndex": 55,
+          "resonance": 7000,
+          "octaves": 2.0
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "percussion",
+      "role": "snare",
+      "volume": -10,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 200,
+          "envelope": {"attack": 0.001, "decay": 0.12, "release": 0.05},
+          "harmonicity": 2.0,
+          "modulationIndex": 10,
+          "resonance": 2000,
+          "octaves": 1.0
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C3",null,null,null,null,null,null,null,"C3",null,null,null,null,null,null,null,"C3",null,null,null,null,null,null,null,"C3",null,null,null]
+      }
+    }
+  ]
+}

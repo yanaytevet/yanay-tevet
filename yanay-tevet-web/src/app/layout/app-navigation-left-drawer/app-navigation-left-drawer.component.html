@@ -14,6 +14,15 @@
             Home
         </a>
 
+        <!-- Genre Trainer (public) -->
+        <a
+            class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+            [routerLink]="routingService.getGenreTrainerUrl()"
+            routerLinkActive="bg-layer-overlay"
+            (click)="layoutService.closeBothDrawers()">
+            Genre Trainer
+        </a>
+
         @if (authService.isLoggedIn()) {
 
             <!-- Dream Diary -->

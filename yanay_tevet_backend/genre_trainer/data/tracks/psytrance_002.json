@@ -1,0 +1,95 @@
+{
+  "id": "psytrance_002",
+  "genre": "psytrance",
+  "bpm": 145,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.05,
+          "octaves": 10,
+          "envelope": {"attack": 0.001, "decay": 0.38, "sustain": 0.01, "release": 1.4}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -16,
+      "note_duration": "32n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 600,
+          "envelope": {"attack": 0.001, "decay": 0.02, "release": 0.01},
+          "harmonicity": 5.5,
+          "modulationIndex": 36,
+          "resonance": 5000,
+          "octaves": 1.2
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -5,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.005, "decay": 0.08, "sustain": 0.5, "release": 0.2},
+          "filterEnvelope": {
+            "attack": 0.005,
+            "decay": 0.1,
+            "sustain": 0.4,
+            "release": 0.2,
+            "baseFrequency": 150,
+            "octaves": 4
+          }
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.25}, "wet": 0.35}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["E1",null,"E1","G1","A1",null,"A1",null,"G1",null,"E1",null,"D1","E1",null,null,"E1",null,"E1","G1","A1",null,"C2",null,"B1",null,"A1",null,"G1","E1",null,null]
+      }
+    },
+    {
+      "id": "lead",
+      "role": "lead",
+      "volume": -14,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.005, "decay": 0.25, "sustain": 0.15, "release": 0.4}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 1.5, "preDelay": 0.01}, "wet": 0.3},
+        {"type": "FeedbackDelay", "options": {"delayTime": "16n", "feedback": 0.2}, "wet": 0.12}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["E5",null,null,"G5",null,null,"A5",null,"G5",null,null,null,"E5",null,null,null,"D5",null,null,"E5",null,null,"G5",null,"A5",null,null,null,"B5",null,"A5",null]
+      }
+    }
+  ]
+}
