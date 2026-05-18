@@ -35,6 +35,7 @@ export class GoogleAuthService {
     if (this.scriptLoadPromise) {
       return this.scriptLoadPromise;
     }
+
     this.scriptLoadPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
       script.src = 'https://accounts.google.com/gsi/client';
