@@ -9,6 +9,10 @@ from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
 
 
+class GetRandomTrackQuerySchema(Schema):
+    genres: str | None = None
+
+
 class LayerPatternSchema(Schema):
     subdivision: str
     steps: list[str | None]
@@ -56,13 +60,18 @@ class GetRandomTrackView(SimpleGetAPIView):
         return GetRandomTrackOutput
 
     @classmethod
+    def get_query_params_schema(cls) -> Type[Schema]:
+        return GetRandomTrackQuerySchema
+
+    @classmethod
     async def check_permitted(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> None:
         pass
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> GetRandomTrackOutput:
-        genres_param = api_request.GET.get('genres', '')
-        genres_filter = {g for g in genres_param.split(',') if g} if genres_param else set()
+        genres_filter: set[str] = set()
+        if query and query.genres:
+            genres_filter = {g for g in query.genres.split(',') if g}
 
         track_files = list(TRACKS_DIR.glob('*.json'))
 

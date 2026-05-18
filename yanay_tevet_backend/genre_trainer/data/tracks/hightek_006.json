@@ -1,0 +1,85 @@
+{
+  "id": "hightek_006",
+  "genre": "hightek",
+  "bpm": 178,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 3,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.016,
+          "octaves": 20,
+          "envelope": {"attack": 0.001, "decay": 0.13, "sustain": 0.01, "release": 0.45}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.95}, "wet": 0.8}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -9,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 1400,
+          "envelope": {"attack": 0.001, "decay": 0.015, "release": 0.007},
+          "harmonicity": 14,
+          "modulationIndex": 90,
+          "resonance": 14000,
+          "octaves": 3.0
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.85}, "wet": 0.75}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "snare_noise",
+      "role": "snare",
+      "volume": -7,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.055, "sustain": 0, "release": 0.025}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.95}, "wet": 0.85}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,"C4",null,null,"C4",null,"C4",null,null,null,"C4","C4",null,"C4",null,null,null,"C4",null,"C4","C4",null,null,"C4",null,"C4",null,null,"C4","C4",null,null]
+      }
+    },
+    {
+      "id": "sub_hit",
+      "role": "bass",
+      "volume": -5,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.06,
+          "octaves": 4,
+          "envelope": {"attack": 0.001, "decay": 0.1, "sustain": 0.01, "release": 0.25}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.75}, "wet": 0.65}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C2",null,"C2",null,null,"C2",null,null,"C2","C2",null,null,"C2",null,"C2",null,"C2",null,null,"C2","C2",null,null,null,"C2","C2",null,"C2",null,null,"C2",null]
+      }
+    }
+  ]
+}

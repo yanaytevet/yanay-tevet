@@ -1,0 +1,90 @@
+{
+  "id": "dark_psy_006",
+  "genre": "dark_psy",
+  "bpm": 149,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 1,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.035,
+          "octaves": 17,
+          "envelope": {"attack": 0.001, "decay": 0.25, "sustain": 0.01, "release": 0.8}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.75}, "wet": 0.5}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hiss",
+      "role": "hihat",
+      "volume": -15,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "brown"},
+          "envelope": {"attack": 0.001, "decay": 0.04, "sustain": 0, "release": 0.02}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.6}, "wet": 0.55}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4"]
+      }
+    },
+    {
+      "id": "dark_bass",
+      "role": "bass",
+      "volume": -3,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 0.15,
+          "modulationIndex": 55,
+          "envelope": {"attack": 0.005, "decay": 0.12, "sustain": 0.25, "release": 0.18},
+          "modulationEnvelope": {"attack": 0.005, "decay": 0.06, "sustain": 0.18, "release": 0.12}
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.95}, "wet": 0.7},
+        {"type": "Reverb", "options": {"decay": 0.5}, "wet": 0.1}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["Bb0","Bb0",null,"Bb0",null,"Bb0","B0",null,"Bb0",null,"Bb0",null,"Ab0",null,"Bb0","Bb0","Bb0",null,"Bb0","Db1",null,"Bb0",null,"Bb0","B0","Bb0",null,null,"Ab0",null,"G0",null]
+      }
+    },
+    {
+      "id": "scream_lead",
+      "role": "lead",
+      "volume": -13,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 4.0,
+          "modulationIndex": 75,
+          "envelope": {"attack": 0.006, "decay": 0.18, "sustain": 0.08, "release": 0.25},
+          "modulationEnvelope": {"attack": 0.15, "decay": 0.06, "sustain": 0.08, "release": 0.18}
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.65}, "wet": 0.55},
+        {"type": "Reverb", "options": {"decay": 2.5}, "wet": 0.45}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["Bb3",null,null,"Db4",null,null,"B3",null,"Bb3",null,"Ab3",null,null,"G3",null,"Bb3","Bb3",null,"Db4","Eb4",null,"Db4",null,"B3","Bb3",null,null,null,"Ab3","G3",null,null]
+      }
+    }
+  ]
+}
