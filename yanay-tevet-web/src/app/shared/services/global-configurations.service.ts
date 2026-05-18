@@ -6,11 +6,21 @@ import {FullConfigurationsOutput, fullConfigurationsView} from '../../../generat
 })
 export class GlobalConfigurationsService {
   public fullConfigurations = signal<FullConfigurationsOutput>(null);
+  private loadingPromise: Promise<void> | null = null;
 
   readonly cloudinaryCloudName = computed(() => this.fullConfigurations()?.cloudinary_cloud_name ?? null);
   readonly googleClientId = computed(() => this.fullConfigurations()?.google_client_id ?? null);
 
   async loadConfigurations() {
-    this.fullConfigurations.set((await fullConfigurationsView()).data);
+    this.loadingPromise = fullConfigurationsView().then(res => {
+      this.fullConfigurations.set(res.data);
+    });
+    await this.loadingPromise;
+  }
+
+  async waitForConfigurations(): Promise<void> {
+    if (this.loadingPromise) {
+      await this.loadingPromise;
+    }
   }
 }

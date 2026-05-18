@@ -48,7 +48,7 @@ export class GoogleAuthService {
   }
 
   async signIn(): Promise<string> {
-    await this.loadScript();
+    await Promise.all([this.loadScript(), this.globalConfigurationsService.waitForConfigurations()]);
     return new Promise((resolve, reject) => {
       const client = google.accounts.oauth2.initCodeClient({
         client_id: this.globalConfigurationsService.googleClientId(),
