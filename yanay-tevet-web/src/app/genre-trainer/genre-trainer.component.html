@@ -1,0 +1,106 @@
+<div class="min-h-screen bg-layer-1 pb-16">
+
+  <div class="max-w-3xl mx-auto px-4 pt-12">
+
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold text-primary-500" style="letter-spacing: -1.5px">Genre Trainer</h1>
+      <p class="mt-2 text-secondary-400 text-base">Listen and identify the electronic music genre</p>
+    </div>
+
+    <div class="card overflow-hidden">
+
+      <div class="relative" style="height: 200px; background: #040414;">
+        <canvas #vizCanvas class="w-full h-full block"></canvas>
+        @if (!isPlaying() && !isLoading()) {
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p class="text-white/30 text-sm font-medium">Press Play to start</p>
+          </div>
+        }
+        @if (isLoading()) {
+          <div class="absolute inset-0 flex items-center justify-center">
+            <p class="text-white/40 text-sm">Loading track...</p>
+          </div>
+        }
+      </div>
+
+      <div class="p-5 flex items-center justify-between border-t border-outline-border-1">
+        <div class="flex items-center gap-3">
+          @if (track()) {
+            <span class="text-xs font-semibold px-2 py-1 rounded-full text-white"
+                  style="background: rgba(0,117,222,0.15); color: #0075de;">
+              {{ track()!.bpm }} BPM
+            </span>
+            <span class="text-xs text-muted-300">2 bars · looping</span>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary px-6"
+          [disabled]="isLoading() || !track()"
+          (click)="togglePlay()">
+          @if (isPlaying()) { Stop } @else { Play }
+        </button>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="mt-4 p-4 rounded-xl text-sm text-red-700 bg-red-50 border border-red-200">
+        {{ error() }}
+      </div>
+    }
+
+    @if (!isLoading() && track() && genres().length > 0) {
+      <div class="mt-8">
+        <h2 class="text-lg font-bold text-primary-500 mb-4 text-center"
+            style="letter-spacing: -0.25px">
+          What genre is this?
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          @for (genre of genres(); track genre) {
+            <button
+              type="button"
+              [disabled]="revealed()"
+              (click)="selectGenre(genre)"
+              class="py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-150 border"
+              [class]="genreButtonState()[genre].isCorrect
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                : genreButtonState()[genre].isWrong
+                  ? 'bg-rose-50 border-rose-300 text-rose-700'
+                  : genreButtonState()[genre].isSelected
+                    ? 'selected-btn border-transparent'
+                    : 'unselected-pill'">
+              {{ genreLabels()[genre] }}
+            </button>
+          }
+        </div>
+      </div>
+
+      @if (revealed()) {
+        <div class="mt-5 card p-5">
+          <div class="flex items-start gap-3">
+            <div class="flex-1">
+              <p class="font-bold text-base"
+                 [class]="isCorrect() ? 'text-emerald-700' : 'text-rose-600'">
+                @if (isCorrect()) {
+                  Correct!
+                } @else {
+                  Not quite.
+                }
+              </p>
+              <p class="text-secondary-400 text-sm mt-0.5">
+                Genre: <span class="font-semibold text-primary-500">{{ genreLabels()[track()!.genre] }}</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-center">
+          <button type="button" class="btn btn-primary px-8" (click)="nextTrack()">
+            Next Track
+          </button>
+        </div>
+      }
+    }
+
+  </div>
+</div>

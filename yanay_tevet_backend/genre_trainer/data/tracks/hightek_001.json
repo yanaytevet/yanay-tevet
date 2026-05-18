@@ -1,0 +1,74 @@
+{
+  "id": "hightek_001",
+  "genre": "hightek",
+  "bpm": 170,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 2,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.02,
+          "octaves": 15,
+          "envelope": {"attack": 0.001, "decay": 0.25, "sustain": 0.01, "release": 0.8}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null,"C1",null]
+      }
+    },
+    {
+      "id": "perc",
+      "role": "perc",
+      "volume": -8,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 200,
+          "envelope": {"attack": 0.001, "decay": 0.04, "release": 0.01},
+          "harmonicity": 8.0,
+          "modulationIndex": 50,
+          "resonance": 2000,
+          "octaves": 2.5
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.9}, "wet": 0.8}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,"C3",null,null,null,"C3",null,null,null,"C3",null,null,null,"C3",null,null,null,"C3",null,null,null,"C3",null,null,null,"C3",null,null,null,"C3",null,null]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -8,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "square"},
+          "envelope": {"attack": 0.001, "decay": 0.1, "sustain": 0.1, "release": 0.05},
+          "filterEnvelope": {
+            "attack": 0.001,
+            "decay": 0.05,
+            "sustain": 0.05,
+            "release": 0.05,
+            "baseFrequency": 60,
+            "octaves": 3
+          }
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.7}, "wet": 0.7}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["A1",null,null,null,"A1",null,null,null,"A1",null,null,null,"A1",null,null,null,"G1",null,null,null,"G1",null,null,null,"A1",null,null,null,"A1",null,null,null]
+      }
+    }
+  ]
+}

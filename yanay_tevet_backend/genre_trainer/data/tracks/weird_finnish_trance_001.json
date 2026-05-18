@@ -1,0 +1,83 @@
+{
+  "id": "weird_finnish_trance_001",
+  "genre": "weird_finnish_trance",
+  "bpm": 140,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.06,
+          "octaves": 10,
+          "envelope": {"attack": 0.001, "decay": 0.5, "sustain": 0.01, "release": 1.5}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "clap",
+      "role": "snare",
+      "volume": -8,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.1, "sustain": 0, "release": 0.05}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,"C2",null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,"C2",null,null]
+      }
+    },
+    {
+      "id": "lead",
+      "role": "lead",
+      "volume": -8,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "triangle"},
+          "envelope": {"attack": 0.02, "decay": 0.5, "sustain": 0.3, "release": 0.8}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 4.0, "preDelay": 0.03}, "wet": 0.5},
+        {"type": "FeedbackDelay", "options": {"delayTime": "8n", "feedback": 0.5}, "wet": 0.35}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["B4",null,"D5",null,"F#5",null,"G5",null,"F#5",null,"E5",null,"D5",null,"B4",null,"B4",null,"C#5",null,"D5",null,"F#5",null,"A5",null,"G5",null,"F#5","E5",null,null]
+      }
+    },
+    {
+      "id": "pad",
+      "role": "pad",
+      "volume": -14,
+      "note_duration": "2n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "sine"},
+          "envelope": {"attack": 0.5, "decay": 0.3, "sustain": 0.8, "release": 2.0}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 5.0, "preDelay": 0.1}, "wet": 0.8}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["B3",null,null,null,null,null,null,null,"D4",null,null,null,null,null,null,null,"G3",null,null,null,null,null,null,null,"F#3",null,null,null,null,null,null,null]
+      }
+    }
+  ]
+}

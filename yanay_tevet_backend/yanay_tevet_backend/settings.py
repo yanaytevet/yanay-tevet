@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     'blocks',
     'emails',
     'dream_diary',
+    'genre_trainer',
 ]
 
 MIDDLEWARE = [

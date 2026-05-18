@@ -44,6 +44,11 @@ export const routes: Routes = [
                     import('./contact/contact.component').then(m => m.ContactComponent),
             },
             {
+                path: 'genre-trainer',
+                loadComponent: () =>
+                    import('./genre-trainer/genre-trainer.component').then(m => m.GenreTrainerComponent),
+            },
+            {
                 path: 'example-form',
                 loadComponent: () =>
                     import('./example/example-form/example-form.component').then(m => m.ExampleFormComponent),
