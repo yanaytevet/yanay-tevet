@@ -49,7 +49,7 @@ export type GetGenresOutput = {
 export type GetRandomTrackViewData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: { genres?: string };
     url: '/api/genre-trainer/random-track/';
 };
 

@@ -1,0 +1,114 @@
+{
+  "id": "weird_finnish_trance_005",
+  "genre": "weird_finnish_trance",
+  "bpm": 143,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": -1,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.11,
+          "octaves": 6,
+          "envelope": {"attack": 0.001, "decay": 0.65, "sustain": 0.01, "release": 1.8}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 1.4}, "wet": 0.2}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "quirky_clap",
+      "role": "snare",
+      "volume": -8,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "pink"},
+          "envelope": {"attack": 0.008, "decay": 0.35, "sustain": 0, "release": 0.2}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 3.0}, "wet": 0.65}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,null,null,"C4",null,null,null,null,"C4",null,null,null,null,null,null,null,null,"C4",null,null,null,null,"C4",null,null,"C4",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -16,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 1400,
+          "envelope": {"attack": 0.001, "decay": 0.09, "release": 0.06},
+          "harmonicity": 0.9,
+          "modulationIndex": 4,
+          "resonance": 12000,
+          "octaves": 0.4
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4",null,null,"C4",null,"C4","C4",null,"C4",null,null,null,"C4",null,"C4",null,"C4",null,"C4",null,null,"C4",null,"C4",null,null,"C4",null,"C4",null,null,"C4"]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -8,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.015, "decay": 0.28, "sustain": 0.45, "release": 0.32},
+          "filterEnvelope": {
+            "attack": 0.015,
+            "decay": 0.32,
+            "sustain": 0.35,
+            "release": 0.32,
+            "baseFrequency": 160,
+            "octaves": 2.8
+          }
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["D1",null,"F1","G1","Bb1",null,"G1","F1","D1",null,"F1",null,"Eb1","F1","G1",null,"D1",null,"F1","G1","A1","Bb1","A1","G1","F1",null,"Eb1",null,"D1","F1",null,null]
+      }
+    },
+    {
+      "id": "weird_lead",
+      "role": "lead",
+      "volume": -10,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "Synth",
+        "options": {
+          "oscillator": {"type": "square"},
+          "envelope": {"attack": 0.02, "decay": 0.5, "sustain": 0.18, "release": 0.7}
+        }
+      },
+      "effects": [
+        {"type": "Chorus", "options": {"frequency": 0.8, "delayTime": 4.0, "depth": 0.6}, "wet": 0.45},
+        {"type": "Reverb", "options": {"decay": 4.5, "preDelay": 0.05}, "wet": 0.7},
+        {"type": "FeedbackDelay", "options": {"delayTime": "8n.", "feedback": 0.38}, "wet": 0.25}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["D6",null,"F6",null,"Bb5","A5",null,"G5","F5",null,"Eb5","F5","G5",null,null,"Bb5","D6",null,null,"F6","G6","F6",null,"Eb6","D6",null,"C6","Bb5","A5","G5",null,null]
+      }
+    }
+  ]
+}

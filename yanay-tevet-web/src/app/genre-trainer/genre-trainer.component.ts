@@ -24,11 +24,19 @@ export class GenreTrainerComponent {
   error = signal<string | null>(null);
   autoStart = signal(false);
 
+  streak = signal(0);
+  totalAnswered = signal(0);
+  totalCorrect = signal(0);
+  focusGenres = signal<Set<string>>(this.loadFocusFromStorage());
+  volume = signal(0.8);
+
   isCorrect = computed(() => {
     const s = this.selectedGenre();
     const t = this.track();
     return s !== null && t !== null && s === t.genre;
   });
+
+  noFocus = computed(() => this.focusGenres().size === 0);
 
   genreLabelMap = computed(() =>
     Object.fromEntries(this.genres().map(g => [g, this.genreDisplay.get(g)]))
@@ -44,6 +52,12 @@ export class GenreTrainerComponent {
     return t ? (this.genreDisplay.descriptions[t.genre] ?? '') : '';
   });
 
+  trackGenreFamily = computed(() => {
+    const genre = this.track()?.genre;
+    if (!genre) return null;
+    return this.genreDisplay.families.find(f => f.genres.includes(genre)) ?? null;
+  });
+
   genreButtonState = computed(() => {
     const selected = this.selectedGenre();
     const track = this.track();
@@ -55,6 +69,11 @@ export class GenreTrainerComponent {
         isWrong: rev && g === selected && g !== track?.genre,
       }])
     );
+  });
+
+  focusGenreState = computed(() => {
+    const focus = this.focusGenres();
+    return Object.fromEntries(this.genres().map(g => [g, focus.has(g)]));
   });
 
   private canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
@@ -72,16 +91,38 @@ export class GenreTrainerComponent {
     });
   }
 
+  private loadFocusFromStorage(): Set<string> {
+    try {
+      const raw = localStorage.getItem('genre_trainer_focus');
+      if (raw) {
+        return new Set(JSON.parse(raw) as string[]);
+      }
+    } catch {}
+    return new Set();
+  }
+
+  private saveFocusToStorage(focus: Set<string>): void {
+    localStorage.setItem('genre_trainer_focus', JSON.stringify([...focus]));
+  }
+
   private async loadData(): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      const [trackRes, genresRes] = await Promise.all([
-        getRandomTrackView(),
-        getGenresView(),
-      ]);
-      this.track.set(trackRes.data.track);
-      this.genres.set(genresRes.data.genres);
+      const focus = this.focusGenres();
+      const trackOptions = focus.size > 0 ? {query: {genres: [...focus].join(',')}} : undefined;
+
+      if (this.genres().length === 0) {
+        const [trackRes, genresRes] = await Promise.all([
+          getRandomTrackView(trackOptions),
+          getGenresView(),
+        ]);
+        this.track.set(trackRes.data.track);
+        this.genres.set(genresRes.data.genres);
+      } else {
+        const trackRes = await getRandomTrackView(trackOptions);
+        this.track.set(trackRes.data.track);
+      }
     } catch {
       this.error.set('Failed to load track. Is the backend running?');
     } finally {
@@ -101,6 +142,31 @@ export class GenreTrainerComponent {
     this.autoStart.update(v => !v);
   }
 
+  toggleFocusGenre(genre: string): void {
+    this.focusGenres.update(prev => {
+      const next = new Set(prev);
+      if (next.has(genre)) {
+        next.delete(genre);
+      } else {
+        next.add(genre);
+      }
+      this.saveFocusToStorage(next);
+      return next;
+    });
+  }
+
+  clearFocus(): void {
+    this.focusGenres.set(new Set());
+    localStorage.removeItem('genre_trainer_focus');
+  }
+
+  setVolume(value: number): void {
+    this.volume.set(value);
+    if (this.masterGain) {
+      this.masterGain.gain.value = value;
+    }
+  }
+
   private async startPlayback(): Promise<void> {
     const track = this.track();
     if (!track) {
@@ -108,7 +174,7 @@ export class GenreTrainerComponent {
     }
     await Tone.start();
 
-    this.masterGain = new Tone.Gain(1).toDestination();
+    this.masterGain = new Tone.Gain(this.volume()).toDestination();
     this.analyser = new Tone.Analyser('waveform', 512);
     this.masterGain.connect(this.analyser as unknown as Tone.ToneAudioNode);
 
@@ -149,11 +215,10 @@ export class GenreTrainerComponent {
       this.animFrameId = null;
     }
     Tone.getTransport().stop();
-    Tone.getTransport().cancel();
+    Tone.getTransport().cancel(0);
     Tone.getTransport().loop = false;
 
     for (const seq of this.sequences) {
-      seq.stop();
       seq.dispose();
     }
     this.sequences = [];
@@ -286,7 +351,6 @@ export class GenreTrainerComponent {
       const kick = beatPhase < 0.12 ? Math.sin(Math.PI * beatPhase / 0.12) : 0;
 
       ctx.beginPath();
-      ctx.moveTo(0, midY);
 
       for (let i = 0; i < data.length; i++) {
         const x = (i / data.length) * w;
@@ -339,6 +403,13 @@ export class GenreTrainerComponent {
     }
     this.selectedGenre.set(genre);
     this.revealed.set(true);
+    this.totalAnswered.update(n => n + 1);
+    if (genre === this.track()?.genre) {
+      this.totalCorrect.update(n => n + 1);
+      this.streak.update(n => n + 1);
+    } else {
+      this.streak.set(0);
+    }
   }
 
   async nextTrack(): Promise<void> {

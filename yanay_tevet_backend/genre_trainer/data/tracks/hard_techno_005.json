@@ -1,0 +1,95 @@
+{
+  "id": "hard_techno_005",
+  "genre": "hard_techno",
+  "bpm": 150,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 1,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.042,
+          "octaves": 13,
+          "envelope": {"attack": 0.001, "decay": 0.3, "sustain": 0.01, "release": 0.9}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.55}, "wet": 0.45}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "clap",
+      "role": "snare",
+      "volume": -11,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.002, "decay": 0.1, "sustain": 0, "release": 0.055}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.5}, "wet": 0.4}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C4",null,null,null,null,null,null,null,"C4",null,null,null,null,null,null,null,"C4",null,null,null,null,null,null,null,"C4",null,null,null]
+      }
+    },
+    {
+      "id": "acid",
+      "role": "bass",
+      "volume": -5,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "sawtooth"},
+          "envelope": {"attack": 0.005, "decay": 0.08, "sustain": 0.45, "release": 0.15},
+          "filterEnvelope": {
+            "attack": 0.005,
+            "decay": 0.06,
+            "sustain": 0.25,
+            "release": 0.15,
+            "baseFrequency": 130,
+            "octaves": 5.0
+          }
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.5}, "wet": 0.45},
+        {"type": "Chorus", "options": {"frequency": 3, "delayTime": 3.5, "depth": 0.5}, "wet": 0.2}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["A1",null,"A1","A1","Bb1",null,"A1",null,"G1","A1",null,"A1","G1",null,"F1","G1","A1","A1",null,"Bb1","C2",null,"Bb1","A1","G1",null,"F1","G1","A1",null,null,"G1"]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -14,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 620,
+          "envelope": {"attack": 0.001, "decay": 0.02, "release": 0.01},
+          "harmonicity": 6.5,
+          "modulationIndex": 42,
+          "resonance": 7000,
+          "octaves": 1.8
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null,"C4",null]
+      }
+    }
+  ]
+}

@@ -7,7 +7,6 @@ from ninja import Schema, Query, Path as NinjaPath
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
-from genre_trainer.enums.genre_type import GenreType
 
 
 class LayerPatternSchema(Schema):
@@ -62,7 +61,16 @@ class GetRandomTrackView(SimpleGetAPIView):
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> GetRandomTrackOutput:
+        genres_param = api_request.GET.get('genres', '')
+        genres_filter = {g for g in genres_param.split(',') if g} if genres_param else set()
+
         track_files = list(TRACKS_DIR.glob('*.json'))
+
+        if genres_filter:
+            filtered = [f for f in track_files if any(f.name.startswith(g + '_') for g in genres_filter)]
+            if filtered:
+                track_files = filtered
+
         track_file = random.choice(track_files)
         with open(track_file) as f:
             track_data = json.load(f)
