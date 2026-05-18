@@ -1,0 +1,67 @@
+{
+  "id": "tek_004",
+  "genre": "tek",
+  "bpm": 160,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 2,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.028,
+          "octaves": 14,
+          "envelope": {"attack": 0.001, "decay": 0.2, "sustain": 0.01, "release": 0.7}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.65}, "wet": 0.55}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -12,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 680,
+          "envelope": {"attack": 0.001, "decay": 0.016, "release": 0.01},
+          "harmonicity": 7.5,
+          "modulationIndex": 52,
+          "resonance": 6800,
+          "octaves": 1.9
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "tom",
+      "role": "snare",
+      "volume": -10,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.08,
+          "octaves": 4,
+          "envelope": {"attack": 0.001, "decay": 0.15, "sustain": 0.01, "release": 0.3}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,"C2",null,null,null,null]
+      }
+    }
+  ]
+}

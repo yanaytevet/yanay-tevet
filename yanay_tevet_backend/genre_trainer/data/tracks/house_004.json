@@ -1,0 +1,112 @@
+{
+  "id": "house_004",
+  "genre": "house",
+  "bpm": 126,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.09,
+          "octaves": 7,
+          "envelope": {"attack": 0.001, "decay": 0.58, "sustain": 0.01, "release": 1.9}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "clap",
+      "role": "snare",
+      "volume": -4,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "pink"},
+          "envelope": {"attack": 0.004, "decay": 0.15, "sustain": 0, "release": 0.1}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 1.4}, "wet": 0.52}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -12,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 850,
+          "envelope": {"attack": 0.001, "decay": 0.07, "release": 0.05},
+          "harmonicity": 2.2,
+          "modulationIndex": 11,
+          "resonance": 7500,
+          "octaves": 0.9
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null]
+      }
+    },
+    {
+      "id": "bass",
+      "role": "bass",
+      "volume": -6,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MonoSynth",
+        "options": {
+          "oscillator": {"type": "square"},
+          "envelope": {"attack": 0.008, "decay": 0.22, "sustain": 0.55, "release": 0.3},
+          "filterEnvelope": {
+            "attack": 0.008,
+            "decay": 0.32,
+            "sustain": 0.35,
+            "release": 0.3,
+            "baseFrequency": 280,
+            "octaves": 2.2
+          }
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C2",null,"C2",null,"C2","Eb2",null,"C2","Bb1",null,"C2",null,"G1","Bb1",null,null,"C2",null,"C2","Eb2","F2","Eb2","C2",null,"Bb1",null,"G1","Bb1","C2",null,"Eb2",null]
+      }
+    },
+    {
+      "id": "rhodes",
+      "role": "lead",
+      "volume": -14,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 3,
+          "modulationIndex": 4,
+          "envelope": {"attack": 0.01, "decay": 0.5, "sustain": 0.0, "release": 0.4},
+          "modulationEnvelope": {"attack": 0.01, "decay": 0.3, "sustain": 0.0, "release": 0.3}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 2.5}, "wet": 0.5}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,"C5",null,null,null,null,null,null,"Eb5",null,null,null,null,null,null,null,null,"C5",null,null,"G4",null,null,null,null,null,null,null,"F5",null]
+      }
+    }
+  ]
+}

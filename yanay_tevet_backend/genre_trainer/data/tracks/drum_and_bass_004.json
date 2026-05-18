@@ -1,0 +1,89 @@
+{
+  "id": "drum_and_bass_004",
+  "genre": "drum_and_bass",
+  "bpm": 176,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.06,
+          "octaves": 8,
+          "envelope": {"attack": 0.001, "decay": 0.28, "sustain": 0.01, "release": 0.9}
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,null,null,null,null,null,"C1",null,null,"C1",null,null,null,"C1",null,null,null,null,"C1",null,null,null,null,"C1",null,null,null,null,null]
+      }
+    },
+    {
+      "id": "snare",
+      "role": "snare",
+      "volume": -3,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "NoiseSynth",
+        "options": {
+          "noise": {"type": "white"},
+          "envelope": {"attack": 0.001, "decay": 0.15, "sustain": 0, "release": 0.09}
+        }
+      },
+      "effects": [{"type": "Reverb", "options": {"decay": 0.5}, "wet": 0.22}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null,null,null,null,null,"C2",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -15,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 620,
+          "envelope": {"attack": 0.001, "decay": 0.038, "release": 0.022},
+          "harmonicity": 4.2,
+          "modulationIndex": 23,
+          "resonance": 5300,
+          "octaves": 1.15
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4","C4"]
+      }
+    },
+    {
+      "id": "neuro_bass",
+      "role": "bass",
+      "volume": -4,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 0.5,
+          "modulationIndex": 22,
+          "envelope": {"attack": 0.008, "decay": 0.18, "sustain": 0.72, "release": 0.22},
+          "modulationEnvelope": {"attack": 0.008, "decay": 0.08, "sustain": 0.35, "release": 0.22}
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.38}, "wet": 0.45},
+        {"type": "Filter", "options": {"type": "lowpass", "frequency": 1000, "Q": 3.5}, "wet": 1.0}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["G1",null,"G1","A1","G1","F1","G1",null,"E1","G1",null,"F1","E1",null,"D1","E1","G1",null,"G1","A1","C2","A1","G1","F1","E1","D1","C1",null,"D1","E1","G1",null]
+      }
+    }
+  ]
+}

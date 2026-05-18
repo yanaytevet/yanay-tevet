@@ -1,0 +1,94 @@
+{
+  "id": "dark_psy_004",
+  "genre": "dark_psy",
+  "bpm": 148,
+  "layers": [
+    {
+      "id": "kick",
+      "role": "kick",
+      "volume": 0,
+      "note_duration": "8n",
+      "instrument": {
+        "type": "MembraneSynth",
+        "options": {
+          "pitchDecay": 0.038,
+          "octaves": 12,
+          "envelope": {"attack": 0.001, "decay": 0.34, "sustain": 0.01, "release": 1.2}
+        }
+      },
+      "effects": [{"type": "Distortion", "options": {"distortion": 0.22}, "wet": 0.32}],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null,"C1",null,null,null]
+      }
+    },
+    {
+      "id": "hihat",
+      "role": "hihat",
+      "volume": -17,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "MetalSynth",
+        "options": {
+          "frequency": 320,
+          "envelope": {"attack": 0.001, "decay": 0.023, "release": 0.012},
+          "harmonicity": 6.5,
+          "modulationIndex": 42,
+          "resonance": 5800,
+          "octaves": 1.6
+        }
+      },
+      "effects": [],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": [null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null,null,null,"C4",null]
+      }
+    },
+    {
+      "id": "growl_bass",
+      "role": "bass",
+      "volume": -3,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 0.33,
+          "modulationIndex": 35,
+          "envelope": {"attack": 0.005, "decay": 0.11, "sustain": 0.58, "release": 0.18},
+          "modulationEnvelope": {"attack": 0.005, "decay": 0.045, "sustain": 0.15, "release": 0.1}
+        }
+      },
+      "effects": [
+        {"type": "Distortion", "options": {"distortion": 0.75}, "wet": 0.52},
+        {"type": "Filter", "options": {"type": "lowpass", "frequency": 650, "Q": 5}, "wet": 1.0}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C1",null,"C1","Db1","C1","B0","C1",null,"Ab0",null,"C1","B0","Ab0",null,"B0","C1","C1",null,"C1","Db1","Eb1","Db1","C1","B0","Ab0",null,"G0",null,"Ab0","B0",null,null]
+      }
+    },
+    {
+      "id": "void_lead",
+      "role": "lead",
+      "volume": -16,
+      "note_duration": "16n",
+      "instrument": {
+        "type": "FMSynth",
+        "options": {
+          "harmonicity": 6,
+          "modulationIndex": 18,
+          "envelope": {"attack": 0.005, "decay": 0.38, "sustain": 0.03, "release": 0.35},
+          "modulationEnvelope": {"attack": 0.005, "decay": 0.12, "sustain": 0.0, "release": 0.25}
+        }
+      },
+      "effects": [
+        {"type": "Reverb", "options": {"decay": 1.8, "preDelay": 0.01}, "wet": 0.38},
+        {"type": "Distortion", "options": {"distortion": 0.35}, "wet": 0.32}
+      ],
+      "pattern": {
+        "subdivision": "16n",
+        "steps": ["C4",null,null,"Db4",null,"Eb4",null,null,"Db4",null,null,null,"C4",null,"Ab3",null,"C4",null,null,"Db4",null,"Eb4","F4","Eb4","Db4",null,"C4",null,"Ab3",null,null,null]
+      }
+    }
+  ]
+}

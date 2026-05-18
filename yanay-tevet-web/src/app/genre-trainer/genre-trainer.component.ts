@@ -1,6 +1,7 @@
 import {afterNextRender, Component, computed, DestroyRef, ElementRef, inject, signal, viewChild} from '@angular/core';
 import * as Tone from 'tone';
 import {getGenresView, getRandomTrackView, TrackLayerSchema, TrackSchema} from '../../generated-files/api/genre-trainer';
+import {GenreTypeDisplay} from '../shared/string-display/genre-type-display';
 
 @Component({
   selector: 'app-genre-trainer',
@@ -12,19 +13,35 @@ import {getGenresView, getRandomTrackView, TrackLayerSchema, TrackSchema} from '
 export class GenreTrainerComponent {
   private destroyRef = inject(DestroyRef);
 
+  readonly genreDisplay = new GenreTypeDisplay();
+
   track = signal<TrackSchema | null>(null);
   genres = signal<string[]>([]);
-  genreLabels = signal<Record<string, string>>({});
   isPlaying = signal(false);
   isLoading = signal(false);
   selectedGenre = signal<string | null>(null);
   revealed = signal(false);
   error = signal<string | null>(null);
+  autoStart = signal(false);
 
   isCorrect = computed(() => {
     const s = this.selectedGenre();
     const t = this.track();
     return s !== null && t !== null && s === t.genre;
+  });
+
+  genreLabelMap = computed(() =>
+    Object.fromEntries(this.genres().map(g => [g, this.genreDisplay.get(g)]))
+  );
+
+  trackGenreLabel = computed(() => {
+    const t = this.track();
+    return t ? this.genreDisplay.get(t.genre) : '';
+  });
+
+  trackGenreDescription = computed(() => {
+    const t = this.track();
+    return t ? (this.genreDisplay.descriptions[t.genre] ?? '') : '';
   });
 
   genreButtonState = computed(() => {
@@ -65,7 +82,6 @@ export class GenreTrainerComponent {
       ]);
       this.track.set(trackRes.data.track);
       this.genres.set(genresRes.data.genres);
-      this.genreLabels.set(genresRes.data.genre_labels);
     } catch {
       this.error.set('Failed to load track. Is the backend running?');
     } finally {
@@ -79,6 +95,10 @@ export class GenreTrainerComponent {
     } else {
       await this.startPlayback();
     }
+  }
+
+  toggleAutoStart(): void {
+    this.autoStart.update(v => !v);
   }
 
   private async startPlayback(): Promise<void> {
@@ -327,5 +347,8 @@ export class GenreTrainerComponent {
     this.revealed.set(false);
     this.track.set(null);
     await this.loadData();
+    if (this.autoStart()) {
+      await this.startPlayback();
+    }
   }
 }

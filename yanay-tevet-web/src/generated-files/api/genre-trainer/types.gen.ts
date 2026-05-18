@@ -44,7 +44,6 @@ export type GetRandomTrackOutput = {
 
 export type GetGenresOutput = {
     genres: Array<string>;
-    genre_labels: Record<string, string>;
 };
 
 export type GetRandomTrackViewData = {
