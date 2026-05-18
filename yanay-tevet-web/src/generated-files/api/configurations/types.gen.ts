@@ -23,6 +23,10 @@ export type FullConfigurationsOutput = {
      * Cloudinary Cloud Name
      */
     cloudinary_cloud_name: string | null;
+    /**
+     * Google Client Id
+     */
+    google_client_id: string | null;
 };
 
 export type FullConfigurationsViewData = {

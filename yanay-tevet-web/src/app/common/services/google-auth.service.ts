@@ -1,5 +1,5 @@
-import {Injectable} from '@angular/core';
-import {environment} from '../../../environments/environment';
+import {inject, Injectable} from '@angular/core';
+import {GlobalConfigurationsService} from '../../shared/services/global-configurations.service';
 
 interface CodeClient {
   requestCode(): void;
@@ -25,6 +25,7 @@ declare const google: {
 
 @Injectable({providedIn: 'root'})
 export class GoogleAuthService {
+  private readonly globalConfigurationsService = inject(GlobalConfigurationsService);
   private scriptLoadPromise: Promise<void> | null = null;
 
   private loadScript(): Promise<void> {
@@ -50,7 +51,7 @@ export class GoogleAuthService {
     await this.loadScript();
     return new Promise((resolve, reject) => {
       const client = google.accounts.oauth2.initCodeClient({
-        client_id: environment.googleClientId,
+        client_id: this.globalConfigurationsService.googleClientId(),
         scope: 'openid email profile',
         ux_mode: 'popup',
         callback: (response) => {

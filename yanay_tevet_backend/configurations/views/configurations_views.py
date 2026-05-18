@@ -11,6 +11,7 @@ from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAP
 class FullConfigurationsOutput(Schema):
     timezones: list[str]
     cloudinary_cloud_name: str | None
+    google_client_id: str | None
 
 
 class FullConfigurationsView(SimpleGetAPIView):
@@ -28,4 +29,5 @@ class FullConfigurationsView(SimpleGetAPIView):
         return FullConfigurationsOutput(
             timezones=list(pytz.all_timezones),
             cloudinary_cloud_name=settings.CLOUDINARY_STORAGE.get('CLOUD_NAME'),
+            google_client_id=settings.GOOGLE_CLIENT_ID,
         )
