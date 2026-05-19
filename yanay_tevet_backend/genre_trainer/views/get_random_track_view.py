@@ -1,12 +1,12 @@
-import json
 import random
-from pathlib import Path
 from typing import Any, Type
 
 from ninja import Schema, Query, Path as NinjaPath
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
+from genre_trainer.enums.genre_type import GenreType
+from genre_trainer.generators.genre_generator_registry import GENRE_GENERATORS
 
 
 class GetRandomTrackQuerySchema(Schema):
@@ -51,9 +51,6 @@ class GetRandomTrackOutput(Schema):
     track: TrackSchema
 
 
-TRACKS_DIR = Path(__file__).parent.parent / 'data' / 'tracks'
-
-
 class GetRandomTrackView(SimpleGetAPIView):
     @classmethod
     def get_output_schema(cls) -> Type[Schema]:
@@ -69,18 +66,19 @@ class GetRandomTrackView(SimpleGetAPIView):
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> GetRandomTrackOutput:
-        genres_filter: set[str] = set()
+        available = dict(GENRE_GENERATORS)
+
         if query and query.genres:
-            genres_filter = {g for g in query.genres.split(',') if g}
-
-        track_files = list(TRACKS_DIR.glob('*.json'))
-
-        if genres_filter:
-            filtered = [f for f in track_files if any(f.name.startswith(g + '_') for g in genres_filter)]
+            requested = {g for g in query.genres.split(',') if g}
+            filtered = {
+                genre_type: gen
+                for genre_type, gen in GENRE_GENERATORS.items()
+                if genre_type.value in requested
+            }
             if filtered:
-                track_files = filtered
+                available = filtered
 
-        track_file = random.choice(track_files)
-        with open(track_file) as f:
-            track_data = json.load(f)
+        genre_type = random.choice(list(available.keys()))
+        generator = available[genre_type]
+        track_data = generator.generate()
         return GetRandomTrackOutput(track=TrackSchema.model_validate(track_data))
