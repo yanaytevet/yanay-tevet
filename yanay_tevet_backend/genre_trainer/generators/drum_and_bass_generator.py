@@ -25,6 +25,9 @@ _KICKS = [
     _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
          {'pitchDecay': 0.04, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.28, 'sustain': 0.01, 'release': 0.9}},
          [], ['C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N]),
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.035, 'octaves': 12, 'envelope': {'attack': 0.001, 'decay': 0.28, 'sustain': 0.01, 'release': 1.0}},
+         [], ['C1',_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N]),
 ]
 
 _SNARES = [
@@ -51,6 +54,10 @@ _SNARES = [
     _cfg('snare', 'snare', -18, '16n', 'NoiseSynth',
          {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.1, 'sustain': 0, 'release': 0.04}},
          [], [_N,_N,'C4',_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,_N,_N,'C4',_N,_N,'C4',_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,_N,'C4',_N]),
+    _cfg('snare', 'snare', -5, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.06}},
+         [_reverb(0.7, 0.28)],
+         [_N,_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,'C2',_N]),
 ]
 
 _HIHATS = [
@@ -63,6 +70,9 @@ _HIHATS = [
     _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth',
          {'frequency': 650, 'envelope': {'attack': 0.001, 'decay': 0.01, 'release': 0.007}, 'harmonicity': 7.5, 'modulationIndex': 48, 'resonance': 6500, 'octaves': 1.9},
          [], ['C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4']),
+    _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
+         {'frequency': 580, 'envelope': {'attack': 0.001, 'decay': 0.014, 'release': 0.009}, 'harmonicity': 6.8, 'modulationIndex': 44, 'resonance': 5800, 'octaves': 1.8},
+         [], ['C4','C4',_N,'C4','C4',_N,'C4','C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4','C4',_N,'C4','C4',_N,'C4','C4',_N]),
 ]
 
 _BASSES = [
@@ -89,6 +99,25 @@ _BASSES = [
          {'harmonicity': 0.5, 'modulationIndex': 8, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.65, 'release': 0.3}, 'modulationEnvelope': {'attack': 0.01, 'decay': 0.1, 'sustain': 0.4, 'release': 0.3}},
          [_chorus(1.2, 3.5, 0.65, 0.48), _dist(0.28, 0.28)],
          ['G1',_N,'G1','G1',_N,'G1',_N,'G1','F1',_N,'G1',_N,'F1','G1',_N,_N,'G1',_N,'G1','Bb1','G1',_N,_N,'G1','F1','G1',_N,'F1','Eb1',_N,'F1','G1']),
+    _cfg('reese_bass', 'bass', -3, '8n', 'AMSynth',
+         {'harmonicity': 0.75, 'envelope': {'attack': 0.01, 'decay': 0.22, 'sustain': 0.72, 'release': 0.32}, 'modulationEnvelope': {'attack': 0.12, 'decay': 0.18, 'sustain': 0.82, 'release': 0.22}},
+         [_dist(0.35, 0.42), _filt('lowpass', 1100, 2.5)],
+         ['A1',_N,_N,'C2',_N,'A1',_N,'G1','A1',_N,'E1',_N,'G1','A1',_N,_N,'A1',_N,_N,'C2','E2',_N,'D2','C2','A1',_N,'G1',_N,'A1','C2',_N,_N]),
+]
+
+_ATMOSPHERES = [
+    _cfg('atmosphere', 'pad', -20, '16n', 'AMSynth',
+         {'harmonicity': 0.25, 'envelope': {'attack': 0.5, 'decay': 0.4, 'sustain': 0.7, 'release': 2.0}, 'modulationEnvelope': {'attack': 0.6, 'decay': 0.3, 'sustain': 0.6, 'release': 2.0}},
+         [_reverb(4.0, 0.75)],
+         ['D2',_N,_N,_N,_N,_N,_N,_N,'A2',_N,_N,_N,_N,_N,_N,_N,'D2',_N,_N,_N,_N,_N,_N,_N,'G2',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('atmosphere', 'pad', -22, '16n', 'Synth',
+         {'oscillator': {'type': 'sine'}, 'envelope': {'attack': 0.6, 'decay': 0.5, 'sustain': 0.8, 'release': 2.5}},
+         [_reverb(5.0, 0.8)],
+         ['A1',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,'E2',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('atmosphere', 'pad', -21, '16n', 'FMSynth',
+         {'harmonicity': 0.1, 'modulationIndex': 5, 'envelope': {'attack': 0.4, 'decay': 0.4, 'sustain': 0.75, 'release': 2.2}, 'modulationEnvelope': {'attack': 0.5, 'decay': 0.3, 'sustain': 0.65, 'release': 2.0}},
+         [_reverb(4.5, 0.78), _dist(0.2, 0.15)],
+         ['G1',_N,_N,_N,_N,_N,_N,_N,'D2',_N,_N,_N,_N,_N,_N,_N,'G1',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N]),
 ]
 
 
@@ -98,4 +127,8 @@ class DrumAndBassTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        return [cls._pick(_KICKS), cls._pick(_SNARES), cls._pick(_HIHATS), cls._pick(_BASSES)]
+        layers = [cls._pick(_KICKS), cls._pick(_SNARES), cls._pick(_HIHATS), cls._pick(_BASSES)]
+        atm = cls._maybe(_ATMOSPHERES, 0.4)
+        if atm:
+            layers.append(atm)
+        return layers

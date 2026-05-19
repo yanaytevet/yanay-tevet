@@ -8,7 +8,10 @@ _N = None
 
 
 def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_opts: dict,
-         effects: list, steps: list) -> dict[str, Any]:
+         effects: list, steps: list, velocities: list | None = None) -> dict[str, Any]:
+    pattern: dict = {'subdivision': '16n', 'steps': steps}
+    if velocities is not None:
+        pattern['velocities'] = velocities
     return {
         'id': id_,
         'role': role,
@@ -16,7 +19,7 @@ def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_op
         'note_duration': note_dur,
         'instrument': {'type': inst_type, 'options': inst_opts},
         'effects': effects,
-        'pattern': {'subdivision': '16n', 'steps': steps},
+        'pattern': pattern,
     }
 
 
@@ -63,3 +66,9 @@ class BaseTrackGenerator:
     @classmethod
     def _pick(cls, pool: list[dict[str, Any]]) -> dict[str, Any]:
         return random.choice(pool)
+
+    @classmethod
+    def _maybe(cls, pool: list[dict[str, Any]], probability: float = 0.6) -> dict[str, Any] | None:
+        if random.random() < probability:
+            return random.choice(pool)
+        return None

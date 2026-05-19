@@ -3,7 +3,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _chorus,
+    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _chorus, _filt,
 )
 
 _KICKS = [
@@ -17,13 +17,17 @@ _KICKS = [
          {'pitchDecay': 0.07, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.5, 'sustain': 0.01, 'release': 1.7}},
          [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.065, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.46, 'sustain': 0.01, 'release': 1.55}},
+         {'pitchDecay': 0.08, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.52, 'sustain': 0.01, 'release': 1.8}},
+         [_reverb(1.0, 0.12)],
+         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.065, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.46, 'sustain': 0.01, 'release': 1.55}},
          [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
          {'pitchDecay': 0.07, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.45, 'sustain': 0.01, 'release': 1.3}},
          [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.08, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.48, 'sustain': 0.01, 'release': 1.4}},
+    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.068, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.5, 'sustain': 0.01, 'release': 1.6}},
          [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
 ]
 
@@ -47,9 +51,10 @@ _SNARES = [
          {'noise': {'type': 'white'}, 'envelope': {'attack': 0.003, 'decay': 0.1, 'sustain': 0, 'release': 0.06}},
          [_reverb(0.6, 0.25)],
          [_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,_N,_N]),
-    _cfg('snare', 'snare', -13, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.05, 'sustain': 0, 'release': 0.03}},
-         [], [_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,_N,'C4',_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,_N,_N]),
+    _cfg('snare', 'snare', -7, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.14, 'sustain': 0, 'release': 0.06}},
+         [_reverb(0.5, 0.3)],
+         [_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,_N]),
 ]
 
 _HIHATS = [
@@ -64,10 +69,13 @@ _HIHATS = [
          [], ['C4',_N,_N,'C4','C4',_N,'C4',_N,'C4',_N,_N,'C4','C4',_N,'C4',_N,'C4',_N,_N,'C4','C4',_N,'C4',_N,'C4',_N,_N,'C4','C4',_N,'C4',_N]),
     _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
          {'frequency': 490, 'envelope': {'attack': 0.001, 'decay': 0.03, 'release': 0.015}, 'harmonicity': 4.5, 'modulationIndex': 27, 'resonance': 4700, 'octaves': 1.45},
-         [], ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N]),
+         [], [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
     _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
          {'frequency': 550, 'envelope': {'attack': 0.001, 'decay': 0.022, 'release': 0.012}, 'harmonicity': 5.0, 'modulationIndex': 30, 'resonance': 6500, 'octaves': 1.6},
          [], ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,_N,_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,_N,_N]),
+    _cfg('hihat', 'hihat', -18, '16n', 'MetalSynth',
+         {'frequency': 520, 'envelope': {'attack': 0.001, 'decay': 0.12, 'release': 0.08}, 'harmonicity': 3.8, 'modulationIndex': 22, 'resonance': 4000, 'octaves': 1.3},
+         [], [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
 ]
 
 _BASSES = [
@@ -89,6 +97,9 @@ _BASSES = [
     _cfg('bass', 'bass', -7, '8n', 'MonoSynth',
          {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.012, 'decay': 0.22, 'sustain': 0.3, 'release': 0.28}, 'filterEnvelope': {'attack': 0.012, 'decay': 0.28, 'sustain': 0.2, 'release': 0.25, 'baseFrequency': 85, 'octaves': 2.8}},
          [], ['E1',_N,'E1',_N,_N,'E1',_N,_N,'D1',_N,'E1',_N,_N,_N,'D1',_N,'E1',_N,'E1',_N,'F#1','E1',_N,_N,'D1','E1',_N,_N,'C#1',_N,'D1',_N]),
+    _cfg('bass', 'bass', -8, '8n', 'MonoSynth',
+         {'oscillator': {'type': 'triangle'}, 'envelope': {'attack': 0.03, 'decay': 0.4, 'sustain': 0.5, 'release': 0.35}, 'filterEnvelope': {'attack': 0.03, 'decay': 0.5, 'sustain': 0.3, 'release': 0.35, 'baseFrequency': 70, 'octaves': 1.8}},
+         [], ['A0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,'G0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
 ]
 
 _LEADS = [
@@ -108,6 +119,24 @@ _LEADS = [
          {'harmonicity': 1.0, 'envelope': {'attack': 0.005, 'decay': 0.15, 'sustain': 0.0, 'release': 0.2}, 'modulationEnvelope': {'attack': 0.3, 'decay': 0.1, 'sustain': 0.5, 'release': 0.3}},
          [_reverb(1.8, 0.45)],
          [_N,_N,_N,_N,_N,_N,'A3',_N,_N,_N,_N,_N,_N,_N,'G3',_N,_N,_N,_N,_N,_N,_N,'A3',_N,_N,_N,_N,_N,'F#3',_N,_N,_N]),
+    _cfg('stab', 'lead', -17, '16n', 'FMSynth',
+         {'harmonicity': 2, 'modulationIndex': 10, 'envelope': {'attack': 0.001, 'decay': 0.08, 'sustain': 0, 'release': 0.06}, 'modulationEnvelope': {'attack': 0.3, 'decay': 0.05, 'sustain': 0, 'release': 0.05}},
+         [_reverb(1.2, 0.35)],
+         [_N,_N,'E3',_N,_N,_N,_N,_N,_N,_N,'E3',_N,_N,_N,_N,_N,_N,_N,_N,_N,'D3',_N,_N,_N,_N,_N,'E3',_N,_N,_N,_N,_N]),
+]
+
+_PERCS = [
+    _cfg('perc', 'perc', -16, '16n', 'MetalSynth',
+         {'frequency': 200, 'envelope': {'attack': 0.001, 'decay': 0.06, 'release': 0.03}, 'harmonicity': 4.0, 'modulationIndex': 25, 'resonance': 3000, 'octaves': 1.5},
+         [_dist(0.4, 0.35)],
+         [_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('perc', 'perc', -18, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.001, 'decay': 0.08, 'sustain': 0, 'release': 0.05}},
+         [_reverb(0.8, 0.3)],
+         [_N,_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('perc', 'perc', -15, '16n', 'MetalSynth',
+         {'frequency': 250, 'envelope': {'attack': 0.001, 'decay': 0.04, 'release': 0.02}, 'harmonicity': 3.5, 'modulationIndex': 20, 'resonance': 3500, 'octaves': 1.2},
+         [], [_N,'C3',_N,_N,_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N]),
 ]
 
 
@@ -117,4 +146,8 @@ class TechnoTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        return [cls._pick(_KICKS), cls._pick(_SNARES), cls._pick(_HIHATS), cls._pick(_BASSES), cls._pick(_LEADS)]
+        layers = [cls._pick(_KICKS), cls._pick(_SNARES), cls._pick(_HIHATS), cls._pick(_BASSES), cls._pick(_LEADS)]
+        perc = cls._maybe(_PERCS, 0.4)
+        if perc:
+            layers.append(perc)
+        return layers

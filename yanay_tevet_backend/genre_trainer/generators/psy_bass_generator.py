@@ -8,40 +8,47 @@ from genre_trainer.generators.base_track_generator import (
 
 _KICKS = [
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.08, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.5, 'sustain': 0.01, 'release': 1.5}},
+         [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+    _cfg('kick', 'kick', 1, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.07, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.45, 'sustain': 0.01, 'release': 1.3}},
+         [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,'C1',_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,'C1',_N]),
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
          {'pitchDecay': 0.04, 'octaves': 12, 'envelope': {'attack': 0.001, 'decay': 0.35, 'sustain': 0.01, 'release': 1.2}},
          [], ['C1',_N,'C1',_N,_N,_N,'C1',_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,'C1',_N,_N,'C1',_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.06, 'octaves': 12, 'envelope': {'attack': 0.001, 'decay': 0.4, 'sustain': 0.01, 'release': 1.2}},
+         [_dist(0.5, 0.5)], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
     _cfg('kick', 'kick', 2, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.1, 'octaves': 6, 'envelope': {'attack': 0.001, 'decay': 0.6, 'sustain': 0.01, 'release': 2.0}},
+         {'pitchDecay': 0.1, 'octaves': 6, 'envelope': {'attack': 0.001, 'decay': 0.7, 'sustain': 0.01, 'release': 2.0}},
          [], ['C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N]),
-    _cfg('kick', 'kick', 1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.09, 'octaves': 7, 'envelope': {'attack': 0.001, 'decay': 0.55, 'sustain': 0.01, 'release': 1.8}},
-         [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.09, 'octaves': 7, 'envelope': {'attack': 0.001, 'decay': 0.55, 'sustain': 0.01, 'release': 1.8}},
-         [], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+         {'pitchDecay': 0.08, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.48, 'sustain': 0.01, 'release': 1.4}},
+         [], ['C1',_N,_N,_N,'C1',_N,_N,'C1','C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,'C1','C1',_N,_N,_N,'C1',_N,_N,_N]),
     _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.1, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.55, 'sustain': 0.01, 'release': 1.6}},
-         [_reverb(1.0, 0.18)],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
-    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.09, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.52, 'sustain': 0.01, 'release': 1.5}},
-         [_reverb(0.9, 0.15)],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+         {'pitchDecay': 0.09, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.52, 'sustain': 0.01, 'release': 1.5}},
+         [_reverb(0.8, 0.12)], ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
 ]
 
 _HIHATS = [
     _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth',
          {'frequency': 300, 'envelope': {'attack': 0.001, 'decay': 0.03, 'release': 0.01}, 'harmonicity': 6.0, 'modulationIndex': 40, 'resonance': 3000, 'octaves': 2.0},
-         [], [_N,_N,'C3',_N,'C3',_N,_N,_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,'C3',_N,_N,_N,_N,_N,'C3',_N,_N,_N,'C3',_N]),
-    _cfg('hihat', 'hihat', -18, '16n', 'MetalSynth',
-         {'frequency': 300, 'envelope': {'attack': 0.001, 'decay': 0.04, 'release': 0.03}, 'harmonicity': 3.5, 'modulationIndex': 20, 'resonance': 3500, 'octaves': 1.2},
-         [], [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
+         [], [_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N]),
+    _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth',
+         {'frequency': 300, 'envelope': {'attack': 0.001, 'decay': 0.04, 'release': 0.02}, 'harmonicity': 5.0, 'modulationIndex': 35, 'resonance': 2800, 'octaves': 1.8},
+         [], [_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,'C3',_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,_N,'C3',_N,_N,'C3',_N,_N]),
+    _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
+         {'frequency': 320, 'envelope': {'attack': 0.001, 'decay': 0.025, 'release': 0.01}, 'harmonicity': 7.0, 'modulationIndex': 45, 'resonance': 3500, 'octaves': 2.2},
+         [], [_N,_N,'C3',_N,'C3',_N,_N,'C3',_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,'C3',_N,_N,'C3',_N,_N,'C3',_N,_N,_N,'C3',_N]),
     _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
-         {'frequency': 350, 'envelope': {'attack': 0.001, 'decay': 0.05, 'release': 0.03}, 'harmonicity': 4.0, 'modulationIndex': 24, 'resonance': 4000, 'octaves': 1.2},
-         [], [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
-    _cfg('hihat', 'hihat', -18, '16n', 'MetalSynth',
-         {'frequency': 320, 'envelope': {'attack': 0.001, 'decay': 0.045, 'release': 0.03}, 'harmonicity': 3.8, 'modulationIndex': 22, 'resonance': 3800, 'octaves': 1.2},
-         [], [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
+         {'frequency': 350, 'envelope': {'attack': 0.001, 'decay': 0.035, 'release': 0.015}, 'harmonicity': 4.5, 'modulationIndex': 30, 'resonance': 4000, 'octaves': 1.5},
+         [], ['C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N,'C3',_N]),
+    _cfg('hihat', 'hihat', -18, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.02, 'sustain': 0, 'release': 0.015}},
+         [], [_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N,_N,_N,'C3',_N]),
+    _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
+         {'frequency': 280, 'envelope': {'attack': 0.001, 'decay': 0.028, 'release': 0.012}, 'harmonicity': 6.5, 'modulationIndex': 42, 'resonance': 2600, 'octaves': 2.0},
+         [], [_N,_N,'C3','C3',_N,_N,'C3',_N,_N,_N,'C3','C3',_N,_N,'C3',_N,_N,_N,'C3','C3',_N,_N,'C3',_N,_N,_N,'C3','C3',_N,_N,'C3',_N]),
 ]
 
 _BASSES = [
@@ -67,6 +74,33 @@ _BASSES = [
          {'harmonicity': 0.75, 'modulationIndex': 18, 'envelope': {'attack': 0.008, 'decay': 0.2, 'sustain': 0.65, 'release': 0.25}, 'modulationEnvelope': {'attack': 0.008, 'decay': 0.1, 'sustain': 0.4, 'release': 0.25}},
          [_dist(0.45, 0.45), _filt('lowpass', 1200, 4)],
          ['G2',_N,'G2','A2','G2','F2','G2',_N,'F2','G2',_N,'E2','D2',_N,'E2','F2','G2',_N,'G2','A2','C3','A2','G2','F2','E2','D2','C2',_N,'D2','E2',_N,_N]),
+    _cfg('bass', 'bass', -5, '16n', 'MonoSynth',
+         {'oscillator': {'type': 'square'}, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0.4, 'release': 0.1}, 'filterEnvelope': {'attack': 0.001, 'decay': 0.06, 'sustain': 0.2, 'release': 0.1, 'baseFrequency': 80, 'octaves': 4}},
+         [_dist(0.55, 0.55)],
+         ['E2','E2',_N,'G2','E2','D2','E2',_N,'G2','E2',_N,'D2','E2','G2',_N,_N,'E2','E2',_N,'G2','B2','G2','E2',_N,'D2','E2','G2',_N,'E2',_N,_N,'D2']),
+]
+
+_LEADS = [
+    _cfg('lead', 'lead', -12, '16n', 'FMSynth',
+         {'harmonicity': 2.0, 'modulationIndex': 8, 'envelope': {'attack': 0.005, 'decay': 0.15, 'sustain': 0.4, 'release': 0.3}, 'modulationEnvelope': {'attack': 0.01, 'decay': 0.1, 'sustain': 0.2, 'release': 0.3}},
+         [_reverb(1.5, 0.4), _delay('16n', 0.3, 0.2)],
+         ['A3',_N,'C4',_N,'E4',_N,'G4',_N,'A4',_N,'G4',_N,'E4',_N,'C4',_N,'A3',_N,'B3',_N,'D4',_N,'F4',_N,'A4',_N,'G4',_N,'F4','E4',_N,_N]),
+    _cfg('lead', 'lead', -13, '16n', 'AMSynth',
+         {'harmonicity': 1.5, 'envelope': {'attack': 0.008, 'decay': 0.2, 'sustain': 0.35, 'release': 0.4}, 'modulationEnvelope': {'attack': 0.02, 'decay': 0.15, 'sustain': 0.3, 'release': 0.35}},
+         [_reverb(2.0, 0.5, 0.01), _dist(0.4, 0.4)],
+         ['D4',_N,_N,'F4','D4',_N,'A3','D4',_N,'F4','D4',_N,'C4',_N,'A3',_N,'D4',_N,_N,'F4','A4',_N,'G4','F4','E4',_N,'D4',_N,'C4','D4',_N,_N]),
+    _cfg('lead', 'lead', -11, '16n', 'Synth',
+         {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.003, 'decay': 0.18, 'sustain': 0.35, 'release': 0.4}},
+         [_reverb(2.5, 0.55, 0.02), _filt('lowpass', 3000, 2)],
+         ['E4','E4',_N,'G4','A4',_N,'G4','E4','D4','E4',_N,'G4','A4',_N,_N,'G4','E4',_N,'E4','G4','B4','G4','E4',_N,'D4','E4','G4',_N,'A4',_N,_N,_N]),
+    _cfg('lead', 'lead', -12, '16n', 'FMSynth',
+         {'harmonicity': 3.0, 'modulationIndex': 12, 'envelope': {'attack': 0.005, 'decay': 0.2, 'sustain': 0.3, 'release': 0.5}, 'modulationEnvelope': {'attack': 0.01, 'decay': 0.12, 'sustain': 0.15, 'release': 0.4}},
+         [_reverb(3.0, 0.6, 0.03), _delay('8n', 0.25, 0.15)],
+         ['A4',_N,_N,'E4','G4',_N,'D4',_N,'A3','C4',_N,'E4',_N,'A4',_N,_N,'A4','G4',_N,'E4','A4',_N,'C5',_N,'A4','G4',_N,'E4',_N,'D4',_N,_N]),
+    _cfg('lead', 'lead', -13, '16n', 'Synth',
+         {'oscillator': {'type': 'triangle'}, 'envelope': {'attack': 0.01, 'decay': 0.25, 'sustain': 0.4, 'release': 0.5}},
+         [_reverb(3.5, 0.65, 0.04), _delay('8n.', 0.3, 0.2)],
+         ['C5',_N,'A4',_N,'G4',_N,'E4',_N,'D4',_N,'C4',_N,'A3',_N,'G3',_N,'C5',_N,'B4',_N,'A4',_N,'G4',_N,'E4',_N,'D4',_N,'C4',_N,'A3',_N]),
 ]
 
 
@@ -76,4 +110,8 @@ class PsyBassTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        return [cls._pick(_KICKS), cls._pick(_HIHATS), cls._pick(_BASSES)]
+        layers = [cls._pick(_KICKS), cls._pick(_HIHATS), cls._pick(_BASSES)]
+        lead = cls._maybe(_LEADS, 0.5)
+        if lead:
+            layers.append(lead)
+        return layers
