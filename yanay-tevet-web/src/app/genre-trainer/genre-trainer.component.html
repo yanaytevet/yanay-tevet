@@ -3,7 +3,13 @@
   <div class="max-w-3xl mx-auto px-4 pt-12">
 
     <!-- Header -->
-    <div class="text-center mb-8">
+    <div class="text-center mb-8 relative">
+      <button
+        type="button"
+        class="absolute top-0 right-0 btn btn-secondary text-xs px-3 py-1.5"
+        (click)="openConfig()">
+        Configure
+      </button>
       <h1 class="text-4xl font-bold text-primary-500" style="letter-spacing: -1.5px">Genre Trainer</h1>
       <p class="mt-2 text-secondary-400 text-base">Listen and identify the electronic music genre</p>
       @if (service.totalAnswered() > 0) {
@@ -22,7 +28,6 @@
     </div>
 
     <app-genre-trainer-player />
-    <app-genre-trainer-focus />
 
     @if (service.error()) {
       <div class="mt-4 p-4 rounded-xl text-sm text-red-700 bg-red-50 border border-red-200">
@@ -30,8 +35,16 @@
       </div>
     }
 
+    @if (service.revealed()) {
+      <div class="mt-4 flex justify-center">
+        <button type="button" class="btn btn-primary px-8" (click)="onNextTrack()">
+          Next Track
+        </button>
+      </div>
+    }
+
     <app-genre-trainer-guess />
-    <app-genre-trainer-reveal (nextTrack)="onNextTrack()" />
+    <app-genre-trainer-reveal />
 
   </div>
 </div>

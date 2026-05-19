@@ -31,7 +31,10 @@ export class GenreTrainerPlayerComponent {
   }
 
   onCanvasClick(): void {
-    if (!this.service.isPlaying() && !this.service.isLoading() && this.service.track()) {
+    if (this.service.isLoading()) { return; }
+    if (this.service.isPlaying()) {
+      void this.stop();
+    } else if (this.service.track()) {
       void this.start();
     }
   }
@@ -206,8 +209,18 @@ export class GenreTrainerPlayerComponent {
   }
 
   private startAnimation(): void {
+    const autoStopLoops = this.service.autoStopLoops();
+    const bpm = this.service.track()?.bpm ?? 128;
+    const loopDurationMs = (2 * 4 * 60 / bpm) * 1000;
+    const stopAfterMs = autoStopLoops > 0 ? autoStopLoops * loopDurationMs : null;
+    const startMs = performance.now();
+
     const draw = (): void => {
       if (!this.service.isPlaying()) {
+        return;
+      }
+      if (stopAfterMs !== null && performance.now() - startMs >= stopAfterMs) {
+        void this.stop();
         return;
       }
       const canvas = this.canvasEl()?.nativeElement;

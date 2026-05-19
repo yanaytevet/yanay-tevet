@@ -1,4 +1,4 @@
-import {Component, inject, output} from '@angular/core';
+import {Component, inject} from '@angular/core';
 import {GenreTrainerService} from '../genre-trainer.service';
 
 @Component({
@@ -9,5 +9,4 @@ import {GenreTrainerService} from '../genre-trainer.service';
 })
 export class GenreTrainerRevealComponent {
   protected readonly service = inject(GenreTrainerService);
-  readonly nextTrack = output<void>();
 }

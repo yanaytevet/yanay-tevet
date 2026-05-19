@@ -1,11 +1,16 @@
 <div class="card overflow-hidden">
 
   <div
-    class="relative"
+    class="relative group"
     style="height: 200px; background: #040414;"
-    [class.cursor-pointer]="!service.isPlaying() && !service.isLoading() && !!service.track()"
+    [class.cursor-pointer]="!service.isLoading()"
     (click)="onCanvasClick()">
     <canvas #vizCanvas class="w-full h-full block"></canvas>
+    @if (service.isPlaying()) {
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <p class="text-white/60 text-sm font-medium">Click to stop</p>
+      </div>
+    }
     @if (!service.isPlaying() && !service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
         <p class="text-white/30 text-sm font-medium">Press Play to start</p>

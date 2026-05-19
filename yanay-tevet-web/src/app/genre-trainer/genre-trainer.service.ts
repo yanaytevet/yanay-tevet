@@ -15,6 +15,7 @@ export class GenreTrainerService {
   readonly revealed = signal(false);
   readonly error = signal<string | null>(null);
   readonly autoStart = signal(false);
+  readonly autoStopLoops = signal(5);
   readonly streak = signal(0);
   readonly totalAnswered = signal(0);
   readonly totalCorrect = signal(0);
@@ -145,6 +146,12 @@ export class GenreTrainerService {
   clearFocus(): void {
     this.focusGenres.set(new Set());
     localStorage.removeItem('genre_trainer_focus');
+    this.clearTrack();
+  }
+
+  applyFocusConfig(focusGenres: Set<string>): void {
+    this.focusGenres.set(focusGenres);
+    this.saveFocusToStorage(focusGenres);
     this.clearTrack();
   }
 
