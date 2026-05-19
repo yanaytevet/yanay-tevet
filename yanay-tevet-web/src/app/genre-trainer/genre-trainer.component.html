@@ -3,13 +3,7 @@
   <div class="max-w-3xl mx-auto px-4 pt-12">
 
     <!-- Header -->
-    <div class="text-center mb-8 relative">
-      <button
-        type="button"
-        class="absolute top-0 right-0 btn btn-secondary text-xs px-3 py-1.5"
-        (click)="openConfig()">
-        Configure
-      </button>
+    <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-primary-500" style="letter-spacing: -1.5px">Genre Trainer</h1>
       <p class="mt-2 text-secondary-400 text-base">Listen and identify the electronic music genre</p>
       @if (service.totalAnswered() > 0) {

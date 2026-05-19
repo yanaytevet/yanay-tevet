@@ -2,6 +2,8 @@ import {Component, DestroyRef, ElementRef, effect, inject, viewChild} from '@ang
 import * as Tone from 'tone';
 import {TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
 import {GenreTrainerService} from '../genre-trainer.service';
+import {DialogService} from '../../common/dialogs/dialogs.service';
+import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/genre-trainer-config-dialog.component';
 
 @Component({
   selector: 'app-genre-trainer-player',
@@ -12,6 +14,7 @@ import {GenreTrainerService} from '../genre-trainer.service';
 export class GenreTrainerPlayerComponent {
   protected readonly service = inject(GenreTrainerService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly dialogService = inject(DialogService);
 
   private readonly canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
 
@@ -52,6 +55,19 @@ export class GenreTrainerPlayerComponent {
 
   toggleAutoStart(): void {
     this.service.autoStart.update(v => !v);
+  }
+
+  async openConfig(): Promise<void> {
+    const result = await this.dialogService.open(GenreTrainerConfigDialogComponent, {
+      genres: this.service.genres(),
+      focusGenres: new Set(this.service.focusGenres()),
+      autoStopLoops: this.service.autoStopLoops(),
+      genreLabelMap: this.service.genreLabelMap(),
+    }, 60);
+    if (result) {
+      this.service.applyFocusConfig(result.focusGenres);
+      this.service.autoStopLoops.set(result.autoStopLoops);
+    }
   }
 
   setVolume(value: number): void {
