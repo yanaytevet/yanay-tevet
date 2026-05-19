@@ -8,6 +8,7 @@ export class GenreTrainerService {
 
   readonly track = signal<TrackSchema | null>(null);
   readonly genres = signal<string[]>([]);
+  readonly displayedGenres = signal<string[]>([]);
   readonly isPlaying = signal(false);
   readonly isLoading = signal(false);
   readonly selectedGenre = signal<string | null>(null);
@@ -55,7 +56,7 @@ export class GenreTrainerService {
     const track = this.track();
     const rev = this.revealed();
     return Object.fromEntries(
-      this.genres().map(g => [g, {
+      this.displayedGenres().map(g => [g, {
         isSelected: g === selected,
         isCorrect: rev && g === track?.genre,
         isWrong: rev && g === selected && g !== track?.genre,
@@ -98,9 +99,11 @@ export class GenreTrainerService {
         ]);
         this.track.set(trackRes.data.track);
         this.genres.set(genresRes.data.genres);
+        this.displayedGenres.set(focus.size > 0 ? [...focus] : genresRes.data.genres);
       } else {
         const trackRes = await getRandomTrackView(trackOptions);
         this.track.set(trackRes.data.track);
+        this.displayedGenres.set(focus.size > 0 ? [...focus] : this.genres());
       }
     } catch {
       this.error.set('Failed to load track. Is the backend running?');

@@ -25,6 +25,12 @@ export class GenreTrainerPlayerComponent {
     this.destroyRef.onDestroy(() => void this.stop());
   }
 
+  onCanvasClick(): void {
+    if (!this.service.isPlaying() && !this.service.isLoading() && this.service.track()) {
+      void this.start();
+    }
+  }
+
   async togglePlay(): Promise<void> {
     if (this.service.isPlaying()) {
       await this.stop();

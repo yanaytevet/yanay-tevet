@@ -1,4 +1,5 @@
-import {Component, computed} from '@angular/core';
+import {Component, computed, signal} from '@angular/core';
+import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {DreamDiaryEntrySchema, updateDreamDiaryEntryView} from '../../../../generated-files/api/dream-diary';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
@@ -13,9 +14,10 @@ import {ConfirmationButtonComponent} from '../../../common/dialogs/confirmation-
 export class EditDreamDiaryEntryDialogComponent extends BaseDialogComponent<DreamDiaryEntrySchema, DreamDiaryEntrySchema | null> {
   textCtrl = new FormControl<string>(this.data.text);
   timeCtrl = new FormControl<string>(this.toLocalDatetimeString(this.data.time));
-  isSaving = false;
 
-  readonly canSave = computed(() => !!this.textCtrl.value?.trim() && !this.isSaving);
+  readonly isSaving = signal(false);
+  private readonly textValue = toSignal(this.textCtrl.valueChanges, {initialValue: this.data.text});
+  readonly canSave = computed(() => !!this.textValue()?.trim() && !this.isSaving());
 
   private toLocalDatetimeString(isoString: string): string {
     const d = new Date(isoString);
@@ -25,10 +27,10 @@ export class EditDreamDiaryEntryDialogComponent extends BaseDialogComponent<Drea
 
   async onConfirm(): Promise<void> {
     const text = this.textCtrl.value?.trim();
-    if (!text || this.isSaving) {
+    if (!text || this.isSaving()) {
       return;
     }
-    this.isSaving = true;
+    this.isSaving.set(true);
     try {
       const time = this.timeCtrl.value
         ? new Date(this.timeCtrl.value).toISOString()
@@ -39,7 +41,7 @@ export class EditDreamDiaryEntryDialogComponent extends BaseDialogComponent<Drea
       });
       this.emitClose(res.data);
     } finally {
-      this.isSaving = false;
+      this.isSaving.set(false);
     }
   }
 }

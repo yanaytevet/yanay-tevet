@@ -1,6 +1,10 @@
 <div class="card overflow-hidden">
 
-  <div class="relative" style="height: 200px; background: #040414;">
+  <div
+    class="relative"
+    style="height: 200px; background: #040414;"
+    [class.cursor-pointer]="!service.isPlaying() && !service.isLoading() && !!service.track()"
+    (click)="onCanvasClick()">
     <canvas #vizCanvas class="w-full h-full block"></canvas>
     @if (!service.isPlaying() && !service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none">

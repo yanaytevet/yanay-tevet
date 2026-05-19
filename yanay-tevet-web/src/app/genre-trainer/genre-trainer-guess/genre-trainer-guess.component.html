@@ -1,10 +1,10 @@
-@if (!service.isLoading() && service.track() && service.genres().length > 0) {
+@if (!service.isLoading() && service.track() && service.displayedGenres().length > 0) {
   <div class="mt-6">
     <h2 class="text-lg font-bold text-primary-500 mb-4 text-center" style="letter-spacing: -0.25px">
       What genre is this?
     </h2>
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-      @for (genre of service.genres(); track genre) {
+      @for (genre of service.displayedGenres(); track genre) {
         <button
           type="button"
           [disabled]="service.revealed()"

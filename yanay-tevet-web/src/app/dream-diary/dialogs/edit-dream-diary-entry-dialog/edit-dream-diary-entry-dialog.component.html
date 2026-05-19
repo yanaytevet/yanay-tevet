@@ -23,7 +23,7 @@
         <button type="button" class="btn cancel-btn" (click)="emitClose(null)">Cancel</button>
         <app-confirmation-button
             [disabled]="!canSave()"
-            [text]="isSaving ? 'Blaming your mother...' : 'Save'"
+            [text]="isSaving() ? 'Blaming your mother...' : 'Save'"
             (clicked)="onConfirm()">
         </app-confirmation-button>
     </div>
