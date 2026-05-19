@@ -28,6 +28,7 @@ export class GenreTrainerService {
   });
 
   readonly noFocus = computed(() => this.focusGenres().size === 0);
+  readonly playDisabled = computed(() => this.focusGenres().size === 1);
 
   readonly genreLabelMap = computed(() =>
     Object.fromEntries(this.genres().map(g => [g, this.genreDisplay.get(g)]))
@@ -138,10 +139,18 @@ export class GenreTrainerService {
       this.saveFocusToStorage(next);
       return next;
     });
+    this.clearTrack();
   }
 
   clearFocus(): void {
     this.focusGenres.set(new Set());
     localStorage.removeItem('genre_trainer_focus');
+    this.clearTrack();
+  }
+
+  private clearTrack(): void {
+    this.track.set(null);
+    this.selectedGenre.set(null);
+    this.revealed.set(false);
   }
 }

@@ -57,7 +57,7 @@
     <button
       type="button"
       class="btn btn-primary px-6 flex-shrink-0"
-      [disabled]="service.isLoading() || !service.track()"
+      [disabled]="service.isLoading() || service.playDisabled()"
       (click)="togglePlay()">
       @if (service.isPlaying()) { Stop } @else { Play }
     </button>

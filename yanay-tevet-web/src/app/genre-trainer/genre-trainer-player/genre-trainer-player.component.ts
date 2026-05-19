@@ -1,4 +1,4 @@
-import {Component, DestroyRef, ElementRef, inject, viewChild} from '@angular/core';
+import {Component, DestroyRef, ElementRef, effect, inject, viewChild} from '@angular/core';
 import * as Tone from 'tone';
 import {TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
 import {GenreTrainerService} from '../genre-trainer.service';
@@ -23,6 +23,11 @@ export class GenreTrainerPlayerComponent {
 
   constructor() {
     this.destroyRef.onDestroy(() => void this.stop());
+    effect(() => {
+      if (!this.service.track() && this.service.isPlaying()) {
+        void this.stop();
+      }
+    });
   }
 
   onCanvasClick(): void {
@@ -34,6 +39,9 @@ export class GenreTrainerPlayerComponent {
   async togglePlay(): Promise<void> {
     if (this.service.isPlaying()) {
       await this.stop();
+    } else if (!this.service.track()) {
+      await this.service.loadData();
+      await this.start();
     } else {
       await this.start();
     }
