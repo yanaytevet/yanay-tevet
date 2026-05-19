@@ -14,7 +14,7 @@ export class GenreTrainerService {
   readonly selectedGenre = signal<string | null>(null);
   readonly revealed = signal(false);
   readonly error = signal<string | null>(null);
-  readonly autoStart = signal(false);
+  readonly autoStart = signal(true);
   readonly autoStopLoops = signal(5);
   readonly streak = signal(0);
   readonly totalAnswered = signal(0);
