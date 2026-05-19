@@ -100,6 +100,6 @@
   <div class="dialog-buttons-container">
     <span class="flex-1"></span>
     <button class="btn cancel-btn" (click)="emitClose(null)">Cancel</button>
-    <app-confirmation-button text="Apply" (clicked)="confirm()"></app-confirmation-button>
+    <app-confirmation-button text="Apply" [disabled]="!canConfirm()" (clicked)="confirm()"></app-confirmation-button>
   </div>
 </div>

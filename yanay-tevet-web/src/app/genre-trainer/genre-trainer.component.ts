@@ -29,6 +29,7 @@ export class GenreTrainerComponent {
   async onNextTrack(): Promise<void> {
     await this.player().stop();
     this.service.selectedGenre.set(null);
+    this.service.selectedFamily.set(null);
     this.service.revealed.set(false);
     this.service.track.set(null);
     await this.service.loadData();

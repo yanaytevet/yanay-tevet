@@ -38,6 +38,12 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
   readonly localNoFocus = computed(() => this.localFocus().size === 0);
   readonly localNoFamilyFocus = computed(() => this.localFocusFamilies().size === 0);
 
+  readonly canConfirm = computed(() =>
+    this.localEasyMode()
+      ? this.localFocusFamilies().size !== 1
+      : this.localFocus().size !== 1
+  );
+
   readonly localFocusState = computed(() =>
     Object.fromEntries(this.data.genres.map(g => [g, this.localFocus().has(g)]))
   );
