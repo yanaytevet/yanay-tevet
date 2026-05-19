@@ -4,17 +4,23 @@ import {TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
 import {GenreTrainerService} from '../genre-trainer.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/genre-trainer-config-dialog.component';
+import {bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
+import {NgIcon} from '@ng-icons/core';
 
 @Component({
   selector: 'app-genre-trainer-player',
   standalone: true,
-  imports: [],
+  imports: [NgIcon],
   templateUrl: './genre-trainer-player.component.html',
 })
 export class GenreTrainerPlayerComponent {
   protected readonly service = inject(GenreTrainerService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogService = inject(DialogService);
+
+  protected readonly bootstrapGearFill = bootstrapGearFill;
+  protected readonly bootstrapVolumeDownFill = bootstrapVolumeDownFill;
+  protected readonly bootstrapVolumeUpFill = bootstrapVolumeUpFill;
 
   private readonly canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
 
@@ -211,8 +217,8 @@ export class GenreTrainerPlayerComponent {
         if (!note) {
           return;
         }
-        type TwoArgTAR = {triggerAttackRelease: (d: Tone.Unit.Time, t: number) => void};
-        type ThreeArgTAR = {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number) => void};
+        interface TwoArgTAR {triggerAttackRelease: (d: Tone.Unit.Time, t: number) => void}
+        interface ThreeArgTAR {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number) => void}
         if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
           (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time);
         } else {

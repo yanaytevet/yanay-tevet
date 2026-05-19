@@ -145,6 +145,24 @@ Use for medium-density items like clock cards, list rows with metadata.
 
 ## Icons
 
-Use `@ng-icons`. Available sets: `bootstrap-icons`, `feather-icons`, `heroicons`, `ionicons`.
+**Always use `@ng-icons` — never write custom SVGs inline.**
 
-Import `NgIconComponent` from `@ng-icons/core` and add icon providers via `provideIcons()` in the component's `providers` array.
+Available sets: `@ng-icons/bootstrap-icons` (preferred), `feather-icons`, `heroicons`, `ionicons`.
+
+Pattern — use `[svg]` binding with a protected class field (no `provideIcons` needed):
+
+```typescript
+import {bootstrapGearFill} from '@ng-icons/bootstrap-icons';
+import {NgIcon} from '@ng-icons/core';
+
+@Component({ imports: [NgIcon], ... })
+export class MyComponent {
+  protected readonly bootstrapGearFill = bootstrapGearFill;
+}
+```
+
+```html
+<ng-icon [svg]="bootstrapGearFill" class="text-base text-secondary-400" />
+```
+
+Size via Tailwind `text-*`: `text-sm` ≈ 14px, `text-base` ≈ 16px, `text-xl` ≈ 20px.

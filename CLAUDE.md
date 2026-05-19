@@ -79,6 +79,7 @@ After changing backend models or endpoints:
 
 ## Hard Rules (Always Active)
 
+- **No custom SVG icons** — always use `@ng-icons` with the `[svg]="iconVar"` pattern (see frontend skill for details).
 - **No getters or value-computing methods called from templates** — use `readonly` properties or `computed()` signals. For parameterised lookups, use a computed record: `computed(() => Object.fromEntries(items().map(i => [i.id, i.id === active()])))` then index in the template.
 - **No `getattr`/`setattr` in Python** — use explicit `if`/`elif` or `match`/`case`.
 - **Always import at the top of Python files** — no string type annotations, no lazy imports inside methods.
