@@ -14,7 +14,7 @@
     @if (!service.isPlaying() && !service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
         @if (service.playDisabled()) {
-          <p class="text-white/40 text-sm font-medium">Select at least 2 genres in settings</p>
+          <p class="text-white/40 text-sm font-medium">{{ service.playDisabledMessage() }}</p>
         } @else {
           <p class="text-white/30 text-sm font-medium">Press Play to start</p>
         }
@@ -47,7 +47,9 @@
 
     <!-- Volume slider -->
     <div class="flex items-center gap-2 flex-1 min-w-0">
-      <ng-icon [svg]="bootstrapVolumeDownFill" class="text-secondary-400 flex-shrink-0 text-base" />
+      <span class="hidden sm:flex flex-shrink-0">
+        <ng-icon [svg]="bootstrapVolumeDownFill" class="text-secondary-400 text-base" />
+      </span>
       <input
         type="range"
         min="0"
@@ -56,7 +58,9 @@
         class="flex-1 h-1 rounded-full accent-blue-500 cursor-pointer"
         [value]="service.volume()"
         (input)="setVolume(+$any($event.target).value)">
-      <ng-icon [svg]="bootstrapVolumeUpFill" class="text-secondary-400 flex-shrink-0 text-base" />
+      <span class="hidden sm:flex flex-shrink-0">
+        <ng-icon [svg]="bootstrapVolumeUpFill" class="text-secondary-400 text-base" />
+      </span>
     </div>
 
     <!-- Play / Stop -->

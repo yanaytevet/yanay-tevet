@@ -4,9 +4,19 @@
        [class]="service.isCorrect() ? 'text-emerald-700' : 'text-rose-600'">
       @if (service.isCorrect()) { Correct! } @else { Not quite. }
     </p>
-    <p class="text-secondary-400 text-sm">
-      Genre: <span class="font-semibold text-primary-500">{{ service.trackGenreLabel() }}</span>
-    </p>
+
+    @if (service.easyMode()) {
+      <p class="text-secondary-400 text-sm">
+        Family: <span class="font-semibold text-primary-500">{{ service.trackGenreFamily()?.name }}</span>
+      </p>
+      <p class="text-secondary-400 text-sm mt-0.5">
+        Genre: <span class="font-semibold text-primary-500">{{ service.trackGenreLabel() }}</span>
+      </p>
+    } @else {
+      <p class="text-secondary-400 text-sm">
+        Genre: <span class="font-semibold text-primary-500">{{ service.trackGenreLabel() }}</span>
+      </p>
+    }
 
     <div class="mt-3 pt-3 border-t border-outline-border-1">
       <p class="text-xs text-secondary-400 leading-relaxed">{{ service.trackGenreDescription() }}</p>
@@ -32,5 +42,4 @@
       </div>
     }
   </div>
-
 }

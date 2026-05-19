@@ -67,12 +67,19 @@ export class GenreTrainerPlayerComponent {
     const result = await this.dialogService.open(GenreTrainerConfigDialogComponent, {
       genres: this.service.genres(),
       focusGenres: new Set(this.service.focusGenres()),
+      focusFamilies: new Set(this.service.focusFamilies()),
+      easyMode: this.service.easyMode(),
       autoStopLoops: this.service.autoStopLoops(),
       genreLabelMap: this.service.genreLabelMap(),
+      allFamilies: this.service.allFamilies,
     }, 60);
     if (result) {
-      this.service.applyFocusConfig(result.focusGenres);
-      this.service.autoStopLoops.set(result.autoStopLoops);
+      this.service.applyConfig({
+        focusGenres: result.focusGenres,
+        focusFamilies: result.focusFamilies,
+        easyMode: result.easyMode,
+        autoStopLoops: result.autoStopLoops,
+      });
     }
   }
 
