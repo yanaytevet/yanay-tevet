@@ -8,11 +8,13 @@ _N = None
 
 
 def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_opts: dict,
-         effects: list, steps: list, velocities: list | None = None) -> dict[str, Any]:
+         effects: list, steps: list, velocities: list | None = None,
+         entry_loop: int = 0, dropout_prob: float = 0.0,
+         automation: list | None = None) -> dict[str, Any]:
     pattern: dict = {'subdivision': '16n', 'steps': steps}
     if velocities is not None:
         pattern['velocities'] = velocities
-    return {
+    result: dict[str, Any] = {
         'id': id_,
         'role': role,
         'volume': vol,
@@ -21,6 +23,79 @@ def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_op
         'effects': effects,
         'pattern': pattern,
     }
+    if entry_loop:
+        result['entry_loop'] = entry_loop
+    if dropout_prob:
+        result['dropout_prob'] = dropout_prob
+    if automation:
+        result['automation'] = automation
+    return result
+
+
+def _auto(target: str, from_val: float, to_val: float, waveform: str = 'tri') -> dict:
+    """Parameter automation: target is 'effect:N:paramName'."""
+    return {'target': target, 'from_val': from_val, 'to_val': to_val, 'waveform': waveform}
+
+
+def _vel(steps: list, accent_prob: float = 0.2, ghost_prob: float = 0.12) -> list[float | None]:
+    vels = []
+    for step in steps:
+        if step is None:
+            vels.append(None)
+        elif random.random() < ghost_prob:
+            vels.append(round(random.uniform(0.2, 0.38), 2))
+        elif random.random() < accent_prob:
+            vels.append(round(random.uniform(0.85, 1.0), 2))
+        else:
+            vels.append(round(random.uniform(0.5, 0.78), 2))
+    return vels
+
+
+def _vel_groove(steps: list) -> list[float | None]:
+    """Quarter-note accents, medium 8ths, quiet 16th offbeats."""
+    vels = []
+    for i, step in enumerate(steps):
+        if step is None:
+            vels.append(None)
+            continue
+        pos = i % 32
+        if pos % 4 == 0:
+            vels.append(round(random.uniform(0.75, 0.95), 2))
+        elif pos % 2 == 0:
+            vels.append(round(random.uniform(0.45, 0.65), 2))
+        else:
+            vels.append(round(random.uniform(0.2, 0.4), 2))
+    return vels
+
+
+def _vel_kick(steps: list) -> list[float | None]:
+    """Strong on-beat kicks, softer secondary hits."""
+    vels = []
+    for i, step in enumerate(steps):
+        if step is None:
+            vels.append(None)
+            continue
+        pos = i % 32
+        if pos % 8 == 0:
+            vels.append(round(random.uniform(0.88, 1.0), 2))
+        else:
+            vels.append(round(random.uniform(0.55, 0.75), 2))
+    return vels
+
+
+def _vel_snare(steps: list) -> list[float | None]:
+    """High velocity on beats 2 & 4, ghost level on all others."""
+    vels = []
+    for i, step in enumerate(steps):
+        if step is None:
+            vels.append(None)
+            continue
+        pos = i % 32
+        if pos in {4, 12, 20, 28}:
+            vels.append(round(random.uniform(0.78, 0.95), 2))
+        else:
+            vels.append(round(random.uniform(0.16, 0.32), 2))
+    return vels
 
 
 def _dist(d: float, wet: float) -> dict:

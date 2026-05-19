@@ -21,6 +21,13 @@ export type EffectConfigSchema = {
     wet: number;
 };
 
+export type AutomationSpecSchema = {
+    target: string;
+    from_val: number;
+    to_val: number;
+    waveform?: string;
+};
+
 export type TrackLayerSchema = {
     id: string;
     role: string;
@@ -29,6 +36,9 @@ export type TrackLayerSchema = {
     instrument: InstrumentConfigSchema;
     effects: Array<EffectConfigSchema>;
     pattern: LayerPatternSchema;
+    entry_loop?: number;
+    dropout_prob?: number;
+    automation?: Array<AutomationSpecSchema>;
 };
 
 export type TrackSchema = {

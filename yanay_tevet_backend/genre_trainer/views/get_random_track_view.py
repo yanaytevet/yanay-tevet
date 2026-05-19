@@ -30,6 +30,13 @@ class InstrumentConfigSchema(Schema):
     options: dict[str, Any]
 
 
+class AutomationSpecSchema(Schema):
+    target: str
+    from_val: float
+    to_val: float
+    waveform: str = 'tri'
+
+
 class TrackLayerSchema(Schema):
     id: str
     role: str
@@ -38,6 +45,9 @@ class TrackLayerSchema(Schema):
     instrument: InstrumentConfigSchema
     effects: list[EffectConfigSchema]
     pattern: LayerPatternSchema
+    entry_loop: int = 0
+    dropout_prob: float = 0.0
+    automation: list[AutomationSpecSchema] = []
 
 
 class TrackSchema(Schema):

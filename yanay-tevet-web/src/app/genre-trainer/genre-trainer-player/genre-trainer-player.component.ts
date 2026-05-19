@@ -1,6 +1,6 @@
 import {Component, DestroyRef, ElementRef, effect, inject, viewChild} from '@angular/core';
 import * as Tone from 'tone';
-import {TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
+import {AutomationSpecSchema, TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
 import {GenreTrainerService} from '../genre-trainer.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/genre-trainer-config-dialog.component';
@@ -29,6 +29,8 @@ export class GenreTrainerPlayerComponent {
   private sequences: Tone.Sequence[] = [];
   private nodes: Tone.ToneAudioNode[] = [];
   private animFrameId: number | null = null;
+  private loopCount = 0;
+  private lastTransportSeconds = -1;
 
   constructor() {
     this.destroyRef.onDestroy(() => void this.stop());
@@ -97,6 +99,8 @@ export class GenreTrainerPlayerComponent {
     }
     await Tone.start();
 
+    this.loopCount = 0;
+    this.lastTransportSeconds = -1;
     this.masterGain = new Tone.Gain(this.service.volume()).toDestination();
     this.analyser = new Tone.Analyser('waveform', 512);
     this.masterGain.connect(this.analyser as unknown as Tone.ToneAudioNode);
@@ -120,7 +124,17 @@ export class GenreTrainerPlayerComponent {
 
       this.nodes.push(synth, ...effects);
 
-      const seq = this.buildSequence(layer, synth);
+      const dropoutRef = {shouldPlay: true};
+      const dropoutProb = layer.dropout_prob ?? 0;
+      if (dropoutProb > 0) {
+        Tone.getTransport().scheduleRepeat(() => {
+          dropoutRef.shouldPlay = Math.random() >= dropoutProb;
+        }, '2m', '2m');
+      }
+
+      this.setupLayerAutomation(layer.automation ?? [], effects);
+
+      const seq = this.buildSequence(layer, synth, dropoutRef);
       seq.start(0);
       this.sequences.push(seq);
     }
@@ -156,6 +170,8 @@ export class GenreTrainerPlayerComponent {
     this.masterGain?.dispose();
     this.masterGain = null;
 
+    this.loopCount = 0;
+    this.lastTransportSeconds = -1;
     this.service.isPlaying.set(false);
     this.clearCanvas();
   }
@@ -215,26 +231,82 @@ export class GenreTrainerPlayerComponent {
     }
   }
 
-  private buildSequence(layer: TrackLayerSchema, synth: Tone.ToneAudioNode): Tone.Sequence {
+  private buildSequence(
+    layer: TrackLayerSchema,
+    synth: Tone.ToneAudioNode,
+    dropoutRef: {shouldPlay: boolean},
+  ): Tone.Sequence {
     const synthType = layer.instrument.type;
     const duration = layer.note_duration as Tone.Unit.Time;
+    const velocities = layer.pattern.velocities;
+    const entryLoop = layer.entry_loop ?? 0;
+    const isHihat = layer.role === 'hihat';
+    const totalSteps = layer.pattern.steps.length;
+    let stepIdx = 0;
+
+    interface TwoArgTAR {triggerAttackRelease: (d: Tone.Unit.Time, t: number, v?: number) => void}
+    interface ThreeArgTAR {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number, v?: number) => void}
+
+    const fire = (note: string, vel: number, time: number): void => {
+      if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
+        (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, vel);
+      } else {
+        (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, vel);
+      }
+    };
 
     return new Tone.Sequence(
       (time: number, note: string | null) => {
+        const idx = stepIdx;
+        stepIdx = (stepIdx + 1) % totalSteps;
+
+        if (this.loopCount < entryLoop) { return; }
+        if (!dropoutRef.shouldPlay) { return; }
+
         if (!note) {
+          // Occasional quiet ghost hit on hi-hat null steps for rhythmic instability
+          if (isHihat && Math.random() < 0.04) {
+            fire('C4', 0.12 + Math.random() * 0.12, time);
+          }
           return;
         }
-        interface TwoArgTAR {triggerAttackRelease: (d: Tone.Unit.Time, t: number) => void}
-        interface ThreeArgTAR {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number) => void}
-        if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
-          (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time);
-        } else {
-          (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time);
-        }
+
+        const vel = velocities?.[idx] ?? 0.75;
+        fire(note, vel, time);
       },
       layer.pattern.steps as (string | null)[],
       layer.pattern.subdivision as Tone.Unit.Time,
     );
+  }
+
+  private setupLayerAutomation(specs: AutomationSpecSchema[], effects: Tone.ToneAudioNode[]): void {
+    const loopSec = Tone.Time('2m' as Tone.Unit.Time).toSeconds();
+    for (const spec of specs) {
+      const parts = spec.target.split(':');
+      if (parts[0] !== 'effect' || parts.length !== 3) { continue; }
+      const effect = effects[parseInt(parts[1])];
+      if (!effect) { continue; }
+      const prop = (effect as unknown as Record<string, unknown>)[parts[2]];
+      if (!prop || typeof (prop as {setValueAtTime?: unknown}).setValueAtTime !== 'function') { continue; }
+
+      const signal = prop as {
+        setValueAtTime(v: number, t: number): void;
+        linearRampToValueAtTime(v: number, t: number): void;
+        cancelScheduledValues(t: number): void;
+      };
+
+      Tone.getTransport().scheduleRepeat((time: number) => {
+        signal.cancelScheduledValues(time);
+        if (spec.waveform === 'ramp') {
+          signal.setValueAtTime(spec.from_val, time);
+          signal.linearRampToValueAtTime(spec.to_val, time + loopSec * 0.98);
+        } else {
+          signal.setValueAtTime(spec.from_val, time);
+          signal.linearRampToValueAtTime(spec.to_val, time + loopSec * 0.5);
+          signal.linearRampToValueAtTime(spec.from_val, time + loopSec * 0.98);
+        }
+      }, '2m' as Tone.Unit.Time, 0);
+    }
   }
 
   private startAnimation(): void {
@@ -252,6 +324,14 @@ export class GenreTrainerPlayerComponent {
         void this.stop();
         return;
       }
+
+      // Detect transport loop restarts to maintain loop count for arrangement logic
+      const currentTransportSec = Tone.getTransport().seconds;
+      if (this.lastTransportSeconds >= 0 && currentTransportSec < this.lastTransportSeconds - 0.1) {
+        this.loopCount++;
+      }
+      this.lastTransportSeconds = currentTransportSec;
+
       const canvas = this.canvasEl()?.nativeElement;
       if (!canvas || !this.analyser) {
         this.animFrameId = requestAnimationFrame(draw);
