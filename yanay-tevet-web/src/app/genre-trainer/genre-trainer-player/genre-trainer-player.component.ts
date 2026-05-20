@@ -7,6 +7,27 @@ import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/
 import {bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
 
+// Fields added to the backend schema but not yet regenerated into the typed client.
+// Remove once `npm run create-api` has been run against the updated backend.
+type ExtendedLayer = TrackLayerSchema & {
+  loop_modulo?: number;
+  loop_modulo_remainder?: number;
+  pan?: number | null;
+};
+
+// Role-based stereo defaults applied when a layer has no explicit pan.
+// Kick and bass stay centered for energy; hats/percs/leads spread to widen the mix.
+const ROLE_PAN_DEFAULTS: Record<string, number> = {
+  kick: 0,
+  bass: 0,
+  snare: 0,
+  hihat: 0.22,
+  perc: -0.22,
+  lead: -0.08,
+  stab: 0.12,
+  pad: 0,
+};
+
 @Component({
   selector: 'app-genre-trainer-player',
   standalone: true,
@@ -25,6 +46,10 @@ export class GenreTrainerPlayerComponent {
   private readonly canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
 
   private masterGain: Tone.Gain | null = null;
+  private masterCompressor: Tone.Compressor | null = null;
+  private masterLimiter: Tone.Limiter | null = null;
+  private sidechainBus: Tone.Gain | null = null;
+  private sidechainLfo: Tone.LFO | null = null;
   private analyser: Tone.Analyser | null = null;
   private sequences: Tone.Sequence[] = [];
   private nodes: Tone.ToneAudioNode[] = [];
@@ -101,16 +126,44 @@ export class GenreTrainerPlayerComponent {
 
     this.loopCount = 0;
     this.lastTransportSeconds = -1;
-    this.masterGain = new Tone.Gain(this.service.volume()).toDestination();
+
+    // Master chain: masterGain -> compressor -> limiter -> destination.
+    // The limiter prevents clipping when layered distorted kicks + bass + leads peak together;
+    // the compressor adds gentle glue without obvious pumping (the sidechain LFO handles that).
+    this.masterGain = new Tone.Gain(this.service.volume());
+    this.masterCompressor = new Tone.Compressor({threshold: -12, ratio: 3.5, attack: 0.005, release: 0.12, knee: 6});
+    this.masterLimiter = new Tone.Limiter(-1);
+    this.masterGain.connect(this.masterCompressor);
+    this.masterCompressor.connect(this.masterLimiter);
+    this.masterLimiter.toDestination();
+
     this.analyser = new Tone.Analyser('waveform', 512);
-    this.masterGain.connect(this.analyser as unknown as Tone.ToneAudioNode);
+    this.masterLimiter.connect(this.analyser as unknown as Tone.ToneAudioNode);
 
     Tone.getTransport().bpm.value = track.bpm;
 
+    // Sidechain bus: every non-kick layer routes through this gain, which is modulated by
+    // a transport-locked sawtooth LFO (low at each beat, ramping back to unity before the next).
+    // The kick connects directly to masterGain so it triggers the "pump" without ducking itself.
+    this.sidechainBus = new Tone.Gain(1);
+    this.sidechainBus.connect(this.masterGain);
+    this.sidechainLfo = new Tone.LFO({frequency: '4n', type: 'sawtooth', min: 0.55, max: 1.0});
+    this.sidechainLfo.connect(this.sidechainBus.gain);
+    this.sidechainLfo.start(0);
+
     for (const layer of track.layers) {
+      const extended = layer as ExtendedLayer;
+      const isKick = layer.role === 'kick';
+      const bus = isKick ? this.masterGain : this.sidechainBus;
+
       const vol = new Tone.Volume(layer.volume);
-      vol.connect(this.masterGain);
-      this.nodes.push(vol);
+      vol.connect(bus);
+
+      const panValue = extended.pan ?? ROLE_PAN_DEFAULTS[layer.role] ?? 0;
+      const panner = new Tone.Panner(panValue);
+      panner.connect(vol);
+
+      this.nodes.push(vol, panner);
 
       const synth = this.buildSynth(layer);
       const effects = await Promise.all(layer.effects.map(e => this.buildEffect(e)));
@@ -120,7 +173,7 @@ export class GenreTrainerPlayerComponent {
         lastNode.connect(effect);
         lastNode = effect;
       }
-      lastNode.connect(vol);
+      lastNode.connect(panner);
 
       this.nodes.push(synth, ...effects);
 
@@ -167,6 +220,14 @@ export class GenreTrainerPlayerComponent {
 
     this.analyser?.dispose();
     this.analyser = null;
+    this.sidechainLfo?.dispose();
+    this.sidechainLfo = null;
+    this.sidechainBus?.dispose();
+    this.sidechainBus = null;
+    this.masterLimiter?.dispose();
+    this.masterLimiter = null;
+    this.masterCompressor?.dispose();
+    this.masterCompressor = null;
     this.masterGain?.dispose();
     this.masterGain = null;
 
@@ -236,10 +297,13 @@ export class GenreTrainerPlayerComponent {
     synth: Tone.ToneAudioNode,
     dropoutRef: {shouldPlay: boolean},
   ): Tone.Sequence {
+    const extended = layer as ExtendedLayer;
     const synthType = layer.instrument.type;
     const duration = layer.note_duration as Tone.Unit.Time;
     const velocities = layer.pattern.velocities;
     const entryLoop = layer.entry_loop ?? 0;
+    const loopModulo = extended.loop_modulo ?? 0;
+    const loopModuloRem = extended.loop_modulo_remainder ?? 0;
     const isHihat = layer.role === 'hihat';
     const totalSteps = layer.pattern.steps.length;
     let stepIdx = 0;
@@ -248,10 +312,12 @@ export class GenreTrainerPlayerComponent {
     interface ThreeArgTAR {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number, v?: number) => void}
 
     const fire = (note: string, vel: number, time: number): void => {
+      // ±7% velocity jitter humanizes successive loops so they don't feel mechanically identical.
+      const jittered = Math.max(0, Math.min(1, vel * (0.93 + Math.random() * 0.14)));
       if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
-        (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, vel);
+        (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, jittered);
       } else {
-        (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, vel);
+        (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, jittered);
       }
     };
 
@@ -261,6 +327,7 @@ export class GenreTrainerPlayerComponent {
         stepIdx = (stepIdx + 1) % totalSteps;
 
         if (this.loopCount < entryLoop) { return; }
+        if (loopModulo > 0 && this.loopCount % loopModulo !== loopModuloRem) { return; }
         if (!dropoutRef.shouldPlay) { return; }
 
         if (!note) {

@@ -48,6 +48,12 @@ class TrackLayerSchema(Schema):
     entry_loop: int = 0
     dropout_prob: float = 0.0
     automation: list[AutomationSpecSchema] = []
+    # Optional loop-gating: play only on transport loops where loop_index % loop_modulo == loop_modulo_remainder.
+    # 0 means "always play" (default).
+    loop_modulo: int = 0
+    loop_modulo_remainder: int = 0
+    # Stereo position in [-1.0, 1.0]; 0 = center. None lets the player apply a role-based default.
+    pan: float | None = None
 
 
 class TrackSchema(Schema):

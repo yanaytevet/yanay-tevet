@@ -131,6 +131,33 @@ _PADS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# FILLS — phrase-level accents gated by loop_modulo.
+# loop_modulo=4 fires every 8 bars; loop_modulo=8 fires every 16 bars.
+# ---------------------------------------------------------------------------
+_FILLS = [
+    # White-noise riser into bar 2 of the phrase, every 16 bars
+    _cfg('fill_riser', 'perc', -14, '1n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 1.6, 'decay': 0.05, 'sustain': 0.95, 'release': 0.15}},
+         [_reverb(1.5, 0.5), _filt('highpass', 2000, 1.2)],
+         ['C3'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=7),
+    # Extra clap on the "and" of beat 4 of bar 2, every 8 bars — drives the build
+    _cfg('fill_clap', 'snare', -7, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.003, 'decay': 0.15, 'sustain': 0, 'release': 0.1}},
+         [_reverb(1.2, 0.55)],
+         [_N]*30 + ['C2', 'C2'],
+         loop_modulo=4, loop_modulo_remainder=3),
+    # Reverse swell / open hat washes every 16 bars
+    _cfg('fill_wash', 'perc', -16, '2n', 'MetalSynth',
+         {'frequency': 600, 'envelope': {'attack': 1.0, 'decay': 0.4, 'release': 0.8},
+          'harmonicity': 3.5, 'modulationIndex': 18, 'resonance': 5000, 'octaves': 1.4},
+         [_reverb(2.5, 0.6)],
+         [_N]*16 + ['C4'] + [_N]*15,
+         loop_modulo=8, loop_modulo_remainder=7),
+]
+
+
 # Optional shaker / hand percussion — adds the classic house "swing"
 _PERCS = [
     # 16th shaker — pink noise, very quiet for groove
@@ -182,5 +209,10 @@ class HouseTrackGenerator(BaseTrackGenerator):
             perc = copy.deepcopy(cls._pick(_PERCS))
             perc['pattern']['velocities'] = _vel(perc['pattern']['steps'], accent_prob=0.15, ghost_prob=0.2)
             layers.append(perc)
+
+        # Phrase fill (riser / clap / wash) — gated by loop_modulo so it only
+        # fires once every 8 or 16 bars.
+        if random.random() < 0.6:
+            layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
         return layers

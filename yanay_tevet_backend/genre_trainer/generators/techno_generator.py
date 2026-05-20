@@ -231,6 +231,31 @@ _LEADS = [
 ]
 
 # ---------------------------------------------------------------------------
+# FILLS — sparse accents gated by loop_modulo so they fire every N loops only.
+# Each loop = 2 bars, so loop_modulo=8 fires once every 16 bars (one "phrase").
+# ---------------------------------------------------------------------------
+_FILLS = [
+    # 16-step snare roll on the last beat of bar 2, every 16 bars
+    _cfg('fill_roll', 'snare', -8, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.06, 'sustain': 0, 'release': 0.04}},
+         [_reverb(0.5, 0.35)],
+         [_N]*28 + ['C2', 'C2', 'C2', 'C2'],
+         loop_modulo=8, loop_modulo_remainder=7),
+    # Reverse-cymbal style swell, every 8 bars
+    _cfg('fill_swell', 'perc', -16, '1n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 1.5, 'decay': 0.1, 'sustain': 0.9, 'release': 0.2}},
+         [_reverb(2.0, 0.5), _filt('highpass', 1500, 1)],
+         ['C3'] + [_N]*31,
+         loop_modulo=4, loop_modulo_remainder=3),
+    # Tom-style descending hit on the last quarter, every 16 bars
+    _cfg('fill_tom', 'perc', -10, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.12, 'octaves': 6, 'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0.01, 'release': 0.4}},
+         [_reverb(0.8, 0.35)],
+         [_N]*24 + ['G1', _N, 'E1', _N, 'C1', _N, 'A0', _N],
+         loop_modulo=8, loop_modulo_remainder=7),
+]
+
+# ---------------------------------------------------------------------------
 # PERCS — optional accent layer
 # ---------------------------------------------------------------------------
 _PERCS = [
@@ -281,5 +306,11 @@ class TechnoTrackGenerator(BaseTrackGenerator):
         perc = cls._maybe(_PERCS, 0.4)
         if perc:
             layers.append(copy.deepcopy(perc))
+
+        # Occasional phrase fill (snare roll / swell / tom run) — gated by loop_modulo,
+        # so it only fires once every N loops instead of every bar.
+        fill = cls._maybe(_FILLS, 0.55)
+        if fill:
+            layers.append(copy.deepcopy(fill))
 
         return layers

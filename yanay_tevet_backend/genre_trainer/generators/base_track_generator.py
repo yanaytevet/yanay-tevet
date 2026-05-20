@@ -10,7 +10,9 @@ _N = None
 def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_opts: dict,
          effects: list, steps: list, velocities: list | None = None,
          entry_loop: int = 0, dropout_prob: float = 0.0,
-         automation: list | None = None) -> dict[str, Any]:
+         automation: list | None = None,
+         loop_modulo: int = 0, loop_modulo_remainder: int = 0,
+         pan: float | None = None) -> dict[str, Any]:
     pattern: dict = {'subdivision': '16n', 'steps': steps}
     if velocities is not None:
         pattern['velocities'] = velocities
@@ -29,6 +31,11 @@ def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_op
         result['dropout_prob'] = dropout_prob
     if automation:
         result['automation'] = automation
+    if loop_modulo:
+        result['loop_modulo'] = loop_modulo
+        result['loop_modulo_remainder'] = loop_modulo_remainder
+    if pan is not None:
+        result['pan'] = pan
     return result
 
 
