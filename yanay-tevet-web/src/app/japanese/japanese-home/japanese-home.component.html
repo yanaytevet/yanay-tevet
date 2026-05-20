@@ -1,3 +1,5 @@
+<app-japanese-nav/>
+
 <div class="max-w-5xl mx-auto px-4 py-6">
   <div class="mb-6">
     <h1 class="text-[28px] font-bold text-writing">Japanese</h1>
@@ -6,42 +8,21 @@
     </p>
   </div>
 
-  <div class="flex items-end justify-between gap-4 mb-5 border-b border-outline-border-1">
-    <div class="flex items-center gap-1 flex-wrap">
-      @for (tab of tabs; track tab) {
-        <button
-          type="button"
-          (click)="setTab(tab)"
-          class="px-4 py-2 text-[14px] font-medium border-b-2 -mb-px transition-colors bg-transparent cursor-pointer font-[inherit]"
-          [class]="tabActive()[tab]
-            ? 'border-notion-blue text-notion-blue'
-            : 'border-transparent text-writing-minor hover:text-writing'">
-          {{ tabLabels[tab] }}
-        </button>
-      }
-    </div>
-    <button
-      type="button"
-      class="btn btn-secondary mb-2"
-      (click)="load()"
-      [disabled]="isLoading()">
-      Shuffle
-    </button>
-  </div>
-
-  @if (error(); as err) {
-    <div class="card p-4 mb-6 text-red-700 bg-red-50">{{ err }}</div>
-  }
-
-  @if (nodes().length === 0 && !isLoading()) {
-    <div class="card p-4 text-writing-minor text-[14px]">
-      No {{ activeTabLabel() }} yet.
-    </div>
-  }
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-    @for (node of nodes(); track node.id) {
-      <app-node-summary-card [node]="node"/>
-    }
-  </div>
+  <app-tabs-group tabsQueryParam="type">
+    <app-tab name="sentence" label="Sentences">
+      <app-japanese-explore-grid nodeType="sentence"/>
+    </app-tab>
+    <app-tab name="word" label="Words">
+      <app-japanese-explore-grid nodeType="word"/>
+    </app-tab>
+    <app-tab name="kanji" label="Kanji">
+      <app-japanese-explore-grid nodeType="kanji"/>
+    </app-tab>
+    <app-tab name="particle" label="Particles">
+      <app-japanese-explore-grid nodeType="particle"/>
+    </app-tab>
+    <app-tab name="rule" label="Rules">
+      <app-japanese-explore-grid nodeType="rule"/>
+    </app-tab>
+  </app-tabs-group>
 </div>

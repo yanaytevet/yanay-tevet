@@ -1,0 +1,25 @@
+<div>
+  <div class="flex items-center justify-end mb-3">
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="shuffle()"
+      [disabled]="isLoading()">
+      Shuffle
+    </button>
+  </div>
+
+  @if (error(); as err) {
+    <div class="card p-4 mb-4 text-red-700 bg-red-50">{{ err }}</div>
+  }
+
+  @if (nodes().length === 0 && !isLoading()) {
+    <div class="card p-4 text-writing-minor text-[14px]">Nothing here yet.</div>
+  }
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    @for (node of nodes(); track node.id) {
+      <app-node-summary-card [node]="node"/>
+    }
+  </div>
+</div>

@@ -1,13 +1,16 @@
+<app-japanese-nav/>
+
 <div class="max-w-5xl mx-auto px-4 py-6">
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-[28px] font-bold text-writing">Review Queue</h1>
-      <p class="text-[14px] text-writing-minor mt-1">Stubs await content generation; needs-review awaits approval.</p>
+      <p class="text-[14px] text-writing-minor mt-1">
+        Stubs await content generation; needs-review awaits approval.
+      </p>
     </div>
-    <div class="flex items-center gap-2">
-      <a [routerLink]="routingService.getJapaneseIngestUrl()" class="btn btn-secondary">Ingest</a>
-      <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()">Refresh</button>
-    </div>
+    <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()">
+      Refresh
+    </button>
   </div>
 
   @if (error(); as err) {

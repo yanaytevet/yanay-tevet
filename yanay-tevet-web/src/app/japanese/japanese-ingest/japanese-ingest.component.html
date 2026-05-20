@@ -1,13 +1,12 @@
+<app-japanese-nav/>
+
 <div class="max-w-3xl mx-auto px-4 py-6">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-[28px] font-bold text-writing">Ingest</h1>
-      <p class="text-[14px] text-writing-minor mt-1">
-        Paste a sentence, word, kanji, particle, or grammar rule. The backend classifies it,
-        extracts referenced entities, and generates content for the main node.
-      </p>
-    </div>
-    <a [routerLink]="routingService.getJapaneseReviewUrl()" class="btn btn-secondary">Review queue</a>
+  <div class="mb-6">
+    <h1 class="text-[28px] font-bold text-writing">Ingest</h1>
+    <p class="text-[14px] text-writing-minor mt-1">
+      Paste a sentence, word, kanji, particle, or grammar rule. The backend classifies it and
+      creates a stub. Content + linked entities are generated in a separate step from the node page.
+    </p>
   </div>
 
   <div class="card p-5">

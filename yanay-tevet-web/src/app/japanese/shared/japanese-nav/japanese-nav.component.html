@@ -1,0 +1,25 @@
+<div class="border-b border-outline-border-1 bg-layer-2">
+  <div class="max-w-5xl mx-auto px-4 flex items-center gap-1">
+    <a
+      [routerLink]="routingService.getJapaneseHomeUrl()"
+      routerLinkActive="!text-writing !border-notion-blue"
+      [routerLinkActiveOptions]="{exact: true}"
+      class="px-4 py-3 text-[14px] font-medium text-writing-minor border-b-2 border-transparent hover:text-writing transition-colors no-underline mb-[-1px]">
+      Explore
+    </a>
+    @if (authService.user()?.is_admin) {
+      <a
+        [routerLink]="routingService.getJapaneseIngestUrl()"
+        routerLinkActive="!text-writing !border-notion-blue"
+        class="px-4 py-3 text-[14px] font-medium text-writing-minor border-b-2 border-transparent hover:text-writing transition-colors no-underline mb-[-1px]">
+        Ingest
+      </a>
+      <a
+        [routerLink]="routingService.getJapaneseReviewUrl()"
+        routerLinkActive="!text-writing !border-notion-blue"
+        class="px-4 py-3 text-[14px] font-medium text-writing-minor border-b-2 border-transparent hover:text-writing transition-colors no-underline mb-[-1px]">
+        Review
+      </a>
+    }
+  </div>
+</div>

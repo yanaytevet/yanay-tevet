@@ -1,3 +1,5 @@
+<app-japanese-nav/>
+
 <div class="max-w-5xl mx-auto px-4 py-6">
   @if (isLoading()) {
     <div class="text-writing-minor">Loading…</div>
@@ -8,23 +10,18 @@
   }
 
   @if (node(); as n) {
-    <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center gap-2">
-        <a [routerLink]="routingService.getJapaneseHomeUrl()" class="text-writing-minor hover:text-writing text-[14px] no-underline">← Japanese</a>
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="text-[11px] uppercase tracking-[0.08em] font-semibold text-writing-minor">
-          {{ n.type }}
+    <div class="flex items-center justify-end gap-2 mb-4">
+      <span class="text-[11px] uppercase tracking-[0.08em] font-semibold text-writing-minor">
+        {{ n.type }}
+      </span>
+      @if (n.jlpt_level) {
+        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-layer-3 text-writing-minor">
+          {{ n.jlpt_level.toUpperCase() }}
         </span>
-        @if (n.jlpt_level) {
-          <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-layer-3 text-writing-minor">
-            {{ n.jlpt_level.toUpperCase() }}
-          </span>
-        }
-        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold" [class]="statusClass()">
-          {{ statusLabel() }}
-        </span>
-      </div>
+      }
+      <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold" [class]="statusClass()">
+        {{ statusLabel() }}
+      </span>
     </div>
 
     <header class="card p-5 mb-6">

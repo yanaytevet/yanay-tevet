@@ -1,5 +1,5 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {ActivatedRoute, RouterLink} from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
 import {
   approveNodeView,
@@ -11,9 +11,9 @@ import {
   OutgoingEdgeSchema,
 } from '../../../generated-files/api/japanese';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
-import {RoutingService} from '../../shared/services/routing.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {FuriganaComponent} from '../shared/furigana/furigana.component';
+import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
 
 const EDGE_TYPE_LABELS: Record<EdgeType, string> = {
@@ -41,7 +41,7 @@ const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
 @Component({
   selector: 'app-japanese-node-detail',
   standalone: true,
-  imports: [FuriganaComponent, NodeSummaryCardComponent, RouterLink],
+  imports: [FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent],
   templateUrl: './japanese-node-detail.component.html',
 })
 export class JapaneseNodeDetailComponent {
@@ -49,7 +49,6 @@ export class JapaneseNodeDetailComponent {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly dialogService = inject(DialogService);
   protected readonly authService = inject(AuthenticationService);
-  protected readonly routingService = inject(RoutingService);
 
   readonly node = signal<NodeDetailSchema | null>(null);
   readonly isLoading = signal<boolean>(true);

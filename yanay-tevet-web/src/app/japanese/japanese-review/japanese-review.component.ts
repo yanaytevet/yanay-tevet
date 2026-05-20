@@ -1,21 +1,18 @@
-import {Component, inject, signal} from '@angular/core';
-import {RouterLink} from '@angular/router';
+import {Component, signal} from '@angular/core';
 import {
   getReviewQueueView,
   NodeSummarySchema,
 } from '../../../generated-files/api/japanese';
-import {RoutingService} from '../../shared/services/routing.service';
+import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
 
 @Component({
   selector: 'app-japanese-review',
   standalone: true,
-  imports: [NodeSummaryCardComponent, RouterLink],
+  imports: [NodeSummaryCardComponent, JapaneseNavComponent],
   templateUrl: './japanese-review.component.html',
 })
 export class JapaneseReviewComponent {
-  protected readonly routingService = inject(RoutingService);
-
   readonly stubs = signal<NodeSummarySchema[]>([]);
   readonly needsReview = signal<NodeSummarySchema[]>([]);
   readonly isLoading = signal<boolean>(false);

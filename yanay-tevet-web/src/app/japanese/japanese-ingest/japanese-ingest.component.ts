@@ -1,19 +1,19 @@
 import {Component, inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {RouterLink} from '@angular/router';
 import {ingestNodeView} from '../../../generated-files/api/japanese';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 
 @Component({
   selector: 'app-japanese-ingest',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, JapaneseNavComponent],
   templateUrl: './japanese-ingest.component.html',
 })
 export class JapaneseIngestComponent {
   private readonly dialogService = inject(DialogService);
-  protected readonly routingService = inject(RoutingService);
+  private readonly routingService = inject(RoutingService);
 
   readonly text = signal<string>('');
   readonly isWorking = signal<boolean>(false);
