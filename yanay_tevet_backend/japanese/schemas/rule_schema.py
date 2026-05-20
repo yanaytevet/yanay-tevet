@@ -5,4 +5,4 @@ from japanese.enums.rule_category import RuleCategory
 
 class RuleSchema(Schema):
     name: str
-    category: RuleCategory
+    category: RuleCategory = RuleCategory.OTHER

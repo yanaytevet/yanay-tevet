@@ -85,3 +85,4 @@ After changing backend models or endpoints:
 - **Always import at the top of Python files** — no string type annotations, no lazy imports inside methods.
 - **Always run migrations after model changes** — the backend won't start with unapplied migrations.
 - **No `@property` in Django models** — use regular methods instead.
+- **When adding a new app, link to it from the home page** (`src/app/home/home.component.html`) and from the left nav drawer (`src/app/layout/app-navigation-left-drawer/app-navigation-left-drawer.component.html`). Both the logged-in and logged-out home variants need a card if the app is public. The home page is the front door — apps without a tile there are invisible to users.

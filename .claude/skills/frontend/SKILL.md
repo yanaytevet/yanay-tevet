@@ -77,6 +77,18 @@ readonly itemActive = computed(() => {
 
 ---
 
+## Adding a New App
+
+When introducing a new top-level app/feature, wire it up in **all three** entry points or users won't find it:
+
+1. **Home page tile** — `src/app/home/home.component.html`. Add a card under "Public Apps" or "Your Apps" (logged-in section), and also under "Try for free" if it's public (logged-out section). The home page is the front door.
+2. **Left nav drawer** — `src/app/layout/app-navigation-left-drawer/app-navigation-left-drawer.component.html`. Add a link in the appropriate section (public vs logged-in vs admin).
+3. **Routing service** — `src/app/shared/services/routing.service.ts`. Add `get<App>Url()` / `navigateTo<App>()` methods so other components can link without hard-coded paths.
+
+An app that exists at a route but has no home tile is effectively invisible.
+
+---
+
 ## API Calls — Never Hand-Roll
 
 Never write frontend API call functions by hand. All API functions live in `src/generated-files/api/` and are auto-generated. Import generated functions directly in components — no wrapper files, no hand-rolled fetch calls.

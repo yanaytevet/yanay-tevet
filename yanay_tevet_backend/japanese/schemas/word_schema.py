@@ -9,4 +9,4 @@ class WordSchema(Schema):
     reading: str
     word_type: WordType
     word_sub_type: WordSubType | None = None
-    meanings: list[str]
+    meanings: list[str] = []
