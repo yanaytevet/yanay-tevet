@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'emails',
     'dream_diary',
     'genre_trainer',
+    'japanese',
 ]
 
 MIDDLEWARE = [

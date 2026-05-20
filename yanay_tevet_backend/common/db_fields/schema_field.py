@@ -58,6 +58,12 @@ class SchemaField(models.JSONField, Generic[T]):
     def get_prep_value(self, value: T | list[T] | None) -> Any:
         return super().get_prep_value(self._serialize(value))
 
+    def value_from_object(self, obj: Any) -> Any:
+        return self._serialize(super().value_from_object(obj))
+
+    def validate(self, value: Any, model_instance: Any) -> None:
+        super().validate(self._serialize(value), model_instance)
+
     def deconstruct(self) -> tuple[str, str, list[Any], dict[str, Any]]:
         name, path, args, kwargs = super().deconstruct()
         kwargs["schema"] = self.schema
