@@ -5,6 +5,7 @@ import {client as api_configurationsClient} from '../../../generated-files/api/c
 import {client as api_blocksClient} from '../../../generated-files/api/blocks/client.gen';
 import {client as api_dreamdiaryClient} from '../../../generated-files/api/dream-diary/client.gen';
 import {client as api_genretrainerClient} from '../../../generated-files/api/genre-trainer/client.gen';
+import {client as api_japaneseClient} from '../../../generated-files/api/japanese/client.gen';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {environment} from '../../../environments/environment';
 
@@ -12,7 +13,7 @@ import {environment} from '../../../environments/environment';
     providedIn: 'root'
 })
 export class ApiConfigService {
-    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient, api_dreamdiaryClient, api_genretrainerClient];
+    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient, api_dreamdiaryClient, api_genretrainerClient, api_japaneseClient];
     authService = inject(AuthenticationService);
 
   getBaseUrl(): string {

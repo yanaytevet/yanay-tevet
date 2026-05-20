@@ -1,0 +1,9 @@
+<span class="inline">
+  @for (seg of segments(); track $index) {
+    @if (seg.reading && !hideReadings()) {
+      <ruby>{{ seg.base }}<rt class="text-[0.55em] text-secondary-400">{{ seg.reading }}</rt></ruby>
+    } @else {
+      <span>{{ seg.base }}</span>
+    }
+  }
+</span>

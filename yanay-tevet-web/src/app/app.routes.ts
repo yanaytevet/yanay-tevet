@@ -4,6 +4,7 @@ import {HomeComponent} from './home/home.component';
 import {loggedInGuard} from './common/authentication/logged-in.guard';
 import {notLoggedInGuard} from './common/authentication/not-logged-in.guard';
 import {hasPermissionGuard} from './common/authentication/has-permission.guard';
+import {adminGuard} from './common/authentication/admin.guard';
 
 export const routes: Routes = [
     // Login
@@ -89,6 +90,28 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('./dream-diary/dream-diary.component').then(m => m.DreamDiaryComponent),
                 canActivate: [hasPermissionGuard('dream_diary')],
+            },
+            {
+                path: 'japanese',
+                loadComponent: () =>
+                    import('./japanese/japanese-home/japanese-home.component').then(m => m.JapaneseHomeComponent),
+            },
+            {
+                path: 'japanese/node/:id',
+                loadComponent: () =>
+                    import('./japanese/japanese-node-detail/japanese-node-detail.component').then(m => m.JapaneseNodeDetailComponent),
+            },
+            {
+                path: 'japanese/ingest',
+                loadComponent: () =>
+                    import('./japanese/japanese-ingest/japanese-ingest.component').then(m => m.JapaneseIngestComponent),
+                canActivate: [adminGuard],
+            },
+            {
+                path: 'japanese/review',
+                loadComponent: () =>
+                    import('./japanese/japanese-review/japanese-review.component').then(m => m.JapaneseReviewComponent),
+                canActivate: [adminGuard],
             },
         ],
     },

@@ -1,0 +1,145 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  @if (isLoading()) {
+    <div class="text-writing-minor">Loading…</div>
+  }
+
+  @if (error(); as err) {
+    <div class="card p-4 text-red-700 bg-red-50">{{ err }}</div>
+  }
+
+  @if (node(); as n) {
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-2">
+        <a [routerLink]="routingService.getJapaneseHomeUrl()" class="text-writing-minor hover:text-writing text-[14px] no-underline">← Japanese</a>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-[11px] uppercase tracking-[0.08em] font-semibold text-writing-minor">
+          {{ n.type }}
+        </span>
+        @if (n.jlpt_level) {
+          <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-layer-3 text-writing-minor">
+            {{ n.jlpt_level.toUpperCase() }}
+          </span>
+        }
+        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold" [class]="statusClass()">
+          {{ statusLabel() }}
+        </span>
+      </div>
+    </div>
+
+    <header class="card p-5 mb-6">
+      @if (n.sentence_data; as data) {
+        <div class="text-[28px] leading-relaxed mb-2">
+          <app-furigana [text]="data.japanese"/>
+        </div>
+        <div class="text-[16px] text-writing-minor">{{ data.english_translation }}</div>
+      }
+      @if (n.word_data; as data) {
+        <div class="flex items-baseline gap-3 mb-2">
+          <div class="text-[32px] font-bold leading-none">
+            <app-furigana [text]="data.base_form"/>
+          </div>
+          <div class="text-[18px] text-writing-minor">{{ data.reading }}</div>
+        </div>
+        <div class="text-[12px] text-writing-minor mb-2">
+          {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }
+        </div>
+        <div class="text-[15px] text-writing">{{ data.meanings.join(', ') }}</div>
+      }
+      @if (n.kanji_data; as data) {
+        <div class="flex items-baseline gap-6">
+          <div class="text-[72px] font-bold leading-none">{{ data.character }}</div>
+          <div>
+            <div class="text-[15px] mb-1">{{ data.meanings.join(', ') }}</div>
+            @if (data.readings_on.length) {
+              <div class="text-[13px] text-writing-minor">音 {{ data.readings_on.join('、') }}</div>
+            }
+            @if (data.readings_kun.length) {
+              <div class="text-[13px] text-writing-minor">訓 {{ data.readings_kun.join('、') }}</div>
+            }
+            @if (data.radicals.length) {
+              <div class="text-[13px] text-writing-minor">radicals: {{ data.radicals.join(' ') }}</div>
+            }
+          </div>
+        </div>
+      }
+      @if (n.particle_data; as data) {
+        <div class="flex items-baseline gap-6">
+          <div class="text-[48px] font-bold leading-none">{{ data.particle }}</div>
+          <div class="text-[15px]">{{ data.primary_function }}</div>
+        </div>
+      }
+      @if (n.rule_data; as data) {
+        <div class="text-[22px] font-semibold mb-1">{{ data.name }}</div>
+        <div class="text-[13px] text-writing-minor">{{ data.category }}</div>
+      }
+    </header>
+
+    @if (authService.user()?.is_admin) {
+      <div class="flex items-center gap-2 mb-6">
+        @if (n.status === 'stub') {
+          <button type="button" class="btn btn-primary" (click)="generate()" [disabled]="isWorking()">
+            Generate content
+          </button>
+        }
+        @if (n.status === 'needs_review') {
+          <button type="button" class="btn btn-primary" (click)="approve()" [disabled]="isWorking()">
+            Approve
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="generate()" [disabled]="isWorking()">
+            Regenerate
+          </button>
+        }
+        @if (n.status === 'published') {
+          <button type="button" class="btn btn-secondary" (click)="generate()" [disabled]="isWorking()">
+            Regenerate
+          </button>
+        }
+      </div>
+    }
+
+    @if (n.content_html) {
+      <article class="card p-6 mb-8 japanese-content" [innerHTML]="contentHtml()"></article>
+    } @else {
+      <div class="card p-6 mb-8 text-writing-minor text-[14px]">
+        No content yet. @if (authService.user()?.is_admin) { Click "Generate content" to create it. }
+      </div>
+    }
+
+    @if (outgoingGroups().length > 0) {
+      <section class="mb-8">
+        <h2 class="text-[16px] font-semibold mb-3 text-writing">Links from this node</h2>
+        @for (group of outgoingGroups(); track group.label) {
+          <div class="mb-5">
+            <h3 class="text-[12px] uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
+              {{ group.label }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              @for (edge of group.edges; track edge.id) {
+                <app-node-summary-card [node]="edge.to_node"/>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+
+    @if (incomingGroups().length > 0) {
+      <section class="mb-8">
+        <h2 class="text-[16px] font-semibold mb-3 text-writing">Links to this node</h2>
+        @for (group of incomingGroups(); track group.label) {
+          <div class="mb-5">
+            <h3 class="text-[12px] uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
+              {{ group.label }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+              @for (edge of group.edges; track edge.id) {
+                <app-node-summary-card [node]="edge.from_node"/>
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+  }
+</div>

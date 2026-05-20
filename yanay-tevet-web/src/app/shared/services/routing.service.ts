@@ -128,4 +128,37 @@ export class RoutingService {
   navigateToGenreTrainer(): Promise<boolean> {
     return this.router.navigateByUrl(this.getGenreTrainerUrl());
   }
+
+  // Japanese
+  getJapaneseHomeUrl(): UrlTree {
+    return this.router.createUrlTree(['/japanese']);
+  }
+
+  navigateToJapaneseHome(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getJapaneseHomeUrl());
+  }
+
+  getJapaneseNodeUrl(nodeId: number): UrlTree {
+    return this.router.createUrlTree(['/japanese/node', nodeId]);
+  }
+
+  navigateToJapaneseNode(nodeId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getJapaneseNodeUrl(nodeId));
+  }
+
+  getJapaneseIngestUrl(): UrlTree {
+    return this.router.createUrlTree(['/japanese/ingest']);
+  }
+
+  navigateToJapaneseIngest(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getJapaneseIngestUrl());
+  }
+
+  getJapaneseReviewUrl(): UrlTree {
+    return this.router.createUrlTree(['/japanese/review']);
+  }
+
+  navigateToJapaneseReview(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getJapaneseReviewUrl());
+  }
 }

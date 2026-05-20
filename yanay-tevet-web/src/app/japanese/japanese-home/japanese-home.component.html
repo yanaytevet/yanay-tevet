@@ -1,0 +1,49 @@
+<div class="max-w-5xl mx-auto px-4 py-6">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-[28px] font-bold text-writing">Japanese</h1>
+      <p class="text-[14px] text-writing-minor mt-1">Pick a sentence or rule to start exploring.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      @if (authService.user()?.is_admin) {
+        <a [routerLink]="routingService.getJapaneseIngestUrl()" class="btn btn-secondary">Ingest</a>
+        <a [routerLink]="routingService.getJapaneseReviewUrl()" class="btn btn-secondary">Review</a>
+      }
+      <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()">
+        Shuffle
+      </button>
+    </div>
+  </div>
+
+  @if (error(); as err) {
+    <div class="card p-4 mb-6 text-red-700 bg-red-50">{{ err }}</div>
+  }
+
+  <section class="mb-10">
+    <h2 class="text-[18px] font-semibold mb-3 text-writing">Sentences</h2>
+    @if (sentences().length === 0 && !isLoading()) {
+      <div class="card p-4 text-writing-minor text-[14px]">
+        No sentences yet. @if (authService.user()?.is_admin) {
+          <a [routerLink]="routingService.getJapaneseIngestUrl()" class="text-notion-blue">Ingest one →</a>
+        }
+      </div>
+    }
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      @for (node of sentences(); track node.id) {
+        <app-node-summary-card [node]="node"/>
+      }
+    </div>
+  </section>
+
+  <section>
+    <h2 class="text-[18px] font-semibold mb-3 text-writing">Rules</h2>
+    @if (rules().length === 0 && !isLoading()) {
+      <div class="card p-4 text-writing-minor text-[14px]">No rules yet.</div>
+    }
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      @for (node of rules(); track node.id) {
+        <app-node-summary-card [node]="node"/>
+      }
+    </div>
+  </section>
+</div>
