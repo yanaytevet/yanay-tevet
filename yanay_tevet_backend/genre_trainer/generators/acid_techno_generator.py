@@ -155,7 +155,7 @@ _ACID_BASSES = [
           'filterEnvelope': {'attack': 0.001, 'decay': 0.04, 'sustain': 0.0, 'release': 0.03, 'baseFrequency': 85, 'octaves': 5.5}},
          [_dist(0.65, 0.6)],
          ['A2','A2','A2',_N,'A2','A2',_N,'A2','A2',_N,'A2','A2',_N,'A2','A2',_N,
-          'A2','A2','A2',_N,'C3','C3',_N,'A2','A2',_N,'A2','G2','A2',_N,'E2','A2',_N]),
+          'A2','A2','A2',_N,'C3','C3',_N,'A2','A2',_N,'A2','G2',_N,'E2','A2',_N]),
     # G open filter
     _cfg('bass', 'bass', -3, '16n', 'MonoSynth',
          {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.001, 'decay': 0.1, 'sustain': 0.04, 'release': 0.06},

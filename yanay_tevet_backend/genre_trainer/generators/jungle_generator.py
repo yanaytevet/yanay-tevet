@@ -1,9 +1,11 @@
+import copy
 import random
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
     BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt,
+    _vel, _vel_groove, _vel_kick, _vel_snare,
 )
 
 _KICKS = [
@@ -87,7 +89,7 @@ _HIHATS = [
     _cfg('hihat', 'hihat', -9, '16n', 'MetalSynth',
          {'frequency': 900, 'envelope': {'attack': 0.001, 'decay': 0.05, 'release': 0.03}, 'harmonicity': 9.5, 'modulationIndex': 58, 'resonance': 8500, 'octaves': 2.2},
          [],
-         ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N]),
+         ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N]),
     # Syncopated 16ths with accent
     _cfg('hihat', 'hihat', -8, '16n', 'MetalSynth',
          {'frequency': 1200, 'envelope': {'attack': 0.001, 'decay': 0.007, 'release': 0.004}, 'harmonicity': 12.0, 'modulationIndex': 72, 'resonance': 11000, 'octaves': 2.8},
@@ -145,8 +147,22 @@ class JungleTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        layers = [cls._pick(_KICKS), cls._pick(_SNARES), cls._pick(_HIHATS), cls._pick(_BASSES)]
-        pad = cls._maybe(_PADS, 0.4)
-        if pad:
+        kick = copy.deepcopy(cls._pick(_KICKS))
+        snare = copy.deepcopy(cls._pick(_SNARES))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
+        bass = copy.deepcopy(cls._pick(_BASSES))
+
+        # Amen feel: velocity variance is what gives the broken pattern its life
+        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        snare['pattern']['velocities'] = _vel_snare(snare['pattern']['steps'])
+        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
+        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.2, ghost_prob=0.08)
+
+        layers = [kick, snare, hihat, bass]
+
+        if random.random() < 0.4:
+            pad = copy.deepcopy(cls._pick(_PADS))
+            pad['entry_loop'] = random.choice([0, 2])
             layers.append(pad)
+
         return layers

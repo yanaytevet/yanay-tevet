@@ -1,9 +1,11 @@
+import copy
 import random
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
     BaseTrackGenerator, _N, _cfg, _dist, _reverb, _filt,
+    _vel, _vel_groove, _vel_kick,
 )
 
 _KICKS = [
@@ -109,4 +111,14 @@ class HightekTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        return [cls._pick(_KICKS), cls._pick(_PERCS), cls._pick(_HIHATS), cls._pick(_BASSES)]
+        kick = copy.deepcopy(cls._pick(_KICKS))
+        perc = copy.deepcopy(cls._pick(_PERCS))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
+        bass = copy.deepcopy(cls._pick(_BASSES))
+
+        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        perc['pattern']['velocities'] = _vel(perc['pattern']['steps'], accent_prob=0.2, ghost_prob=0.1)
+        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
+        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.28, ghost_prob=0.08)
+
+        return [kick, perc, hihat, bass]

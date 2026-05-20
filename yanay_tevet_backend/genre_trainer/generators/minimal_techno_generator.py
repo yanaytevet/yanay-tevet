@@ -1,9 +1,11 @@
+import copy
 import random
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt,
+    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _auto,
+    _vel, _vel_groove, _vel_kick,
 )
 
 _KICKS = [
@@ -115,8 +117,25 @@ class MinimalTechnoTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        layers = [cls._pick(_KICKS), cls._pick(_HIHATS), cls._pick(_BASSES)]
-        stab = cls._maybe(_STABS, 0.45)
-        if stab:
+        kick = copy.deepcopy(cls._pick(_KICKS))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
+        bass = copy.deepcopy(cls._pick(_BASSES))
+
+        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
+        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.15, ghost_prob=0.1)
+
+        # Minimal breathes: hi-hat may dropout for whole bars to create space
+        if random.random() < 0.5:
+            hihat['dropout_prob'] = random.choice([0.25, 0.35, 0.45])
+
+        layers = [kick, hihat, bass]
+
+        if random.random() < 0.5:
+            stab = copy.deepcopy(cls._pick(_STABS))
+            stab['pattern']['velocities'] = _vel(stab['pattern']['steps'], accent_prob=0.2, ghost_prob=0.0)
+            # Stab enters late — Villalobos-style sparse arrangement
+            stab['entry_loop'] = random.choice([2, 4])
             layers.append(stab)
+
         return layers

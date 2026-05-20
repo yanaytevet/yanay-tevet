@@ -21,7 +21,7 @@ export class GenreTrainerService {
   readonly revealed = signal(false);
   readonly error = signal<string | null>(null);
   readonly autoStart = signal(true);
-  readonly autoStopLoops = signal(5);
+  readonly autoStopLoops = signal(10);
   readonly streak = signal(0);
   readonly totalAnswered = signal(0);
   readonly totalCorrect = signal(0);
@@ -156,7 +156,7 @@ export class GenreTrainerService {
     } catch {
       // ignore
     }
-    return false;
+    return true;
   }
 
   async loadData(): Promise<void> {

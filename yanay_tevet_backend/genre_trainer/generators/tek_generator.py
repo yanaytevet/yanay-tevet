@@ -1,9 +1,11 @@
+import copy
 import random
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
     BaseTrackGenerator, _N, _cfg, _dist, _reverb, _filt,
+    _vel, _vel_groove, _vel_kick,
 )
 
 _KICKS = [
@@ -60,7 +62,7 @@ _HIHATS = [
     _cfg('hihat', 'hihat', -14, '16n', 'MetalSynth',
          {'frequency': 900, 'envelope': {'attack': 0.001, 'decay': 0.025, 'release': 0.012}, 'harmonicity': 9.0, 'modulationIndex': 65, 'resonance': 8500, 'octaves': 2.2},
          [_dist(0.5, 0.5)],
-         ['C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4']),
+         ['C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4',_N,'C4','C4']),
     _cfg('hihat', 'hihat', -13, '16n', 'MetalSynth',
          {'frequency': 750, 'envelope': {'attack': 0.001, 'decay': 0.03, 'release': 0.015}, 'harmonicity': 8.5, 'modulationIndex': 58, 'resonance': 8000, 'octaves': 2.0},
          [_dist(0.55, 0.5)],
@@ -116,4 +118,20 @@ class TekTrackGenerator(BaseTrackGenerator):
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        return [cls._pick(_KICKS), cls._pick(_PERCS), cls._pick(_HIHATS), cls._pick(_BASSES), cls._pick(_LEADS)]
+        kick = copy.deepcopy(cls._pick(_KICKS))
+        perc = copy.deepcopy(cls._pick(_PERCS))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
+        bass = copy.deepcopy(cls._pick(_BASSES))
+        lead = copy.deepcopy(cls._pick(_LEADS))
+
+        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        perc['pattern']['velocities'] = _vel(perc['pattern']['steps'], accent_prob=0.22, ghost_prob=0.1)
+        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
+        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.25, ghost_prob=0.08)
+        lead['pattern']['velocities'] = _vel(lead['pattern']['steps'], accent_prob=0.3, ghost_prob=0.0)
+
+        # Lead enters after a couple of loops — keeps the intro driving rhythm
+        if random.random() < 0.5:
+            lead['entry_loop'] = random.choice([2, 4])
+
+        return [kick, perc, hihat, bass, lead]

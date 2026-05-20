@@ -1,9 +1,11 @@
+import copy
 import random
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
     BaseTrackGenerator, _N, _cfg, _reverb, _dist, _chorus, _filt,
+    _vel, _vel_groove, _vel_kick, _vel_snare,
 )
 
 _KICKS = [
@@ -129,14 +131,56 @@ _PADS = [
 ]
 
 
+# Optional shaker / hand percussion — adds the classic house "swing"
+_PERCS = [
+    # 16th shaker — pink noise, very quiet for groove
+    _cfg('shaker', 'perc', -22, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.001, 'decay': 0.02, 'sustain': 0, 'release': 0.01}},
+         [_filt('highpass', 4000, 1)],
+         ['C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3',
+          'C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3','C3']),
+    # Conga-like tone on syncopated 16ths
+    _cfg('conga', 'perc', -18, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.04, 'octaves': 4, 'envelope': {'attack': 0.001, 'decay': 0.08, 'sustain': 0, 'release': 0.1}},
+         [_reverb(0.4, 0.18)],
+         [_N,_N,'C3',_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,_N,_N,
+          _N,_N,'C3',_N,_N,_N,_N,_N,_N,'C3',_N,_N,_N,_N,'C3',_N]),
+    # Rim click pattern
+    _cfg('rim', 'perc', -16, '16n', 'MetalSynth',
+         {'frequency': 1500, 'envelope': {'attack': 0.001, 'decay': 0.02, 'release': 0.01},
+          'harmonicity': 3.0, 'modulationIndex': 12, 'resonance': 4000, 'octaves': 1.0},
+         [],
+         [_N,_N,_N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N,
+          _N,_N,_N,'C4',_N,_N,'C4',_N,_N,_N,_N,_N,_N,_N,'C4',_N]),
+]
+
+
 class HouseTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HOUSE
     BPM_RANGE = (122, 128)
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
-        layers = [cls._pick(_KICKS), cls._pick(_CLAPS), cls._pick(_HIHATS), cls._pick(_BASSES)]
-        pad = cls._maybe(_PADS, 0.55)
-        if pad:
+        kick = copy.deepcopy(cls._pick(_KICKS))
+        clap = copy.deepcopy(cls._pick(_CLAPS))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
+        bass = copy.deepcopy(cls._pick(_BASSES))
+
+        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        clap['pattern']['velocities'] = _vel_snare(clap['pattern']['steps'])
+        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
+        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.22, ghost_prob=0.08)
+
+        layers = [kick, clap, hihat, bass]
+
+        if random.random() < 0.55:
+            pad = copy.deepcopy(cls._pick(_PADS))
             layers.append(pad)
+
+        # House gets its swing from layered hand percussion
+        if random.random() < 0.5:
+            perc = copy.deepcopy(cls._pick(_PERCS))
+            perc['pattern']['velocities'] = _vel(perc['pattern']['steps'], accent_prob=0.15, ghost_prob=0.2)
+            layers.append(perc)
+
         return layers
