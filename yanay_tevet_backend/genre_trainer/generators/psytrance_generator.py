@@ -262,6 +262,57 @@ _PADS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# SUB — pure sine drone under the offbeat bass for additional weight.
+# Role 'sub' bypasses sidechain so the low end stays solid under each kick.
+# ---------------------------------------------------------------------------
+_SUBS = [
+    _cfg('sub', 'sub', -10, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.005, 'decay': 0.4, 'sustain': 0.9, 'release': 0.3}},
+         [_filt('lowpass', 140, 1)],
+         ['A0',_N,_N,_N,_N,_N,_N,_N,'A0',_N,_N,_N,_N,_N,_N,_N,
+          'A0',_N,_N,_N,_N,_N,_N,_N,'A0',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('sub', 'sub', -10, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.005, 'decay': 0.45, 'sustain': 0.92, 'release': 0.3}},
+         [_filt('lowpass', 130, 1)],
+         ['E0',_N,_N,_N,_N,_N,_N,_N,'E0',_N,_N,_N,_N,_N,_N,_N,
+          'D0',_N,_N,_N,_N,_N,_N,_N,'E0',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('sub', 'sub', -10, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.004, 'decay': 0.42, 'sustain': 0.9, 'release': 0.3}},
+         [_filt('lowpass', 150, 1)],
+         ['F0',_N,_N,_N,_N,_N,_N,_N,'F0',_N,_N,_N,_N,_N,_N,_N,
+          'G0',_N,_N,_N,_N,_N,_N,_N,'F0',_N,_N,_N,_N,_N,_N,_N]),
+]
+
+# ---------------------------------------------------------------------------
+# FILLS — phrase-level accents (uplifters, FX hits, snare rolls) every 8-16 bars.
+# ---------------------------------------------------------------------------
+_FILLS = [
+    # White-noise uplifter into the next phrase — every 16 bars
+    _cfg('fill_uplifter', 'perc', -12, '1n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 1.8, 'decay': 0.05, 'sustain': 0.95, 'release': 0.1}},
+         [_reverb(1.0, 0.45), _filt('highpass', 1800, 1.3)],
+         ['C3'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=7),
+    # Reverse-cymbal style swell — every 8 bars
+    _cfg('fill_swell', 'perc', -14, '2n', 'MetalSynth',
+         {'frequency': 350, 'envelope': {'attack': 1.0, 'decay': 0.3, 'release': 0.5},
+          'harmonicity': 5.5, 'modulationIndex': 32, 'resonance': 4500, 'octaves': 1.6},
+         [_reverb(2.0, 0.55)],
+         [_N]*16 + ['C4'] + [_N]*15,
+         loop_modulo=4, loop_modulo_remainder=3),
+    # 16-step snare/FX roll on the final beat — every 16 bars
+    _cfg('fill_roll', 'snare', -10, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.001, 'decay': 0.05, 'sustain': 0, 'release': 0.04}},
+         [_reverb(0.6, 0.4), _filt('highpass', 1200, 1.5)],
+         [_N]*28 + ['C3', 'C3', 'C3', 'C3'],
+         loop_modulo=8, loop_modulo_remainder=7),
+]
+
+
 class PsytranceTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.PSYTRANCE
     BPM_RANGE = (145, 150)
@@ -284,8 +335,18 @@ class PsytranceTrackGenerator(BaseTrackGenerator):
 
         layers = [kick, bass, hihat, lead]
 
+        # Sub drone — present on most tracks, fills the bottom octave under the offbeat bass
+        if random.random() < 0.7:
+            sub = copy.deepcopy(cls._pick(_SUBS))
+            sub['pattern']['velocities'] = _vel(sub['pattern']['steps'], accent_prob=0.05, ghost_prob=0.0)
+            layers.append(sub)
+
         # Pad/atmosphere in roughly half of tracks
         if random.random() < 0.5:
             layers.append(copy.deepcopy(cls._pick(_PADS)))
+
+        # Phrase fill — uplifter / swell / roll every 8-16 bars
+        if random.random() < 0.55:
+            layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
         return layers

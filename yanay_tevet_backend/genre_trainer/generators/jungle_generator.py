@@ -144,6 +144,7 @@ _PADS = [
 class JungleTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.JUNGLE
     BPM_RANGE = (160, 170)
+    SWING = 0.05  # Subtle shuffle — jungle breaks are usually straighter than house
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:

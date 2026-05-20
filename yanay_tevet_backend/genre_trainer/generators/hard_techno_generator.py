@@ -235,6 +235,33 @@ _LEADS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# SUB BASSES — pure sine layer at the lowest octave, providing weight that the
+# distorted main bass alone can't deliver. Role 'sub' bypasses sidechain so the
+# sub stays full-volume under the kick instead of being ducked away.
+# ---------------------------------------------------------------------------
+_SUBS = [
+    _cfg('sub', 'sub', -8, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.005, 'decay': 0.3, 'sustain': 0.85, 'release': 0.3}},
+         [_filt('lowpass', 180, 1)],
+         ['A0',_N,_N,_N,_N,_N,_N,_N,'A0',_N,_N,_N,_N,_N,_N,_N,
+          'G0',_N,_N,_N,_N,_N,_N,_N,'A0',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('sub', 'sub', -7, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.005, 'decay': 0.4, 'sustain': 0.9, 'release': 0.3}},
+         [_filt('lowpass', 160, 1)],
+         ['E0',_N,_N,_N,_N,_N,_N,_N,'E0',_N,_N,_N,_N,_N,_N,_N,
+          'D0',_N,_N,_N,_N,_N,_N,_N,'E0',_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('sub', 'sub', -8, '4n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.004, 'decay': 0.32, 'sustain': 0.88, 'release': 0.3}},
+         [_filt('lowpass', 170, 1)],
+         ['F0',_N,_N,_N,_N,_N,_N,_N,'F0',_N,_N,_N,_N,_N,_N,_N,
+          'Eb0',_N,_N,_N,_N,_N,_N,_N,'F0',_N,_N,_N,_N,_N,_N,_N]),
+]
+
+
 class HardTechnoTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HARD_TECHNO
     BPM_RANGE = (145, 153)
@@ -246,11 +273,13 @@ class HardTechnoTrackGenerator(BaseTrackGenerator):
         hihat = copy.deepcopy(cls._pick(_HIHATS))
         bass = copy.deepcopy(cls._pick(_BASSES))
         lead = copy.deepcopy(cls._pick(_LEADS))
+        sub = copy.deepcopy(cls._pick(_SUBS))
 
         kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
         snare['pattern']['velocities'] = _vel_snare(snare['pattern']['steps'])
         hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
         bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.25, ghost_prob=0.08)
         lead['pattern']['velocities'] = _vel(lead['pattern']['steps'], accent_prob=0.3, ghost_prob=0.0)
+        sub['pattern']['velocities'] = _vel(sub['pattern']['steps'], accent_prob=0.1, ghost_prob=0.0)
 
-        return [kick, snare, hihat, bass, lead]
+        return [kick, snare, hihat, bass, lead, sub]

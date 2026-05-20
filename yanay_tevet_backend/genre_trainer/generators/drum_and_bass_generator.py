@@ -314,9 +314,36 @@ _ATMOSPHERES = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# FILLS — snare rolls, reverse swells, and breakbeat flourishes every 8-16 bars.
+# DnB phrases are usually 8 or 16 bars; these gate to the last bar of the phrase.
+# ---------------------------------------------------------------------------
+_FILLS = [
+    # 16-step snare roll into the next drop — every 8 bars
+    _cfg('fill_roll', 'snare', -6, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.05, 'sustain': 0, 'release': 0.04}},
+         [_reverb(0.4, 0.3)],
+         [_N]*24 + ['C2', 'C2', 'C2', 'C2', 'C2', 'C2', 'C2', 'C2'],
+         loop_modulo=4, loop_modulo_remainder=3),
+    # Reverse cymbal sweep — every 16 bars
+    _cfg('fill_sweep', 'perc', -14, '1n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 2.0, 'decay': 0.05, 'sustain': 0.95, 'release': 0.1}},
+         [_reverb(1.5, 0.55), _filt('highpass', 1500, 1.2)],
+         ['C3'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=7),
+    # Tom run — every 16 bars
+    _cfg('fill_tom', 'perc', -8, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.08, 'octaves': 6, 'envelope': {'attack': 0.001, 'decay': 0.2, 'sustain': 0.01, 'release': 0.3}},
+         [_reverb(0.7, 0.35)],
+         [_N]*22 + ['G2', _N, 'F2', _N, 'E2', _N, 'D2', _N, 'C2', _N],
+         loop_modulo=8, loop_modulo_remainder=7),
+]
+
+
 class DrumAndBassTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.DRUM_AND_BASS
     BPM_RANGE = (170, 176)
+    SWING = 0.03  # Slight shuffle to humanize the breakbeat grid
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
@@ -347,5 +374,9 @@ class DrumAndBassTrackGenerator(BaseTrackGenerator):
         atm = cls._maybe(_ATMOSPHERES, 0.55)
         if atm:
             layers.append(copy.deepcopy(atm))
+
+        # Phrase fill — snare roll / reverse sweep / tom run every 8-16 bars
+        if random.random() < 0.6:
+            layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
         return layers

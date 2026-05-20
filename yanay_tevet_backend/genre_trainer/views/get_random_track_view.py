@@ -60,6 +60,9 @@ class TrackSchema(Schema):
     id: str
     genre: str
     bpm: float
+    # Transport-level swing applied to 16th notes (0 = straight, ~0.15-0.25 = noticeable shuffle).
+    # Per-genre default lives on each generator's SWING class attribute.
+    swing: float = 0.0
     layers: list[TrackLayerSchema]
 
 

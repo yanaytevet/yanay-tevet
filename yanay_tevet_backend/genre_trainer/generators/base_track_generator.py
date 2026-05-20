@@ -131,6 +131,9 @@ def _chorus(f: float, dt: float, depth: float, wet: float) -> dict:
 class BaseTrackGenerator:
     GENRE: GenreType
     BPM_RANGE: tuple[int, int]
+    # Transport-level 16n swing amount. Genres override this where shuffle is part of the feel
+    # (house ~0.12, garage ~0.2, jungle/DnB ~0.05 light); most four-on-the-floor genres stay at 0.
+    SWING: float = 0.0
 
     @classmethod
     def generate(cls) -> dict[str, Any]:
@@ -138,6 +141,7 @@ class BaseTrackGenerator:
             'id': f'{cls.GENRE.value}_{uuid.uuid4().hex[:6]}',
             'genre': cls.GENRE.value,
             'bpm': random.randint(*cls.BPM_RANGE),
+            'swing': cls.SWING,
             'layers': cls._generate_layers(),
         }
 

@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _reverb, _dist, _chorus, _filt,
+    BaseTrackGenerator, _N, _cfg, _reverb, _dist, _chorus, _filt, _delay,
     _vel, _vel_groove, _vel_kick, _vel_snare,
 )
 
@@ -182,9 +182,47 @@ _PERCS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# CHORD STABS — PolySynth voices triggered with comma-separated note strings.
+# The player splits on ',' before passing to PolySynth.triggerAttackRelease.
+# These are the signature "deep house" chord rhythm on offbeats / syncopation.
+# ---------------------------------------------------------------------------
+_STABS = [
+    # Am7-style stab on the offbeats (deep house feel)
+    _cfg('chord_stab', 'stab', -14, '16n', 'PolySynth',
+         {'oscillator': {'type': 'sawtooth'},
+          'envelope': {'attack': 0.005, 'decay': 0.12, 'sustain': 0.0, 'release': 0.18}},
+         [_reverb(1.4, 0.4), _filt('lowpass', 2600, 1.5)],
+         [_N,_N,'A3,C4,E4',_N,_N,_N,'A3,C4,E4',_N,_N,_N,'G3,B3,D4',_N,_N,_N,'A3,C4,E4',_N,
+          _N,_N,'A3,C4,E4',_N,_N,_N,'G3,B3,D4',_N,_N,_N,'F3,A3,C4',_N,_N,_N,'A3,C4,E4',_N]),
+    # Em9 syncopated stab
+    _cfg('chord_stab', 'stab', -15, '16n', 'PolySynth',
+         {'oscillator': {'type': 'triangle'},
+          'envelope': {'attack': 0.008, 'decay': 0.18, 'sustain': 0.05, 'release': 0.22}},
+         [_reverb(1.8, 0.45), _filt('lowpass', 2200, 1.4)],
+         [_N,'E3,G3,B3,D4',_N,_N,_N,'E3,G3,B3,D4',_N,_N,_N,_N,'C3,E3,G3',_N,_N,'D3,F#3,A3',_N,_N,
+          _N,'E3,G3,B3,D4',_N,_N,_N,'E3,G3,B3,D4',_N,_N,_N,_N,'A3,C4,E4',_N,_N,'G3,B3,D4',_N,_N]),
+    # Cm-Ab-Fm-G jazzy progression, off-beat stabs
+    _cfg('chord_stab', 'stab', -14, '16n', 'PolySynth',
+         {'oscillator': {'type': 'square'},
+          'envelope': {'attack': 0.003, 'decay': 0.1, 'sustain': 0.0, 'release': 0.15}},
+         [_reverb(1.2, 0.42), _filt('lowpass', 2400, 1.6), _chorus(0.6, 3, 0.4, 0.3)],
+         [_N,_N,'C4,Eb4,G4',_N,_N,_N,'C4,Eb4,G4',_N,_N,_N,'Ab3,C4,Eb4',_N,_N,_N,'Ab3,C4,Eb4',_N,
+          _N,_N,'F3,Ab3,C4',_N,_N,_N,'F3,Ab3,C4',_N,_N,_N,'G3,Bb3,D4',_N,_N,_N,'G3,B3,D4',_N]),
+    # Dm7-G7 jazz-house turnaround
+    _cfg('chord_stab', 'stab', -15, '16n', 'PolySynth',
+         {'oscillator': {'type': 'sawtooth'},
+          'envelope': {'attack': 0.004, 'decay': 0.14, 'sustain': 0.0, 'release': 0.2}},
+         [_reverb(1.6, 0.5), _filt('lowpass', 2300, 1.5), _delay('8n', 0.18, 0.12)],
+         [_N,_N,'D3,F3,A3,C4',_N,_N,_N,'D3,F3,A3,C4',_N,_N,_N,_N,_N,'D3,F3,A3,C4',_N,_N,_N,
+          _N,_N,'G3,B3,D4,F4',_N,_N,_N,'G3,B3,D4,F4',_N,_N,_N,_N,_N,'G3,B3,D4,F4',_N,_N,_N]),
+]
+
+
 class HouseTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HOUSE
     BPM_RANGE = (122, 128)
+    SWING = 0.12  # Classic house shuffle on 16ths
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
@@ -199,6 +237,13 @@ class HouseTrackGenerator(BaseTrackGenerator):
         bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.22, ghost_prob=0.08)
 
         layers = [kick, clap, hihat, bass]
+
+        # Chord stab — the harmonic centerpiece of most house tracks. Usually enters after intro.
+        if random.random() < 0.7:
+            stab = copy.deepcopy(cls._pick(_STABS))
+            stab['pattern']['velocities'] = _vel(stab['pattern']['steps'], accent_prob=0.2, ghost_prob=0.05)
+            stab['entry_loop'] = random.choice([0, 2, 4])
+            layers.append(stab)
 
         if random.random() < 0.55:
             pad = copy.deepcopy(cls._pick(_PADS))

@@ -7,18 +7,11 @@ import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/
 import {bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
 
-// Fields added to the backend schema but not yet regenerated into the typed client.
-// Remove once `npm run create-api` has been run against the updated backend.
-type ExtendedLayer = TrackLayerSchema & {
-  loop_modulo?: number;
-  loop_modulo_remainder?: number;
-  pan?: number | null;
-};
-
 // Role-based stereo defaults applied when a layer has no explicit pan.
 // Kick and bass stay centered for energy; hats/percs/leads spread to widen the mix.
 const ROLE_PAN_DEFAULTS: Record<string, number> = {
   kick: 0,
+  sub: 0,
   bass: 0,
   snare: 0,
   hihat: 0.22,
@@ -26,6 +19,28 @@ const ROLE_PAN_DEFAULTS: Record<string, number> = {
   lead: -0.08,
   stab: 0.12,
   pad: 0,
+};
+
+// Per-role sidechain depth. Pads "breathe" hardest, hats stay solid. Kick and sub bypass entirely.
+// Values are the LFO floor (1.0 = no duck, 0.4 = -8 dB duck at the kick).
+type SidechainDepth = 'deep' | 'medium' | 'shallow' | 'none';
+
+const ROLE_SIDECHAIN: Record<string, SidechainDepth> = {
+  kick: 'none',
+  sub: 'none',
+  bass: 'medium',
+  snare: 'shallow',
+  hihat: 'shallow',
+  perc: 'shallow',
+  lead: 'medium',
+  stab: 'medium',
+  pad: 'deep',
+};
+
+const SIDECHAIN_FLOOR: Record<Exclude<SidechainDepth, 'none'>, number> = {
+  deep: 0.4,
+  medium: 0.6,
+  shallow: 0.82,
 };
 
 @Component({
@@ -48,8 +63,10 @@ export class GenreTrainerPlayerComponent {
   private masterGain: Tone.Gain | null = null;
   private masterCompressor: Tone.Compressor | null = null;
   private masterLimiter: Tone.Limiter | null = null;
-  private sidechainBus: Tone.Gain | null = null;
-  private sidechainLfo: Tone.LFO | null = null;
+  private kickBus: Tone.Gain | null = null;
+  private kickMeter: Tone.Meter | null = null;
+  private sidechainBuses: Map<Exclude<SidechainDepth, 'none'>, Tone.Gain> = new Map();
+  private sidechainLfos: Tone.LFO[] = [];
   private analyser: Tone.Analyser | null = null;
   private sequences: Tone.Sequence[] = [];
   private nodes: Tone.ToneAudioNode[] = [];
@@ -141,25 +158,40 @@ export class GenreTrainerPlayerComponent {
     this.masterLimiter.connect(this.analyser as unknown as Tone.ToneAudioNode);
 
     Tone.getTransport().bpm.value = track.bpm;
+    // Swing on 16th notes — Tone applies a shuffle offset to every other 16n.
+    Tone.getTransport().swing = track.swing ?? 0;
+    Tone.getTransport().swingSubdivision = '16n';
 
-    // Sidechain bus: every non-kick layer routes through this gain, which is modulated by
-    // a transport-locked sawtooth LFO (low at each beat, ramping back to unity before the next).
-    // The kick connects directly to masterGain so it triggers the "pump" without ducking itself.
-    this.sidechainBus = new Tone.Gain(1);
-    this.sidechainBus.connect(this.masterGain);
-    this.sidechainLfo = new Tone.LFO({frequency: '4n', type: 'sawtooth', min: 0.55, max: 1.0});
-    this.sidechainLfo.connect(this.sidechainBus.gain);
-    this.sidechainLfo.start(0);
+    // Kick bus: kick role layers route here, then to masterGain. A Tone.Meter taps the bus so the
+    // visualizer can react to the actual kick amplitude instead of guessing from transport phase.
+    this.kickBus = new Tone.Gain(1);
+    this.kickBus.connect(this.masterGain);
+    this.kickMeter = new Tone.Meter({normalRange: true, smoothing: 0.4});
+    this.kickBus.connect(this.kickMeter as unknown as Tone.ToneAudioNode);
+
+    // Per-role sidechain buses (deep / medium / shallow). Each has its own LFO with a different
+    // floor value, so pads breathe hard, basses pump moderately, hats stay solid.
+    // All LFOs share the same '4n' period and are started together so they remain phase-locked.
+    this.sidechainBuses.clear();
+    this.sidechainLfos = [];
+    for (const depth of ['deep', 'medium', 'shallow'] as const) {
+      const bus = new Tone.Gain(1);
+      bus.connect(this.masterGain);
+      const lfo = new Tone.LFO({frequency: '4n', type: 'sawtooth', min: SIDECHAIN_FLOOR[depth], max: 1.0});
+      lfo.connect(bus.gain);
+      lfo.start(0);
+      this.sidechainBuses.set(depth, bus);
+      this.sidechainLfos.push(lfo);
+    }
 
     for (const layer of track.layers) {
-      const extended = layer as ExtendedLayer;
-      const isKick = layer.role === 'kick';
-      const bus = isKick ? this.masterGain : this.sidechainBus;
+      const sidechainDepth = ROLE_SIDECHAIN[layer.role] ?? 'medium';
+      const bus = this.selectBusForLayer(layer.role, sidechainDepth);
 
       const vol = new Tone.Volume(layer.volume);
       vol.connect(bus);
 
-      const panValue = extended.pan ?? ROLE_PAN_DEFAULTS[layer.role] ?? 0;
+      const panValue = layer.pan ?? ROLE_PAN_DEFAULTS[layer.role] ?? 0;
       const panner = new Tone.Panner(panValue);
       panner.connect(vol);
 
@@ -220,10 +252,18 @@ export class GenreTrainerPlayerComponent {
 
     this.analyser?.dispose();
     this.analyser = null;
-    this.sidechainLfo?.dispose();
-    this.sidechainLfo = null;
-    this.sidechainBus?.dispose();
-    this.sidechainBus = null;
+    for (const lfo of this.sidechainLfos) {
+      lfo.dispose();
+    }
+    this.sidechainLfos = [];
+    for (const bus of this.sidechainBuses.values()) {
+      bus.dispose();
+    }
+    this.sidechainBuses.clear();
+    this.kickMeter?.dispose();
+    this.kickMeter = null;
+    this.kickBus?.dispose();
+    this.kickBus = null;
     this.masterLimiter?.dispose();
     this.masterLimiter = null;
     this.masterCompressor?.dispose();
@@ -235,6 +275,16 @@ export class GenreTrainerPlayerComponent {
     this.lastTransportSeconds = -1;
     this.service.isPlaying.set(false);
     this.clearCanvas();
+  }
+
+  private selectBusForLayer(role: string, depth: SidechainDepth): Tone.ToneAudioNode {
+    if (depth === 'none') {
+      // Kick (and sub-bass) bypass sidechain. Kick goes to its own meter-tapped bus.
+      if (role === 'kick' && this.kickBus) { return this.kickBus; }
+      return this.masterGain as Tone.ToneAudioNode;
+    }
+    const bus = this.sidechainBuses.get(depth);
+    return bus ?? (this.masterGain as Tone.ToneAudioNode);
   }
 
   private buildSynth(layer: TrackLayerSchema): Tone.ToneAudioNode {
@@ -252,6 +302,10 @@ export class GenreTrainerPlayerComponent {
         return new Tone.AMSynth(opts as Tone.AMSynthOptions);
       case 'FMSynth':
         return new Tone.FMSynth(opts as Tone.FMSynthOptions);
+      case 'PolySynth':
+        // Chord-capable voice. Layers using PolySynth encode chords as comma-separated
+        // step strings (e.g. "C4,Eb4,G4") which `fire()` splits before triggering.
+        return new Tone.PolySynth(Tone.Synth, opts as Partial<Tone.SynthOptions>);
       default:
         return new Tone.Synth(opts as Tone.SynthOptions);
     }
@@ -297,25 +351,28 @@ export class GenreTrainerPlayerComponent {
     synth: Tone.ToneAudioNode,
     dropoutRef: {shouldPlay: boolean},
   ): Tone.Sequence {
-    const extended = layer as ExtendedLayer;
     const synthType = layer.instrument.type;
     const duration = layer.note_duration as Tone.Unit.Time;
     const velocities = layer.pattern.velocities;
     const entryLoop = layer.entry_loop ?? 0;
-    const loopModulo = extended.loop_modulo ?? 0;
-    const loopModuloRem = extended.loop_modulo_remainder ?? 0;
+    const loopModulo = layer.loop_modulo ?? 0;
+    const loopModuloRem = layer.loop_modulo_remainder ?? 0;
     const isHihat = layer.role === 'hihat';
     const totalSteps = layer.pattern.steps.length;
     let stepIdx = 0;
 
     interface TwoArgTAR {triggerAttackRelease: (d: Tone.Unit.Time, t: number, v?: number) => void}
     interface ThreeArgTAR {triggerAttackRelease: (n: string, d: Tone.Unit.Time, t: number, v?: number) => void}
+    interface ChordTAR {triggerAttackRelease: (n: string[], d: Tone.Unit.Time, t: number, v?: number) => void}
 
     const fire = (note: string, vel: number, time: number): void => {
       // ±7% velocity jitter humanizes successive loops so they don't feel mechanically identical.
       const jittered = Math.max(0, Math.min(1, vel * (0.93 + Math.random() * 0.14)));
       if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
         (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, jittered);
+      } else if (synthType === 'PolySynth' && note.includes(',')) {
+        const notes = note.split(',');
+        (synth as unknown as ChordTAR).triggerAttackRelease(notes, duration, time, jittered);
       } else {
         (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, jittered);
       }
@@ -424,11 +481,10 @@ export class GenreTrainerPlayerComponent {
       ctx.fillRect(0, 0, w, h);
 
       const midY = h / 2;
-      const transport = Tone.getTransport();
-      const bpm = this.service.track()?.bpm ?? 128;
-      const beatPhaseSec = transport.seconds % (60 / bpm);
-      const beatPhase = beatPhaseSec / (60 / bpm);
-      const kick = beatPhase < 0.12 ? Math.sin(Math.PI * beatPhase / 0.12) : 0;
+      // Use the actual kick-bus amplitude (Tone.Meter, normalRange) rather than guessing from
+      // transport phase. Reacts correctly to off-beat / triplet / silent-kick patterns.
+      const kickLevel = this.kickMeter ? Math.max(0, Math.min(1, this.kickMeter.getValue() as number)) : 0;
+      const kick = Math.pow(kickLevel, 0.6);
 
       ctx.beginPath();
 

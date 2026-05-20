@@ -386,6 +386,52 @@ _AMBIENT_LAYERS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# SUB — deep sine drone under the bassline. Role 'sub' bypasses sidechain so
+# the low end never disappears under the kick — gives dark psy its constant low pressure.
+# ---------------------------------------------------------------------------
+_SUBS = [
+    _cfg('sub', 'sub', -9, '2n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.01, 'decay': 0.5, 'sustain': 0.95, 'release': 0.4}},
+         [_filt('lowpass', 120, 1)],
+         ['A0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
+          'A0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
+    _cfg('sub', 'sub', -9, '2n', 'Synth',
+         {'oscillator': {'type': 'sine'},
+          'envelope': {'attack': 0.01, 'decay': 0.55, 'sustain': 0.95, 'release': 0.45}},
+         [_filt('lowpass', 110, 1)],
+         ['E0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
+          'D0',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
+]
+
+# ---------------------------------------------------------------------------
+# FILLS — sparse FX flourishes every 8-16 bars to break the hypnotic repetition.
+# ---------------------------------------------------------------------------
+_FILLS = [
+    # Reverse-FX wash — every 16 bars
+    _cfg('fill_wash', 'perc', -14, '2n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 1.4, 'decay': 0.1, 'sustain': 0.9, 'release': 0.2}},
+         [_reverb(3.0, 0.7), _filt('bandpass', 1200, 4)],
+         ['C3'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=7),
+    # Dark metallic crash on bar 2 beat 1 — every 8 bars
+    _cfg('fill_crash', 'perc', -12, '2n', 'MetalSynth',
+         {'frequency': 280, 'envelope': {'attack': 0.001, 'decay': 0.6, 'release': 0.5},
+          'harmonicity': 6.5, 'modulationIndex': 38, 'resonance': 3500, 'octaves': 1.6},
+         [_dist(0.5, 0.5), _reverb(2.5, 0.6)],
+         [_N]*16 + ['C4'] + [_N]*15,
+         loop_modulo=4, loop_modulo_remainder=3),
+    # Sub bass impact on phrase start — every 16 bars, fires on loop 0 mod 8
+    _cfg('fill_impact', 'perc', -8, '1n', 'MembraneSynth',
+         {'pitchDecay': 0.15, 'octaves': 8,
+          'envelope': {'attack': 0.001, 'decay': 1.0, 'sustain': 0.1, 'release': 1.5}},
+         [_reverb(2.5, 0.55), _filt('lowpass', 400, 1.5)],
+         ['C1'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=0),
+]
+
+
 class DarkPsyTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.DARK_PSY
     BPM_RANGE = (148, 152)
@@ -414,6 +460,11 @@ class DarkPsyTrackGenerator(BaseTrackGenerator):
         mod = copy.deepcopy(cls._pick(_MOD_LAYERS))
         layers.append(mod)
 
+        # Sub drone — ultra-deep sine layer, present on most tracks for low-end weight
+        if random.random() < 0.75:
+            sub = copy.deepcopy(cls._pick(_SUBS))
+            layers.append(sub)
+
         # Background ambient — optional static atmosphere (~60% of tracks)
         if random.random() < 0.6:
             ambient = copy.deepcopy(cls._pick(_AMBIENT_LAYERS))
@@ -429,5 +480,9 @@ class DarkPsyTrackGenerator(BaseTrackGenerator):
                 accent = copy.deepcopy(cls._pick(_PSY_ACCENTS))
                 accent['pattern']['velocities'] = _vel(accent['pattern']['steps'], accent_prob=0.2, ghost_prob=0.0)
                 layers.append(accent)
+
+        # Phrase fill — FX wash / crash / impact every 8-16 bars to break the hypnotic loop
+        if random.random() < 0.55:
+            layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
         return layers

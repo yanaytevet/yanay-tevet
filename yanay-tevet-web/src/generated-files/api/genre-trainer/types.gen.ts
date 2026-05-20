@@ -4,66 +4,210 @@ export type ClientOptions = {
     baseURL: string;
 };
 
-export type LayerPatternSchema = {
-    subdivision: string;
-    steps: Array<string | null>;
-    velocities?: Array<number | null> | null;
+/**
+ * GetRandomTrackQuerySchema
+ */
+export type GetRandomTrackQuerySchema = {
+    /**
+     * Genres
+     */
+    genres?: string | null;
 };
 
-export type InstrumentConfigSchema = {
-    type: string;
-    options: Record<string, unknown>;
+/**
+ * EmptySchema
+ */
+export type EmptySchema = {
+    [key: string]: unknown;
 };
 
-export type EffectConfigSchema = {
-    type: string;
-    options: Record<string, unknown>;
-    wet: number;
-};
-
+/**
+ * AutomationSpecSchema
+ */
 export type AutomationSpecSchema = {
+    /**
+     * Target
+     */
     target: string;
+    /**
+     * From Val
+     */
     from_val: number;
+    /**
+     * To Val
+     */
     to_val: number;
+    /**
+     * Waveform
+     */
     waveform?: string;
 };
 
-export type TrackLayerSchema = {
-    id: string;
-    role: string;
-    volume: number;
-    note_duration: string;
-    instrument: InstrumentConfigSchema;
-    effects: Array<EffectConfigSchema>;
-    pattern: LayerPatternSchema;
-    entry_loop?: number;
-    dropout_prob?: number;
-    automation?: Array<AutomationSpecSchema>;
+/**
+ * EffectConfigSchema
+ */
+export type EffectConfigSchema = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Options
+     */
+    options: {
+        [key: string]: unknown;
+    };
+    /**
+     * Wet
+     */
+    wet?: number;
 };
 
-export type TrackSchema = {
-    id: string;
-    genre: string;
-    bpm: number;
-    layers: Array<TrackLayerSchema>;
-};
-
+/**
+ * GetRandomTrackOutput
+ */
 export type GetRandomTrackOutput = {
     track: TrackSchema;
 };
 
+/**
+ * InstrumentConfigSchema
+ */
+export type InstrumentConfigSchema = {
+    /**
+     * Type
+     */
+    type: string;
+    /**
+     * Options
+     */
+    options: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * LayerPatternSchema
+ */
+export type LayerPatternSchema = {
+    /**
+     * Subdivision
+     */
+    subdivision: string;
+    /**
+     * Steps
+     */
+    steps: Array<string | null>;
+    /**
+     * Velocities
+     */
+    velocities?: Array<number | null> | null;
+};
+
+/**
+ * TrackLayerSchema
+ */
+export type TrackLayerSchema = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Volume
+     */
+    volume: number;
+    /**
+     * Note Duration
+     */
+    note_duration?: string;
+    instrument: InstrumentConfigSchema;
+    /**
+     * Effects
+     */
+    effects: Array<EffectConfigSchema>;
+    pattern: LayerPatternSchema;
+    /**
+     * Entry Loop
+     */
+    entry_loop?: number;
+    /**
+     * Dropout Prob
+     */
+    dropout_prob?: number;
+    /**
+     * Automation
+     */
+    automation?: Array<AutomationSpecSchema>;
+    /**
+     * Loop Modulo
+     */
+    loop_modulo?: number;
+    /**
+     * Loop Modulo Remainder
+     */
+    loop_modulo_remainder?: number;
+    /**
+     * Pan
+     */
+    pan?: number | null;
+};
+
+/**
+ * TrackSchema
+ */
+export type TrackSchema = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Genre
+     */
+    genre: string;
+    /**
+     * Bpm
+     */
+    bpm: number;
+    /**
+     * Swing
+     */
+    swing?: number;
+    /**
+     * Layers
+     */
+    layers: Array<TrackLayerSchema>;
+};
+
+/**
+ * GetGenresOutput
+ */
 export type GetGenresOutput = {
+    /**
+     * Genres
+     */
     genres: Array<string>;
 };
 
 export type GetRandomTrackViewData = {
     body?: never;
     path?: never;
-    query?: { genres?: string };
+    query?: {
+        /**
+         * Genres
+         */
+        genres?: string | null;
+    };
     url: '/api/genre-trainer/random-track/';
 };
 
 export type GetRandomTrackViewResponses = {
+    /**
+     * OK
+     */
     200: GetRandomTrackOutput;
 };
 
@@ -77,6 +221,9 @@ export type GetGenresViewData = {
 };
 
 export type GetGenresViewResponses = {
+    /**
+     * OK
+     */
     200: GetGenresOutput;
 };
 
