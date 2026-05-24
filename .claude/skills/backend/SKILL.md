@@ -104,11 +104,50 @@ class ItemSerializer(Serializer):
 
 ### Permission Checkers
 
+Permission checks **must** live in `PermissionsChecker` subclasses, never inline in views. Use the existing checkers before writing new ones:
+
+| Checker | Location |
+|---|---|
+| `LoginPermissionChecker` | `common/simple_api/permissions_checkers/` |
+| `NotLoggedInPermissionChecker` | `common/simple_api/permissions_checkers/` |
+| `AdminPermissionsChecker` | `users/permissions_checkers/` (calls `LoginPermissionChecker` first, then `user.is_admin()`) |
+
+Usage:
 ```python
-await LoginPermissionChecker().async_raise_exception_if_not_valid(user)
+@classmethod
+async def check_permitted(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> None:
+    user = await api_request.future_user
+    await AdminPermissionsChecker().async_raise_exception_if_not_valid(user)
 ```
 
-Built-in: `LoginPermissionChecker`, `NotLoggedInPermissionChecker`. Custom checkers extend `PermissionsChecker`.
+If no existing checker fits, add a new one under `<app>/permissions_checkers/` extending `PermissionsChecker`. **Never** write `if not user.is_admin(): raise RestAPIException(...)` inline in a view — the checker exists for a reason.
+
+### Managers — Business Logic Lives Here
+
+Views are thin: parse input → call permission checker → call a manager → return the output schema. **No third-party API calls, no multi-step computation, no DB orchestration in views.** All of that goes in `<app>/managers/<name>_manager.py`.
+
+```python
+# my_dashboard/managers/openai_costs_manager.py
+class OpenAICostsManager:
+    async def get_summary(self) -> OpenAICostsSummary:
+        api_key = settings.CHATGPT_API_KEY
+        # ... fetch from OpenAI, aggregate, return ...
+        return OpenAICostsSummary(...)
+
+# my_dashboard/views/get_openai_costs_view.py — thin view
+class GetOpenAICostsView(SimpleGetAPIView):
+    @classmethod
+    async def check_permitted(cls, api_request, query=None, path=None) -> None:
+        user = await api_request.future_user
+        await AdminPermissionsChecker().async_raise_exception_if_not_valid(user)
+
+    @classmethod
+    async def get_data(cls, api_request, query=None, path=None) -> OpenAICostsOutput:
+        summary = await OpenAICostsManager().get_summary()
+        return OpenAICostsOutput(**summary.model_dump())
+```
+
+Managers typically take context (like `User`) via `__init__` and expose async methods. Reference: `dream_diary/managers/dream_diary_entry_manager.py`, `users/managers/webauthn_manager.py`.
 
 ---
 
