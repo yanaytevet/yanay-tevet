@@ -4,6 +4,7 @@ from common.generative_ai.enums.generative_ai_model import GenerativeAiModel
 from common.generative_ai.text_generative_ai import TextGenerativeAI
 from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
+from japanese.llm.ingest_service import apply_data_to_node
 from japanese.llm.prompts import (
     CONTENT_PROMPT_KEYS,
     CONTENT_SYSTEM_PROMPTS,
@@ -42,9 +43,15 @@ class ContentGenerationService:
             system_prompt=system_prompt,
         )
 
-        cls._apply_full_schema(node, node_type, result)
+        if NodeType(result.data.node_type) != node_type:
+            raise ValueError(
+                f'Content gen for node {node.id} ({node_type}) returned data '
+                f'with mismatched node_type={result.data.node_type}'
+            )
+
+        apply_data_to_node(node, result.data)
         node.content_html = result.content_html
-        node.status = NodeStatus.NEEDS_REVIEW
+        node.status = NodeStatus.PUBLISHED
         await node.asave()
 
         for entity in result.extracted_entities:
@@ -64,50 +71,33 @@ class ContentGenerationService:
         return node
 
     @classmethod
-    def _apply_full_schema(
-        cls, node: Node, node_type: NodeType, result: ContentGenerationResult
-    ) -> None:
-        match node_type:
-            case NodeType.SENTENCE:
-                if result.sentence_data is not None:
-                    node.sentence_data = result.sentence_data
-            case NodeType.WORD:
-                if result.word_data is not None:
-                    node.word_data = result.word_data
-            case NodeType.KANJI:
-                if result.kanji_data is not None:
-                    node.kanji_data = result.kanji_data
-            case NodeType.PARTICLE:
-                if result.particle_data is not None:
-                    node.particle_data = result.particle_data
-            case NodeType.RULE:
-                if result.rule_data is not None:
-                    node.rule_data = result.rule_data
-
-    @classmethod
     async def _upsert_entity_stub(cls, entity: ExtractedEntity) -> Node:
-        node_type = NodeType(entity.node_type)
+        node_type = NodeType(entity.data.node_type)
         existing = await Node.objects.filter(
             type=node_type,
             canonical_key=entity.canonical_key,
         ).afirst()
         if existing is not None:
+            dirty = False
             if existing.jlpt_level is None and entity.jlpt_level is not None:
                 existing.jlpt_level = entity.jlpt_level
+                dirty = True
+            if _entity_data_should_replace(existing, node_type):
+                apply_data_to_node(existing, entity.data)
+                dirty = True
+            if dirty:
                 await existing.asave()
             return existing
 
-        return await Node.objects.acreate(
+        node = Node(
             type=node_type,
             canonical_key=entity.canonical_key,
             jlpt_level=entity.jlpt_level,
             status=NodeStatus.STUB,
-            sentence_data=entity.sentence_data,
-            word_data=entity.word_data,
-            kanji_data=entity.kanji_data,
-            particle_data=entity.particle_data,
-            rule_data=entity.rule_data,
         )
+        apply_data_to_node(node, entity.data)
+        await node.asave()
+        return node
 
     @classmethod
     async def _upsert_edge(cls, from_node: Node, to_node: Node, entity: ExtractedEntity) -> None:
@@ -169,3 +159,20 @@ class ContentGenerationService:
                 if data is None:
                     raise ValueError(f'Node {node.id} of type rule has no rule_data')
                 return template.format(name=data.name)
+
+
+def _entity_data_should_replace(existing: Node, node_type: NodeType) -> bool:
+    """Stub-creation from extracted entities only carries minimum data; if the
+    existing node already has any data of the matching type we keep it (it may
+    have been enriched by an earlier content gen)."""
+    match node_type:
+        case NodeType.SENTENCE:
+            return existing.sentence_data is None
+        case NodeType.WORD:
+            return existing.word_data is None
+        case NodeType.KANJI:
+            return existing.kanji_data is None
+        case NodeType.PARTICLE:
+            return existing.particle_data is None
+        case NodeType.RULE:
+            return existing.rule_data is None
