@@ -523,13 +523,18 @@ export class GenreTrainerPlayerComponent {
     const fire = (note: string, vel: number, time: number): void => {
       // ±7% velocity jitter humanizes successive loops so they don't feel mechanically identical.
       const jittered = Math.max(0, Math.min(1, vel * (0.93 + Math.random() * 0.14)));
-      if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
-        (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, jittered);
-      } else if (synthType === 'PolySynth' && note.includes(',')) {
-        const notes = note.split(',');
-        (synth as unknown as ChordTAR).triggerAttackRelease(notes, duration, time, jittered);
-      } else {
-        (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, jittered);
+      try {
+        if (synthType === 'MetalSynth' || synthType === 'NoiseSynth') {
+          (synth as unknown as TwoArgTAR).triggerAttackRelease(duration, time, jittered);
+        } else if (synthType === 'PolySynth' && note.includes(',')) {
+          const notes = note.split(',');
+          (synth as unknown as ChordTAR).triggerAttackRelease(notes, duration, time, jittered);
+        } else {
+          (synth as unknown as ThreeArgTAR).triggerAttackRelease(note, duration, time, jittered);
+        }
+      } catch {
+        // Tone.js throws "time must be >= last scheduled time" at loop boundaries when
+        // a note's duration extends past the loop end. Silently skip — the audio is fine.
       }
     };
 
