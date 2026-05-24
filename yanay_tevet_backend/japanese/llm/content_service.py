@@ -28,7 +28,7 @@ class ContentGenerationService:
     """
 
     @classmethod
-    async def generate_for_node(cls, node: Node, create_sub_entities: bool = True) -> Node:
+    async def generate_for_node(cls, node: Node) -> Node:
         node_type = NodeType(node.type)
         user_prompt = cls._build_user_prompt(node, node_type)
         system_prompt = CONTENT_SYSTEM_PROMPTS[node_type]
@@ -54,12 +54,11 @@ class ContentGenerationService:
         node.status = NodeStatus.PUBLISHED
         await node.asave()
 
-        if create_sub_entities:
-            for entity in result.extracted_entities:
-                sub_node = await cls._upsert_entity_stub(entity)
-                if sub_node.id == node.id:
-                    continue
-                await cls._upsert_edge(node, sub_node, entity)
+        for entity in result.extracted_entities:
+            sub_node = await cls._upsert_entity_stub(entity)
+            if sub_node.id == node.id:
+                continue
+            await cls._upsert_edge(node, sub_node, entity)
 
         await GenerationLog.objects.acreate(
             node=node,

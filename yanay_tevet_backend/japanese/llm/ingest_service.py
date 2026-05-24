@@ -73,5 +73,5 @@ class IngestService:
             raw_output=json.dumps(result.model_dump()),
         )
 
-        await ContentGenerationService.generate_for_node(node, create_sub_entities=False)
+        await ContentGenerationService.generate_for_node(node)
         return node
