@@ -1,7 +1,7 @@
 from japanese.enums.node_type import NodeType
 
 
-INGEST_PROMPT_KEY = 'japanese_ingest_v3'
+INGEST_PROMPT_KEY = 'japanese_ingest_v4'
 
 INGEST_SYSTEM_PROMPT = (
     "You are a Japanese language classifier. Given a Japanese input, you identify its type "
@@ -27,21 +27,28 @@ INGEST_USER_TEMPLATE = (
     "- rule: a short kebab-case slug (e.g. 'te-form', 'i-adjective-past').\n\n"
     "data minimum fields by node_type:\n"
     "- sentence: japanese (with inline furigana as 漢字(かんじ)), english_translation.\n"
-    "- word: base_form (dictionary form), reading (hiragana), word_type. "
-    "Leave word_sub_type null and meanings empty.\n"
+    "- word: base_form (dictionary form — for na-adjectives use the stem WITHOUT trailing な, "
+    "e.g. 敬虔 not 敬虔な, 静か not 静かな; for i-adjectives keep the final い, e.g. 高い; for verbs "
+    "use the plain dictionary form, e.g. 食べる, 飲む), reading (hiragana, matching base_form — "
+    "do not include な for na-adjectives), word_type. Leave word_sub_type null and meanings empty.\n"
     "- kanji: character only. Leave readings_on, readings_kun, meanings, radicals empty.\n"
-    "- particle: particle only. Leave primary_function empty.\n"
+    "- particle: particle only. Leave primary_function empty. Only classify as particle when the "
+    "input is a true standalone grammatical particle (は, が, を, に, で, と, も, から, まで, よ, ね, "
+    "か, the sentence-final な expressing emotion/confirmation, etc.). Never classify the な ending "
+    "of a na-adjective, the い ending of an i-adjective, or a verb conjugation ending as a particle "
+    "— if the input is one of those endings shown together with its stem, classify the whole thing "
+    "as a word instead.\n"
     "- rule: name only. Leave category at its default.\n\n"
     "Do NOT extract or list any related entities. That happens in the content step."
 )
 
 
 CONTENT_PROMPT_KEYS: dict[NodeType, str] = {
-    NodeType.SENTENCE: 'japanese_content_sentence_v3',
-    NodeType.WORD: 'japanese_content_word_v3',
-    NodeType.KANJI: 'japanese_content_kanji_v3',
-    NodeType.PARTICLE: 'japanese_content_particle_v3',
-    NodeType.RULE: 'japanese_content_rule_v3',
+    NodeType.SENTENCE: 'japanese_content_sentence_v4',
+    NodeType.WORD: 'japanese_content_word_v4',
+    NodeType.KANJI: 'japanese_content_kanji_v4',
+    NodeType.PARTICLE: 'japanese_content_particle_v4',
+    NodeType.RULE: 'japanese_content_rule_v4',
 }
 
 
@@ -66,7 +73,8 @@ _OUTPUT_CONTRACT = (
     "- Each entity carries canonical_key, edge_type_from_input, optional surface_form/jlpt_level, "
     "and `data` — a variant whose node_type identifies the entity. Fill ONLY the MINIMUM "
     "identifying fields in data (same minimum rules as ingest: word → base_form/reading/word_type "
-    "only; kanji → character only; particle → particle only; rule → name only). Do NOT include "
+    "only; kanji → character only; particle → particle only; rule → name only). For na-adjective "
+    "words, base_form is the stem WITHOUT trailing な (e.g. 敬虔, not 敬虔な). Do NOT include "
     "meanings, readings, mnemonics or function descriptions for sub-entities — those will be "
     "filled when their own content is generated.\n"
     "- canonical_key rules: same as ingest (word = base_form|reading, kanji = character, etc.).\n"
@@ -77,7 +85,18 @@ _OUTPUT_CONTRACT = (
     "a sentence is a textbook example of a rule; 'exception_to' for exceptions to a rule.\n"
     "- Only emit outgoing references that are downward in the graph. Do NOT list sentences that "
     "use a kanji from a kanji node — those reverse links are created when each sentence's content "
-    "is generated."
+    "is generated.\n"
+    "- NEVER extract structural morphemes as particle entities. These are part of the surrounding "
+    "word, not standalone particles:\n"
+    "  * The な that follows a na-adjective stem in attributive position (e.g. な in 敬虔な, 静かな, "
+    "綺麗な) is the adjectival ending, NOT the sentence-final particle な. Do not emit it as a "
+    "particle entity, and do not create a separate node for it.\n"
+    "  * The い that ends an i-adjective (e.g. い in 高い, 新しい) is part of the adjective.\n"
+    "  * Verb conjugation endings (る, ます, た, て, ない, ば, よう, …) and copula forms (だ, です) "
+    "are part of the verb/copula, not particles.\n"
+    "  Only emit a particle entity when the character(s) function as a true standalone grammatical "
+    "particle in this context (e.g. は as topic marker, を as object marker, な only when "
+    "sentence-final expressing emotion/confirmation as in 「綺麗だな」)."
 )
 
 
@@ -117,8 +136,11 @@ CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
         "Do NOT explain individual words in depth — those live in word nodes.\n\n"
         "data: pick node_type=sentence and re-emit japanese + english_translation (with furigana "
         "on the japanese).\n\n"
-        "extracted_entities: every distinct word (dictionary form), every kanji that appears in any "
-        "of those words, every particle used, and every grammar rule the sentence demonstrates."
+        "extracted_entities: every distinct word (in dictionary form — strip conjugations; "
+        "na-adjectives use the stem without trailing な), every kanji that appears in any of those "
+        "words, every TRUE grammatical particle used (do NOT list the な of a na-adjective, the い "
+        "of an i-adjective, or any verb conjugation ending — those belong to their word, not as "
+        "particles), and every grammar rule the sentence demonstrates."
     ),
     NodeType.WORD: (
         "Generate full content + linked entities for this word node.\n\n"
@@ -132,9 +154,15 @@ CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
         "(plain present/past/negative, polite present/past/negative, te-form).\n\n"
         "data: pick node_type=word and re-emit base_form, reading, word_type, plus the full "
         "word_sub_type (for verbs: godan/ichidan/irregular_verb; for adjectives: i_adjective/"
-        "na_adjective; else null) and meanings (an ordered list of English glosses).\n\n"
+        "na_adjective; else null) and meanings (an ordered list of English glosses). For "
+        "na-adjectives, base_form must be the stem WITHOUT trailing な (e.g. 敬虔, not 敬虔な) and "
+        "reading must match.\n\n"
         "extracted_entities: every kanji that appears in the base_form, and any grammar rule(s) "
-        "the word's conjugation depends on (e.g. for 食べる: rule 'ichidan-conjugation')."
+        "the word's conjugation depends on (e.g. for 食べる: rule 'ichidan-conjugation'; for a "
+        "na-adjective: rule 'na-adjective-conjugation'). Do NOT extract the trailing な of a "
+        "na-adjective, the trailing い of an i-adjective, or any verb conjugation ending as a "
+        "particle — those are part of the word's grammar, captured by word_sub_type and the "
+        "associated rule, not by separate particle nodes."
     ),
     NodeType.KANJI: (
         "Generate full content + linked entities for this kanji node.\n\n"
@@ -152,10 +180,16 @@ CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
     NodeType.PARTICLE: (
         "Generate full content + linked entities for this particle node.\n\n"
         "Particle: {particle}\n\n"
+        "A particle node only ever covers a TRUE grammatical particle. The な in na-adjectives "
+        "(e.g. 敬虔な, 静かな), the い in i-adjectives, and verb conjugation endings are NOT "
+        "particles and should not appear here — if you have been handed one of those by mistake, "
+        "still describe only the true-particle meaning, and call out the confusion in Contrasts.\n\n"
         "content_html sections:\n"
         "1. <h2>Function</h2> — what it marks/does, with the typical pattern.\n"
         "2. <h2>Examples</h2> — 3-5 short example sentences with translation.\n"
-        "3. <h2>Contrasts</h2> — common confusions with other particles, if any.\n\n"
+        "3. <h2>Contrasts</h2> — common confusions with other particles or with adjective/verb "
+        "endings that share the same kana (e.g. for な: distinguish the sentence-final particle な "
+        "from the な that attaches to na-adjective stems).\n\n"
         "data: pick node_type=particle and re-emit particle, plus a concise primary_function "
         "(one short sentence).\n\n"
         "extracted_entities: leave empty."
