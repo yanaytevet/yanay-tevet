@@ -1,0 +1,49 @@
+<div class="card p-5">
+
+  <div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+      <ng-icon [svg]="bootstrapCurrencyDollar" class="text-primary-500 text-xl" />
+      <h2 class="text-base font-semibold text-primary-500">OpenAI spend</h2>
+    </div>
+    <button
+      type="button"
+      class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0 disabled:opacity-40"
+      title="Refresh"
+      [disabled]="isLoading()"
+      (click)="refresh()">
+      <ng-icon [svg]="bootstrapArrowClockwise" class="text-base" [class.animate-spin]="isLoading()" />
+    </button>
+  </div>
+
+  @if (isLoading() && !data()) {
+    <div class="text-sm text-secondary-400">Loading…</div>
+  } @else if (error()) {
+    <div class="p-3 rounded-lg text-sm text-red-700 bg-red-50 border border-red-200">
+      {{ error() }}
+    </div>
+  } @else if (data(); as d) {
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Month to date</div>
+        <div class="text-2xl font-bold text-primary-500">{{ currencySymbol() }}{{ d.month_to_date.toFixed(2) }}</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Last 30 days</div>
+        <div class="text-2xl font-bold text-primary-500">{{ currencySymbol() }}{{ d.last_30_days.toFixed(2) }}</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Last 7 days</div>
+        <div class="text-xl font-semibold text-primary-500">{{ currencySymbol() }}{{ d.last_7_days.toFixed(2) }}</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Today</div>
+        <div class="text-xl font-semibold text-primary-500">{{ currencySymbol() }}{{ d.today.toFixed(2) }}</div>
+      </div>
+    </div>
+    <div class="mt-4 text-xs text-secondary-400">
+      Spend on the OpenAI organization. Live balance is not exposed by the API — see funding at <span class="font-mono">platform.openai.com/billing</span>.
+      Updated {{ fetchedLabel() }}.
+    </div>
+  }
+
+</div>

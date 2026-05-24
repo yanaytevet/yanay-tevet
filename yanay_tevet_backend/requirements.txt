@@ -26,3 +26,4 @@ webauthn==2.6.0
 google-auth==2.40.3
 django-anymail[brevo]==13.0
 openai>=1.0.0
+httpx>=0.27.0

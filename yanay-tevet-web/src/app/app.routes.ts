@@ -125,6 +125,12 @@ export const routes: Routes = [
                     import('./japanese/japanese-review/japanese-review.component').then(m => m.JapaneseReviewComponent),
                 canActivate: [adminGuard],
             },
+            {
+                path: 'my-dashboard',
+                loadComponent: () =>
+                    import('./my-dashboard/my-dashboard.component').then(m => m.MyDashboardComponent),
+                canActivate: [adminGuard],
+            },
         ],
     },
 ];

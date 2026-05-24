@@ -177,4 +177,13 @@ export class RoutingService {
   navigateToJapaneseReview(): Promise<boolean> {
     return this.router.navigateByUrl(this.getJapaneseReviewUrl());
   }
+
+  // My Dashboard
+  getMyDashboardUrl(): UrlTree {
+    return this.router.createUrlTree(['/my-dashboard']);
+  }
+
+  navigateToMyDashboard(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getMyDashboardUrl());
+  }
 }
