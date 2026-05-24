@@ -67,8 +67,6 @@ export class GenreTrainerPlayerComponent {
 
   private readonly canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
 
-  private recorder: Tone.Recorder | null = null;
-
   private masterGain: Tone.Gain | null = null;
   private masterCompressor: Tone.Compressor | null = null;
   private masterLimiter: Tone.Limiter | null = null;
@@ -80,7 +78,7 @@ export class GenreTrainerPlayerComponent {
   private sequences: Tone.Sequence[] = [];
   private nodes: Tone.ToneAudioNode[] = [];
   private animFrameId: number | null = null;
-  private loopCount = 0;
+  private readonly loopCountRef = {value: 0};
   private lastTransportSeconds = -1;
 
   constructor() {
@@ -150,17 +148,101 @@ export class GenreTrainerPlayerComponent {
     if (this.service.isPlaying()) {
       await this.stop();
     }
+    await Tone.start();
 
     this.isRecording.set(true);
     try {
-      await this.start();
-      // Record 2 full loops at the track's BPM. A loop is 2 measures of 4 beats.
-      const loopDurationMs = (2 * 4 * 60 / track.bpm) * 1000;
-      await new Promise(resolve => setTimeout(resolve, loopDurationMs * 2));
-      await this.stop();
+      const loopSec = 2 * 4 * 60 / track.bpm;
+      const durationSec = loopSec * 2;
+
+      const buffer = await Tone.Offline(async ({transport}) => {
+        transport.bpm.value = track.bpm;
+        transport.swing = track.swing ?? 0;
+        transport.swingSubdivision = '16n';
+
+        const masterGain = new Tone.Gain(1);
+        const compressor = new Tone.Compressor({threshold: -12, ratio: 3.5, attack: 0.005, release: 0.12, knee: 6});
+        const limiter = new Tone.Limiter(-1);
+        masterGain.connect(compressor);
+        compressor.connect(limiter);
+        limiter.toDestination();
+
+        const kickBus = new Tone.Gain(1);
+        kickBus.connect(masterGain);
+
+        const sidechainBuses = new Map<Exclude<SidechainDepth, 'none'>, Tone.Gain>();
+        for (const depth of ['deep', 'medium', 'shallow'] as const) {
+          const bus = new Tone.Gain(1);
+          bus.connect(masterGain);
+          const lfo = new Tone.LFO({frequency: '4n', type: 'sawtooth', min: SIDECHAIN_FLOOR[depth], max: 1.0});
+          lfo.connect(bus.gain);
+          lfo.start(0);
+          sidechainBuses.set(depth, bus);
+        }
+
+        const loopCountRef = {value: 0};
+        transport.scheduleRepeat(() => { loopCountRef.value++; }, '2m', '2m');
+
+        await this.buildLayers(track.layers, masterGain, kickBus, sidechainBuses, loopCountRef, [], []);
+
+        transport.loop = true;
+        transport.loopEnd = '2m';
+        transport.start();
+      }, durationSec);
+
+      const blob = this.bufferToWav(buffer);
+      this.triggerDownload(blob, `track-${track.genre}-${track.id.slice(0, 8)}.wav`);
     } finally {
       this.isRecording.set(false);
     }
+  }
+
+  private bufferToWav(buffer: Tone.ToneAudioBuffer): Blob {
+    const channelCount = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const length = buffer.length;
+
+    const channels: Float32Array[] = [];
+    for (let i = 0; i < channelCount; i++) {
+      channels.push(buffer.getChannelData(i));
+    }
+
+    const bytesPerSample = 2;
+    const dataSize = length * channelCount * bytesPerSample;
+    const totalSize = 44 + dataSize;
+    const arrayBuffer = new ArrayBuffer(totalSize);
+    const view = new DataView(arrayBuffer);
+
+    const writeString = (offset: number, str: string): void => {
+      for (let i = 0; i < str.length; i++) {
+        view.setUint8(offset + i, str.charCodeAt(i));
+      }
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, totalSize - 8, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channelCount, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * channelCount * bytesPerSample, true);
+    view.setUint16(32, channelCount * bytesPerSample, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      for (let ch = 0; ch < channelCount; ch++) {
+        const s = Math.max(-1, Math.min(1, channels[ch][i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuffer], {type: 'audio/wav'});
   }
 
   private triggerDownload(blob: Blob, filename: string): void {
@@ -188,7 +270,7 @@ export class GenreTrainerPlayerComponent {
     }
     await Tone.start();
 
-    this.loopCount = 0;
+    this.loopCountRef.value = 0;
     this.lastTransportSeconds = -1;
 
     // Master chain: masterGain -> compressor -> limiter -> destination.
@@ -203,12 +285,6 @@ export class GenreTrainerPlayerComponent {
 
     this.analyser = new Tone.Analyser('waveform', 512);
     this.masterLimiter.connect(this.analyser as unknown as Tone.ToneAudioNode);
-
-    if (this.isRecording()) {
-      this.recorder = new Tone.Recorder();
-      this.masterLimiter.connect(this.recorder);
-      await this.recorder.start();
-    }
 
     Tone.getTransport().bpm.value = track.bpm;
     // Swing on 16th notes — Tone applies a shuffle offset to every other 16n.
@@ -237,9 +313,35 @@ export class GenreTrainerPlayerComponent {
       this.sidechainLfos.push(lfo);
     }
 
-    for (const layer of track.layers) {
+    await this.buildLayers(
+      track.layers,
+      this.masterGain,
+      this.kickBus,
+      this.sidechainBuses,
+      this.loopCountRef,
+      this.sequences,
+      this.nodes,
+    );
+
+    Tone.getTransport().loop = true;
+    Tone.getTransport().loopEnd = '2m';
+    Tone.getTransport().start();
+    this.service.isPlaying.set(true);
+    this.startAnimation();
+  }
+
+  private async buildLayers(
+    layers: TrackLayerSchema[],
+    masterGain: Tone.ToneAudioNode,
+    kickBus: Tone.Gain,
+    sidechainBuses: Map<Exclude<SidechainDepth, 'none'>, Tone.Gain>,
+    loopCountRef: {value: number},
+    sequencesOut: Tone.Sequence[],
+    nodesOut: Tone.ToneAudioNode[],
+  ): Promise<void> {
+    for (const layer of layers) {
       const sidechainDepth = ROLE_SIDECHAIN[layer.role] ?? 'medium';
-      const bus = this.selectBusForLayer(layer.role, sidechainDepth);
+      const bus = this.selectBusForLayer(layer.role, sidechainDepth, kickBus, sidechainBuses, masterGain);
 
       const vol = new Tone.Volume(layer.volume);
       vol.connect(bus);
@@ -248,7 +350,7 @@ export class GenreTrainerPlayerComponent {
       const panner = new Tone.Panner(panValue);
       panner.connect(vol);
 
-      this.nodes.push(vol, panner);
+      nodesOut.push(vol, panner);
 
       const synth = this.buildSynth(layer);
       const effects = await Promise.all(layer.effects.map(e => this.buildEffect(e)));
@@ -260,7 +362,7 @@ export class GenreTrainerPlayerComponent {
       }
       lastNode.connect(panner);
 
-      this.nodes.push(synth, ...effects);
+      nodesOut.push(synth, ...effects);
 
       const dropoutRef = {shouldPlay: true};
       const dropoutProb = layer.dropout_prob ?? 0;
@@ -272,31 +374,16 @@ export class GenreTrainerPlayerComponent {
 
       this.setupLayerAutomation(layer.automation ?? [], effects);
 
-      const seq = this.buildSequence(layer, synth, dropoutRef);
+      const seq = this.buildSequence(layer, synth, dropoutRef, loopCountRef);
       seq.start(0);
-      this.sequences.push(seq);
+      sequencesOut.push(seq);
     }
-
-    Tone.getTransport().loop = true;
-    Tone.getTransport().loopEnd = '2m';
-    Tone.getTransport().start();
-    this.service.isPlaying.set(true);
-    this.startAnimation();
   }
 
   async stop(): Promise<void> {
     if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
-    }
-
-    if (this.recorder) {
-      const blob = await this.recorder.stop();
-      const track = this.service.track();
-      const name = track ? `track-${track.genre}-${track.id.slice(0, 8)}.webm` : 'track.webm';
-      this.triggerDownload(blob, name);
-      this.recorder.dispose();
-      this.recorder = null;
     }
 
     Tone.getTransport().stop();
@@ -334,20 +421,24 @@ export class GenreTrainerPlayerComponent {
     this.masterGain?.dispose();
     this.masterGain = null;
 
-    this.loopCount = 0;
+    this.loopCountRef.value = 0;
     this.lastTransportSeconds = -1;
     this.service.isPlaying.set(false);
     this.clearCanvas();
   }
 
-  private selectBusForLayer(role: string, depth: SidechainDepth): Tone.ToneAudioNode {
+  private selectBusForLayer(
+    role: string,
+    depth: SidechainDepth,
+    kickBus: Tone.Gain,
+    sidechainBuses: Map<Exclude<SidechainDepth, 'none'>, Tone.Gain>,
+    masterGain: Tone.ToneAudioNode,
+  ): Tone.ToneAudioNode {
     if (depth === 'none') {
-      // Kick (and sub-bass) bypass sidechain. Kick goes to its own meter-tapped bus.
-      if (role === 'kick' && this.kickBus) { return this.kickBus; }
-      return this.masterGain as Tone.ToneAudioNode;
+      if (role === 'kick') { return kickBus; }
+      return masterGain;
     }
-    const bus = this.sidechainBuses.get(depth);
-    return bus ?? (this.masterGain as Tone.ToneAudioNode);
+    return sidechainBuses.get(depth) ?? masterGain;
   }
 
   private buildSynth(layer: TrackLayerSchema): Tone.ToneAudioNode {
@@ -413,6 +504,7 @@ export class GenreTrainerPlayerComponent {
     layer: TrackLayerSchema,
     synth: Tone.ToneAudioNode,
     dropoutRef: {shouldPlay: boolean},
+    loopCountRef: {value: number},
   ): Tone.Sequence {
     const synthType = layer.instrument.type;
     const duration = layer.note_duration as Tone.Unit.Time;
@@ -446,8 +538,8 @@ export class GenreTrainerPlayerComponent {
         const idx = stepIdx;
         stepIdx = (stepIdx + 1) % totalSteps;
 
-        if (this.loopCount < entryLoop) { return; }
-        if (loopModulo > 0 && this.loopCount % loopModulo !== loopModuloRem) { return; }
+        if (loopCountRef.value < entryLoop) { return; }
+        if (loopModulo > 0 && loopCountRef.value % loopModulo !== loopModuloRem) { return; }
         if (!dropoutRef.shouldPlay) { return; }
 
         if (!note) {
@@ -497,7 +589,7 @@ export class GenreTrainerPlayerComponent {
   }
 
   private startAnimation(): void {
-    const autoStopLoops = this.isRecording() ? 0 : this.service.autoStopLoops();
+    const autoStopLoops = this.service.autoStopLoops();
     const bpm = this.service.track()?.bpm ?? 128;
     const loopDurationMs = (2 * 4 * 60 / bpm) * 1000;
     const stopAfterMs = autoStopLoops > 0 ? autoStopLoops * loopDurationMs : null;
@@ -515,7 +607,7 @@ export class GenreTrainerPlayerComponent {
       // Detect transport loop restarts to maintain loop count for arrangement logic
       const currentTransportSec = Tone.getTransport().seconds;
       if (this.lastTransportSeconds >= 0 && currentTransportSec < this.lastTransportSeconds - 0.1) {
-        this.loopCount++;
+        this.loopCountRef.value++;
       }
       this.lastTransportSeconds = currentTransportSec;
 
