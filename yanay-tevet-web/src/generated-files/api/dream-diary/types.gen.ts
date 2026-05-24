@@ -212,6 +212,27 @@ export type DeleteDreamDiaryEntryViewResponses = {
     200: unknown;
 };
 
+export type GetDreamDiaryEntryViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/dream-diary/{object_id}/';
+};
+
+export type GetDreamDiaryEntryViewResponses = {
+    /**
+     * OK
+     */
+    200: DreamDiaryEntrySchema;
+};
+
+export type GetDreamDiaryEntryViewResponse = GetDreamDiaryEntryViewResponses[keyof GetDreamDiaryEntryViewResponses];
+
 export type UpdateDreamDiaryEntryViewData = {
     body: UpdateDreamDiaryEntrySchema;
     path: {

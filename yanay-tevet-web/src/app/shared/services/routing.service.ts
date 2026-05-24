@@ -120,6 +120,22 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getDreamDiaryUrl());
   }
 
+  getDreamDiaryNewEntryUrl(): UrlTree {
+    return this.router.createUrlTree(['/dream-diary/new']);
+  }
+
+  navigateToDreamDiaryNewEntry(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getDreamDiaryNewEntryUrl());
+  }
+
+  getDreamDiaryEditEntryUrl(entryId: number): UrlTree {
+    return this.router.createUrlTree(['/dream-diary/edit', entryId]);
+  }
+
+  navigateToDreamDiaryEditEntry(entryId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getDreamDiaryEditEntryUrl(entryId));
+  }
+
   // Genre Trainer
   getGenreTrainerUrl(): UrlTree {
     return this.router.createUrlTree(['/genre-trainer']);

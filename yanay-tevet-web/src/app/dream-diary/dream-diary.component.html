@@ -36,7 +36,7 @@
         <span class="text-[15px] font-semibold text-primary-500">
             {{ totalAmount() }} {{ totalAmount() === 1 ? 'entry' : 'entries' }}
         </span>
-        <button type="button" class="btn btn-primary" (click)="openCreateDialog()">
+        <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
             + New Dream
         </button>
     </div>
@@ -105,7 +105,7 @@
                             type="button"
                             class="icon-btn"
                             title="Edit entry"
-                            (click)="openEditDialog(entry)">
+                            (click)="goToEditPage(entry)">
                             <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
                         </button>
                         <button

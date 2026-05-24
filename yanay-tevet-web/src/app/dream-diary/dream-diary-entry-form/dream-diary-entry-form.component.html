@@ -1,0 +1,78 @@
+<div class="max-w-2xl mx-auto w-full p-6">
+
+    <!-- Back link -->
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="onCancel()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        Back to diary
+    </button>
+
+    <div class="card p-6">
+
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+                {{ isEditMode() ? 'Edit Dream' : 'New Dream' }}
+            </h1>
+            <p class="text-[13px] text-writing-minor">
+                {{ isEditMode()
+                    ? 'Update the details of this dream.'
+                    : 'Capture it before it fades.' }}
+            </p>
+        </div>
+
+        @if (isLoading()) {
+            <div class="text-center text-writing-minor text-[14px] py-12">
+                Loading dream...
+            </div>
+        } @else if (loadError()) {
+            <div class="text-center py-12">
+                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">
+                    Back to diary
+                </button>
+            </div>
+        } @else {
+
+            <!-- Dream text -->
+            <div class="mb-5 flex flex-col gap-1.5">
+                <span class="input-label">Dream <span class="text-writing-least">*</span></span>
+                <textarea
+                    class="main-input w-full leading-relaxed"
+                    placeholder="Describe your dream in as much detail as you can remember..."
+                    rows="12"
+                    [formControl]="textCtrl"></textarea>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="mb-6 flex flex-col gap-1.5">
+                <span class="input-label">Date & Time</span>
+                <input
+                    type="datetime-local"
+                    class="main-input w-full sm:w-auto"
+                    [formControl]="timeCtrl" />
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center justify-end gap-2 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+                <button type="button"
+                        class="btn cancel-btn"
+                        [disabled]="isSaving()"
+                        (click)="onCancel()">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="btn btn-primary"
+                        [disabled]="!canSave()"
+                        (click)="onSave()">
+                    @if (isSaving()) {
+                        {{ isEditMode() ? 'Blaming your mother...' : 'Consulting Freud...' }}
+                    } @else {
+                        {{ isEditMode() ? 'Save Changes' : 'Save Dream' }}
+                    }
+                </button>
+            </div>
+        }
+    </div>
+</div>

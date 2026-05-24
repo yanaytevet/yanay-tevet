@@ -60,19 +60,19 @@ export type KanjiSchema = {
     /**
      * Readings On
      */
-    readings_on: Array<string>;
+    readings_on?: Array<string>;
     /**
      * Readings Kun
      */
-    readings_kun: Array<string>;
+    readings_kun?: Array<string>;
     /**
      * Meanings
      */
-    meanings: Array<string>;
+    meanings?: Array<string>;
     /**
      * Radicals
      */
-    radicals: Array<string>;
+    radicals?: Array<string>;
 };
 
 /**
@@ -174,7 +174,7 @@ export type ParticleSchema = {
     /**
      * Primary Function
      */
-    primary_function: string;
+    primary_function?: string;
 };
 
 /**
@@ -190,7 +190,7 @@ export type RuleSchema = {
      * Name
      */
     name: string;
-    category: RuleCategory;
+    category?: RuleCategory;
 };
 
 /**
@@ -224,7 +224,7 @@ export type WordSchema = {
     /**
      * Meanings
      */
-    meanings: Array<string>;
+    meanings?: Array<string>;
 };
 
 /**

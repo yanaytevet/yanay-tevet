@@ -4,6 +4,7 @@ from dream_diary.views.dream_diary_calendar_views.get_dream_diary_calendar_view 
 from dream_diary.views.dream_diary_entry_views.create_dream_diary_entry_view import CreateDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.delete_dream_diary_entry_view import DeleteDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.generate_dream_diary_entry_image_view import GenerateDreamDiaryEntryImageView
+from dream_diary.views.dream_diary_entry_views.get_dream_diary_entry_view import GetDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.paginate_dream_diary_entries_view import PaginateDreamDiaryEntriesView
 from dream_diary.views.dream_diary_entry_views.update_dream_diary_entry_view import UpdateDreamDiaryEntryView
 from dream_diary.views.dream_diary_entry_views.upload_dream_diary_entry_image_view import UploadDreamDiaryEntryImageView
@@ -11,6 +12,7 @@ from dream_diary.views.dream_diary_entry_views.upload_dream_diary_entry_image_vi
 api, router = ApiRouterCreator.create_api_and_router('dream-diary', DreamDiaryPermissionChecker())
 
 PaginateDreamDiaryEntriesView.register_get(router, '')
+GetDreamDiaryEntryView.register_get_by_id(router)
 CreateDreamDiaryEntryView.register_post(router)
 UpdateDreamDiaryEntryView.register_patch_by_id(router)
 DeleteDreamDiaryEntryView.register_delete_by_id(router)

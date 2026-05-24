@@ -9,8 +9,7 @@ import {
 } from '../../generated-files/api/dream-diary';
 import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
-import {CreateDreamDiaryEntryDialogComponent} from './dialogs/create-dream-diary-entry-dialog/create-dream-diary-entry-dialog.component';
-import {EditDreamDiaryEntryDialogComponent} from './dialogs/edit-dream-diary-entry-dialog/edit-dream-diary-entry-dialog.component';
+import {RoutingService} from '../shared/services/routing.service';
 import {ViewImageDialogComponent} from './dialogs/view-image-dialog/view-image-dialog.component';
 import {featherDelete, featherEdit, featherUpload, featherZap} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
@@ -38,6 +37,7 @@ const WEEK_COUNT = 4;
 export class DreamDiaryComponent {
   private dialogService = inject(DialogService);
   private filesUploadService = inject(FilesUploadService);
+  private routingService = inject(RoutingService);
 
   entries = signal<DreamDiaryEntrySchema[]>([]);
   totalAmount = signal<number>(0);
@@ -144,26 +144,16 @@ export class DreamDiaryComponent {
     }
   }
 
-  async openCreateDialog(): Promise<void> {
-    const entry = await this.dialogService.open(CreateDreamDiaryEntryDialogComponent);
-    if (!entry) {
-      return;
-    }
-    this.entries.update(prev => [entry, ...prev]);
-    this.totalAmount.update(n => n + 1);
-    await this.loadCalendar();
+  async goToCreatePage(): Promise<void> {
+    await this.routingService.navigateToDreamDiaryNewEntry();
   }
 
   async openImageDialog(imageUrl: string): Promise<void> {
     await this.dialogService.open(ViewImageDialogComponent, imageUrl, 75);
   }
 
-  async openEditDialog(entry: DreamDiaryEntrySchema): Promise<void> {
-    const updated = await this.dialogService.open(EditDreamDiaryEntryDialogComponent, entry);
-    if (!updated) {
-      return;
-    }
-    this.entries.update(prev => prev.map(e => (e.id === updated.id ? updated : e)));
+  async goToEditPage(entry: DreamDiaryEntrySchema): Promise<void> {
+    await this.routingService.navigateToDreamDiaryEditEntry(entry.id);
   }
 
   async deleteEntry(entry: DreamDiaryEntrySchema): Promise<void> {

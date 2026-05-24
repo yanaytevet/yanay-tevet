@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateDreamDiaryEntryViewData, CreateDreamDiaryEntryViewResponses, DeleteDreamDiaryEntryViewData, DeleteDreamDiaryEntryViewResponses, GenerateDreamDiaryEntryImageViewData, GenerateDreamDiaryEntryImageViewResponses, GetDreamDiaryCalendarViewData, GetDreamDiaryCalendarViewResponses, PaginateDreamDiaryEntriesViewData, PaginateDreamDiaryEntriesViewResponses, UpdateDreamDiaryEntryViewData, UpdateDreamDiaryEntryViewResponses, UploadDreamDiaryEntryImageViewData, UploadDreamDiaryEntryImageViewResponses } from './types.gen';
+import type { CreateDreamDiaryEntryViewData, CreateDreamDiaryEntryViewResponses, DeleteDreamDiaryEntryViewData, DeleteDreamDiaryEntryViewResponses, GenerateDreamDiaryEntryImageViewData, GenerateDreamDiaryEntryImageViewResponses, GetDreamDiaryCalendarViewData, GetDreamDiaryCalendarViewResponses, GetDreamDiaryEntryViewData, GetDreamDiaryEntryViewResponses, PaginateDreamDiaryEntriesViewData, PaginateDreamDiaryEntriesViewResponses, UpdateDreamDiaryEntryViewData, UpdateDreamDiaryEntryViewResponses, UploadDreamDiaryEntryImageViewData, UploadDreamDiaryEntryImageViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -50,6 +50,15 @@ export const deleteDreamDiaryEntryView = <ThrowOnError extends boolean = false>(
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Get
+ */
+export const getDreamDiaryEntryView = <ThrowOnError extends boolean = false>(options: Options<GetDreamDiaryEntryViewData, ThrowOnError>) => (options.client ?? client).get<GetDreamDiaryEntryViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/dream-diary/{object_id}/',
+    ...options
 });
 
 /**

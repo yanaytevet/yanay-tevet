@@ -92,6 +92,18 @@ export const routes: Routes = [
                 canActivate: [hasPermissionGuard('dream_diary')],
             },
             {
+                path: 'dream-diary/new',
+                loadComponent: () =>
+                    import('./dream-diary/dream-diary-entry-form/dream-diary-entry-form.component').then(m => m.DreamDiaryEntryFormComponent),
+                canActivate: [hasPermissionGuard('dream_diary')],
+            },
+            {
+                path: 'dream-diary/edit/:id',
+                loadComponent: () =>
+                    import('./dream-diary/dream-diary-entry-form/dream-diary-entry-form.component').then(m => m.DreamDiaryEntryFormComponent),
+                canActivate: [hasPermissionGuard('dream_diary')],
+            },
+            {
                 path: 'japanese',
                 loadComponent: () =>
                     import('./japanese/japanese-home/japanese-home.component').then(m => m.JapaneseHomeComponent),
