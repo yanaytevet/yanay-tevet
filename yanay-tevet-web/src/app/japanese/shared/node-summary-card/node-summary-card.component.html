@@ -38,9 +38,17 @@
   }
 
   @if (node().kanji_data; as data) {
-    <div class="flex items-baseline gap-4 mb-1">
+    <div class="flex items-start gap-4 mb-1">
       <div class="text-[36px] font-bold leading-none">{{ data.character }}</div>
-      <div class="text-[14px] text-writing-minor">{{ data.meanings.join(', ') }}</div>
+      <div class="flex-1">
+        <div class="text-[14px] text-writing-minor">{{ data.meanings.join(', ') }}</div>
+        @if (data.readings_on.length) {
+          <div class="text-[12px] text-writing-minor">{{ data.readings_on.join('、') }}</div>
+        }
+        @if (data.readings_kun.length) {
+          <div class="text-[12px] text-writing-minor">{{ data.readings_kun.join('、') }}</div>
+        }
+      </div>
     </div>
   }
 
