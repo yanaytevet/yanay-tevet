@@ -17,19 +17,19 @@
     <div class="card p-4 mb-6 text-red-700 bg-red-50">{{ err }}</div>
   }
 
-  <section class="mb-10">
-    <h2 class="text-[18px] font-semibold mb-3 text-writing">
-      Needs review <span class="text-writing-minor text-[14px] font-normal">({{ needsReview().length }})</span>
-    </h2>
-    @if (needsReview().length === 0 && !isLoading()) {
-      <div class="card p-4 text-writing-minor text-[14px]">Nothing waiting for approval.</div>
-    }
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      @for (node of needsReview(); track node.id) {
-        <app-node-summary-card [node]="node" [showStatus]="true"/>
-      }
-    </div>
-  </section>
+<!--  <section class="mb-10">-->
+<!--    <h2 class="text-[18px] font-semibold mb-3 text-writing">-->
+<!--      Needs review <span class="text-writing-minor text-[14px] font-normal">({{ needsReview().length }})</span>-->
+<!--    </h2>-->
+<!--    @if (needsReview().length === 0 && !isLoading()) {-->
+<!--      <div class="card p-4 text-writing-minor text-[14px]">Nothing waiting for approval.</div>-->
+<!--    }-->
+<!--    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">-->
+<!--      @for (node of needsReview(); track node.id) {-->
+<!--        <app-node-summary-card [node]="node" [showStatus]="true"/>-->
+<!--      }-->
+<!--    </div>-->
+<!--  </section>-->
 
   <section>
     <h2 class="text-[18px] font-semibold mb-3 text-writing">

@@ -54,6 +54,8 @@ class ContentGenerationService:
         node.status = NodeStatus.PUBLISHED
         await node.asave()
 
+        await cls.clear_node_edges(node)
+
         for entity in result.extracted_entities:
             sub_node = await cls._upsert_entity_stub(entity)
             if sub_node.id == node.id:
@@ -160,6 +162,9 @@ class ContentGenerationService:
                     raise ValueError(f'Node {node.id} of type rule has no rule_data')
                 return template.format(name=data.name)
 
+    @classmethod
+    async def clear_node_edges(cls, node: Node) -> None:
+        await NodeEdge.objects.filter(from_node=node).adelete()
 
 def _entity_data_should_replace(existing: Node, node_type: NodeType) -> bool:
     """Stub-creation from extracted entities only carries minimum data; if the
