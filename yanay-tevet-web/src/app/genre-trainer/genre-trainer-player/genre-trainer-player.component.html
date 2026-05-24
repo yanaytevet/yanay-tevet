@@ -72,6 +72,32 @@
       @if (service.isPlaying()) { Stop } @else { Play }
     </button>
 
+    <!-- Admin: Download JSON -->
+    @if (isAdmin()) {
+      <button
+        type="button"
+        class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        title="Download track JSON (admin)"
+        [disabled]="!service.track() || isRecording()"
+        (click)="downloadJson()">
+        <ng-icon [svg]="bootstrapDownload" class="text-base" />
+      </button>
+
+      <!-- Admin: Download audio (records 2 loops) -->
+      <button
+        type="button"
+        class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        title="Download track audio — records 2 loops (admin)"
+        [disabled]="!service.track() || isRecording() || service.playDisabled()"
+        (click)="downloadAudio()">
+        @if (isRecording()) {
+          <span class="inline-block w-4 h-4 align-middle rounded-full bg-red-500 animate-pulse"></span>
+        } @else {
+          <ng-icon [svg]="bootstrapFileMusic" class="text-base" />
+        }
+      </button>
+    }
+
     <!-- Settings -->
     <button
       type="button"

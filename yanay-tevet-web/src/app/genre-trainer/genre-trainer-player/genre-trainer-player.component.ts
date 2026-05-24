@@ -1,11 +1,12 @@
-import {Component, DestroyRef, ElementRef, effect, inject, viewChild} from '@angular/core';
+import {computed, Component, DestroyRef, ElementRef, effect, inject, signal, viewChild} from '@angular/core';
 import * as Tone from 'tone';
 import {AutomationSpecSchema, TrackLayerSchema} from '../../../generated-files/api/genre-trainer';
 import {GenreTrainerService} from '../genre-trainer.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/genre-trainer-config-dialog.component';
-import {bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
+import {bootstrapDownload, bootstrapFileMusic, bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
+import {AuthenticationService} from '../../common/authentication/authentication.service';
 
 // Role-based stereo defaults applied when a layer has no explicit pan.
 // Kick and bass stay centered for energy; hats/percs/leads spread to widen the mix.
@@ -53,12 +54,20 @@ export class GenreTrainerPlayerComponent {
   protected readonly service = inject(GenreTrainerService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogService = inject(DialogService);
+  private readonly authService = inject(AuthenticationService);
 
   protected readonly bootstrapGearFill = bootstrapGearFill;
   protected readonly bootstrapVolumeDownFill = bootstrapVolumeDownFill;
   protected readonly bootstrapVolumeUpFill = bootstrapVolumeUpFill;
+  protected readonly bootstrapDownload = bootstrapDownload;
+  protected readonly bootstrapFileMusic = bootstrapFileMusic;
+
+  protected readonly isAdmin = computed(() => this.authService.user()?.is_admin ?? false);
+  protected readonly isRecording = signal(false);
 
   private readonly canvasEl = viewChild<ElementRef<HTMLCanvasElement>>('vizCanvas');
+
+  private recorder: Tone.Recorder | null = null;
 
   private masterGain: Tone.Gain | null = null;
   private masterCompressor: Tone.Compressor | null = null;
@@ -127,6 +136,44 @@ export class GenreTrainerPlayerComponent {
     }
   }
 
+  downloadJson(): void {
+    const track = this.service.track();
+    if (!track) { return; }
+    const blob = new Blob([JSON.stringify(track, null, 2)], {type: 'application/json'});
+    this.triggerDownload(blob, `track-${track.genre}-${track.id.slice(0, 8)}.json`);
+  }
+
+  async downloadAudio(): Promise<void> {
+    const track = this.service.track();
+    if (!track || this.isRecording()) { return; }
+
+    if (this.service.isPlaying()) {
+      await this.stop();
+    }
+
+    this.isRecording.set(true);
+    try {
+      await this.start();
+      // Record 2 full loops at the track's BPM. A loop is 2 measures of 4 beats.
+      const loopDurationMs = (2 * 4 * 60 / track.bpm) * 1000;
+      await new Promise(resolve => setTimeout(resolve, loopDurationMs * 2));
+      await this.stop();
+    } finally {
+      this.isRecording.set(false);
+    }
+  }
+
+  private triggerDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
   setVolume(value: number): void {
     this.service.volume.set(value);
     if (this.masterGain) {
@@ -156,6 +203,12 @@ export class GenreTrainerPlayerComponent {
 
     this.analyser = new Tone.Analyser('waveform', 512);
     this.masterLimiter.connect(this.analyser as unknown as Tone.ToneAudioNode);
+
+    if (this.isRecording()) {
+      this.recorder = new Tone.Recorder();
+      this.masterLimiter.connect(this.recorder);
+      await this.recorder.start();
+    }
 
     Tone.getTransport().bpm.value = track.bpm;
     // Swing on 16th notes — Tone applies a shuffle offset to every other 16n.
@@ -236,6 +289,16 @@ export class GenreTrainerPlayerComponent {
       cancelAnimationFrame(this.animFrameId);
       this.animFrameId = null;
     }
+
+    if (this.recorder) {
+      const blob = await this.recorder.stop();
+      const track = this.service.track();
+      const name = track ? `track-${track.genre}-${track.id.slice(0, 8)}.webm` : 'track.webm';
+      this.triggerDownload(blob, name);
+      this.recorder.dispose();
+      this.recorder = null;
+    }
+
     Tone.getTransport().stop();
     Tone.getTransport().cancel(0);
     Tone.getTransport().loop = false;
@@ -434,7 +497,7 @@ export class GenreTrainerPlayerComponent {
   }
 
   private startAnimation(): void {
-    const autoStopLoops = this.service.autoStopLoops();
+    const autoStopLoops = this.isRecording() ? 0 : this.service.autoStopLoops();
     const bpm = this.service.track()?.bpm ?? 128;
     const loopDurationMs = (2 * 4 * 60 / bpm) * 1000;
     const stopAfterMs = autoStopLoops > 0 ? autoStopLoops * loopDurationMs : null;
