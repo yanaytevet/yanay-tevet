@@ -4,37 +4,28 @@ from common.generative_ai.enums.generative_ai_model import GenerativeAiModel
 from common.generative_ai.text_generative_ai import TextGenerativeAI
 from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
+from japanese.llm.content_service import ContentGenerationService
+from japanese.llm.node_data_apply import apply_data_to_node, is_matching_data_missing
 from japanese.llm.prompts import (
     INGEST_PROMPT_KEY,
     INGEST_SYSTEM_PROMPT,
     INGEST_USER_TEMPLATE,
 )
-from japanese.llm.schemas import (
-    IngestResult,
-    KanjiData,
-    NodeData,
-    ParticleData,
-    RuleData,
-    SentenceData,
-    WordData,
-)
+from japanese.llm.schemas import IngestResult
 from japanese.models.generation_log import GenerationLog
 from japanese.models.node import Node
-from japanese.schemas.kanji_schema import KanjiSchema
-from japanese.schemas.particle_schema import ParticleSchema
-from japanese.schemas.rule_schema import RuleSchema
-from japanese.schemas.sentence_schema import SentenceSchema
-from japanese.schemas.word_schema import WordSchema
 
 
 INGEST_MODEL = GenerativeAiModel.GPT_4O
 
 
 class IngestService:
-    """Classifies free Japanese text and creates the bare-minimum stub Node.
+    """Classifies free Japanese text, creates the Node, and generates its content.
 
-    No entity extraction, no edges, no content generation — that all happens
-    later when ContentGenerationService runs on this (or any) node.
+    Content generation is run inline for the ingested node only — sub-entities
+    referenced by it are NOT stubbed or linked here. Those are created when
+    ContentGenerationService runs explicitly on the node (or any other node
+    that references them).
     """
 
     @classmethod
@@ -81,38 +72,6 @@ class IngestService:
             input_payload=user_prompt,
             raw_output=json.dumps(result.model_dump()),
         )
+
+        await ContentGenerationService.generate_for_node(node, create_sub_entities=False)
         return node
-
-
-def apply_data_to_node(node: Node, data: NodeData) -> None:
-    """Route a discriminated NodeData into the matching Node.*_data column.
-
-    Strips the LLM discriminator field before persisting — the storage schema
-    has no node_type field of its own.
-    """
-    payload = data.model_dump(exclude={'node_type'})
-    match data:
-        case SentenceData():
-            node.sentence_data = SentenceSchema(**payload)
-        case WordData():
-            node.word_data = WordSchema(**payload)
-        case KanjiData():
-            node.kanji_data = KanjiSchema(**payload)
-        case ParticleData():
-            node.particle_data = ParticleSchema(**payload)
-        case RuleData():
-            node.rule_data = RuleSchema(**payload)
-
-
-def is_matching_data_missing(node: Node, node_type: NodeType) -> bool:
-    match node_type:
-        case NodeType.SENTENCE:
-            return node.sentence_data is None
-        case NodeType.WORD:
-            return node.word_data is None
-        case NodeType.KANJI:
-            return node.kanji_data is None
-        case NodeType.PARTICLE:
-            return node.particle_data is None
-        case NodeType.RULE:
-            return node.rule_data is None

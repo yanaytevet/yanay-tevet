@@ -4,7 +4,7 @@ from common.generative_ai.enums.generative_ai_model import GenerativeAiModel
 from common.generative_ai.text_generative_ai import TextGenerativeAI
 from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
-from japanese.llm.ingest_service import apply_data_to_node
+from japanese.llm.node_data_apply import apply_data_to_node
 from japanese.llm.prompts import (
     CONTENT_PROMPT_KEYS,
     CONTENT_SYSTEM_PROMPTS,
@@ -28,7 +28,7 @@ class ContentGenerationService:
     """
 
     @classmethod
-    async def generate_for_node(cls, node: Node) -> Node:
+    async def generate_for_node(cls, node: Node, create_sub_entities: bool = True) -> Node:
         node_type = NodeType(node.type)
         user_prompt = cls._build_user_prompt(node, node_type)
         system_prompt = CONTENT_SYSTEM_PROMPTS[node_type]
@@ -54,11 +54,12 @@ class ContentGenerationService:
         node.status = NodeStatus.PUBLISHED
         await node.asave()
 
-        for entity in result.extracted_entities:
-            sub_node = await cls._upsert_entity_stub(entity)
-            if sub_node.id == node.id:
-                continue
-            await cls._upsert_edge(node, sub_node, entity)
+        if create_sub_entities:
+            for entity in result.extracted_entities:
+                sub_node = await cls._upsert_entity_stub(entity)
+                if sub_node.id == node.id:
+                    continue
+                await cls._upsert_edge(node, sub_node, entity)
 
         await GenerationLog.objects.acreate(
             node=node,
