@@ -3,6 +3,18 @@ from japanese.enums.node_type import NodeType
 
 INGEST_PROMPT_KEY = 'japanese_ingest_v4'
 
+_WORD_BASE_FORM_RULE = (
+    "Word base_form MUST use the kanji writing whenever the word is conventionally written with "
+    "kanji — never substitute a pure-hiragana spelling when a kanji form exists. Examples: 食べる "
+    "(not たべる), 行く (not いく), 中 (not なか), 私 (not わたし), 大丈夫 (not だいじょうぶ). Only use a "
+    "kana-only base_form for words that are canonically written in kana (e.g. こと, もの, よろしく). "
+    "The canonical_key is base_form joined with the reading, so this is what deduplicates word "
+    "nodes across the whole graph — an inconsistent base_form spelling silently creates a duplicate "
+    "node. Single-kanji words such as 中, 本, 私 are still emitted as word nodes; they coexist with "
+    "the kanji node for the same character (the word node represents the lexeme, the kanji node "
+    "represents the character). That coexistence is intended — do not try to merge or skip them."
+)
+
 INGEST_SYSTEM_PROMPT = (
     "You are a Japanese language classifier. Given a Japanese input, you identify its type "
     "(sentence, word, kanji, particle, or grammar rule) and produce ONLY the minimum identifying "
@@ -13,6 +25,7 @@ INGEST_SYSTEM_PROMPT = (
 
 INGEST_USER_TEMPLATE = (
     "Classify the following Japanese input and produce its minimum identifying data.\n\n"
+    f"{_WORD_BASE_FORM_RULE}\n\n"
     "Input:\n{text}\n\n"
     "Output shape:\n"
     "- canonical_key (deterministic, used for dedup) — rules below.\n"
@@ -79,7 +92,8 @@ _OUTPUT_CONTRACT = (
     "a short preview so the stub is useful in summary cards before its own content is generated:\n"
     "  * word → base_form, reading, word_type, AND meanings (1–3 short English glosses, ordered by "
     "primary sense). For na-adjective words, base_form is the stem WITHOUT trailing な (e.g. 敬虔, "
-    "not 敬虔な). Leave word_sub_type null.\n"
+    "not 敬虔な). Leave word_sub_type null. "
+    f"{_WORD_BASE_FORM_RULE}\n"
     "  * kanji → character, AND readings_on (1–3 main on'yomi in katakana), readings_kun (1–3 main "
     "kun'yomi in hiragana — include okurigana with a dot, e.g. た.べる), AND meanings (1–3 short "
     "English glosses). Leave radicals empty.\n"
@@ -165,6 +179,7 @@ CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
         "Base form: {base_form}\n"
         "Reading: {reading}\n"
         "Word type: {word_type}\n\n"
+        f"{_WORD_BASE_FORM_RULE}\n\n"
         "content_html sections:\n"
         "1. <h2>Meaning</h2> — short definition and any nuance.\n"
         "2. <h2>Usage</h2> — typical contexts, register, common collocations.\n"
