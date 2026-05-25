@@ -12,6 +12,7 @@ import {
 } from '../../../generated-files/api/japanese';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {RoutingService} from '../../shared/services/routing.service';
 import {FuriganaComponent} from '../shared/furigana/furigana.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
@@ -48,6 +49,7 @@ export class JapaneseNodeDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly dialogService = inject(DialogService);
+  private readonly routingService = inject(RoutingService);
   protected readonly authService = inject(AuthenticationService);
 
   readonly node = signal<NodeDetailSchema | null>(null);
@@ -148,10 +150,30 @@ export class JapaneseNodeDetailComponent {
     if (!node) {
       return;
     }
+
+    const userNote = await this.dialogService.getTextFromInputDialog({
+      title: 'Generate content',
+      text: 'Optional notes to guide the model (e.g. "use the kanji form 中", "treat this as a noun, not a verb", "this is the polite copula"). Leave empty to generate with the default rules.',
+      label: 'Notes (optional)',
+      isTextArea: true,
+      textAreaRows: 5,
+      allowEmpty: true,
+      confirmActionName: 'Generate',
+    });
+    if (userNote === null) {
+      return;
+    }
+
     this.isWorking.set(true);
     try {
-      const res = await generateContentView({body: {}, path: {object_id: node.id}});
+      const res = await generateContentView({
+        body: {user_note: userNote.trim() === '' ? null : userNote},
+        path: {object_id: node.id},
+      });
       this.node.set(res.data);
+      if (res.data.id !== node.id) {
+        await this.routingService.navigateToJapaneseNode(res.data.id);
+      }
     } catch (err) {
       await this.dialogService.showNotificationDialog({
         title: 'Error',

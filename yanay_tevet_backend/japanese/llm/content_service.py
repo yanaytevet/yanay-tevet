@@ -11,10 +11,18 @@ from japanese.llm.prompts import (
     CONTENT_SYSTEM_PROMPTS,
     CONTENT_USER_TEMPLATES,
 )
-from japanese.llm.schemas import ContentGenerationResult, ExtractedEntity
+from japanese.llm.schemas import (
+    ContentGenerationResult,
+    ExtractedEntity,
+    KanjiData,
+    NodeData,
+    ParticleData,
+    WordData,
+)
 from japanese.models.generation_log import GenerationLog
 from japanese.models.node import Node
 from japanese.models.node_edge import NodeEdge
+from japanese.models.user_node_state import UserNodeState
 
 
 MAX_RELATED_SENTENCES_FOR_RULE = 5
@@ -32,9 +40,10 @@ class ContentGenerationService:
     """
 
     @classmethod
-    async def generate_for_node(cls, node: Node) -> Node:
+    async def generate_for_node(cls, node: Node, user_note: str | None = None) -> Node:
         node_type = NodeType(node.type)
-        user_prompt = await cls._build_user_prompt(node, node_type)
+        base_prompt = await cls._build_user_prompt(node, node_type)
+        user_prompt = cls._prepend_user_note(base_prompt, user_note)
         system_prompt = CONTENT_SYSTEM_PROMPTS[node_type]
 
         node.status = NodeStatus.GENERATING
@@ -53,28 +62,124 @@ class ContentGenerationService:
                 f'with mismatched node_type={result.data.node_type}'
             )
 
-        apply_data_to_node(node, result.data)
-        node.content_html = result.content_html
-        node.status = NodeStatus.PUBLISHED
-        await node.asave()
+        # Decide where the new content lands: this node (renamed if needed) or an
+        # existing canonical node it should merge into.
+        surviving = await cls._resolve_surviving_node(node, node_type, result.data)
 
-        await cls.clear_node_edges(node)
+        apply_data_to_node(surviving, result.data)
+        surviving.content_html = result.content_html
+        surviving.status = NodeStatus.PUBLISHED
+        await surviving.asave()
+
+        await cls.clear_node_edges(surviving)
+
+        if surviving.id != node.id:
+            # Merging: hand over the source's incoming edges and user states, then delete it.
+            await cls._absorb_into(source=node, target=surviving)
 
         for entity in result.extracted_entities:
             sub_node = await cls._upsert_entity_stub(entity)
-            if sub_node.id == node.id:
+            if sub_node.id == surviving.id:
                 continue
-            await cls._upsert_edge(node, sub_node, entity)
+            await cls._upsert_edge(surviving, sub_node, entity)
 
         await GenerationLog.objects.acreate(
-            node=node,
+            node=surviving,
             prompt_key=CONTENT_PROMPT_KEYS[node_type],
             model_used=CONTENT_MODEL.value,
             input_payload=user_prompt,
             raw_output=json.dumps(result.model_dump()),
         )
 
+        return surviving
+
+    @staticmethod
+    def _prepend_user_note(prompt: str, user_note: str | None) -> str:
+        if user_note is None:
+            return prompt
+        note = user_note.strip()
+        if not note:
+            return prompt
+        return (
+            'User-provided notes for this generation (the user submitted these instructions — '
+            'follow them carefully and let them override default guidance when they conflict):\n'
+            f'{note}\n\n'
+        ) + prompt
+
+    @classmethod
+    async def _resolve_surviving_node(
+        cls, node: Node, node_type: NodeType, data: NodeData,
+    ) -> Node:
+        """Pick which node should carry the new content.
+
+        - If the generated data yields the same canonical_key, the original node survives.
+        - If it yields a different key but no other node owns it, rename the original in place.
+        - If another node already owns the new key, return that node — the original will be
+          merged into it later (its incoming edges + user states get moved over, then it's deleted).
+
+        Sentence and rule keys are not auto-derivable here, so those types always keep their
+        original node.
+        """
+        new_key = cls._derive_canonical_key(node_type, data)
+        if new_key is None or new_key == node.canonical_key:
+            return node
+
+        existing = await Node.objects.filter(
+            type=node_type, canonical_key=new_key,
+        ).exclude(id=node.id).afirst()
+        if existing is not None:
+            return existing
+
+        node.canonical_key = new_key
         return node
+
+    @staticmethod
+    def _derive_canonical_key(node_type: NodeType, data: NodeData) -> str | None:
+        match node_type:
+            case NodeType.WORD:
+                assert isinstance(data, WordData)
+                return f'{data.base_form}|{data.reading}'
+            case NodeType.KANJI:
+                assert isinstance(data, KanjiData)
+                return data.character
+            case NodeType.PARTICLE:
+                assert isinstance(data, ParticleData)
+                return data.particle
+            case NodeType.SENTENCE | NodeType.RULE:
+                return None
+
+    @classmethod
+    async def _absorb_into(cls, source: Node, target: Node) -> None:
+        """Hand source's incoming edges and user states over to target, then delete source.
+
+        Source's outgoing edges are dropped (the regeneration already produced fresh ones on
+        target). Source itself is deleted; cascade removes any remaining edges and states.
+        """
+        await NodeEdge.objects.filter(from_node_id=source.id).adelete()
+
+        async for edge in source.incoming_edges.all():
+            duplicate = await NodeEdge.objects.filter(
+                from_node_id=edge.from_node_id,
+                to_node_id=target.id,
+                edge_type=edge.edge_type,
+            ).afirst()
+            if duplicate is None:
+                edge.to_node_id = target.id
+                await edge.asave()
+            else:
+                await edge.adelete()
+
+        async for state in source.user_states.all():
+            duplicate = await UserNodeState.objects.filter(
+                user_id=state.user_id, node_id=target.id,
+            ).afirst()
+            if duplicate is None:
+                state.node_id = target.id
+                await state.asave()
+            else:
+                await state.adelete()
+
+        await source.adelete()
 
     @classmethod
     async def _upsert_entity_stub(cls, entity: ExtractedEntity) -> Node:
