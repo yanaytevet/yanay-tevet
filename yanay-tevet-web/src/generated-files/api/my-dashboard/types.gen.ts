@@ -20,21 +20,13 @@ export type OpenAiCostsOutput = {
      */
     currency: string;
     /**
-     * Month To Date
-     */
-    month_to_date: number;
-    /**
-     * Last 30 Days
-     */
-    last_30_days: number;
-    /**
-     * Last 7 Days
-     */
-    last_7_days: number;
-    /**
      * Today
      */
     today: number;
+    /**
+     * Month To Date
+     */
+    month_to_date: number;
     /**
      * Fetched At
      */

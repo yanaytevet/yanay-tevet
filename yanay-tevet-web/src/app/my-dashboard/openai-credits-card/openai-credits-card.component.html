@@ -24,24 +24,16 @@
   } @else if (data(); as d) {
     <div class="grid grid-cols-2 gap-4">
       <div>
+        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Today</div>
+        <div class="text-2xl font-bold text-primary-500">{{ currencySymbol() }}{{ d.today.toFixed(2) }}</div>
+      </div>
+      <div>
         <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Month to date</div>
         <div class="text-2xl font-bold text-primary-500">{{ currencySymbol() }}{{ d.month_to_date.toFixed(2) }}</div>
       </div>
-      <div>
-        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Last 30 days</div>
-        <div class="text-2xl font-bold text-primary-500">{{ currencySymbol() }}{{ d.last_30_days.toFixed(2) }}</div>
-      </div>
-      <div>
-        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Last 7 days</div>
-        <div class="text-xl font-semibold text-primary-500">{{ currencySymbol() }}{{ d.last_7_days.toFixed(2) }}</div>
-      </div>
-      <div>
-        <div class="text-xs uppercase tracking-wide text-secondary-400 mb-1">Today</div>
-        <div class="text-xl font-semibold text-primary-500">{{ currencySymbol() }}{{ d.today.toFixed(2) }}</div>
-      </div>
     </div>
     <div class="mt-4 text-xs text-secondary-400">
-      Spend on the OpenAI organization. Live balance is not exposed by the API — see funding at <span class="font-mono">platform.openai.com/billing</span>.
+      Spend from the OpenAI Admin API. Credit balance & auto-recharge aren't exposed by OpenAI — check <span class="font-mono">platform.openai.com/billing</span> for those.
       Updated {{ fetchedLabel() }}.
     </div>
   }

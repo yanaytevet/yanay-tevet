@@ -10,10 +10,8 @@ from users.permissions_checkers.admin_permissions_checker import AdminPermission
 
 class OpenAICostsOutput(Schema):
     currency: str
-    month_to_date: float
-    last_30_days: float
-    last_7_days: float
     today: float
+    month_to_date: float
     fetched_at: str
 
 

@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Any
 
 import httpx
 from pydantic import BaseModel
@@ -16,10 +17,8 @@ OPENAI_COSTS_URL = 'https://api.openai.com/v1/organization/costs'
 
 class OpenAICostsSummary(BaseModel):
     currency: str
-    month_to_date: float
-    last_30_days: float
-    last_7_days: float
     today: float
+    month_to_date: float
     fetched_at: str
 
 
@@ -29,23 +28,41 @@ class OpenAICostsManager:
         if not api_key:
             raise RestAPIException(
                 status_code=StatusCode.HTTP_500_INTERNAL_SERVER_ERROR,
-                message='CHATGPT_API_KEY is not configured on the backend.',
+                message='OPENAI_ADMIN_API_KEY is not configured on the backend.',
                 error_code='openai_admin_key_missing',
             )
 
+        headers = {'Authorization': f'Bearer {api_key}'}
         now = datetime.datetime.now(datetime.timezone.utc)
+
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            costs = await self._fetch_costs_window(client, headers, now)
+
+        return OpenAICostsSummary(
+            currency=costs['currency'],
+            today=costs['today'],
+            month_to_date=costs['month_to_date'],
+            fetched_at=now.isoformat(),
+        )
+
+    async def _fetch_costs_window(
+        self,
+        client: httpx.AsyncClient,
+        headers: dict[str, str],
+        now: datetime.datetime,
+    ) -> dict[str, Any]:
         start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
         start_of_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        start_30_days = start_of_today - datetime.timedelta(days=29)
-        start_7_days = start_of_today - datetime.timedelta(days=6)
 
-        window_start = min(start_of_month, start_30_days)
-        buckets = await self._fetch_daily_costs(api_key, int(window_start.timestamp()), int(now.timestamp()))
+        buckets = await self._fetch_daily_costs(
+            client,
+            headers,
+            int(start_of_month.timestamp()),
+            int(now.timestamp()),
+        )
 
         currency = 'usd'
         month_to_date = 0.0
-        last_30_days = 0.0
-        last_7_days = 0.0
         today = 0.0
 
         for bucket in buckets:
@@ -57,55 +74,51 @@ class OpenAICostsManager:
                     currency = amount['currency']
                 if bucket_start >= start_of_month:
                     month_to_date += value
-                if bucket_start >= start_30_days:
-                    last_30_days += value
-                if bucket_start >= start_7_days:
-                    last_7_days += value
                 if bucket_start >= start_of_today:
                     today += value
 
-        return OpenAICostsSummary(
-            currency=currency,
-            month_to_date=round(month_to_date, 4),
-            last_30_days=round(last_30_days, 4),
-            last_7_days=round(last_7_days, 4),
-            today=round(today, 4),
-            fetched_at=now.isoformat(),
-        )
+        return {
+            'currency': currency,
+            'today': round(today, 4),
+            'month_to_date': round(month_to_date, 4),
+        }
 
-    async def _fetch_daily_costs(self, api_key: str, start_time: int, end_time: int) -> list[dict]:
-        # OpenAI Admin API paginates large windows; loop until has_more is False.
-        headers = {'Authorization': f'Bearer {api_key}'}
+    async def _fetch_daily_costs(
+        self,
+        client: httpx.AsyncClient,
+        headers: dict[str, str],
+        start_time: int,
+        end_time: int,
+    ) -> list[dict]:
         buckets: list[dict] = []
         next_page: str | None = None
 
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            while True:
-                params: dict[str, str | int] = {
-                    'start_time': start_time,
-                    'end_time': end_time,
-                    'bucket_width': '1d',
-                    'limit': 31,
-                }
-                if next_page:
-                    params['page'] = next_page
+        while True:
+            params: dict[str, str | int] = {
+                'start_time': start_time,
+                'end_time': end_time,
+                'bucket_width': '1d',
+                'limit': 31,
+            }
+            if next_page:
+                params['page'] = next_page
 
-                response = await client.get(OPENAI_COSTS_URL, headers=headers, params=params)
-                if response.status_code != 200:
-                    logger.error(f'OpenAI costs API returned {response.status_code}: {response.text}')
-                    raise RestAPIException(
-                        status_code=StatusCode.HTTP_502_BAD_GATEWAY,
-                        message=f'OpenAI API returned {response.status_code}.',
-                        error_code='openai_api_error',
-                    )
+            response = await client.get(OPENAI_COSTS_URL, headers=headers, params=params)
+            if response.status_code != 200:
+                logger.error(f'OpenAI costs API returned {response.status_code}: {response.text}')
+                raise RestAPIException(
+                    status_code=StatusCode.HTTP_502_BAD_GATEWAY,
+                    message=f'OpenAI API returned {response.status_code}.',
+                    error_code='openai_api_error',
+                )
 
-                payload = response.json()
-                buckets.extend(payload.get('data') or [])
+            payload = response.json()
+            buckets.extend(payload.get('data') or [])
 
-                if not payload.get('has_more'):
-                    break
-                next_page = payload.get('next_page')
-                if not next_page:
-                    break
+            if not payload.get('has_more'):
+                break
+            next_page = payload.get('next_page')
+            if not next_page:
+                break
 
         return buckets
