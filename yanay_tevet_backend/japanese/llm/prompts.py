@@ -215,6 +215,11 @@ CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
     NodeType.RULE: (
         "Generate full content + linked entities for this grammar rule node.\n\n"
         "Rule name: {name}\n\n"
+        "Related example sentences already linked to this rule in the graph (up to 5; "
+        "these are real usages of the rule pulled from existing sentence nodes — ground "
+        "your Pattern, Explanation, and Examples in them when relevant, and feel free "
+        "to reuse them in the Examples section):\n"
+        "{related_sentences}\n\n"
         "content_html sections:\n"
         "1. <h2>Pattern</h2> — the formula/pattern, in <code>.\n"
         "2. <h2>Explanation</h2> — how it works, when to use it.\n"

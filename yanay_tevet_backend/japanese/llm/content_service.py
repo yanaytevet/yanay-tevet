@@ -2,6 +2,7 @@ import json
 
 from common.generative_ai.enums.generative_ai_model import GenerativeAiModel
 from common.generative_ai.text_generative_ai import TextGenerativeAI
+from japanese.enums.edge_type import EdgeType
 from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
 from japanese.llm.node_data_apply import apply_data_to_node
@@ -14,6 +15,9 @@ from japanese.llm.schemas import ContentGenerationResult, ExtractedEntity
 from japanese.models.generation_log import GenerationLog
 from japanese.models.node import Node
 from japanese.models.node_edge import NodeEdge
+
+
+MAX_RELATED_SENTENCES_FOR_RULE = 5
 
 
 CONTENT_MODEL = GenerativeAiModel.GPT_4O
@@ -30,7 +34,7 @@ class ContentGenerationService:
     @classmethod
     async def generate_for_node(cls, node: Node) -> Node:
         node_type = NodeType(node.type)
-        user_prompt = cls._build_user_prompt(node, node_type)
+        user_prompt = await cls._build_user_prompt(node, node_type)
         system_prompt = CONTENT_SYSTEM_PROMPTS[node_type]
 
         node.status = NodeStatus.GENERATING
@@ -126,7 +130,7 @@ class ContentGenerationService:
         )
 
     @classmethod
-    def _build_user_prompt(cls, node: Node, node_type: NodeType) -> str:
+    async def _build_user_prompt(cls, node: Node, node_type: NodeType) -> str:
         template = CONTENT_USER_TEMPLATES[node_type]
         match node_type:
             case NodeType.SENTENCE:
@@ -160,7 +164,26 @@ class ContentGenerationService:
                 data = node.rule_data
                 if data is None:
                     raise ValueError(f'Node {node.id} of type rule has no rule_data')
-                return template.format(name=data.name)
+                related_sentences = await cls._fetch_related_sentences_for_rule(node)
+                return template.format(name=data.name, related_sentences=related_sentences)
+
+    @classmethod
+    async def _fetch_related_sentences_for_rule(cls, rule_node: Node) -> str:
+        edges_qs = NodeEdge.objects.filter(
+            to_node=rule_node,
+            edge_type__in=[EdgeType.USES_RULE, EdgeType.EXAMPLE_OF],
+            from_node__type=NodeType.SENTENCE,
+        ).select_related('from_node').order_by('-created_at')[:MAX_RELATED_SENTENCES_FOR_RULE]
+
+        lines: list[str] = []
+        async for edge in edges_qs:
+            sentence_data = edge.from_node.sentence_data
+            if sentence_data is None:
+                continue
+            lines.append(f'- {sentence_data.japanese} — {sentence_data.english_translation}')
+        if not lines:
+            return '(none yet — use your own judgment when writing the Examples section)'
+        return '\n'.join(lines)
 
     @classmethod
     async def clear_node_edges(cls, node: Node) -> None:
