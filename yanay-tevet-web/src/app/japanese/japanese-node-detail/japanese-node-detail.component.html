@@ -78,6 +78,9 @@
 
     @if (authService.user()?.is_admin) {
       <div class="flex items-center gap-2 mb-6">
+        <button type="button" class="btn btn-secondary" (click)="editTitle()" [disabled]="isWorking()">
+          Edit title
+        </button>
         @if (n.status === 'stub') {
           <button type="button" class="btn btn-primary" (click)="generate()" [disabled]="isWorking()">
             Generate content

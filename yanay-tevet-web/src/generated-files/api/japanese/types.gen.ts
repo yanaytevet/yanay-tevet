@@ -285,6 +285,26 @@ export type IngestNodeSchema = {
     text: string;
 };
 
+/**
+ * GenerateContentInputSchema
+ */
+export type GenerateContentInputSchema = {
+    /**
+     * User Note
+     */
+    user_note?: string | null;
+};
+
+/**
+ * UpdateNodeTitleInputSchema
+ */
+export type UpdateNodeTitleInputSchema = {
+    /**
+     * Title
+     */
+    title: string;
+};
+
 export type ReadNodeViewData = {
     body?: never;
     path: {
@@ -364,7 +384,7 @@ export type IngestNodeViewResponses = {
 export type IngestNodeViewResponse = IngestNodeViewResponses[keyof IngestNodeViewResponses];
 
 export type GenerateContentViewData = {
-    body: EmptySchema;
+    body: GenerateContentInputSchema;
     path: {
         /**
          * Object Id
@@ -404,3 +424,24 @@ export type ApproveNodeViewResponses = {
 };
 
 export type ApproveNodeViewResponse = ApproveNodeViewResponses[keyof ApproveNodeViewResponses];
+
+export type UpdateNodeTitleViewData = {
+    body: UpdateNodeTitleInputSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/japanese/{object_id}/update-title/';
+};
+
+export type UpdateNodeTitleViewResponses = {
+    /**
+     * OK
+     */
+    200: NodeDetailSchema;
+};
+
+export type UpdateNodeTitleViewResponse = UpdateNodeTitleViewResponses[keyof UpdateNodeTitleViewResponses];

@@ -5,6 +5,7 @@ import {
   approveNodeView,
   generateContentView,
   readNodeView,
+  updateNodeTitleView,
   NodeDetailSchema,
   EdgeType,
   IncomingEdgeSchema,
@@ -76,6 +77,21 @@ export class JapaneseNodeDetailComponent {
   });
 
   readonly statusLabel = computed(() => this.node()?.status?.replace(/_/g, ' ') ?? '');
+
+  readonly nodeTitle = computed<string>(() => {
+    const node = this.node();
+    if (!node) {
+      return '';
+    }
+    return (
+      node.sentence_data?.japanese ??
+      node.word_data?.base_form ??
+      node.kanji_data?.character ??
+      node.particle_data?.particle ??
+      node.rule_data?.name ??
+      ''
+    );
+  });
 
   readonly contentHtml = computed<SafeHtml>(() => {
     const node = this.node();
@@ -179,6 +195,35 @@ export class JapaneseNodeDetailComponent {
       await this.dialogService.showNotificationDialog({
         title: 'Error',
         text: `Failed to generate content: ${err}`,
+      });
+    } finally {
+      this.isWorking.set(false);
+    }
+  }
+
+  async editTitle(): Promise<void> {
+    const node = this.node();
+    if (!node) {
+      return;
+    }
+    const title = await this.dialogService.getTextFromInputDialog({
+      title: 'Edit title',
+      text: 'Update the main text shown for this node. For words and sentences you can include furigana like 漢字(かんじ).',
+      label: 'Title',
+      defaultValue: this.nodeTitle(),
+      confirmActionName: 'Save',
+    });
+    if (title === null) {
+      return;
+    }
+    this.isWorking.set(true);
+    try {
+      const res = await updateNodeTitleView({body: {title}, path: {object_id: node.id}});
+      this.node.set(res.data);
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({
+        title: 'Error',
+        text: `Failed to update title: ${err}`,
       });
     } finally {
       this.isWorking.set(false);

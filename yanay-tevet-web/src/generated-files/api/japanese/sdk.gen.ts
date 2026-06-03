@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ApproveNodeViewData, ApproveNodeViewResponses, GenerateContentViewData, GenerateContentViewResponses, GetRandomNodesViewData, GetRandomNodesViewResponses, GetReviewQueueViewData, GetReviewQueueViewResponses, IngestNodeViewData, IngestNodeViewResponses, ReadNodeViewData, ReadNodeViewResponses } from './types.gen';
+import type { ApproveNodeViewData, ApproveNodeViewResponses, GenerateContentViewData, GenerateContentViewResponses, GetRandomNodesViewData, GetRandomNodesViewResponses, GetReviewQueueViewData, GetReviewQueueViewResponses, IngestNodeViewData, IngestNodeViewResponses, ReadNodeViewData, ReadNodeViewResponses, UpdateNodeTitleViewData, UpdateNodeTitleViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -77,6 +77,19 @@ export const generateContentView = <ThrowOnError extends boolean = false>(option
 export const approveNodeView = <ThrowOnError extends boolean = false>(options: Options<ApproveNodeViewData, ThrowOnError>) => (options.client ?? client).post<ApproveNodeViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/japanese/{object_id}/approve/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const updateNodeTitleView = <ThrowOnError extends boolean = false>(options: Options<UpdateNodeTitleViewData, ThrowOnError>) => (options.client ?? client).post<UpdateNodeTitleViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/japanese/{object_id}/update-title/',
     ...options,
     headers: {
         'Content-Type': 'application/json',
