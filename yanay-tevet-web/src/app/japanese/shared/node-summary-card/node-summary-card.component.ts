@@ -3,11 +3,12 @@ import {RouterLink} from '@angular/router';
 import {NodeSummarySchema} from '../../../../generated-files/api/japanese';
 import {RoutingService} from '../../../shared/services/routing.service';
 import {FuriganaComponent} from '../furigana/furigana.component';
+import {SpeakButtonComponent} from '../speak-button/speak-button.component';
 
 @Component({
   selector: 'app-node-summary-card',
   standalone: true,
-  imports: [FuriganaComponent, RouterLink],
+  imports: [FuriganaComponent, RouterLink, SpeakButtonComponent],
   templateUrl: './node-summary-card.component.html',
 })
 export class NodeSummaryCardComponent {

@@ -26,8 +26,11 @@
 
     <header class="card p-5 mb-6">
       @if (n.sentence_data; as data) {
-        <div class="text-[28px] leading-relaxed mb-2">
-          <app-furigana [text]="data.japanese"/>
+        <div class="flex items-start gap-3 mb-2">
+          <div class="text-[28px] leading-relaxed">
+            <app-furigana [text]="data.japanese"/>
+          </div>
+          <app-speak-button [text]="data.japanese"/>
         </div>
         <div class="text-[16px] text-writing-minor">{{ data.english_translation }}</div>
       }
@@ -37,6 +40,7 @@
             <app-furigana [text]="data.base_form"/>
           </div>
           <div class="text-[18px] text-writing-minor">{{ data.reading }}</div>
+          <app-speak-button [text]="data.base_form"/>
         </div>
         <div class="text-[12px] text-writing-minor mb-2">
           {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }

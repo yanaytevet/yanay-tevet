@@ -20,16 +20,22 @@
   </div>
 
   @if (node().sentence_data; as data) {
-    <div class="text-[18px] leading-relaxed mb-2">
-      <app-furigana [text]="data.japanese"/>
+    <div class="flex items-start gap-2 mb-2">
+      <div class="text-[18px] leading-relaxed">
+        <app-furigana [text]="data.japanese"/>
+      </div>
+      <app-speak-button [text]="data.japanese"/>
     </div>
     <div class="text-[14px] text-writing-minor">{{ data.english_translation }}</div>
   }
 
   @if (node().word_data; as data) {
-    <div class="text-[20px] font-semibold mb-1">
-      <app-furigana [text]="data.base_form"/>
-      <span class="text-[14px] text-writing-minor ml-2 font-normal">{{ data.reading }}</span>
+    <div class="flex items-center gap-2 text-[20px] font-semibold mb-1">
+      <span>
+        <app-furigana [text]="data.base_form"/>
+        <span class="text-[14px] text-writing-minor ml-2 font-normal">{{ data.reading }}</span>
+      </span>
+      <app-speak-button [text]="data.base_form"/>
     </div>
     <div class="text-[12px] text-writing-minor mb-1">
       {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }

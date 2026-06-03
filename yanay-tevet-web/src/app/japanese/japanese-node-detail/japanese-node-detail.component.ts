@@ -16,6 +16,7 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {FuriganaComponent} from '../shared/furigana/furigana.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
+import {SpeakButtonComponent} from '../shared/speak-button/speak-button.component';
 
 const EDGE_TYPE_LABELS: Record<EdgeType, string> = {
   contains: 'Contains',
@@ -42,7 +43,7 @@ const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
 @Component({
   selector: 'app-japanese-node-detail',
   standalone: true,
-  imports: [FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent],
+  imports: [FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent, SpeakButtonComponent],
   templateUrl: './japanese-node-detail.component.html',
 })
 export class JapaneseNodeDetailComponent {

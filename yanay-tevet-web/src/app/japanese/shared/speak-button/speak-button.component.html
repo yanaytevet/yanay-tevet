@@ -1,0 +1,10 @@
+@if (isSupported) {
+  <button
+    type="button"
+    (click)="speak($event)"
+    [disabled]="isSpeaking()"
+    title="Read aloud in Japanese"
+    class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-black/10 bg-layer-2 text-writing-minor hover:text-writing hover:shadow-1 transition-colors disabled:opacity-50 align-middle">
+    <ng-icon [svg]="bootstrapVolumeUpFill" class="text-base"/>
+  </button>
+}
