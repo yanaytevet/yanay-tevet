@@ -1,10 +1,21 @@
 @if (isSupported) {
-  <button
-    type="button"
-    (click)="speak($event)"
-    [disabled]="isSpeaking()"
-    title="Read aloud in Japanese"
-    class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-black/10 bg-layer-2 text-writing-minor hover:text-writing hover:shadow-1 transition-colors disabled:opacity-50 align-middle">
-    <ng-icon [svg]="bootstrapVolumeUpFill" class="text-base"/>
-  </button>
+  <span class="inline-flex items-center gap-1 align-middle">
+    <button
+      type="button"
+      (click)="toggleSpeak($event)"
+      [title]="isSpeaking() ? 'Stop' : 'Read aloud in Japanese'"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-black/10 bg-layer-2 text-writing-minor hover:text-writing hover:shadow-1 transition-colors">
+      <ng-icon [svg]="isSpeaking() ? bootstrapStopFill : bootstrapVolumeUpFill" class="text-base"/>
+    </button>
+    <button
+      type="button"
+      (click)="toggleLoop($event)"
+      [title]="loopEnabled() ? 'Looping on' : 'Loop'"
+      [class.border-notion-blue]="loopEnabled()"
+      [class.text-notion-blue]="loopEnabled()"
+      [class.animate-spin]="loopEnabled() && isSpeaking()"
+      class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-black/10 bg-layer-2 text-writing-minor hover:text-writing hover:shadow-1 transition-colors">
+      <ng-icon [svg]="bootstrapArrowRepeat" class="text-base"/>
+    </button>
+  </span>
 }
