@@ -1,6 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {ActivatedRoute} from '@angular/router';
 import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {Subscription} from 'rxjs';
 import {
   approveNodeView,
   generateContentView,
@@ -12,7 +13,10 @@ import {
   OutgoingEdgeSchema,
 } from '../../../generated-files/api/japanese';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
+import {BasePageComponent} from '../../common/components/base-page-component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {UserWebsocketsService} from '../../common/services/user-websockets.service';
+import {WebsocketEvent} from '../../common/interfaces/websockets/websocket-event';
 import {RoutingService} from '../../shared/services/routing.service';
 import {FuriganaComponent} from '../shared/furigana/furigana.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
@@ -47,12 +51,16 @@ const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
   imports: [FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent, SpeakButtonComponent],
   templateUrl: './japanese-node-detail.component.html',
 })
-export class JapaneseNodeDetailComponent {
+export class JapaneseNodeDetailComponent extends BasePageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly dialogService = inject(DialogService);
   private readonly routingService = inject(RoutingService);
+  private readonly userWebsocketsService = inject(UserWebsocketsService);
   protected readonly authService = inject(AuthenticationService);
+
+  private currentNodeId: number | null = null;
+  private nodeWsSubscription: Subscription | null = null;
 
   readonly node = signal<NodeDetailSchema | null>(null);
   readonly isLoading = signal<boolean>(true);
@@ -140,12 +148,15 @@ export class JapaneseNodeDetailComponent {
   });
 
   constructor() {
-    this.route.paramMap.subscribe(params => {
+    super();
+    this.subscriptions.push(this.route.paramMap.subscribe(params => {
       const idStr = params.get('id');
       if (idStr) {
-        void this.load(Number(idStr));
+        const id = Number(idStr);
+        void this.load(id);
+        void this.subscribeToNode(id);
       }
-    });
+    }));
   }
 
   private async load(id: number): Promise<void> {
@@ -159,6 +170,31 @@ export class JapaneseNodeDetailComponent {
       this.node.set(null);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  private async subscribeToNode(id: number): Promise<void> {
+    this.currentNodeId = id;
+    this.nodeWsSubscription?.unsubscribe();
+    await this.userWebsocketsService.finishedConnecting();
+    if (this.currentNodeId !== id) {
+      return;
+    }
+    this.nodeWsSubscription = await this.userWebsocketsService.websocketGroupSubscribe(
+      'japanese_node',
+      {node_id: id},
+      (event: WebsocketEvent) => this.onNodeEvent(id, event),
+    );
+    this.subscriptions.push(this.nodeWsSubscription);
+  }
+
+  private onNodeEvent(subscribedId: number, event: WebsocketEvent): void {
+    const updated = event.payload as unknown as NodeDetailSchema;
+    this.isWorking.set(false);
+    if (updated.id === subscribedId) {
+      this.node.set(updated);
+    } else {
+      void this.routingService.navigateToJapaneseNode(updated.id);
     }
   }
 
@@ -183,21 +219,19 @@ export class JapaneseNodeDetailComponent {
 
     this.isWorking.set(true);
     try {
-      const res = await generateContentView({
+      await generateContentView({
         body: {user_note: userNote.trim() === '' ? null : userNote},
         path: {object_id: node.id},
       });
-      this.node.set(res.data);
-      if (res.data.id !== node.id) {
-        await this.routingService.navigateToJapaneseNode(res.data.id);
-      }
+      // Generation runs in the background on the server; the finished node is pushed
+      // over the websocket (see onNodeEvent), which also clears the working state.
+      this.node.update(n => (n ? {...n, status: 'generating'} : n));
     } catch (err) {
+      this.isWorking.set(false);
       await this.dialogService.showNotificationDialog({
         title: 'Error',
         text: `Failed to generate content: ${err}`,
       });
-    } finally {
-      this.isWorking.set(false);
     }
   }
 

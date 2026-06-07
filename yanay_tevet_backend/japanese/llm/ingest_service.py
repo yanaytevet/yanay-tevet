@@ -4,7 +4,6 @@ from common.generative_ai.enums.generative_ai_model import GenerativeAiModel
 from common.generative_ai.text_generative_ai import TextGenerativeAI
 from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
-from japanese.llm.content_service import ContentGenerationService
 from japanese.llm.node_data_apply import apply_data_to_node, is_matching_data_missing
 from japanese.llm.prompts import (
     INGEST_PROMPT_KEY,
@@ -20,12 +19,11 @@ INGEST_MODEL = GenerativeAiModel.GPT_4O
 
 
 class IngestService:
-    """Classifies free Japanese text, creates the Node, and generates its content.
+    """Classifies free Japanese text and creates (or reuses) the Node stub.
 
-    Content generation is run inline for the ingested node only — sub-entities
-    referenced by it are NOT stubbed or linked here. Those are created when
-    ContentGenerationService runs explicitly on the node (or any other node
-    that references them).
+    This is the fast step — a single classification call. The heavy content
+    generation is run separately (in the background) by ContentGenerationService,
+    so callers get the node id back immediately.
     """
 
     @classmethod
@@ -73,5 +71,4 @@ class IngestService:
             raw_output=json.dumps(result.model_dump()),
         )
 
-        await ContentGenerationService.generate_for_node(node)
         return node

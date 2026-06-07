@@ -23,6 +23,8 @@ from japanese.models.generation_log import GenerationLog
 from japanese.models.node import Node
 from japanese.models.node_edge import NodeEdge
 from japanese.models.user_node_state import UserNodeState
+from japanese.serializers.node_detail_serializer import NodeDetailSerializer
+from users.managers.websocket_events_manager.node_websocket_events_manager import NodeWebsocketEventManager
 
 
 MAX_RELATED_SENTENCES_FOR_RULE = 5
@@ -91,7 +93,23 @@ class ContentGenerationService:
             raw_output=json.dumps(result.model_dump()),
         )
 
+        await cls._broadcast_node_update(watched_node_id=node.id, surviving=surviving)
+
         return surviving
+
+    @classmethod
+    async def _broadcast_node_update(cls, watched_node_id: int, surviving: Node) -> None:
+        """Push the freshly generated content to anyone subscribed to the node.
+
+        Clients subscribe by the node id they requested generation for, so we always
+        broadcast on that id. When the node merged into a different canonical node the
+        surviving id differs, so we also notify that group.
+        """
+        schema = await NodeDetailSerializer().inner_serialize(surviving)
+        payload = schema.model_dump(mode='json')
+        await NodeWebsocketEventManager(node_id=watched_node_id).async_send_event_to_group(payload)
+        if surviving.id != watched_node_id:
+            await NodeWebsocketEventManager(node_id=surviving.id).async_send_event_to_group(payload)
 
     @staticmethod
     def _prepend_user_note(prompt: str, user_note: str | None) -> str:

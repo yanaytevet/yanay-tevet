@@ -3,6 +3,7 @@ from typing import Type
 from django.db.models import Model
 from ninja import Schema, Path
 
+from common.async_utils.background_task_runner import run_in_background
 from common.simple_api.api_request import APIRequest
 from common.simple_api.serializers.serializer import Serializer
 from common.simple_api.views.run_action_views.run_action_on_item_by_id_api_view import (
@@ -38,6 +39,7 @@ class GenerateContentView(RunActionOnItemByIdAPIView):
 
     @classmethod
     async def run_action(cls, request: APIRequest, obj: Node, data: GenerateContentInputSchema, path: Path) -> Schema | None:
-        surviving = await ContentGenerationService.generate_for_node(obj, user_note=data.user_note)
-        # The node may have been merged into an existing canonical node — serialize the surviving one.
-        return await cls.get_serializer().serialize(surviving)
+        # Heavy generation runs in the background; the result is pushed to the client
+        # over the node websocket when it finishes. Return the node as-is for now.
+        run_in_background(ContentGenerationService.generate_for_node(obj, user_note=data.user_note))
+        return await cls.get_serializer().serialize(obj)
