@@ -1,4 +1,4 @@
-import {Component, computed, input, signal} from '@angular/core';
+import {Component, OnDestroy, computed, input, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {bootstrapVolumeUpFill, bootstrapStopFill, bootstrapArrowRepeat} from '@ng-icons/bootstrap-icons';
 
@@ -50,7 +50,7 @@ function clamp(value: number, min: number, max: number): number {
   imports: [NgIcon],
   templateUrl: './speak-button.component.html',
 })
-export class SpeakButtonComponent {
+export class SpeakButtonComponent implements OnDestroy {
   text = input.required<string>();
 
   protected readonly bootstrapVolumeUpFill = bootstrapVolumeUpFill;
@@ -85,6 +85,15 @@ export class SpeakButtonComponent {
       return;
     }
     this.start();
+  }
+
+  ngOnDestroy(): void {
+    // Leaving the page destroys the button — stop looping and silence any speech
+    // so it doesn't keep reading aloud after navigation.
+    if (this.isSupported) {
+      this.loopEnabled.set(false);
+      this.stop();
+    }
   }
 
   toggleLoop(event: MouseEvent): void {
