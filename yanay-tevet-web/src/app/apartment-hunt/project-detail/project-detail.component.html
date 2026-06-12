@@ -1,0 +1,148 @@
+<div class="max-w-5xl mx-auto w-full p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="back()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        All projects
+    </button>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading project...</div>
+    } @else if (loadError()) {
+        <div class="card p-10 text-center">
+            <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+            <button type="button" class="btn btn-secondary" (click)="back()">All projects</button>
+        </div>
+    } @else if (project(); as project) {
+
+        <div class="card p-6 mb-6">
+            <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-3 mb-1">
+                        <h1 class="text-[22px] font-bold text-primary-500 truncate">{{ project.name }}</h1>
+                        @if (isFinished()) {
+                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">
+                                {{ projectStatusLabels[project.status] }}
+                            </span>
+                        } @else {
+                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-primary-500">
+                                {{ projectStatusLabels[project.status] }}
+                            </span>
+                        }
+                    </div>
+                    @if (project.description) {
+                        <p class="text-[13px] text-writing-minor mb-2 whitespace-pre-line">{{ project.description }}</p>
+                    }
+                    <div class="flex items-center gap-3 text-[12px] text-writing-minor">
+                        <span>{{ currencySymbols[project.currency] }} {{ project.currency.toUpperCase() }}</span>
+                        <span>·</span>
+                        <span>Owner: {{ project.owner_username }}</span>
+                        <span>·</span>
+                        <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="openShareDialog()">
+                        <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
+                        Share
+                    </button>
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="editProject()">
+                        <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                        Edit
+                    </button>
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5"
+                            [disabled]="isUpdatingStatus()" (click)="toggleFinished()">
+                        @if (isFinished()) {
+                            <ng-icon [svg]="featherRotateCcw" class="h-4 w-4"></ng-icon>
+                            Reopen
+                        } @else {
+                            <ng-icon [svg]="featherCheckCircle" class="h-4 w-4"></ng-icon>
+                            Finish
+                        }
+                    </button>
+                    @if (isOwner()) {
+                        <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="deleteProject()">
+                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                            Delete
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-[16px] font-bold text-primary-500">Apartments ({{ prospects().length }})</h2>
+            <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="addProspect()">
+                <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                Add apartment
+            </button>
+        </div>
+
+        @if (prospects().length === 0) {
+            <div class="card p-10 text-center">
+                <div class="text-4xl mb-3">🏡</div>
+                <p class="text-[15px] font-semibold text-primary-500 mb-1">No apartments yet</p>
+                <p class="text-[13px] text-writing-minor mb-5">Add the first apartment you're considering.</p>
+                <button type="button" class="btn btn-primary" (click)="addProspect()">Add apartment</button>
+            </div>
+        } @else {
+            <div class="card overflow-x-auto">
+                <table class="w-full text-[13px]">
+                    <thead>
+                        <tr class="text-left text-writing-minor border-b border-[rgba(0,0,0,0.08)]">
+                            <th class="font-semibold px-4 py-3">Apartment</th>
+                            <th class="font-semibold px-4 py-3">Status</th>
+                            <th class="font-semibold px-4 py-3">Town</th>
+                            <th class="font-semibold px-4 py-3 text-right">Rent</th>
+                            <th class="font-semibold px-4 py-3 text-center">Liked</th>
+                            <th class="font-semibold px-4 py-3 text-center">Mamad</th>
+                            <th class="font-semibold px-4 py-3">Updated</th>
+                            <th class="font-semibold px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (prospect of prospects(); track prospect.id) {
+                            <tr class="border-b border-[rgba(0,0,0,0.05)] hover:bg-layer-overlay transition-colors cursor-pointer"
+                                (click)="editProspect(prospect)">
+                                <td class="px-4 py-3">
+                                    <div class="font-medium text-writing truncate max-w-[220px]">
+                                        {{ prospect.title || prospect.full_address || 'Untitled' }}
+                                    </div>
+                                    @if (prospect.via_agency) {
+                                        <div class="text-[11px] text-writing-minor">via agency</div>
+                                    }
+                                </td>
+                                <td class="px-4 py-3 text-writing-minor">{{ prospectStatusLabels[prospect.status] }}</td>
+                                <td class="px-4 py-3 text-writing-minor">{{ prospect.town || '—' }}</td>
+                                <td class="px-4 py-3 text-right text-writing">
+                                    @if (prospect.monthly_rent !== null) {
+                                        {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
+                                    } @else { — }
+                                </td>
+                                <td class="px-4 py-3 text-center text-writing-minor">
+                                    {{ prospect.liked_level !== null ? prospect.liked_level + '/5' : '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-center text-writing-minor">{{ prospect.has_protected_room ? 'Yes' : '—' }}</td>
+                                <td class="px-4 py-3 text-writing-minor whitespace-nowrap">{{ prospect.updated_at | date:'mediumDate' }}</td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+                                        <button type="button" class="icon-btn text-writing-minor hover:text-primary-500"
+                                                (click)="editProspect(prospect)">
+                                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                        </button>
+                                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                                (click)="deleteProspect(prospect)">
+                                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

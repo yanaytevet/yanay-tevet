@@ -186,4 +186,53 @@ export class RoutingService {
   navigateToMyDashboard(): Promise<boolean> {
     return this.router.navigateByUrl(this.getMyDashboardUrl());
   }
+
+  // Apartment Hunt
+  getApartmentHuntUrl(): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt']);
+  }
+
+  navigateToApartmentHunt(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntUrl());
+  }
+
+  getApartmentHuntNewProjectUrl(): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt/projects/new']);
+  }
+
+  navigateToApartmentHuntNewProject(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntNewProjectUrl());
+  }
+
+  getApartmentHuntProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt/projects', projectId]);
+  }
+
+  navigateToApartmentHuntProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntProjectUrl(projectId));
+  }
+
+  getApartmentHuntEditProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'edit']);
+  }
+
+  navigateToApartmentHuntEditProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntEditProjectUrl(projectId));
+  }
+
+  getApartmentHuntNewProspectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'prospects', 'new']);
+  }
+
+  navigateToApartmentHuntNewProspect(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntNewProspectUrl(projectId));
+  }
+
+  getApartmentHuntEditProspectUrl(projectId: number, prospectId: number): UrlTree {
+    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'prospects', prospectId, 'edit']);
+  }
+
+  navigateToApartmentHuntEditProspect(projectId: number, prospectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getApartmentHuntEditProspectUrl(projectId, prospectId));
+  }
 }

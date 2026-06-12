@@ -3,6 +3,7 @@ from datetime import datetime
 from ninja import Schema
 
 from apartment_hunt.enums.currency import Currency
+from apartment_hunt.enums.project_status import ProjectStatus
 from apartment_hunt.models.rental_project import RentalProject
 from common.simple_api.serializers.serializer import Serializer
 
@@ -12,6 +13,7 @@ class RentalProjectSchema(Schema):
     name: str
     description: str
     currency: Currency
+    status: ProjectStatus
     owner_id: int
     owner_username: str
     member_count: int
@@ -28,6 +30,7 @@ class RentalProjectSerializer(Serializer[RentalProjectSchema]):
             name=obj.name,
             description=obj.description,
             currency=Currency(obj.currency),
+            status=ProjectStatus(obj.status),
             owner_id=obj.owner_id,
             owner_username=owner.username if owner else '',
             member_count=member_count,

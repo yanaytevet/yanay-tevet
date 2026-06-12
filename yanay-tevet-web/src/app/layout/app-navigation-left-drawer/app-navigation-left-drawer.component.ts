@@ -1,4 +1,4 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {RoutingService} from '../../shared/services/routing.service';
 import {
@@ -28,6 +28,8 @@ export class AppNavigationLeftDrawer implements OnInit {
   public routingService = inject(RoutingService);
   public darkModeService = inject(DarkModeService);
   public layoutService = inject(LayoutService);
+
+  public readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
 
   private readonly ABOUT_FOLDED_KEY = 'about_folded';
   public isAboutFolded = signal<boolean>(localStorage.getItem(this.ABOUT_FOLDED_KEY) !== 'false');

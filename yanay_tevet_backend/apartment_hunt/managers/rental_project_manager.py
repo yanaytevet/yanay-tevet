@@ -17,18 +17,25 @@ class RentalProjectManager:
             defaults={'role': ProjectRole.OWNER},
         )
 
-    async def share(self, project: RentalProject, username: str, role: ProjectRole) -> ProjectMembership:
+    async def _find_user(self, identifier: str) -> User | None:
+        identifier = identifier.strip()
+        target = await User.objects.filter(username__iexact=identifier).afirst()
+        if target is None:
+            target = await User.objects.filter(email__iexact=identifier).afirst()
+        return target
+
+    async def share(self, project: RentalProject, identifier: str, role: ProjectRole) -> ProjectMembership:
         if role == ProjectRole.OWNER:
             raise RestAPIException(
                 status_code=StatusCode.HTTP_400_BAD_REQUEST,
                 message='Cannot grant the owner role through sharing.',
                 error_code='cannot_share_owner_role',
             )
-        target = await User.async_get_by_username(username)
+        target = await self._find_user(identifier)
         if target is None:
             raise RestAPIException(
                 status_code=StatusCode.HTTP_404_NOT_FOUND,
-                message=f'No user found with username "{username}".',
+                message=f'No user found matching "{identifier}".',
                 error_code='user_not_found',
             )
         if target.id == project.owner_id:
@@ -44,12 +51,12 @@ class RentalProjectManager:
         )
         return membership
 
-    async def unshare(self, project: RentalProject, username: str) -> None:
-        target = await User.async_get_by_username(username)
+    async def unshare(self, project: RentalProject, identifier: str) -> None:
+        target = await self._find_user(identifier)
         if target is None:
             raise RestAPIException(
                 status_code=StatusCode.HTTP_404_NOT_FOUND,
-                message=f'No user found with username "{username}".',
+                message=f'No user found matching "{identifier}".',
                 error_code='user_not_found',
             )
         if target.id == project.owner_id:

@@ -1,0 +1,192 @@
+<div class="max-w-3xl mx-auto w-full p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="onCancel()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        Back to project
+    </button>
+
+    <div class="card p-6">
+        <div class="mb-6">
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+                {{ isEditMode() ? 'Edit Apartment' : 'New Apartment' }}
+            </h1>
+            <p class="text-[13px] text-writing-minor">Track the details and where this apartment stands.</p>
+        </div>
+
+        @if (isLoading()) {
+            <div class="text-center text-writing-minor text-[14px] py-12">Loading apartment...</div>
+        } @else if (loadError()) {
+            <div class="text-center py-12">
+                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">Back</button>
+            </div>
+        } @else {
+
+            <!-- Basics -->
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
+                <div class="flex flex-col gap-1.5 @md:col-span-2">
+                    <span class="input-label">Title</span>
+                    <input type="text" class="main-input w-full" placeholder="e.g. Sunny 3-room on Allenby"
+                           [formControl]="form.controls.title" />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Status</span>
+                    <select class="main-input w-full" [formControl]="form.controls.status">
+                        @for (status of statusOptions; track status) {
+                            <option [value]="status">{{ statusLabels[status] }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">How much we want it</span>
+                    <select class="main-input w-full" [formControl]="form.controls.liked_level">
+                        <option [ngValue]="null">Not rated</option>
+                        @for (level of likedLevels; track level) {
+                            <option [ngValue]="level">{{ level }} / 5</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Town</span>
+                    <input type="text" class="main-input w-full" [formControl]="form.controls.town" />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Full address</span>
+                    <input type="text" class="main-input w-full" [formControl]="form.controls.full_address" />
+                </div>
+            </div>
+
+            <!-- Costs -->
+            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Costs (monthly unless noted)</div>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Monthly rent</span>
+                    <input type="number" min="0" class="main-input w-full" [formControl]="form.controls.monthly_rent" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Tax benefit (monthly)</span>
+                    <input type="number" min="0" class="main-input w-full" [formControl]="form.controls.monthly_tax_benefit" />
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="checkbox" id="via_agency" class="h-4 w-4" [formControl]="form.controls.via_agency" />
+                    <span class="text-[14px] text-writing">Via agency</span>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Agency fee (one-off)</span>
+                    <input type="number" min="0" class="main-input w-full" [formControl]="form.controls.agency_fee" />
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Details</div>
+            <div class="grid grid-cols-1 @md:grid-cols-3 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Rooms</span>
+                    <input type="number" min="0" step="0.5" class="main-input w-full" [formControl]="form.controls.rooms" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Floor</span>
+                    <input type="number" class="main-input w-full" [formControl]="form.controls.floor" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Size (m²)</span>
+                    <input type="number" min="0" class="main-input w-full" [formControl]="form.controls.size_sqm" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Available from</span>
+                    <input type="date" class="main-input w-full" [formControl]="form.controls.available_from" />
+                </div>
+                <div class="flex items-center gap-2 pt-6">
+                    <input type="checkbox" id="mamad" class="h-4 w-4" [formControl]="form.controls.has_protected_room" />
+                    <span class="text-[14px] text-writing">Protected room (mamad)</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Listing URL</span>
+                    <input type="text" class="main-input w-full" placeholder="https://..." [formControl]="form.controls.listing_url" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Notes</span>
+                    <textarea class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
+                </div>
+            </div>
+
+            <!-- Contacts -->
+            <div class="flex items-center mt-6 mb-3">
+                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">Contacts</span>
+                <button type="button" class="icon-btn ml-3 text-primary-500" (click)="addContact()">
+                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                </button>
+            </div>
+            @if (contacts().length === 0) {
+                <p class="text-[13px] text-writing-minor mb-2">No contacts added.</p>
+            }
+            <div class="flex flex-col gap-2">
+                @for (contact of contacts(); track contact) {
+                    <div class="grid grid-cols-1 @md:grid-cols-[140px_1fr_1fr_auto] gap-2 items-center">
+                        <select class="main-input w-full" [formControl]="contact.controls.method">
+                            @for (method of contactMethodOptions; track method) {
+                                <option [value]="method">{{ contactMethodLabels[method] }}</option>
+                            }
+                        </select>
+                        <input type="text" class="main-input w-full" placeholder="phone / link / name"
+                               [formControl]="contact.controls.value" />
+                        <input type="text" class="main-input w-full" placeholder="label (e.g. landlord)"
+                               [formControl]="contact.controls.label" />
+                        <button type="button" class="icon-btn text-writing-minor hover:text-writing justify-self-start"
+                                (click)="removeContact(contact)">
+                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <!-- Photos -->
+            <div class="flex items-center justify-between mt-6 mb-3">
+                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">Photos</span>
+                @if (isEditMode()) {
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5"
+                            [disabled]="isUploading()" (click)="uploadImage()">
+                        <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
+                        {{ isUploading() ? 'Uploading...' : 'Upload' }}
+                    </button>
+                }
+            </div>
+            @if (!isEditMode()) {
+                <p class="text-[13px] text-writing-minor">Save the apartment first, then you can add photos.</p>
+            } @else if (images().length === 0) {
+                <p class="text-[13px] text-writing-minor">No photos yet.</p>
+            } @else {
+                <div class="grid grid-cols-2 @md:grid-cols-3 gap-3">
+                    @for (image of images(); track image.id) {
+                        <div class="relative group">
+                            <img [src]="image.image_url" alt="apartment photo"
+                                 class="w-full h-32 object-cover rounded-lg border border-[rgba(0,0,0,0.1)]" />
+                            <button type="button"
+                                    class="absolute top-1.5 right-1.5 h-7 w-7 flex items-center justify-center rounded-full bg-layer-2 shadow-1 text-writing-minor hover:text-writing"
+                                    (click)="deleteImage(image)">
+                                <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-[rgba(0,0,0,0.06)]">
+                <button type="button" class="btn cancel-btn" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+                    {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Create Apartment') }}
+                </button>
+            </div>
+        }
+    </div>
+</div>

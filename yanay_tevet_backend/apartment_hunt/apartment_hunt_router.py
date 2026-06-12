@@ -4,6 +4,10 @@ from apartment_hunt.views.project_views.delete_rental_project_view import Delete
 from apartment_hunt.views.project_views.get_rental_project_view import GetRentalProjectView
 from apartment_hunt.views.project_views.list_project_members_view import ListProjectMembersView
 from apartment_hunt.views.project_views.paginate_rental_projects_view import PaginateRentalProjectsView
+from apartment_hunt.views.project_views.set_rental_project_status_view import (
+    FinishRentalProjectView,
+    ReopenRentalProjectView,
+)
 from apartment_hunt.views.project_views.share_rental_project_view import ShareRentalProjectView
 from apartment_hunt.views.project_views.unshare_rental_project_view import UnshareRentalProjectView
 from apartment_hunt.views.project_views.update_rental_project_view import UpdateRentalProjectView
@@ -27,6 +31,8 @@ DeleteRentalProjectView.register_delete_by_id(router, prefix='projects')
 ShareRentalProjectView.register_post(router, 'projects/{int:object_id}/share/')
 UnshareRentalProjectView.register_post(router, 'projects/{int:object_id}/unshare/')
 ListProjectMembersView.register_get(router, 'projects/{int:object_id}/members/')
+FinishRentalProjectView.register_post(router, 'projects/{int:object_id}/finish/')
+ReopenRentalProjectView.register_post(router, 'projects/{int:object_id}/reopen/')
 
 # --- Prospects ---
 PaginateApartmentProspectsView.register_get(router, 'projects/{int:project_id}/prospects/')

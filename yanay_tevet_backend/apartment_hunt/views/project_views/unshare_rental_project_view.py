@@ -13,7 +13,7 @@ from common.simple_api.views.run_action_views.run_action_on_item_by_id_api_view 
 
 
 class UnshareRentalProjectSchema(Schema):
-    username: str
+    identifier: str
 
 
 class UnshareRentalProjectView(RunActionOnItemByIdAPIView):
@@ -42,5 +42,5 @@ class UnshareRentalProjectView(RunActionOnItemByIdAPIView):
     @classmethod
     async def run_action(cls, request: APIRequest, obj: RentalProject, data: UnshareRentalProjectSchema, path: Path) -> None:
         user = await request.future_user
-        await RentalProjectManager(user).unshare(obj, data.username)
+        await RentalProjectManager(user).unshare(obj, data.identifier)
         return None

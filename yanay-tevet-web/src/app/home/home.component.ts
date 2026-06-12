@@ -15,4 +15,5 @@ export class HomeComponent extends BasePageComponent {
   readonly authService = inject(AuthenticationService);
 
   readonly hasDreamDiary = computed(() => this.authService.hasPermission('dream_diary'));
+  readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
 }

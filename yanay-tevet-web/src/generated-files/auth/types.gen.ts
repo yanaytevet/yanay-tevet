@@ -33,7 +33,7 @@ export type AuthSchema = {
 /**
  * Permissions
  */
-export type Permissions = 'admin' | 'editor' | 'dream_diary';
+export type Permissions = 'admin' | 'editor' | 'dream_diary' | 'apartment_hunt';
 
 /**
  * SubscriptionLimitsSchema
