@@ -9,6 +9,7 @@ from dream_diary.dream_diary_router import api as dream_diary_api
 from genre_trainer.genre_trainer_router import api as genre_trainer_api
 from japanese.japanese_router import api as japanese_api
 from my_dashboard.my_dashboard_router import api as my_dashboard_api
+from apartment_hunt.apartment_hunt_router import api as apartment_hunt_api
 
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     path(r'api/genre-trainer/', genre_trainer_api.urls),
     path(r'api/japanese/', japanese_api.urls),
     path(r'api/my-dashboard/', my_dashboard_api.urls),
+    path(r'api/apartment-hunt/', apartment_hunt_api.urls),
 ]

@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     'genre_trainer',
     'japanese',
     'my_dashboard',
+    'apartment_hunt',
 ]
 
 MIDDLEWARE = [

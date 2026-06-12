@@ -5,3 +5,4 @@ class Permissions(BaseEnum):
     ADMIN = 'admin'
     EDITOR = 'editor'
     DREAM_DIARY = 'dream_diary'
+    APARTMENT_HUNT = 'apartment_hunt'
