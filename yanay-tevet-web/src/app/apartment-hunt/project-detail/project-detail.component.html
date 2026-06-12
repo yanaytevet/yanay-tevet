@@ -88,7 +88,9 @@
                 <button type="button" class="btn btn-primary" (click)="addProspect()">Add apartment</button>
             </div>
         } @else {
-            <div class="card overflow-x-auto">
+
+            <!-- Desktop / wide: table -->
+            <div class="card overflow-x-auto hidden @md:block">
                 <table class="w-full text-[13px] min-w-[680px]">
                     <thead>
                         <tr class="text-left text-writing-minor border-b border-[rgba(0,0,0,0.08)]">
@@ -123,7 +125,7 @@
                                     </button>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <select class="main-input text-[12px] py-1 px-2 max-w-[170px]"
+                                    <select class="main-input text-[12px] py-1 px-2 w-[170px]"
                                             [value]="prospect.status"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onStatusChange(prospect, $any($event.target).value)">
@@ -139,11 +141,11 @@
                                     } @else { — }
                                 </td>
                                 <td class="px-4 py-3">
-                                    <select class="main-input text-[13px] py-1 px-2 w-[92px]"
+                                    <select class="main-input text-[13px] py-1 px-2 w-[112px]"
                                             [value]="prospect.liked_level === null ? '' : prospect.liked_level"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onLikedChange(prospect, $any($event.target).value)">
-                                        <option value="">☆ —</option>
+                                        <option value="">Not rated</option>
                                         @for (opt of likedOptions; track opt.value) {
                                             <option [value]="opt.value">{{ opt.label }}</option>
                                         }
@@ -167,88 +169,9 @@
                             @if (expandedMap()[prospect.id]) {
                                 <tr class="border-b border-[rgba(0,0,0,0.05)] bg-layer-overlay">
                                     <td colspan="8" class="px-4 py-4">
-                                        <div class="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-x-6 gap-y-3 text-[13px]">
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Liked</div>
-                                                <div class="flex items-center gap-0.5">
-                                                    @for (lvl of starLevels; track lvl) {
-                                                        @if (prospect.liked_level !== null && lvl <= prospect.liked_level) {
-                                                            <ng-icon [svg]="bootstrapStarFill" class="text-[15px] text-yellow-500"></ng-icon>
-                                                        } @else {
-                                                            <ng-icon [svg]="bootstrapStar" class="text-[15px] text-secondary-400"></ng-icon>
-                                                        }
-                                                    }
-                                                    @if (prospect.liked_level === null) {
-                                                        <span class="text-writing-minor ml-1">Not rated</span>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Full address</div>
-                                                <div class="text-writing" dir="auto">{{ prospect.full_address || '—' }}</div>
-                                            </div>
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Rooms · Floor · Size</div>
-                                                <div class="text-writing">
-                                                    {{ prospect.rooms ?? '—' }} rooms · floor {{ prospect.floor ?? '—' }} · {{ prospect.size_sqm ?? '—' }} m²
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Tax benefit (monthly)</div>
-                                                <div class="text-writing">
-                                                    {{ prospect.monthly_tax_benefit !== null ? currencySymbols[project.currency] + prospect.monthly_tax_benefit : '—' }}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Agency</div>
-                                                <div class="text-writing">
-                                                    {{ prospect.via_agency ? 'Via agency' : 'No agency' }}{{ prospect.agency_fee !== null ? ' · fee ' + currencySymbols[project.currency] + prospect.agency_fee : '' }}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Available from</div>
-                                                <div class="text-writing">{{ prospect.available_from ? (prospect.available_from | date:'mediumDate') : '—' }}</div>
-                                            </div>
-                                            @if (prospect.listing_url) {
-                                                <div class="@lg:col-span-3">
-                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Listing</div>
-                                                    <a [href]="prospect.listing_url" target="_blank" rel="noopener"
-                                                       class="text-primary-500 hover:underline break-all">{{ prospect.listing_url }}</a>
-                                                </div>
-                                            }
-                                            @if (prospect.contacts.length > 0) {
-                                                <div class="@lg:col-span-3">
-                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-1">Contacts</div>
-                                                    <div class="flex flex-col gap-1">
-                                                        @for (contact of prospect.contacts; track contact.id) {
-                                                            <div class="text-writing" dir="auto">
-                                                                <span class="text-writing-minor">{{ contactMethodLabels[contact.method] }}:</span>
-                                                                {{ contact.value }}{{ contact.label ? ' (' + contact.label + ')' : '' }}
-                                                            </div>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            }
-                                            @if (prospect.notes) {
-                                                <div class="@lg:col-span-3">
-                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Notes</div>
-                                                    <div class="text-writing whitespace-pre-line" dir="auto">{{ prospect.notes }}</div>
-                                                </div>
-                                            }
-                                            @if (prospect.images.length > 0) {
-                                                <div class="@lg:col-span-3">
-                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-1">Photos</div>
-                                                    <div class="grid grid-cols-2 @sm:grid-cols-3 @lg:grid-cols-4 gap-2">
-                                                        @for (image of prospect.images; track image.id) {
-                                                            <a [href]="image.image_url" target="_blank" rel="noopener">
-                                                                <img [src]="image.image_url" alt="apartment photo"
-                                                                     class="w-full h-28 object-cover rounded-lg border border-[rgba(0,0,0,0.1)]" />
-                                                            </a>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
+                                        <app-prospect-details-panel
+                                            [prospect]="prospect"
+                                            [currencySymbol]="currencySymbols[project.currency]"></app-prospect-details-panel>
                                         <div class="mt-3">
                                             <button type="button" class="text-[12px] text-primary-500 hover:underline flex items-center gap-1"
                                                     (click)="editProspect(prospect)">
@@ -262,6 +185,78 @@
                         }
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Mobile: cards -->
+            <div class="flex flex-col gap-3 @md:hidden">
+                @for (prospect of prospects(); track prospect.id) {
+                    <div class="card p-4">
+                        <div class="flex items-start gap-2">
+                            <button type="button" class="flex items-start gap-2 text-left flex-1 min-w-0"
+                                    (click)="toggleExpand(prospect)">
+                                <ng-icon [svg]="featherChevronRight"
+                                         class="h-4 w-4 shrink-0 mt-0.5 text-writing-minor transition-transform"
+                                         [class.rotate-90]="expandedMap()[prospect.id]"></ng-icon>
+                                <span class="min-w-0">
+                                    <span class="font-semibold text-writing block break-words" dir="auto">
+                                        {{ prospect.title || prospect.full_address || 'Untitled' }}
+                                    </span>
+                                    <span class="text-[12px] text-writing-minor">
+                                        {{ prospect.town || 'No town' }}
+                                        @if (prospect.monthly_rent !== null) {
+                                            · {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
+                                        }
+                                        @if (prospect.has_protected_room) { · mamad }
+                                    </span>
+                                </span>
+                            </button>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" class="icon-btn text-writing-minor hover:text-primary-500"
+                                        (click)="editProspect(prospect)">
+                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                </button>
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                        (click)="deleteProspect(prospect)">
+                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-wide">Status</span>
+                                <select class="main-input w-full text-[13px]"
+                                        [value]="prospect.status"
+                                        [disabled]="savingFieldId() === prospect.id"
+                                        (change)="onStatusChange(prospect, $any($event.target).value)">
+                                    @for (status of statusOptions; track status) {
+                                        <option [value]="status">{{ prospectStatusLabels[status] }}</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-wide">Liked</span>
+                                <select class="main-input w-full text-[13px]"
+                                        [value]="prospect.liked_level === null ? '' : prospect.liked_level"
+                                        [disabled]="savingFieldId() === prospect.id"
+                                        (change)="onLikedChange(prospect, $any($event.target).value)">
+                                    <option value="">Not rated</option>
+                                    @for (opt of likedOptions; track opt.value) {
+                                        <option [value]="opt.value">{{ opt.label }}</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        @if (expandedMap()[prospect.id]) {
+                            <div class="mt-4 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+                                <app-prospect-details-panel
+                                    [prospect]="prospect"
+                                    [currencySymbol]="currencySymbols[project.currency]"></app-prospect-details-panel>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
         }
     }

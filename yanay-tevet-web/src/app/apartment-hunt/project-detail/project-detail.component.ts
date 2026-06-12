@@ -2,7 +2,6 @@ import {Component, computed, inject, signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {bootstrapStar, bootstrapStarFill} from '@ng-icons/bootstrap-icons';
 import {
   featherArrowLeft,
   featherChevronRight,
@@ -29,23 +28,22 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
 import {
-  CONTACT_METHOD_LABELS,
   CURRENCY_SYMBOLS,
-  LIKED_LEVELS,
   LIKED_OPTIONS,
   PROJECT_STATUS_LABELS,
   PROSPECT_STATUS_LABELS,
   PROSPECT_STATUS_ORDER,
 } from '../apartment-hunt.constants';
 import {ShareProjectDialogComponent} from '../dialogs/share-project-dialog/share-project-dialog.component';
+import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-details-panel.component';
 
 @Component({
   selector: 'app-apartment-hunt-project-detail',
   standalone: true,
-  imports: [NgIcon, DatePipe],
+  imports: [NgIcon, DatePipe, ProspectDetailsPanelComponent],
   providers: [provideIcons({
     featherArrowLeft, featherChevronRight, featherCheckCircle, featherEdit, featherPlus,
-    featherRotateCcw, featherShare2, featherTrash2, bootstrapStar, bootstrapStarFill,
+    featherRotateCcw, featherShare2, featherTrash2,
   })],
   templateUrl: './project-detail.component.html',
 })
@@ -78,10 +76,8 @@ export class ProjectDetailComponent {
   readonly currencySymbols = CURRENCY_SYMBOLS;
   readonly projectStatusLabels = PROJECT_STATUS_LABELS;
   readonly prospectStatusLabels = PROSPECT_STATUS_LABELS;
-  readonly contactMethodLabels = CONTACT_METHOD_LABELS;
   readonly statusOptions = PROSPECT_STATUS_ORDER;
   readonly likedOptions = LIKED_OPTIONS;
-  readonly starLevels = LIKED_LEVELS;
 
   protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherChevronRight = featherChevronRight;
@@ -91,8 +87,6 @@ export class ProjectDetailComponent {
   protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherShare2 = featherShare2;
   protected readonly featherTrash2 = featherTrash2;
-  protected readonly bootstrapStar = bootstrapStar;
-  protected readonly bootstrapStarFill = bootstrapStarFill;
 
   constructor() {
     this.route.paramMap.subscribe(params => {

@@ -131,7 +131,8 @@
             }
             <div class="flex flex-col gap-3 @md:gap-2">
                 @for (contact of contacts(); track contact) {
-                    <div class="rounded-lg border border-[rgba(0,0,0,0.1)] p-3 flex flex-col gap-2 @md:flex-row @md:items-center @md:border-0 @md:rounded-none @md:p-0">
+                    <div class="rounded-lg border border-[rgba(0,0,0,0.1)] p-3 flex flex-col gap-2
+                                @md:flex-row @md:items-center @md:gap-2 @md:border-0 @md:rounded-none @md:p-0">
                         <select class="main-input w-full @md:w-[150px] @md:shrink-0" [formControl]="contact.controls.method">
                             @for (method of contactMethodOptions; track method) {
                                 <option [value]="method">{{ contactMethodLabels[method] }}</option>
@@ -142,10 +143,15 @@
                         <input type="text" dir="auto" class="main-input w-full @md:flex-1" placeholder="label (e.g. landlord)"
                                [formControl]="contact.controls.label" />
                         <button type="button"
-                                class="btn cancel-btn flex items-center justify-center gap-1.5 @md:w-9 @md:shrink-0 @md:px-0"
+                                class="btn cancel-btn w-full flex items-center justify-center gap-1.5 @md:hidden"
                                 (click)="removeContact(contact)">
                             <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                            <span class="@md:hidden">Remove contact</span>
+                            Remove contact
+                        </button>
+                        <button type="button"
+                                class="icon-btn shrink-0 text-writing-minor hover:text-writing hidden @md:flex"
+                                (click)="removeContact(contact)">
+                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
                         </button>
                     </div>
                 }
