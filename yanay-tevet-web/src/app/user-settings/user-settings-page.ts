@@ -144,6 +144,7 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
       this.oldPassword.set('');
       this.newPassword.set('');
       this.confirmNewPassword.set('');
+      await this.authService.checkAuth();
       this.passwordChangedSuccess.set(true);
       setTimeout(() => this.passwordChangedSuccess.set(false), 4000);
     } catch (err: unknown) {
