@@ -60,3 +60,14 @@ export const CONTACT_METHOD_ORDER: ContactMethod[] = [
 ];
 
 export const CURRENCY_ORDER: Currency[] = ['nis', 'usd', 'eur', 'gbp'];
+
+export const LIKED_LEVELS = [1, 2, 3, 4, 5];
+
+export const LIKED_OPTIONS: {value: number; label: string}[] = [
+  {value: 1, label: '★☆☆☆☆'},
+  {value: 2, label: '★★☆☆☆'},
+  {value: 3, label: '★★★☆☆'},
+  {value: 4, label: '★★★★☆'},
+  {value: 5, label: '★★★★★'},
+];
+

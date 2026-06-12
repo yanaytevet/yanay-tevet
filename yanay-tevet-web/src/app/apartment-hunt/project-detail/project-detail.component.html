@@ -1,4 +1,4 @@
-<div class="max-w-5xl mx-auto w-full p-6">
+<div class="max-w-5xl mx-auto w-full p-4 sm:p-6">
 
     <button type="button"
             class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
@@ -16,11 +16,11 @@
         </div>
     } @else if (project(); as project) {
 
-        <div class="card p-6 mb-6">
-            <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div class="card p-4 sm:p-6 mb-6">
+            <div class="flex flex-col @lg:flex-row @lg:items-start @lg:justify-between gap-4">
                 <div class="min-w-0">
-                    <div class="flex items-center gap-3 mb-1">
-                        <h1 class="text-[22px] font-bold text-primary-500 truncate">{{ project.name }}</h1>
+                    <div class="flex items-center gap-3 mb-1 flex-wrap">
+                        <h1 class="text-[20px] sm:text-[22px] font-bold text-primary-500 break-words" dir="auto">{{ project.name }}</h1>
                         @if (isFinished()) {
                             <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">
                                 {{ projectStatusLabels[project.status] }}
@@ -32,9 +32,9 @@
                         }
                     </div>
                     @if (project.description) {
-                        <p class="text-[13px] text-writing-minor mb-2 whitespace-pre-line">{{ project.description }}</p>
+                        <p class="text-[13px] text-writing-minor mb-2 whitespace-pre-line" dir="auto">{{ project.description }}</p>
                     }
-                    <div class="flex items-center gap-3 text-[12px] text-writing-minor">
+                    <div class="flex items-center gap-2 sm:gap-3 text-[12px] text-writing-minor flex-wrap">
                         <span>{{ currencySymbols[project.currency] }} {{ project.currency.toUpperCase() }}</span>
                         <span>·</span>
                         <span>Owner: {{ project.owner_username }}</span>
@@ -43,7 +43,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap @lg:justify-end @lg:shrink-0">
                     <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="openShareDialog()">
                         <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
                         Share
@@ -72,9 +72,9 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center justify-between mb-3 gap-2">
             <h2 class="text-[16px] font-bold text-primary-500">Apartments ({{ prospects().length }})</h2>
-            <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="addProspect()">
+            <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="addProspect()">
                 <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
                 Add apartment
             </button>
@@ -89,45 +89,70 @@
             </div>
         } @else {
             <div class="card overflow-x-auto">
-                <table class="w-full text-[13px]">
+                <table class="w-full text-[13px] min-w-[680px]">
                     <thead>
                         <tr class="text-left text-writing-minor border-b border-[rgba(0,0,0,0.08)]">
                             <th class="font-semibold px-4 py-3">Apartment</th>
                             <th class="font-semibold px-4 py-3">Status</th>
                             <th class="font-semibold px-4 py-3">Town</th>
                             <th class="font-semibold px-4 py-3 text-right">Rent</th>
-                            <th class="font-semibold px-4 py-3 text-center">Liked</th>
+                            <th class="font-semibold px-4 py-3">Liked</th>
                             <th class="font-semibold px-4 py-3 text-center">Mamad</th>
-                            <th class="font-semibold px-4 py-3">Updated</th>
+                            <th class="font-semibold px-4 py-3 whitespace-nowrap">Updated</th>
                             <th class="font-semibold px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for (prospect of prospects(); track prospect.id) {
-                            <tr class="border-b border-[rgba(0,0,0,0.05)] hover:bg-layer-overlay transition-colors cursor-pointer"
-                                (click)="editProspect(prospect)">
+                            <tr class="border-b border-[rgba(0,0,0,0.05)]">
                                 <td class="px-4 py-3">
-                                    <div class="font-medium text-writing truncate max-w-[220px]">
-                                        {{ prospect.title || prospect.full_address || 'Untitled' }}
-                                    </div>
-                                    @if (prospect.via_agency) {
-                                        <div class="text-[11px] text-writing-minor">via agency</div>
-                                    }
+                                    <button type="button"
+                                            class="flex items-center gap-2 text-left w-full group"
+                                            (click)="toggleExpand(prospect)">
+                                        <ng-icon [svg]="featherChevronRight"
+                                                 class="h-4 w-4 shrink-0 text-writing-minor transition-transform"
+                                                 [class.rotate-90]="expandedMap()[prospect.id]"></ng-icon>
+                                        <span class="min-w-0">
+                                            <span class="font-medium text-writing group-hover:text-primary-500 transition-colors block truncate max-w-[200px]" dir="auto">
+                                                {{ prospect.title || prospect.full_address || 'Untitled' }}
+                                            </span>
+                                            @if (prospect.via_agency) {
+                                                <span class="text-[11px] text-writing-minor">via agency</span>
+                                            }
+                                        </span>
+                                    </button>
                                 </td>
-                                <td class="px-4 py-3 text-writing-minor">{{ prospectStatusLabels[prospect.status] }}</td>
-                                <td class="px-4 py-3 text-writing-minor">{{ prospect.town || '—' }}</td>
-                                <td class="px-4 py-3 text-right text-writing">
+                                <td class="px-4 py-3">
+                                    <select class="main-input text-[12px] py-1 px-2 max-w-[170px]"
+                                            [value]="prospect.status"
+                                            [disabled]="savingFieldId() === prospect.id"
+                                            (change)="onStatusChange(prospect, $any($event.target).value)">
+                                        @for (status of statusOptions; track status) {
+                                            <option [value]="status">{{ prospectStatusLabels[status] }}</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td class="px-4 py-3 text-writing-minor" dir="auto">{{ prospect.town || '—' }}</td>
+                                <td class="px-4 py-3 text-right text-writing whitespace-nowrap">
                                     @if (prospect.monthly_rent !== null) {
                                         {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
                                     } @else { — }
                                 </td>
-                                <td class="px-4 py-3 text-center text-writing-minor">
-                                    {{ prospect.liked_level !== null ? prospect.liked_level + '/5' : '—' }}
+                                <td class="px-4 py-3">
+                                    <select class="main-input text-[13px] py-1 px-2 w-[92px]"
+                                            [value]="prospect.liked_level === null ? '' : prospect.liked_level"
+                                            [disabled]="savingFieldId() === prospect.id"
+                                            (change)="onLikedChange(prospect, $any($event.target).value)">
+                                        <option value="">☆ —</option>
+                                        @for (opt of likedOptions; track opt.value) {
+                                            <option [value]="opt.value">{{ opt.label }}</option>
+                                        }
+                                    </select>
                                 </td>
                                 <td class="px-4 py-3 text-center text-writing-minor">{{ prospect.has_protected_room ? 'Yes' : '—' }}</td>
                                 <td class="px-4 py-3 text-writing-minor whitespace-nowrap">{{ prospect.updated_at | date:'mediumDate' }}</td>
                                 <td class="px-4 py-3">
-                                    <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+                                    <div class="flex items-center justify-end gap-1">
                                         <button type="button" class="icon-btn text-writing-minor hover:text-primary-500"
                                                 (click)="editProspect(prospect)">
                                             <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
@@ -139,6 +164,101 @@
                                     </div>
                                 </td>
                             </tr>
+                            @if (expandedMap()[prospect.id]) {
+                                <tr class="border-b border-[rgba(0,0,0,0.05)] bg-layer-overlay">
+                                    <td colspan="8" class="px-4 py-4">
+                                        <div class="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-x-6 gap-y-3 text-[13px]">
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Liked</div>
+                                                <div class="flex items-center gap-0.5">
+                                                    @for (lvl of starLevels; track lvl) {
+                                                        @if (prospect.liked_level !== null && lvl <= prospect.liked_level) {
+                                                            <ng-icon [svg]="bootstrapStarFill" class="text-[15px] text-yellow-500"></ng-icon>
+                                                        } @else {
+                                                            <ng-icon [svg]="bootstrapStar" class="text-[15px] text-secondary-400"></ng-icon>
+                                                        }
+                                                    }
+                                                    @if (prospect.liked_level === null) {
+                                                        <span class="text-writing-minor ml-1">Not rated</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Full address</div>
+                                                <div class="text-writing" dir="auto">{{ prospect.full_address || '—' }}</div>
+                                            </div>
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Rooms · Floor · Size</div>
+                                                <div class="text-writing">
+                                                    {{ prospect.rooms ?? '—' }} rooms · floor {{ prospect.floor ?? '—' }} · {{ prospect.size_sqm ?? '—' }} m²
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Tax benefit (monthly)</div>
+                                                <div class="text-writing">
+                                                    {{ prospect.monthly_tax_benefit !== null ? currencySymbols[project.currency] + prospect.monthly_tax_benefit : '—' }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Agency</div>
+                                                <div class="text-writing">
+                                                    {{ prospect.via_agency ? 'Via agency' : 'No agency' }}{{ prospect.agency_fee !== null ? ' · fee ' + currencySymbols[project.currency] + prospect.agency_fee : '' }}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Available from</div>
+                                                <div class="text-writing">{{ prospect.available_from ? (prospect.available_from | date:'mediumDate') : '—' }}</div>
+                                            </div>
+                                            @if (prospect.listing_url) {
+                                                <div class="@lg:col-span-3">
+                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Listing</div>
+                                                    <a [href]="prospect.listing_url" target="_blank" rel="noopener"
+                                                       class="text-primary-500 hover:underline break-all">{{ prospect.listing_url }}</a>
+                                                </div>
+                                            }
+                                            @if (prospect.contacts.length > 0) {
+                                                <div class="@lg:col-span-3">
+                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-1">Contacts</div>
+                                                    <div class="flex flex-col gap-1">
+                                                        @for (contact of prospect.contacts; track contact.id) {
+                                                            <div class="text-writing" dir="auto">
+                                                                <span class="text-writing-minor">{{ contactMethodLabels[contact.method] }}:</span>
+                                                                {{ contact.value }}{{ contact.label ? ' (' + contact.label + ')' : '' }}
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (prospect.notes) {
+                                                <div class="@lg:col-span-3">
+                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Notes</div>
+                                                    <div class="text-writing whitespace-pre-line" dir="auto">{{ prospect.notes }}</div>
+                                                </div>
+                                            }
+                                            @if (prospect.images.length > 0) {
+                                                <div class="@lg:col-span-3">
+                                                    <div class="text-writing-least text-[11px] uppercase tracking-wide mb-1">Photos</div>
+                                                    <div class="grid grid-cols-2 @sm:grid-cols-3 @lg:grid-cols-4 gap-2">
+                                                        @for (image of prospect.images; track image.id) {
+                                                            <a [href]="image.image_url" target="_blank" rel="noopener">
+                                                                <img [src]="image.image_url" alt="apartment photo"
+                                                                     class="w-full h-28 object-cover rounded-lg border border-[rgba(0,0,0,0.1)]" />
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="mt-3">
+                                            <button type="button" class="text-[12px] text-primary-500 hover:underline flex items-center gap-1"
+                                                    (click)="editProspect(prospect)">
+                                                <ng-icon [svg]="featherEdit" class="h-3.5 w-3.5"></ng-icon>
+                                                Edit full details
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>

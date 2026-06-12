@@ -28,7 +28,7 @@
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
                 <div class="flex flex-col gap-1.5 @md:col-span-2">
                     <span class="input-label">Title</span>
-                    <input type="text" class="main-input w-full" placeholder="e.g. Sunny 3-room on Allenby"
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Sunny 3-room on Allenby"
                            [formControl]="form.controls.title" />
                 </div>
 
@@ -53,12 +53,12 @@
 
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Town</span>
-                    <input type="text" class="main-input w-full" [formControl]="form.controls.town" />
+                    <input type="text" dir="auto" class="main-input w-full" [formControl]="form.controls.town" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Full address</span>
-                    <input type="text" class="main-input w-full" [formControl]="form.controls.full_address" />
+                    <input type="text" dir="auto" class="main-input w-full" [formControl]="form.controls.full_address" />
                 </div>
             </div>
 
@@ -115,7 +115,7 @@
                 </div>
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Notes</span>
-                    <textarea class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
+                    <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
                 </div>
             </div>
 
@@ -129,21 +129,23 @@
             @if (contacts().length === 0) {
                 <p class="text-[13px] text-writing-minor mb-2">No contacts added.</p>
             }
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-3 @md:gap-2">
                 @for (contact of contacts(); track contact) {
-                    <div class="grid grid-cols-1 @md:grid-cols-[140px_1fr_1fr_auto] gap-2 items-center">
-                        <select class="main-input w-full" [formControl]="contact.controls.method">
+                    <div class="rounded-lg border border-[rgba(0,0,0,0.1)] p-3 flex flex-col gap-2 @md:flex-row @md:items-center @md:border-0 @md:rounded-none @md:p-0">
+                        <select class="main-input w-full @md:w-[150px] @md:shrink-0" [formControl]="contact.controls.method">
                             @for (method of contactMethodOptions; track method) {
                                 <option [value]="method">{{ contactMethodLabels[method] }}</option>
                             }
                         </select>
-                        <input type="text" class="main-input w-full" placeholder="phone / link / name"
+                        <input type="text" dir="auto" class="main-input w-full @md:flex-1" placeholder="phone / link / name"
                                [formControl]="contact.controls.value" />
-                        <input type="text" class="main-input w-full" placeholder="label (e.g. landlord)"
+                        <input type="text" dir="auto" class="main-input w-full @md:flex-1" placeholder="label (e.g. landlord)"
                                [formControl]="contact.controls.label" />
-                        <button type="button" class="icon-btn text-writing-minor hover:text-writing justify-self-start"
+                        <button type="button"
+                                class="btn cancel-btn flex items-center justify-center gap-1.5 @md:w-9 @md:shrink-0 @md:px-0"
                                 (click)="removeContact(contact)">
                             <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                            <span class="@md:hidden">Remove contact</span>
                         </button>
                     </div>
                 }
