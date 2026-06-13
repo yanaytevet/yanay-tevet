@@ -132,6 +132,12 @@ export const routes: Routes = [
                 canActivate: [adminGuard],
             },
             {
+                path: 'admin/users',
+                loadComponent: () =>
+                    import('./admin/user-management/user-management.component').then(m => m.UserManagementComponent),
+                canActivate: [adminGuard],
+            },
+            {
                 path: 'apartment-hunt',
                 loadComponent: () =>
                     import('./apartment-hunt/projects-list/projects-list.component').then(m => m.ProjectsListComponent),

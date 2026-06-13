@@ -1,0 +1,83 @@
+<div class="max-w-4xl mx-auto w-full p-6">
+
+    <div class="mb-6">
+        <h1 class="text-[22px] font-bold text-primary-500 mb-1">User Management</h1>
+        <p class="text-[13px] text-writing-minor">View all users and grant or revoke their permissions.</p>
+    </div>
+
+    <div class="mb-5">
+        <input class="main-input w-full" placeholder="Search by name, username or email..."
+               [formControl]="searchDebouncer.ctrl"/>
+    </div>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading users...</div>
+    } @else if (users().length === 0) {
+        <div class="card p-10 text-center">
+            <div class="text-4xl mb-3">👥</div>
+            <p class="text-[15px] font-semibold text-primary-500 mb-1">No users found</p>
+            <p class="text-[13px] text-writing-minor">Try a different search.</p>
+        </div>
+    } @else {
+        <div class="flex flex-col gap-3">
+            @for (user of users(); track user.id) {
+                <div class="card p-4" [class.opacity-60]="savingUserId() === user.id">
+                    <div class="flex items-start gap-3 mb-3">
+                        <div class="shrink-0 h-10 w-10 rounded-full bg-layer-3 flex items-center justify-center text-[13px] font-semibold text-primary-500 uppercase">
+                            {{ user.initials || '?' }}
+                        </div>
+                        <div class="min-w-0 flex-grow">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">
+                                    {{ user.full_name || user.username }}
+                                </span>
+                                @if (user.id === currentUserId()) {
+                                    <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">You</span>
+                                }
+                                @if (user.is_admin) {
+                                    <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-notion-blue text-white">Admin</span>
+                                }
+                            </div>
+                            <div class="text-[12px] text-writing-minor truncate">
+                                {{ '@' + user.username }}@if (user.email) { · {{ user.email }} }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        @for (option of permissionOptions; track option.value) {
+                            <button type="button"
+                                    [disabled]="savingUserId() !== null"
+                                    [appTooltip]="option.description"
+                                    (click)="togglePermission(user, option)"
+                                    class="text-[12px] font-medium px-3 py-1 rounded-full border transition-colors disabled:cursor-not-allowed"
+                                    [class]="permissionState()[user.id + ':' + option.value]
+                                        ? 'bg-notion-blue text-white border-notion-blue hover:bg-notion-blue-active'
+                                        : 'bg-layer-2 text-writing-minor border-outline-border-1 hover:bg-layer-overlay'">
+                                {{ option.label }}
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (pagesAmount() > 1) {
+            <div class="flex items-center justify-center gap-4 mt-6">
+                <button type="button" class="btn btn-secondary flex items-center gap-1"
+                        [disabled]="!canGoPrev()" (click)="goToPage(page() - 1)">
+                    <ng-icon [svg]="featherChevronLeft" class="h-4 w-4"></ng-icon>
+                    Prev
+                </button>
+                <span class="text-[13px] text-writing-minor">
+                    Page {{ page() + 1 }} of {{ pagesAmount() }} · {{ totalAmount() }} users
+                </span>
+                <button type="button" class="btn btn-secondary flex items-center gap-1"
+                        [disabled]="!canGoNext()" (click)="goToPage(page() + 1)">
+                    Next
+                    <ng-icon [svg]="featherChevronRight" class="h-4 w-4"></ng-icon>
+                </button>
+            </div>
+        }
+    }
+</div>

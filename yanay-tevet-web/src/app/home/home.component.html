@@ -110,6 +110,15 @@
                 <div class="text-[13px] text-writing-minor">Live status from the services I depend on</div>
               </div>
             </a>
+            <a
+              [routerLink]="routingService.getAdminUsersUrl()"
+              class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+              <div class="text-3xl">👥</div>
+              <div>
+                <div class="text-[15px] font-semibold text-primary-500">User Management</div>
+                <div class="text-[13px] text-writing-minor">View users and grant or revoke permissions</div>
+              </div>
+            </a>
           </div>
         </div>
       }

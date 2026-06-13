@@ -9,7 +9,7 @@ from common.simple_api.views.pagination.paginate_items_api_view import PaginateI
 from common.simple_api.views.pagination.pagination_input_schemas import PaginationQueryParams
 from users.models import User
 from users.permissions_checkers.admin_permissions_checker import AdminPermissionsChecker
-from users.serializers.user.short_user_serializer import ShortUserSerializer
+from users.serializers.user.admin_user_serializer import AdminUserSerializer
 
 
 class UserFilterSchema(FilterSchema):
@@ -24,7 +24,7 @@ class AdminUsersPaginationView(PaginateItemsAPIView):
 
     @classmethod
     def get_serializer(cls):
-        return ShortUserSerializer()
+        return AdminUserSerializer()
 
     @classmethod
     def get_filter_schema(cls) -> Type[FilterSchema]:

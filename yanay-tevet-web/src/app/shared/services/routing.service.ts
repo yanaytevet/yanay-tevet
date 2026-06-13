@@ -187,6 +187,15 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getMyDashboardUrl());
   }
 
+  // User Management (admin)
+  getAdminUsersUrl(): UrlTree {
+    return this.router.createUrlTree(['/admin/users']);
+  }
+
+  navigateToAdminUsers(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getAdminUsersUrl());
+  }
+
   // Apartment Hunt
   getApartmentHuntUrl(): UrlTree {
     return this.router.createUrlTree(['/apartment-hunt']);

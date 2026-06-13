@@ -2,7 +2,7 @@ import {Component, effect, ElementRef, HostListener, input, output, signal, View
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {PaginatedTableHandler} from '../../paginated-table/paginated-table-handler';
-import {AdminUsersPaginationViewData, ShortUserOutput} from '../../../../../generated-files/api/users';
+import {AdminUsersPaginationViewData, AdminUserOutput} from '../../../../../generated-files/api/users';
 import {adminUsersPaginationView} from '../../../../../generated-files/api/users';
 
 @Component({
@@ -16,26 +16,26 @@ import {adminUsersPaginationView} from '../../../../../generated-files/api/users
 })
 export class AdminAllUsersAutocompleteComponent {
   // Input for default user
-  defaultUser = input<ShortUserOutput | null>(null);
+  defaultUser = input<AdminUserOutput | null>(null);
 
   // Output for selected user
-  selectedUserChanged = output<ShortUserOutput>();
+  selectedUserChanged = output<AdminUserOutput>();
 
   // Internal signals
-  selectedUser = signal<ShortUserOutput | null>(null);
+  selectedUser = signal<AdminUserOutput | null>(null);
   searchText = signal<string>('');
   isDropdownOpen = signal<boolean>(false);
   highlightedIndex = signal<number>(-1);
 
   // Pagination handler
-  paginationHandler: PaginatedTableHandler<ShortUserOutput, AdminUsersPaginationViewData>;
+  paginationHandler: PaginatedTableHandler<AdminUserOutput, AdminUsersPaginationViewData>;
 
   // Reference to the input element
   @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
   constructor() {
     // Initialize pagination handler
-    this.paginationHandler = new PaginatedTableHandler<ShortUserOutput, AdminUsersPaginationViewData>(
+    this.paginationHandler = new PaginatedTableHandler<AdminUserOutput, AdminUsersPaginationViewData>(
       async (options) => {
         const response = await adminUsersPaginationView({
           ...options,
@@ -75,7 +75,7 @@ export class AdminAllUsersAutocompleteComponent {
   }
 
   // Select a user
-  selectUser(user: ShortUserOutput): void {
+  selectUser(user: AdminUserOutput): void {
     this.selectedUser.set(user);
     this.searchText.set(user.username);
     this.isDropdownOpen.set(false);
@@ -160,7 +160,7 @@ export class AdminAllUsersAutocompleteComponent {
   }
 
   // Select highlighted item
-  selectHighlighted(items: ShortUserOutput[]): void {
+  selectHighlighted(items: AdminUserOutput[]): void {
     const index = this.highlightedIndex();
     if (index >= 0 && index < items.length) {
       this.selectUser(items[index]);

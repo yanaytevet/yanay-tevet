@@ -58,6 +58,15 @@
                 (click)="layoutService.closeBothDrawers()">
                 My Dashboard
             </a>
+
+            <!-- User Management (admin) -->
+            <a
+                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                [routerLink]="routingService.getAdminUsersUrl()"
+                routerLinkActive="bg-layer-overlay"
+                (click)="layoutService.closeBothDrawers()">
+                User Management
+            </a>
         }
 
         @if (authService.isLoggedIn()) {

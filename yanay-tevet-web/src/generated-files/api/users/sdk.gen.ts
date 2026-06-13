@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminUsersPaginationViewData, AdminUsersPaginationViewResponses, MyUserItemViewData, MyUserItemViewResponses, UpdateMyUserViewData, UpdateMyUserViewResponses, UploadUserProfileImageViewData, UploadUserProfileImageViewResponses } from './types.gen';
+import type { AdminUsersPaginationViewData, AdminUsersPaginationViewResponses, MyUserItemViewData, MyUserItemViewResponses, UpdateMyUserViewData, UpdateMyUserViewResponses, UpdateUserPermissionsViewData, UpdateUserPermissionsViewResponses, UploadUserProfileImageViewData, UploadUserProfileImageViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -34,6 +34,19 @@ export const adminUsersPaginationView = <ThrowOnError extends boolean = false>(o
     responseType: 'json',
     url: '/api/users/by-admin/',
     ...options
+});
+
+/**
+ * Post
+ */
+export const updateUserPermissionsView = <ThrowOnError extends boolean = false>(options: Options<UpdateUserPermissionsViewData, ThrowOnError>) => (options.client ?? client).post<UpdateUserPermissionsViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/users/by-admin/update-permissions/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

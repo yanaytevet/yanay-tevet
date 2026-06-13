@@ -110,9 +110,47 @@ export type UserFilterSchema = {
 };
 
 /**
- * PaginationOutput[ShortUserOutput]
+ * AdminUserOutput
  */
-export type PaginationOutputShortUserOutput = {
+export type AdminUserOutput = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Email
+     */
+    email: string | null;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    /**
+     * Initials
+     */
+    initials: string;
+    /**
+     * Is Admin
+     */
+    is_admin: boolean;
+    /**
+     * Permissions
+     */
+    permissions: Array<Permissions>;
+    /**
+     * Date Joined
+     */
+    date_joined: string;
+};
+
+/**
+ * PaginationOutput[AdminUserOutput]
+ */
+export type PaginationOutputAdminUserOutput = {
     /**
      * Total Amount
      */
@@ -132,33 +170,21 @@ export type PaginationOutputShortUserOutput = {
     /**
      * Data
      */
-    data: Array<ShortUserOutput>;
+    data: Array<AdminUserOutput>;
 };
 
 /**
- * ShortUserOutput
+ * UpdateUserPermissionsInputSchema
  */
-export type ShortUserOutput = {
+export type UpdateUserPermissionsInputSchema = {
     /**
-     * Id
+     * User Id
      */
-    id: number;
+    user_id: number;
     /**
-     * Username
+     * Permissions
      */
-    username: string;
-    /**
-     * Full Name
-     */
-    full_name: string;
-    /**
-     * Is Admin
-     */
-    is_admin: boolean;
-    /**
-     * Initials
-     */
-    initials: string;
+    permissions: Array<Permissions>;
 };
 
 /**
@@ -234,10 +260,26 @@ export type AdminUsersPaginationViewResponses = {
     /**
      * OK
      */
-    200: PaginationOutputShortUserOutput;
+    200: PaginationOutputAdminUserOutput;
 };
 
 export type AdminUsersPaginationViewResponse = AdminUsersPaginationViewResponses[keyof AdminUsersPaginationViewResponses];
+
+export type UpdateUserPermissionsViewData = {
+    body: UpdateUserPermissionsInputSchema;
+    path?: never;
+    query?: never;
+    url: '/api/users/by-admin/update-permissions/';
+};
+
+export type UpdateUserPermissionsViewResponses = {
+    /**
+     * OK
+     */
+    200: AdminUserOutput;
+};
+
+export type UpdateUserPermissionsViewResponse = UpdateUserPermissionsViewResponses[keyof UpdateUserPermissionsViewResponses];
 
 export type UpdateMyUserViewData = {
     body: UpdateMyUserInputSchema;
