@@ -221,6 +221,30 @@ export const routes: Routes = [
                     import('./task-management/project-detail/project-detail.component').then(m => m.ProjectDetailComponent),
                 canActivate: [hasPermissionGuard('task_management')],
             },
+            {
+                path: 'workout-plan',
+                loadComponent: () =>
+                    import('./workout-plan/routines-list/routines-list.component').then(m => m.RoutinesListComponent),
+                canActivate: [hasPermissionGuard('workout_plan')],
+            },
+            {
+                path: 'workout-plan/routines/new',
+                loadComponent: () =>
+                    import('./workout-plan/routine-form/routine-form.component').then(m => m.RoutineFormComponent),
+                canActivate: [hasPermissionGuard('workout_plan')],
+            },
+            {
+                path: 'workout-plan/routines/:id/edit',
+                loadComponent: () =>
+                    import('./workout-plan/routine-form/routine-form.component').then(m => m.RoutineFormComponent),
+                canActivate: [hasPermissionGuard('workout_plan')],
+            },
+            {
+                path: 'workout-plan/routines/:id',
+                loadComponent: () =>
+                    import('./workout-plan/routine-detail/routine-detail.component').then(m => m.RoutineDetailComponent),
+                canActivate: [hasPermissionGuard('workout_plan')],
+            },
         ],
     },
 ];

@@ -8,3 +8,4 @@ class Permissions(BaseEnum):
     APARTMENT_HUNT = 'apartment_hunt'
     ITINERARY_LISTS = 'itinerary_lists'
     TASK_MANAGEMENT = 'task_management'
+    WORKOUT_PLAN = 'workout_plan'

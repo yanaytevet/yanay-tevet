@@ -310,4 +310,37 @@ export class RoutingService {
   navigateToTaskProjectEdit(projectId: number): Promise<boolean> {
     return this.router.navigateByUrl(this.getTaskProjectEditUrl(projectId));
   }
+
+  // Workout Plan
+  getWorkoutPlanUrl(): UrlTree {
+    return this.router.createUrlTree(['/workout-plan']);
+  }
+
+  navigateToWorkoutPlan(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutPlanUrl());
+  }
+
+  getWorkoutPlanNewRoutineUrl(): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/routines/new']);
+  }
+
+  navigateToWorkoutPlanNewRoutine(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutPlanNewRoutineUrl());
+  }
+
+  getWorkoutRoutineUrl(routineId: number): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/routines', routineId]);
+  }
+
+  navigateToWorkoutRoutine(routineId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutRoutineUrl(routineId));
+  }
+
+  getWorkoutRoutineEditUrl(routineId: number): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/routines', routineId, 'edit']);
+  }
+
+  navigateToWorkoutRoutineEdit(routineId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutRoutineEditUrl(routineId));
+  }
 }

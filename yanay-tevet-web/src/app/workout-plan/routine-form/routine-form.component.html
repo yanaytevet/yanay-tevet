@@ -1,0 +1,31 @@
+<div class="max-w-xl mx-auto w-full p-6">
+
+    <button type="button" class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-writing mb-5"
+            (click)="onCancel()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        Back
+    </button>
+
+    <h1 class="text-[22px] font-bold text-primary-500 mb-6">
+        {{ isEditMode() ? 'Edit routine' : 'New routine' }}
+    </h1>
+
+    @if (loadError()) {
+        <div class="card p-6 text-center text-[14px] text-writing-minor">{{ loadError() }}</div>
+    } @else {
+        <div class="card p-5 sm:p-6">
+            <div class="flex flex-col gap-1.5 mb-6">
+                <span class="input-label">Name <span class="text-writing-least">*</span></span>
+                <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Push Day"
+                       [formControl]="nameCtrl" (keyup.enter)="onSave()" />
+            </div>
+
+            <div class="flex items-center justify-end gap-2">
+                <button type="button" class="btn cancel-btn" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+                    {{ isEditMode() ? 'Save' : 'Create routine' }}
+                </button>
+            </div>
+        </div>
+    }
+</div>

@@ -10,6 +10,7 @@ import {client as api_mydashboardClient} from '../../../generated-files/api/my-d
 import {client as api_apartmenthuntClient} from '../../../generated-files/api/apartment-hunt/client.gen';
 import {client as api_itinerarylistsClient} from '../../../generated-files/api/itinerary-lists/client.gen';
 import {client as api_taskmanagementClient} from '../../../generated-files/api/task-management/client.gen';
+import {client as api_workoutplanClient} from '../../../generated-files/api/workout-plan/client.gen';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {environment} from '../../../environments/environment';
 
@@ -17,7 +18,7 @@ import {environment} from '../../../environments/environment';
     providedIn: 'root'
 })
 export class ApiConfigService {
-    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient, api_dreamdiaryClient, api_genretrainerClient, api_japaneseClient, api_mydashboardClient, api_apartmenthuntClient, api_itinerarylistsClient, api_taskmanagementClient];
+    readonly clients = [authClient, api_usersClient, api_configurationsClient, api_blocksClient, api_dreamdiaryClient, api_genretrainerClient, api_japaneseClient, api_mydashboardClient, api_apartmenthuntClient, api_itinerarylistsClient, api_taskmanagementClient, api_workoutplanClient];
     authService = inject(AuthenticationService);
 
   getBaseUrl(): string {

@@ -90,6 +90,17 @@
                 </div>
               </a>
             }
+            @if (hasWorkoutPlan()) {
+              <a
+                [routerLink]="routingService.getWorkoutPlanUrl()"
+                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                <div class="text-3xl">🏋️</div>
+                <div>
+                  <div class="text-[15px] font-semibold text-primary-500">Workout Plan</div>
+                  <div class="text-[13px] text-writing-minor">Routines of exercises with the sets, reps and times you're training</div>
+                </div>
+              </a>
+            }
           </div>
         </div>
       }

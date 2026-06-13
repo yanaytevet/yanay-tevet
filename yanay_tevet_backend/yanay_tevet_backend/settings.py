@@ -114,6 +114,7 @@ INSTALLED_APPS = [
     'apartment_hunt',
     'itinerary_lists',
     'task_management',
+    'workout_plan',
 ]
 
 MIDDLEWARE = [

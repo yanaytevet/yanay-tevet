@@ -18,4 +18,5 @@ export class HomeComponent extends BasePageComponent {
   readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
   readonly hasItineraryLists = computed(() => this.authService.hasPermission('itinerary_lists'));
   readonly hasTaskManagement = computed(() => this.authService.hasPermission('task_management'));
+  readonly hasWorkoutPlan = computed(() => this.authService.hasPermission('workout_plan'));
 }
