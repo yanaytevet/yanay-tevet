@@ -1,14 +1,12 @@
-Loo<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+<div class="card bg-layer-2 p-5 sm:p-6 w-full">
 
     <div class="flex items-start justify-between mb-1">
-        <h2 class="text-[18px] font-bold text-primary-500">Share project</h2>
+        <h2 class="text-[18px] font-bold text-primary-500">{{ data.title }}</h2>
         <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
             <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
         </button>
     </div>
-    <p class="text-[13px] text-writing-minor mb-5">
-        People you add can view and edit this project's apartments.
-    </p>
+    <p class="text-[13px] text-writing-minor mb-5">{{ data.subtitle }}</p>
 
     @if (data.isOwner) {
         <div class="flex items-end gap-2 mb-5">

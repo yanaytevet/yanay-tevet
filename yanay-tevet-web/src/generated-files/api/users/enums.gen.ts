@@ -3,4 +3,5 @@ export enum PermissionsEnum {
   EDITOR = 'editor',
   DREAM_DIARY = 'dream_diary',
   APARTMENT_HUNT = 'apartment_hunt',
+  ITINERARY_LISTS = 'itinerary_lists',
 }

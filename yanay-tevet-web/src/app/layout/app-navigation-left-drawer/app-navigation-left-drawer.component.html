@@ -82,6 +82,17 @@
                 </a>
             }
 
+            <!-- Itinerary Lists -->
+            @if (hasItineraryLists()) {
+                <a
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                    [routerLink]="routingService.getItineraryListsUrl()"
+                    routerLinkActive="bg-layer-overlay"
+                    (click)="layoutService.closeBothDrawers()">
+                    Itinerary Lists
+                </a>
+            }
+
             <!-- About / Website Section -->
             <div class="flex flex-col">
                 <div

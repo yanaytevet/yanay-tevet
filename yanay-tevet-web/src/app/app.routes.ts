@@ -167,6 +167,30 @@ export const routes: Routes = [
                     import('./apartment-hunt/project-detail/project-detail.component').then(m => m.ProjectDetailComponent),
                 canActivate: [hasPermissionGuard('apartment_hunt')],
             },
+            {
+                path: 'itinerary-lists',
+                loadComponent: () =>
+                    import('./itinerary-lists/lists/lists.component').then(m => m.ListsComponent),
+                canActivate: [hasPermissionGuard('itinerary_lists')],
+            },
+            {
+                path: 'itinerary-lists/lists/new',
+                loadComponent: () =>
+                    import('./itinerary-lists/list-form/list-form.component').then(m => m.ListFormComponent),
+                canActivate: [hasPermissionGuard('itinerary_lists')],
+            },
+            {
+                path: 'itinerary-lists/lists/:id/edit',
+                loadComponent: () =>
+                    import('./itinerary-lists/list-form/list-form.component').then(m => m.ListFormComponent),
+                canActivate: [hasPermissionGuard('itinerary_lists')],
+            },
+            {
+                path: 'itinerary-lists/lists/:id',
+                loadComponent: () =>
+                    import('./itinerary-lists/list-detail/list-detail.component').then(m => m.ListDetailComponent),
+                canActivate: [hasPermissionGuard('itinerary_lists')],
+            },
         ],
     },
 ];

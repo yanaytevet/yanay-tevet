@@ -197,3 +197,14 @@ html, body {
 .soft-red-btn:hover {
   background: rgba(239,68,68,0.2);
 }
+
+/* Itinerary item status chips — tinted backgrounds with semantic accent text */
+.status-need-buy { background: rgba(221,91,0,0.12); color: #c95300; }
+.status-in-house { background: rgba(97,93,89,0.14); color: #615d59; }
+.status-ready    { background: rgba(42,157,153,0.14); color: #1f7f7c; }
+.status-in-car   { background: rgba(26,174,57,0.14); color: #178f30; }
+
+.dark .status-need-buy { background: rgba(221,91,0,0.22); color: #ff9a5a; }
+.dark .status-in-house { background: rgba(163,158,152,0.18); color: #c4bfb8; }
+.dark .status-ready    { background: rgba(42,157,153,0.22); color: #5fc9c5; }
+.dark .status-in-car   { background: rgba(26,174,57,0.22); color: #5fd178; }

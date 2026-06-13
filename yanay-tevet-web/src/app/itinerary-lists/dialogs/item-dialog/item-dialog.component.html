@@ -1,0 +1,29 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+
+    <div class="flex items-start justify-between mb-5">
+        <h2 class="text-[18px] font-bold text-primary-500">{{ data.title }}</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">Name <span class="text-writing-least">*</span></span>
+        <input type="text" class="main-input w-full" placeholder="e.g. Sunscreen"
+               [formControl]="nameCtrl" (keyup.enter)="onSave()" />
+    </div>
+
+    <div class="mb-2 flex flex-col gap-1.5">
+        <span class="input-label">Description</span>
+        <textarea class="main-input w-full leading-relaxed" rows="3"
+                  placeholder="Optional notes about this item..."
+                  [formControl]="descriptionCtrl"></textarea>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 mt-6">
+        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+            {{ data.confirmActionName }}
+        </button>
+    </div>
+</div>

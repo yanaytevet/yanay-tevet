@@ -18,10 +18,13 @@ import {
   deleteRentalProjectView,
   finishRentalProjectView,
   getRentalProjectView,
+  listProjectMembersView,
   paginateApartmentProspectsView,
   ProspectStatus,
   RentalProjectSchema,
   reopenRentalProjectView,
+  shareRentalProjectView,
+  unshareRentalProjectView,
   updateApartmentProspectView,
 } from '../../../generated-files/api/apartment-hunt';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
@@ -34,7 +37,7 @@ import {
   PROSPECT_STATUS_LABELS,
   PROSPECT_STATUS_ORDER,
 } from '../apartment-hunt.constants';
-import {ShareProjectDialogComponent} from '../dialogs/share-project-dialog/share-project-dialog.component';
+import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-details-panel.component';
 
 @Component({
@@ -197,7 +200,20 @@ export class ProjectDetailComponent {
     if (id === null) {
       return;
     }
-    await this.dialogService.open(ShareProjectDialogComponent, {projectId: id, isOwner: this.isOwner()}, 45);
+    await this.dialogService.open(ShareDialogComponent, {
+      objectId: id,
+      isOwner: this.isOwner(),
+      title: 'Share project',
+      subtitle: 'People you add can view and edit this project\'s apartments.',
+      listMembers: async (objectId: number) =>
+        (await listProjectMembersView({path: {object_id: objectId}})).data.members,
+      share: async (objectId: number, identifier: string) => {
+        await shareRentalProjectView({body: {identifier, role: 'collaborator'}, path: {object_id: objectId}});
+      },
+      unshare: async (objectId: number, identifier: string) => {
+        await unshareRentalProjectView({body: {identifier}, path: {object_id: objectId}});
+      },
+    }, 45);
     const res = await getRentalProjectView({path: {object_id: id}});
     this.project.set(res.data);
   }

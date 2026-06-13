@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     'japanese',
     'my_dashboard',
     'apartment_hunt',
+    'itinerary_lists',
 ]
 
 MIDDLEWARE = [

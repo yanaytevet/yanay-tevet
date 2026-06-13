@@ -30,6 +30,7 @@ export class AppNavigationLeftDrawer implements OnInit {
   public layoutService = inject(LayoutService);
 
   public readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
+  public readonly hasItineraryLists = computed(() => this.authService.hasPermission('itinerary_lists'));
 
   private readonly ABOUT_FOLDED_KEY = 'about_folded';
   public isAboutFolded = signal<boolean>(localStorage.getItem(this.ABOUT_FOLDED_KEY) !== 'false');

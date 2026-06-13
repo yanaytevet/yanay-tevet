@@ -235,4 +235,37 @@ export class RoutingService {
   navigateToApartmentHuntEditProspect(projectId: number, prospectId: number): Promise<boolean> {
     return this.router.navigateByUrl(this.getApartmentHuntEditProspectUrl(projectId, prospectId));
   }
+
+  // Itinerary Lists
+  getItineraryListsUrl(): UrlTree {
+    return this.router.createUrlTree(['/itinerary-lists']);
+  }
+
+  navigateToItineraryLists(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getItineraryListsUrl());
+  }
+
+  getItineraryListsNewListUrl(): UrlTree {
+    return this.router.createUrlTree(['/itinerary-lists/lists/new']);
+  }
+
+  navigateToItineraryListsNewList(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getItineraryListsNewListUrl());
+  }
+
+  getItineraryListUrl(listId: number): UrlTree {
+    return this.router.createUrlTree(['/itinerary-lists/lists', listId]);
+  }
+
+  navigateToItineraryList(listId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getItineraryListUrl(listId));
+  }
+
+  getItineraryListEditUrl(listId: number): UrlTree {
+    return this.router.createUrlTree(['/itinerary-lists/lists', listId, 'edit']);
+  }
+
+  navigateToItineraryListEdit(listId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getItineraryListEditUrl(listId));
+  }
 }

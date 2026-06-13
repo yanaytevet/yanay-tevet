@@ -2,31 +2,37 @@ import {Component, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherX, featherUserPlus} from '@ng-icons/feather-icons';
-import {
-  listProjectMembersView,
-  ProjectMembershipSchema,
-  shareRentalProjectView,
-  unshareRentalProjectView,
-} from '../../../../generated-files/api/apartment-hunt';
-import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
-import {DialogService} from '../../../common/dialogs/dialogs.service';
+import {BaseDialogComponent} from '../base-dialog.component';
+import {DialogService} from '../dialogs.service';
 
-export interface ShareProjectDialogData {
-  projectId: number;
+export interface ShareDialogMember {
+  user_id: number;
+  username: string;
+  full_name: string;
+  role: string;
+}
+
+export interface ShareDialogData {
+  objectId: number;
   isOwner: boolean;
+  title: string;
+  subtitle: string;
+  listMembers: (objectId: number) => Promise<ShareDialogMember[]>;
+  share: (objectId: number, identifier: string) => Promise<void>;
+  unshare: (objectId: number, identifier: string) => Promise<void>;
 }
 
 @Component({
-  selector: 'app-share-project-dialog',
+  selector: 'app-share-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, NgIcon],
   providers: [provideIcons({featherX, featherUserPlus})],
-  templateUrl: './share-project-dialog.component.html',
+  templateUrl: './share-dialog.component.html',
 })
-export class ShareProjectDialogComponent extends BaseDialogComponent<ShareProjectDialogData, null> {
+export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, null> {
   private readonly dialogService = inject(DialogService);
 
-  readonly members = signal<ProjectMembershipSchema[]>([]);
+  readonly members = signal<ShareDialogMember[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isSharing = signal<boolean>(false);
   readonly removingUserId = signal<number | null>(null);
@@ -44,8 +50,7 @@ export class ShareProjectDialogComponent extends BaseDialogComponent<ShareProjec
   private async loadMembers(): Promise<void> {
     this.isLoading.set(true);
     try {
-      const res = await listProjectMembersView({path: {object_id: this.data.projectId}});
-      this.members.set(res.data.members);
+      this.members.set(await this.data.listMembers(this.data.objectId));
     } finally {
       this.isLoading.set(false);
     }
@@ -58,10 +63,7 @@ export class ShareProjectDialogComponent extends BaseDialogComponent<ShareProjec
     }
     this.isSharing.set(true);
     try {
-      await shareRentalProjectView({
-        body: {identifier, role: 'collaborator'},
-        path: {object_id: this.data.projectId},
-      });
+      await this.data.share(this.data.objectId, identifier);
       this.identifierCtrl.setValue('');
       await this.loadMembers();
     } catch (err) {
@@ -74,13 +76,10 @@ export class ShareProjectDialogComponent extends BaseDialogComponent<ShareProjec
     }
   }
 
-  async onRemove(member: ProjectMembershipSchema): Promise<void> {
+  async onRemove(member: ShareDialogMember): Promise<void> {
     this.removingUserId.set(member.user_id);
     try {
-      await unshareRentalProjectView({
-        body: {identifier: member.username},
-        path: {object_id: this.data.projectId},
-      });
+      await this.data.unshare(this.data.objectId, member.username);
       this.members.update(prev => prev.filter(m => m.user_id !== member.user_id));
     } catch (err) {
       await this.dialogService.showNotificationDialog({
