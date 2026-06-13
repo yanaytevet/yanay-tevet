@@ -268,4 +268,37 @@ export class RoutingService {
   navigateToItineraryListEdit(listId: number): Promise<boolean> {
     return this.router.navigateByUrl(this.getItineraryListEditUrl(listId));
   }
+
+  // Task Management
+  getTaskManagementUrl(): UrlTree {
+    return this.router.createUrlTree(['/task-management']);
+  }
+
+  navigateToTaskManagement(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getTaskManagementUrl());
+  }
+
+  getTaskManagementNewProjectUrl(): UrlTree {
+    return this.router.createUrlTree(['/task-management/projects/new']);
+  }
+
+  navigateToTaskManagementNewProject(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getTaskManagementNewProjectUrl());
+  }
+
+  getTaskProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/task-management/projects', projectId]);
+  }
+
+  navigateToTaskProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getTaskProjectUrl(projectId));
+  }
+
+  getTaskProjectEditUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/task-management/projects', projectId, 'edit']);
+  }
+
+  navigateToTaskProjectEdit(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getTaskProjectEditUrl(projectId));
+  }
 }

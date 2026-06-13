@@ -191,6 +191,30 @@ export const routes: Routes = [
                     import('./itinerary-lists/list-detail/list-detail.component').then(m => m.ListDetailComponent),
                 canActivate: [hasPermissionGuard('itinerary_lists')],
             },
+            {
+                path: 'task-management',
+                loadComponent: () =>
+                    import('./task-management/projects-list/projects-list.component').then(m => m.ProjectsListComponent),
+                canActivate: [hasPermissionGuard('task_management')],
+            },
+            {
+                path: 'task-management/projects/new',
+                loadComponent: () =>
+                    import('./task-management/project-form/project-form.component').then(m => m.ProjectFormComponent),
+                canActivate: [hasPermissionGuard('task_management')],
+            },
+            {
+                path: 'task-management/projects/:id/edit',
+                loadComponent: () =>
+                    import('./task-management/project-form/project-form.component').then(m => m.ProjectFormComponent),
+                canActivate: [hasPermissionGuard('task_management')],
+            },
+            {
+                path: 'task-management/projects/:id',
+                loadComponent: () =>
+                    import('./task-management/project-detail/project-detail.component').then(m => m.ProjectDetailComponent),
+                canActivate: [hasPermissionGuard('task_management')],
+            },
         ],
     },
 ];

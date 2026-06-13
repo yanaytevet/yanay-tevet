@@ -1,0 +1,194 @@
+<div class="max-w-3xl mx-auto w-full p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="back()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        All projects
+    </button>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading project...</div>
+    } @else if (loadError()) {
+        <div class="card p-10 text-center">
+            <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+            <button type="button" class="btn btn-secondary" (click)="back()">Back to projects</button>
+        </div>
+    } @else if (project(); as project) {
+
+        <div class="card p-5 mb-5">
+            <div class="flex items-start justify-between gap-3 mb-2">
+                <h1 class="text-[22px] font-bold text-primary-500 break-words min-w-0" dir="auto">{{ project.name }}</h1>
+                @if (isArchived()) {
+                    <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">Archived</span>
+                }
+            </div>
+            @if (project.description) {
+                <p class="text-[13px] text-writing-minor leading-relaxed mb-4 whitespace-pre-line" dir="auto">{{ project.description }}</p>
+            }
+
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <button type="button" class="btn cancel-btn flex items-center gap-1.5"
+                        [disabled]="isUpdatingStatus()" (click)="toggleArchive()">
+                    @if (isArchived()) {
+                        <ng-icon [svg]="featherRotateCcw" class="h-4 w-4"></ng-icon>
+                        Unarchive
+                    } @else {
+                        <ng-icon [svg]="featherArchive" class="h-4 w-4"></ng-icon>
+                        Archive
+                    }
+                </button>
+                <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="openShareDialog()">
+                    <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
+                    Share
+                </button>
+                <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="editProject()">
+                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                    Edit
+                </button>
+                @if (isOwner()) {
+                    <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="deleteProject()">
+                        <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                        Delete
+                    </button>
+                }
+            </div>
+        </div>
+
+        <div class="card p-4 mb-5">
+            <div class="flex items-end gap-2">
+                <div class="flex-1 flex flex-col gap-1.5">
+                    <span class="input-label">Add a task</span>
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book flights"
+                           [formControl]="newTaskCtrl" (keyup.enter)="addTask()" />
+                </div>
+                <button type="button" class="btn btn-primary flex items-center gap-1.5"
+                        [disabled]="isAdding()" (click)="addTask()">
+                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                    Add
+                </button>
+            </div>
+            <p class="text-[12px] text-writing-least mt-2">
+                Tap a task's status chip to move it forward · open the editor to set due date, priority and links.
+            </p>
+        </div>
+
+        @if (openTasks().length === 0) {
+            <div class="card p-8 text-center text-writing-minor text-[13px] mb-5">
+                No open tasks. Add one above or check the completed section below.
+            </div>
+        } @else {
+            <div class="flex flex-col gap-2 mb-5">
+                @for (task of openTasks(); track task.id) {
+                    <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task}"></ng-container>
+                }
+            </div>
+        }
+
+        @if (doneTasks().length > 0) {
+            <button type="button"
+                    class="flex items-center gap-1.5 text-[13px] font-semibold text-writing-minor hover:text-primary-500 transition-colors mb-3"
+                    (click)="toggleShowDone()">
+                <ng-icon [svg]="showDone() ? featherChevronDown : featherChevronRight" class="h-4 w-4"></ng-icon>
+                Completed ({{ doneTasks().length }})
+            </button>
+            @if (showDone()) {
+                <div class="flex flex-col gap-2 opacity-75">
+                    @for (task of doneTasks(); track task.id) {
+                        <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task}"></ng-container>
+                    }
+                </div>
+            }
+        }
+    }
+</div>
+
+<!-- A top-level task with its subtasks and inline subtask adder -->
+<ng-template #taskGroup let-task>
+    <div class="card p-3">
+        <ng-container [ngTemplateOutlet]="taskRow"
+                      [ngTemplateOutletContext]="{$implicit: task, isSubtask: false}"></ng-container>
+
+        @if (subtasksByParent()[task.id]?.length || addingSubtaskFor() === task.id) {
+            <div class="mt-2 ml-3 pl-3 border-l border-[rgba(0,0,0,0.08)] flex flex-col gap-1.5">
+                @for (subtask of subtasksByParent()[task.id]; track subtask.id) {
+                    <ng-container [ngTemplateOutlet]="taskRow"
+                                  [ngTemplateOutletContext]="{$implicit: subtask, isSubtask: true}"></ng-container>
+                }
+                @if (addingSubtaskFor() === task.id) {
+                    <div class="flex items-center gap-2 py-1">
+                        <input type="text" dir="auto" class="main-input flex-1" placeholder="Subtask name"
+                               [formControl]="newSubtaskCtrl" (keyup.enter)="addSubtask(task)" />
+                        <button type="button" class="btn btn-primary" [disabled]="isAddingSubtask()"
+                                (click)="addSubtask(task)">Add</button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</ng-template>
+
+<!-- A single task row (used for top-level and subtasks) -->
+<ng-template #taskRow let-task let-isSubtask="isSubtask">
+    <div class="flex items-center gap-2.5 py-1">
+        <button type="button"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold select-none shrink-0 transition-opacity disabled:opacity-50 {{ statusChipClass[task.status] }}"
+                [disabled]="savingTaskId() === task.id"
+                (click)="cycleStatus(task)">
+            @if (task.status === 'done') {
+                <ng-icon [svg]="featherCheckCircle" class="h-3.5 w-3.5"></ng-icon>
+            }
+            {{ statusLabels[task.status] }}
+        </button>
+
+        <div class="min-w-0 flex-1">
+            <div class="text-[14px] text-writing truncate {{ task.status === 'done' ? 'line-through text-writing-minor' : '' }}"
+                 dir="auto">{{ task.name }}</div>
+            <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                @if (task.priority !== 'none') {
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ priorityChipClass[task.priority] }}">
+                        {{ priorityLabels[task.priority] }}
+                    </span>
+                }
+                @if (task.due_at) {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ overdueById()[task.id] ? 'bg-notion-red-bg text-notion-red' : 'bg-layer-3 text-writing-minor' }}">
+                        <ng-icon [svg]="featherClock" class="h-3 w-3"></ng-icon>
+                        {{ dueLabelById()[task.id] }}{{ overdueById()[task.id] ? ' · overdue' : '' }}
+                    </span>
+                }
+                @if (!isSubtask && task.subtask_count > 0) {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">
+                        <ng-icon [svg]="featherCornerDownRight" class="h-3 w-3"></ng-icon>
+                        {{ task.done_subtask_count }}/{{ task.subtask_count }}
+                    </span>
+                }
+                @if (task.itinerary_list_name) {
+                    <button type="button"
+                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-notion-blue hover:underline"
+                            (click)="openLinkedList(task)">
+                        <ng-icon [svg]="featherLink" class="h-3 w-3"></ng-icon>
+                        {{ task.itinerary_list_name }}
+                    </button>
+                }
+                @if (task.description) {
+                    <span class="text-[11px] text-writing-least truncate max-w-[200px]" dir="auto">{{ task.description }}</span>
+                }
+            </div>
+        </div>
+
+        <div class="flex items-center gap-1 shrink-0">
+            @if (!isSubtask) {
+                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                        (click)="toggleAddSubtask(task)" title="Add subtask">
+                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                </button>
+            }
+            <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editTask(task)">
+                <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+            </button>
+            <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteTask(task)">
+                <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+            </button>
+        </div>
+    </div>
+</ng-template>

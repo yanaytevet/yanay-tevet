@@ -113,6 +113,7 @@ INSTALLED_APPS = [
     'my_dashboard',
     'apartment_hunt',
     'itinerary_lists',
+    'task_management',
 ]
 
 MIDDLEWARE = [

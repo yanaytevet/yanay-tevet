@@ -1,0 +1,79 @@
+<div class="max-w-4xl mx-auto w-full p-6">
+
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">Task Management</h1>
+            <p class="text-[13px] text-writing-minor">Organise your work into projects, tasks and subtasks.</p>
+        </div>
+        <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="createProject()">
+            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+            New project
+        </button>
+    </div>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading projects...</div>
+    } @else if (projects().length === 0) {
+        <div class="card p-10 text-center">
+            <div class="text-4xl mb-3">✅</div>
+            <p class="text-[15px] font-semibold text-primary-500 mb-1">No projects yet</p>
+            <p class="text-[13px] text-writing-minor mb-5">Create a project to start tracking tasks and subtasks.</p>
+            <button type="button" class="btn btn-primary" (click)="createProject()">New project</button>
+        </div>
+    } @else {
+        @if (activeProjects().length > 0) {
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-8">
+                @for (project of activeProjects(); track project.id) {
+                    <div class="card p-4 cursor-pointer shadow-2 hover:shadow-3 transition-shadow"
+                         (click)="openProject(project)">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <div class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">{{ project.name }}</div>
+                            @if (project.open_task_count > 0) {
+                                <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-notion-blue">
+                                    {{ project.open_task_count }} open
+                                </span>
+                            } @else {
+                                <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-notion-green">
+                                    All done
+                                </span>
+                            }
+                        </div>
+                        @if (project.description) {
+                            <p class="text-[13px] text-writing-minor line-clamp-2 mb-3" dir="auto">{{ project.description }}</p>
+                        }
+                        <div class="flex items-center gap-3 text-[12px] text-writing-minor">
+                            <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
+                            <span>·</span>
+                            <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (archivedProjects().length > 0) {
+            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">Archived</div>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+                @for (project of archivedProjects(); track project.id) {
+                    <div class="card p-4 cursor-pointer opacity-70 hover:opacity-100 hover:shadow-2 transition-all"
+                         (click)="openProject(project)">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <div class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">{{ project.name }}</div>
+                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">
+                                Archived
+                            </span>
+                        </div>
+                        @if (project.description) {
+                            <p class="text-[13px] text-writing-minor line-clamp-2 mb-3" dir="auto">{{ project.description }}</p>
+                        }
+                        <div class="flex items-center gap-3 text-[12px] text-writing-minor">
+                            <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
+                            <span>·</span>
+                            <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

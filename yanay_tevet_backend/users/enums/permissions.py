@@ -7,3 +7,4 @@ class Permissions(BaseEnum):
     DREAM_DIARY = 'dream_diary'
     APARTMENT_HUNT = 'apartment_hunt'
     ITINERARY_LISTS = 'itinerary_lists'
+    TASK_MANAGEMENT = 'task_management'

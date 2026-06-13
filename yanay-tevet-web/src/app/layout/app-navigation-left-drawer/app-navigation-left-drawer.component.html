@@ -93,6 +93,17 @@
                 </a>
             }
 
+            <!-- Task Management -->
+            @if (hasTaskManagement()) {
+                <a
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                    [routerLink]="routingService.getTaskManagementUrl()"
+                    routerLinkActive="bg-layer-overlay"
+                    (click)="layoutService.closeBothDrawers()">
+                    Task Management
+                </a>
+            }
+
             <!-- About / Website Section -->
             <div class="flex flex-col">
                 <div

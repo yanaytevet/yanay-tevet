@@ -1,0 +1,67 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+
+    <div class="flex items-start justify-between mb-5">
+        <h2 class="text-[18px] font-bold text-primary-500">{{ data.title }}</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">Name <span class="text-writing-least">*</span></span>
+        <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book flights"
+               [formControl]="nameCtrl" (keyup.enter)="onSave()" />
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">Description</span>
+        <textarea class="main-input w-full leading-relaxed" rows="3" dir="auto"
+                  placeholder="Optional notes about this task..."
+                  [formControl]="descriptionCtrl"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        @if (data.showStatus) {
+            <div class="flex flex-col gap-1.5">
+                <span class="input-label">Status</span>
+                <select class="main-input w-full" [formControl]="statusCtrl">
+                    @for (status of statusOrder; track status) {
+                        <option [value]="status">{{ statusLabels[status] }}</option>
+                    }
+                </select>
+            </div>
+        }
+        <div class="flex flex-col gap-1.5">
+            <span class="input-label">Priority</span>
+            <select class="main-input w-full" [formControl]="priorityCtrl">
+                @for (priority of priorityOrder; track priority) {
+                    <option [value]="priority">{{ priorityLabels[priority] }}</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">Due date</span>
+        <input type="datetime-local" class="main-input w-full" [formControl]="dueAtCtrl" />
+    </div>
+
+    @if (data.itineraryLists.length > 0) {
+        <div class="mb-2 flex flex-col gap-1.5">
+            <span class="input-label">Linked itinerary list</span>
+            <select class="main-input w-full" [formControl]="itineraryListCtrl">
+                <option [ngValue]="null">None</option>
+                @for (list of data.itineraryLists; track list.id) {
+                    <option [ngValue]="list.id">{{ list.name }}</option>
+                }
+            </select>
+        </div>
+    }
+
+    <div class="flex items-center justify-end gap-2 mt-6">
+        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+            {{ data.confirmActionName }}
+        </button>
+    </div>
+</div>

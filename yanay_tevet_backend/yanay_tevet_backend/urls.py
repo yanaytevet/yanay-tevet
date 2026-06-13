@@ -11,6 +11,7 @@ from japanese.japanese_router import api as japanese_api
 from my_dashboard.my_dashboard_router import api as my_dashboard_api
 from apartment_hunt.apartment_hunt_router import api as apartment_hunt_api
 from itinerary_lists.itinerary_lists_router import api as itinerary_lists_api
+from task_management.task_management_router import api as task_management_api
 
 
 urlpatterns = [
@@ -27,4 +28,5 @@ urlpatterns = [
     path(r'api/my-dashboard/', my_dashboard_api.urls),
     path(r'api/apartment-hunt/', apartment_hunt_api.urls),
     path(r'api/itinerary-lists/', itinerary_lists_api.urls),
+    path(r'api/task-management/', task_management_api.urls),
 ]
