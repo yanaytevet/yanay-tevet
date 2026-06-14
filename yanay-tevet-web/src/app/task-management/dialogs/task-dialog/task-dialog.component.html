@@ -24,11 +24,17 @@
         @if (data.showStatus) {
             <div class="flex flex-col gap-1.5">
                 <span class="input-label">Status</span>
-                <select class="main-input w-full" [formControl]="statusCtrl">
-                    @for (status of statusOrder; track status) {
-                        <option [value]="status">{{ statusLabels[status] }}</option>
-                    }
-                </select>
+                <button type="button"
+                        class="main-input w-full flex items-center gap-2 cursor-pointer text-left"
+                        [attr.aria-pressed]="isDone()"
+                        (click)="toggleDone()">
+                    <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ isDone() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                        @if (isDone()) {
+                            <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                        }
+                    </span>
+                    <span class="text-[14px] text-writing">{{ isDone() ? 'Done' : 'To do' }}</span>
+                </button>
             </div>
         }
         <div class="flex flex-col gap-1.5">

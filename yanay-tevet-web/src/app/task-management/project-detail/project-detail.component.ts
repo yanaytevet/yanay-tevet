@@ -6,7 +6,7 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArchive,
   featherArrowLeft,
-  featherCheckCircle,
+  featherCheck,
   featherChevronDown,
   featherChevronRight,
   featherClock,
@@ -48,9 +48,6 @@ import {
 import {
   TASK_PRIORITY_CHIP_CLASS,
   TASK_PRIORITY_LABELS,
-  TASK_STATUS_CHIP_CLASS,
-  TASK_STATUS_LABELS,
-  TASK_STATUS_NEXT,
 } from '../task-management.constants';
 
 @Component({
@@ -58,7 +55,7 @@ import {
   standalone: true,
   imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule],
   providers: [provideIcons({
-    featherArchive, featherArrowLeft, featherCheckCircle, featherChevronDown, featherChevronRight,
+    featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
     featherClock, featherCornerDownRight, featherEdit, featherLink, featherPlus, featherRotateCcw,
     featherShare2, featherTrash2,
   })],
@@ -118,14 +115,12 @@ export class ProjectDetailComponent {
       .filter(t => t.due_at !== null)
       .map(t => [t.id, this.formatDue(t.due_at as string)])));
 
-  readonly statusLabels = TASK_STATUS_LABELS;
-  readonly statusChipClass = TASK_STATUS_CHIP_CLASS;
   readonly priorityLabels = TASK_PRIORITY_LABELS;
   readonly priorityChipClass = TASK_PRIORITY_CHIP_CLASS;
 
   protected readonly featherArchive = featherArchive;
   protected readonly featherArrowLeft = featherArrowLeft;
-  protected readonly featherCheckCircle = featherCheckCircle;
+  protected readonly featherCheck = featherCheck;
   protected readonly featherChevronDown = featherChevronDown;
   protected readonly featherChevronRight = featherChevronRight;
   protected readonly featherClock = featherClock;
@@ -217,11 +212,11 @@ export class ProjectDetailComponent {
     }
   }
 
-  async cycleStatus(task: TaskSchema): Promise<void> {
+  async toggleDone(task: TaskSchema): Promise<void> {
     if (this.savingTaskId() !== null) {
       return;
     }
-    await this.patchTask(task, {status: TASK_STATUS_NEXT[task.status]});
+    await this.patchTask(task, {status: task.status === 'done' ? 'todo' : 'done'});
   }
 
   async editTask(task: TaskSchema): Promise<void> {

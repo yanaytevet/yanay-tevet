@@ -69,7 +69,7 @@
                 </button>
             </div>
             <p class="text-[12px] text-writing-least mt-2">
-                Tap a task's status chip to move it forward · open the editor to set due date, priority and links.
+                Tick a task's checkbox to mark it done · open the editor to set due date, priority and links.
             </p>
         </div>
 
@@ -132,13 +132,14 @@
 <ng-template #taskRow let-task let-isSubtask="isSubtask">
     <div class="flex items-center gap-2.5 py-1">
         <button type="button"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold select-none shrink-0 transition-opacity disabled:opacity-50 {{ statusChipClass[task.status] }}"
+                class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 {{ task.status === 'done' ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 hover:border-notion-blue' }}"
                 [disabled]="savingTaskId() === task.id"
-                (click)="cycleStatus(task)">
+                [attr.aria-pressed]="task.status === 'done'"
+                title="Toggle done"
+                (click)="toggleDone(task)">
             @if (task.status === 'done') {
-                <ng-icon [svg]="featherCheckCircle" class="h-3.5 w-3.5"></ng-icon>
+                <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
             }
-            {{ statusLabels[task.status] }}
         </button>
 
         <div class="min-w-0 flex-1">

@@ -1,25 +1,4 @@
-import {TaskPriority, TaskStatus} from '../../generated-files/api/task-management';
-
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'To do',
-  in_progress: 'In progress',
-  done: 'Done',
-};
-
-export const TASK_STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'done'];
-
-// Tap-to-cycle advances forward and wraps back to the start.
-export const TASK_STATUS_NEXT: Record<TaskStatus, TaskStatus> = {
-  todo: 'in_progress',
-  in_progress: 'done',
-  done: 'todo',
-};
-
-export const TASK_STATUS_CHIP_CLASS: Record<TaskStatus, string> = {
-  todo: 'bg-layer-3 text-writing-minor',
-  in_progress: 'bg-layer-3 text-notion-blue',
-  done: 'bg-layer-3 text-notion-green',
-};
+import {TaskPriority} from '../../generated-files/api/task-management';
 
 export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
   none: 'No priority',
