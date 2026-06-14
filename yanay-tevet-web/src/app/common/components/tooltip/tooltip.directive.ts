@@ -17,6 +17,8 @@ export class TooltipDirective implements OnDestroy {
     const content = this.text();
     if (!content) return;
 
+    this.hide();
+
     this.tooltipEl = this.renderer.createElement('span');
     this.tooltipEl.textContent = content;
     this.renderer.addClass(this.tooltipEl, 'tooltip-box');
@@ -34,6 +36,8 @@ export class TooltipDirective implements OnDestroy {
 
   @HostListener('mouseleave')
   @HostListener('blur')
+  @HostListener('click')
+  @HostListener('mousedown')
   hide() {
     if (this.popper) {
       this.popper.destroy();
