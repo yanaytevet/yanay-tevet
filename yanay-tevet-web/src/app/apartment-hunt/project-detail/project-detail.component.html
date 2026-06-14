@@ -126,11 +126,10 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-[12px] py-1 px-2 w-[170px]"
-                                            [value]="prospect.status"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onStatusChange(prospect, $any($event.target).value)">
                                         @for (status of statusOptions; track status) {
-                                            <option [value]="status">{{ prospectStatusLabels[status] }}</option>
+                                            <option [value]="status" [selected]="status === prospect.status">{{ prospectStatusLabels[status] }}</option>
                                         }
                                     </select>
                                 </td>
@@ -142,12 +141,11 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-[13px] py-1 px-2 w-[112px]"
-                                            [value]="prospect.liked_level === null ? '' : prospect.liked_level"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onLikedChange(prospect, $any($event.target).value)">
-                                        <option value="">Not rated</option>
+                                        <option value="" [selected]="prospect.liked_level === null">Not rated</option>
                                         @for (opt of likedOptions; track opt.value) {
-                                            <option [value]="opt.value">{{ opt.label }}</option>
+                                            <option [value]="opt.value" [selected]="opt.value === prospect.liked_level">{{ opt.label }}</option>
                                         }
                                     </select>
                                 </td>
@@ -226,23 +224,21 @@
                             <div class="flex flex-col gap-1">
                                 <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-wide">Status</span>
                                 <select class="main-input w-full text-[13px]"
-                                        [value]="prospect.status"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onStatusChange(prospect, $any($event.target).value)">
                                     @for (status of statusOptions; track status) {
-                                        <option [value]="status">{{ prospectStatusLabels[status] }}</option>
+                                        <option [value]="status" [selected]="status === prospect.status">{{ prospectStatusLabels[status] }}</option>
                                     }
                                 </select>
                             </div>
                             <div class="flex flex-col gap-1">
                                 <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-wide">Liked</span>
                                 <select class="main-input w-full text-[13px]"
-                                        [value]="prospect.liked_level === null ? '' : prospect.liked_level"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onLikedChange(prospect, $any($event.target).value)">
-                                    <option value="">Not rated</option>
+                                    <option value="" [selected]="prospect.liked_level === null">Not rated</option>
                                     @for (opt of likedOptions; track opt.value) {
-                                        <option [value]="opt.value">{{ opt.label }}</option>
+                                        <option [value]="opt.value" [selected]="opt.value === prospect.liked_level">{{ opt.label }}</option>
                                     }
                                 </select>
                             </div>
