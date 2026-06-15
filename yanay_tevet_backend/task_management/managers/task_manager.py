@@ -8,6 +8,7 @@ from itinerary_lists.models.itinerary_list import ItineraryList
 from itinerary_lists.models.itinerary_list_membership import ItineraryListMembership
 from task_management.enums.task_status import TaskStatus
 from task_management.models.task import Task
+from task_management.models.task_project import TaskProject
 from task_management.serializers.task_serializers.task_serializer import TaskWritableSchema
 from common.django_utils.model_utils import ModelUtils
 from common.simple_api.enums.status_code import StatusCode
@@ -21,23 +22,26 @@ class TaskManager:
     def __init__(self, user: User) -> None:
         self.user = user
 
-    def _user_tzinfo(self) -> ZoneInfo:
-        if self.user.timezone:
+    def _tzinfo_from_name(self, timezone_name: str | None) -> ZoneInfo:
+        if timezone_name:
             try:
-                return ZoneInfo(self.user.timezone)
+                return ZoneInfo(timezone_name)
             except (ZoneInfoNotFoundError, ValueError):
                 pass
         return ZoneInfo('UTC')
 
-    def _last_reset_boundary(self) -> datetime:
-        now = timezone.now().astimezone(self._user_tzinfo())
+    def _last_reset_boundary(self, tzinfo: ZoneInfo) -> datetime:
+        now = timezone.now().astimezone(tzinfo)
         today_boundary = now.replace(hour=self.DAILY_RESET_HOUR, minute=0, second=0, microsecond=0)
         if now >= today_boundary:
             return today_boundary
         return today_boundary - timedelta(days=1)
 
     async def reset_due_repeating_tasks(self, project_id: int) -> None:
-        boundary = self._last_reset_boundary()
+        project = await TaskProject.objects.select_related('owner').filter(id=project_id).afirst()
+        if project is None:
+            return
+        boundary = self._last_reset_boundary(self._tzinfo_from_name(project.owner.timezone))
         await Task.objects.filter(
             project_id=project_id,
             is_repeating=True,
