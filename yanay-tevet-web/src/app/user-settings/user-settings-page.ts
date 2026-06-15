@@ -7,8 +7,15 @@ import {LayoutHandle} from '../layout/layout-handle';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
-import {updateMyUserView, uploadUserProfileImageView} from '../../generated-files/api/users';
+import {updateMyTimezoneView, updateMyUserView, uploadUserProfileImageView} from '../../generated-files/api/users';
 import {changePasswordView} from '../../generated-files/auth';
+import {interval} from 'rxjs';
+
+interface TimezoneOption {
+  name: string;
+  label: string;
+  offset: string;
+}
 
 @Component({
   selector: 'app-user-settings-page',
@@ -39,6 +46,53 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
   readonly isRegisteringPasskey = signal(false);
 
   readonly passwordChangedSuccess = signal(false);
+
+  readonly browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  readonly tzSearch = signal('');
+  readonly tzPanelOpen = signal(false);
+  readonly isSavingTz = signal(false);
+  private readonly now = signal(new Date());
+
+  readonly allTimezones = computed<TimezoneOption[]>(() => {
+    const names = this.supportedTimezones();
+    const sample = new Date();
+    return names.map(name => ({
+      name,
+      label: name.replace(/_/g, ' '),
+      offset: this.getOffset(name, sample),
+    }));
+  });
+
+  readonly filteredTimezones = computed<TimezoneOption[]>(() => {
+    const term = this.tzSearch().trim().toLowerCase();
+    const all = this.allTimezones();
+    if (!term) {
+      return all;
+    }
+    return all.filter(tz =>
+      tz.label.toLowerCase().includes(term) || tz.offset.toLowerCase().includes(term));
+  });
+
+  readonly currentTimezone = computed<string | null>(() => this.authService.user()?.timezone ?? null);
+  readonly effectiveTimezone = computed<string>(() => this.currentTimezone() ?? 'UTC');
+  readonly currentTimezoneLabel = computed<string>(() => {
+    const tz = this.currentTimezone();
+    return tz ? tz.replace(/_/g, ' ') : 'UTC (default)';
+  });
+  readonly currentTimezoneOffset = computed<string>(() =>
+    this.getOffset(this.effectiveTimezone(), this.now()));
+  readonly currentLocalTime = computed<string>(() =>
+    this.now().toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: this.effectiveTimezone(),
+    }));
+  readonly isBrowserTimezoneActive = computed<boolean>(() =>
+    this.currentTimezone() === this.browserTimezone);
+  readonly selectedById = computed<Record<string, boolean>>(() => {
+    const current = this.currentTimezone();
+    return Object.fromEntries(this.allTimezones().map(tz => [tz.name, tz.name === current]));
+  });
 
   readonly passwordRules = computed(() => {
     const p = this.newPassword();
@@ -82,6 +136,74 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
       this.firstName.set(user.first_name);
       this.lastName.set(user.last_name);
       this.email.set(user.email ?? '');
+    }
+    this.subscriptions.push(
+      interval(20000).subscribe(() => this.now.set(new Date())),
+    );
+  }
+
+  toggleTzPanel(): void {
+    this.tzPanelOpen.update(open => !open);
+    if (!this.tzPanelOpen()) {
+      this.tzSearch.set('');
+    }
+  }
+
+  async selectTimezone(name: string): Promise<void> {
+    await this.saveTimezone(name);
+  }
+
+  async useBrowserTimezone(): Promise<void> {
+    await this.saveTimezone(this.browserTimezone);
+  }
+
+  private async saveTimezone(timezone: string): Promise<void> {
+    if (this.isSavingTz()) {
+      return;
+    }
+    this.isSavingTz.set(true);
+    try {
+      const result = await updateMyTimezoneView({body: {timezone}});
+      if (result.error) {
+        const err = result.error as {detail?: string};
+        await this.dialogService.showNotificationDialog({
+          title: 'Error',
+          text: err?.detail ?? 'Failed to update timezone.',
+        });
+        return;
+      }
+      await this.authService.checkAuth();
+      this.tzPanelOpen.set(false);
+      this.tzSearch.set('');
+    } catch (err: unknown) {
+      await this.dialogService.showNotificationDialog({
+        title: 'Error',
+        text: err instanceof Error ? err.message : 'Failed to update timezone',
+      });
+    } finally {
+      this.isSavingTz.set(false);
+    }
+  }
+
+  private supportedTimezones(): string[] {
+    const intlWithValues = Intl as unknown as {supportedValuesOf?: (key: string) => string[]};
+    const values = intlWithValues.supportedValuesOf?.('timeZone');
+    if (values && values.length > 0) {
+      return values;
+    }
+    return [this.browserTimezone, 'UTC'].filter(Boolean);
+  }
+
+  private getOffset(timezone: string, sample: Date): string {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        timeZoneName: 'shortOffset',
+      }).formatToParts(sample);
+      const name = parts.find(part => part.type === 'timeZoneName')?.value;
+      return name ?? 'GMT';
+    } catch {
+      return 'GMT';
     }
   }
 

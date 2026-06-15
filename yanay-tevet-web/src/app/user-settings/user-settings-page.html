@@ -76,6 +76,75 @@
     </div>
   </div>
 
+  <!-- Timezone -->
+  <div class="card p-6 flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="text-[16px] font-semibold text-primary-500">Timezone</h2>
+      <p class="text-[13px] text-writing-minor leading-relaxed">
+        Repeating tasks reset to "To do" at 4:00 AM in this timezone.
+      </p>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
+      <div class="flex flex-col gap-0.5 min-w-0">
+        <span class="text-[14px] font-medium text-primary-500 truncate">{{ currentTimezoneLabel() }}</span>
+        <span class="text-[12px] text-secondary-400">{{ currentTimezoneOffset() }}</span>
+      </div>
+      <span class="shrink-0 text-[24px] font-semibold text-primary-500 tabular-nums">{{ currentLocalTime() }}</span>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <button
+        type="button"
+        class="main-input flex items-center justify-between gap-2 text-left"
+        (click)="toggleTzPanel()">
+        <span class="text-[14px] text-writing truncate">{{ currentTimezoneLabel() }}</span>
+        <span class="text-[12px] text-secondary-400 shrink-0">{{ tzPanelOpen() ? 'Close' : 'Change' }}</span>
+      </button>
+
+      @if (tzPanelOpen()) {
+        <div class="card p-2 flex flex-col gap-2 bg-layer-2">
+          <input
+            class="main-input"
+            type="text"
+            placeholder="Search timezones..."
+            [ngModel]="tzSearch()"
+            (ngModelChange)="tzSearch.set($event)">
+          <div class="flex flex-col gap-0.5 max-h-64 overflow-auto">
+            @for (tz of filteredTimezones(); track tz.name) {
+              <button
+                type="button"
+                class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-left hover:bg-layer-3 transition-colors"
+                [class.bg-layer-3]="selectedById()[tz.name]"
+                [disabled]="isSavingTz()"
+                (click)="selectTimezone(tz.name)">
+                <span class="text-[13px] text-writing truncate">{{ tz.label }}</span>
+                <span class="shrink-0 text-[11px] font-semibold px-1.5 py-0.5 rounded-full bg-layer-1 text-secondary-400">{{ tz.offset }}</span>
+              </button>
+            } @empty {
+              <span class="px-3 py-2 text-[13px] text-secondary-400">No timezones match "{{ tzSearch() }}".</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="flex items-center justify-between gap-3">
+      @if (isBrowserTimezoneActive()) {
+        <span class="text-[12px] text-secondary-400">Using your browser's timezone.</span>
+      } @else {
+        <span class="text-[12px] text-secondary-400 truncate">Browser detected: {{ browserTimezone }}</span>
+      }
+      <button
+        type="button"
+        class="btn btn-secondary shrink-0"
+        [disabled]="isSavingTz() || isBrowserTimezoneActive()"
+        (click)="useBrowserTimezone()">
+        Use browser timezone
+      </button>
+    </div>
+  </div>
+
   <!-- Change Password / Set Password -->
   <div class="card p-6 flex flex-col gap-4">
     <h2 class="text-[16px] font-semibold text-primary-500">

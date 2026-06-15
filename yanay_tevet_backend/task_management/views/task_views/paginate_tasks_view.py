@@ -33,8 +33,9 @@ class PaginateTasksView(PaginateItemsAPIView):
         project = await TaskProject.objects.filter(id=path.project_id).afirst()
         if project is None:
             raise ObjectDoesntExistAPIException(TaskProject, path.project_id)
-        await ProjectMemberPermissionChecker(project).async_raise_exception_if_not_valid(await request.future_user)
-        await TaskManager.reset_due_repeating_tasks(path.project_id)
+        user = await request.future_user
+        await ProjectMemberPermissionChecker(project).async_raise_exception_if_not_valid(user)
+        await TaskManager(user).reset_due_repeating_tasks(path.project_id)
 
     @classmethod
     def get_serializer(cls) -> Serializer:

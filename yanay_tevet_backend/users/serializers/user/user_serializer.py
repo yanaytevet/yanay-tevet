@@ -14,6 +14,7 @@ class UserSchema(Schema):
     first_name: str
     last_name: str
     pic_url: str | None
+    timezone: str | None
     full_name: str
     is_admin: bool
     initials: str
@@ -32,6 +33,7 @@ class UserSerializer(Serializer[UserSchema]):
             first_name=obj.first_name,
             last_name=obj.last_name,
             pic_url=obj.pic_url,
+            timezone=obj.timezone,
             full_name=obj.get_full_name(),
             is_admin=obj.is_admin(),
             initials=obj.get_initials(),

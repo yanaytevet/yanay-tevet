@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db.models import Max
 from django.utils import timezone
@@ -20,17 +21,23 @@ class TaskManager:
     def __init__(self, user: User) -> None:
         self.user = user
 
-    @classmethod
-    def _last_reset_boundary(cls) -> datetime:
-        now = timezone.localtime()
-        today_boundary = now.replace(hour=cls.DAILY_RESET_HOUR, minute=0, second=0, microsecond=0)
+    def _user_tzinfo(self) -> ZoneInfo:
+        if self.user.timezone:
+            try:
+                return ZoneInfo(self.user.timezone)
+            except (ZoneInfoNotFoundError, ValueError):
+                pass
+        return ZoneInfo('UTC')
+
+    def _last_reset_boundary(self) -> datetime:
+        now = timezone.now().astimezone(self._user_tzinfo())
+        today_boundary = now.replace(hour=self.DAILY_RESET_HOUR, minute=0, second=0, microsecond=0)
         if now >= today_boundary:
             return today_boundary
         return today_boundary - timedelta(days=1)
 
-    @classmethod
-    async def reset_due_repeating_tasks(cls, project_id: int) -> None:
-        boundary = cls._last_reset_boundary()
+    async def reset_due_repeating_tasks(self, project_id: int) -> None:
+        boundary = self._last_reset_boundary()
         await Task.objects.filter(
             project_id=project_id,
             is_repeating=True,

@@ -25,6 +25,7 @@ class User(AbstractUser):
         choices=Permissions.choices(), blank=True, default=list
     )
     pic_url = models.CharField(max_length=255, blank=True, null=True)
+    timezone = models.CharField(max_length=64, blank=True, null=True, default=None)
     is_unsubscribed = models.BooleanField(default=False, blank=True)
     subscription_type = models.CharField(
         max_length=20, choices=SubscriptionType.choices(), default=SubscriptionType.BASIC, blank=True

@@ -32,5 +32,6 @@ class GetTaskView(ReadItemByIdAPIView):
 
     @classmethod
     async def run_after_get(cls, request: APIRequest, obj: Task, query: Query, path: Path) -> None:
-        await TaskManager.reset_due_repeating_tasks(obj.project_id)
+        user = await request.future_user
+        await TaskManager(user).reset_due_repeating_tasks(obj.project_id)
         await obj.arefresh_from_db()

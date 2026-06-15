@@ -55,6 +55,10 @@ export type UserSchema = {
      */
     pic_url: string | null;
     /**
+     * Timezone
+     */
+    timezone: string | null;
+    /**
      * Full Name
      */
     full_name: string;
@@ -206,6 +210,16 @@ export type UpdateMyUserInputSchema = {
 };
 
 /**
+ * UpdateMyTimezoneInputSchema
+ */
+export type UpdateMyTimezoneInputSchema = {
+    /**
+     * Timezone
+     */
+    timezone?: string | null;
+};
+
+/**
  * Schema
  */
 export type Schema = {
@@ -296,6 +310,22 @@ export type UpdateMyUserViewResponses = {
 };
 
 export type UpdateMyUserViewResponse = UpdateMyUserViewResponses[keyof UpdateMyUserViewResponses];
+
+export type UpdateMyTimezoneViewData = {
+    body: UpdateMyTimezoneInputSchema;
+    path?: never;
+    query?: never;
+    url: '/api/users/update-my-timezone/';
+};
+
+export type UpdateMyTimezoneViewResponses = {
+    /**
+     * OK
+     */
+    200: UserSchema;
+};
+
+export type UpdateMyTimezoneViewResponse = UpdateMyTimezoneViewResponses[keyof UpdateMyTimezoneViewResponses];
 
 export type UploadUserProfileImageViewData = {
     /**

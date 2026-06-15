@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminUsersPaginationViewData, AdminUsersPaginationViewResponses, MyUserItemViewData, MyUserItemViewResponses, UpdateMyUserViewData, UpdateMyUserViewResponses, UpdateUserPermissionsViewData, UpdateUserPermissionsViewResponses, UploadUserProfileImageViewData, UploadUserProfileImageViewResponses } from './types.gen';
+import type { AdminUsersPaginationViewData, AdminUsersPaginationViewResponses, MyUserItemViewData, MyUserItemViewResponses, UpdateMyTimezoneViewData, UpdateMyTimezoneViewResponses, UpdateMyUserViewData, UpdateMyUserViewResponses, UpdateUserPermissionsViewData, UpdateUserPermissionsViewResponses, UploadUserProfileImageViewData, UploadUserProfileImageViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -55,6 +55,19 @@ export const updateUserPermissionsView = <ThrowOnError extends boolean = false>(
 export const updateMyUserView = <ThrowOnError extends boolean = false>(options: Options<UpdateMyUserViewData, ThrowOnError>) => (options.client ?? client).post<UpdateMyUserViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/users/update-my-user/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const updateMyTimezoneView = <ThrowOnError extends boolean = false>(options: Options<UpdateMyTimezoneViewData, ThrowOnError>) => (options.client ?? client).post<UpdateMyTimezoneViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/users/update-my-timezone/',
     ...options,
     headers: {
         'Content-Type': 'application/json',

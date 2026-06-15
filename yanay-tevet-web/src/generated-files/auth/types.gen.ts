@@ -74,6 +74,10 @@ export type UserSchema = {
      */
     pic_url: string | null;
     /**
+     * Timezone
+     */
+    timezone: string | null;
+    /**
      * Full Name
      */
     full_name: string;
