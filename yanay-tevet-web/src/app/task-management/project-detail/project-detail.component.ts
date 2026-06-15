@@ -230,6 +230,7 @@ export class ProjectDetailComponent {
         status: task.status,
         priority: task.priority,
         dueAt: task.due_at,
+        isRepeating: task.is_repeating,
         itineraryListId: task.itinerary_list_id,
         showStatus: true,
         itineraryLists: this.itineraryLists(),
@@ -245,6 +246,7 @@ export class ProjectDetailComponent {
       status: result.status,
       priority: result.priority,
       due_at: result.dueAt,
+      is_repeating: result.isRepeating,
       itinerary_list_id: result.itineraryListId,
     });
   }

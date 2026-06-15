@@ -157,6 +157,13 @@
                         {{ dueLabelById()[task.id] }}{{ overdueById()[task.id] ? ' · overdue' : '' }}
                     </span>
                 }
+                @if (task.is_repeating) {
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor"
+                          title="Resets to To do daily at 4 AM">
+                        <ng-icon [svg]="featherRotateCcw" class="h-3 w-3"></ng-icon>
+                        Daily
+                    </span>
+                }
                 @if (!isSubtask && task.subtask_count > 0) {
                     <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">
                         <ng-icon [svg]="featherCornerDownRight" class="h-3 w-3"></ng-icon>

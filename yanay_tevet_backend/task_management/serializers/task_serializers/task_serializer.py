@@ -20,6 +20,7 @@ class TaskSchema(Schema):
     due_at: Optional[datetime]
     completed_at: Optional[datetime]
     order: int
+    is_repeating: bool
     itinerary_list_id: Optional[int]
     itinerary_list_name: Optional[str]
     subtask_count: int
@@ -35,6 +36,7 @@ class TaskWritableSchema(Schema):
     priority: Optional[TaskPriority] = None
     due_at: Optional[datetime] = None
     order: Optional[int] = None
+    is_repeating: Optional[bool] = None
     parent_id: Optional[int] = None
     itinerary_list_id: Optional[int] = None
 
@@ -55,6 +57,7 @@ class TaskSerializer(Serializer[TaskSchema]):
             due_at=obj.due_at,
             completed_at=obj.completed_at,
             order=obj.order,
+            is_repeating=obj.is_repeating,
             itinerary_list_id=obj.itinerary_list_id,
             itinerary_list_name=itinerary_list.name if itinerary_list else None,
             subtask_count=subtask_count,

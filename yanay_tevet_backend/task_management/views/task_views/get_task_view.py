@@ -3,6 +3,7 @@ from typing import Type
 from django.db.models import Model
 from ninja import Path, Query
 
+from task_management.managers.task_manager import TaskManager
 from task_management.models.task import Task
 from task_management.permissions_checkers.project_member_permission_checker import ProjectMemberPermissionChecker
 from task_management.serializers.task_serializers.task_serializer import TaskSerializer
@@ -28,3 +29,8 @@ class GetTaskView(ReadItemByIdAPIView):
     async def check_permitted_after_object(cls, request: APIRequest, obj: Task, query: Query, path: Path) -> None:
         project = await obj.get_project()
         await ProjectMemberPermissionChecker(project).async_raise_exception_if_not_valid(await request.future_user)
+
+    @classmethod
+    async def run_after_get(cls, request: APIRequest, obj: Task, query: Query, path: Path) -> None:
+        await TaskManager.reset_due_repeating_tasks(obj.project_id)
+        await obj.arefresh_from_db()

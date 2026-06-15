@@ -22,8 +22,8 @@ class Task(models.Model):
         itinerary_list_id: int | None
         subtasks: Manager['TaskRef']
 
-    list_display = ['id', 'name', 'project', 'status', 'priority', 'due_at', 'order', 'updated_at']
-    list_filter = ['status', 'priority']
+    list_display = ['id', 'name', 'project', 'status', 'priority', 'due_at', 'order', 'is_repeating', 'updated_at']
+    list_filter = ['status', 'priority', 'is_repeating']
     raw_id_fields = ['project', 'parent', 'created_by', 'itinerary_list']
 
     project = models.ForeignKey(TaskProject, on_delete=models.CASCADE, related_name='tasks')
@@ -50,6 +50,9 @@ class Task(models.Model):
     due_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     order = models.PositiveIntegerField(default=0, blank=True)
+
+    is_repeating = models.BooleanField(default=False, blank=True)
+    last_reset_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

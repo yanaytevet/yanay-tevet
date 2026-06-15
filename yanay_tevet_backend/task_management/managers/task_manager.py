@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from django.db.models import Max
 from django.utils import timezone
 
@@ -13,8 +15,31 @@ from users.models import User
 
 
 class TaskManager:
+    DAILY_RESET_HOUR = 4
+
     def __init__(self, user: User) -> None:
         self.user = user
+
+    @classmethod
+    def _last_reset_boundary(cls) -> datetime:
+        now = timezone.localtime()
+        today_boundary = now.replace(hour=cls.DAILY_RESET_HOUR, minute=0, second=0, microsecond=0)
+        if now >= today_boundary:
+            return today_boundary
+        return today_boundary - timedelta(days=1)
+
+    @classmethod
+    async def reset_due_repeating_tasks(cls, project_id: int) -> None:
+        boundary = cls._last_reset_boundary()
+        await Task.objects.filter(
+            project_id=project_id,
+            is_repeating=True,
+            last_reset_at__lt=boundary,
+        ).exclude(status=TaskStatus.TODO).aupdate(
+            status=TaskStatus.TODO,
+            completed_at=None,
+            last_reset_at=timezone.now(),
+        )
 
     async def create_task(self, project_id: int, writable: TaskWritableSchema) -> Task:
         await self._validate_parent(project_id, writable.parent_id)
@@ -27,6 +52,7 @@ class TaskManager:
         )
         await ModelUtils.update_from_schema(task, writable)
         self._sync_completed_at(task)
+        self._sync_repeating(task)
         await task.asave()
         return task
 
@@ -38,7 +64,15 @@ class TaskManager:
             await self._validate_itinerary_link(fields['itinerary_list_id'])
         await ModelUtils.update_from_schema(task, writable)
         self._sync_completed_at(task)
+        self._sync_repeating(task)
         await task.asave()
+
+    def _sync_repeating(self, task: Task) -> None:
+        if task.is_repeating:
+            if task.last_reset_at is None:
+                task.last_reset_at = timezone.now()
+        else:
+            task.last_reset_at = None
 
     def _sync_completed_at(self, task: Task) -> None:
         if task.status == TaskStatus.DONE:

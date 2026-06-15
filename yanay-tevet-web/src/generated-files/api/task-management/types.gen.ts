@@ -309,6 +309,10 @@ export type TaskSchema = {
      */
     order: number;
     /**
+     * Is Repeating
+     */
+    is_repeating: boolean;
+    /**
      * Itinerary List Id
      */
     itinerary_list_id: number | null;
@@ -362,6 +366,10 @@ export type CreateTaskSchema = {
      */
     order?: number | null;
     /**
+     * Is Repeating
+     */
+    is_repeating?: boolean | null;
+    /**
      * Parent Id
      */
     parent_id?: number | null;
@@ -397,6 +405,10 @@ export type TaskWritableSchema = {
      * Order
      */
     order?: number | null;
+    /**
+     * Is Repeating
+     */
+    is_repeating?: boolean | null;
     /**
      * Parent Id
      */

@@ -52,6 +52,24 @@
         <input type="datetime-local" class="main-input w-full" [formControl]="dueAtCtrl" />
     </div>
 
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">Repeat</span>
+        <button type="button"
+                class="main-input w-full flex items-center gap-2 cursor-pointer text-left"
+                [attr.aria-pressed]="isRepeating()"
+                (click)="toggleRepeating()">
+            <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ isRepeating() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                @if (isRepeating()) {
+                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                }
+            </span>
+            <span class="flex items-center gap-1.5 text-[14px] text-writing">
+                <ng-icon [svg]="featherRotateCcw" class="h-3.5 w-3.5 text-writing-minor"></ng-icon>
+                Resets to "To do" daily at 4 AM
+            </span>
+        </button>
+    </div>
+
     @if (data.itineraryLists.length > 0) {
         <div class="mb-2 flex flex-col gap-1.5">
             <span class="input-label">Linked itinerary list</span>

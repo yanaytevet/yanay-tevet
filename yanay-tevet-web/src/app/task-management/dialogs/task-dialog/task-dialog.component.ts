@@ -2,7 +2,7 @@ import {Component, computed, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {featherCheck, featherX} from '@ng-icons/feather-icons';
+import {featherCheck, featherRotateCcw, featherX} from '@ng-icons/feather-icons';
 import {TaskPriority, TaskStatus} from '../../../../generated-files/api/task-management';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {
@@ -23,6 +23,7 @@ export interface TaskDialogData {
   status: TaskStatus;
   priority: TaskPriority;
   dueAt: string | null;
+  isRepeating: boolean;
   itineraryListId: number | null;
   showStatus: boolean;
   itineraryLists: TaskDialogItineraryList[];
@@ -34,6 +35,7 @@ export interface TaskDialogResult {
   status: TaskStatus;
   priority: TaskPriority;
   dueAt: string | null;
+  isRepeating: boolean;
   itineraryListId: number | null;
 }
 
@@ -41,7 +43,7 @@ export interface TaskDialogResult {
   selector: 'app-task-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({featherCheck, featherX})],
+  providers: [provideIcons({featherCheck, featherRotateCcw, featherX})],
   templateUrl: './task-dialog.component.html',
 })
 export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, TaskDialogResult> {
@@ -52,6 +54,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
   readonly itineraryListCtrl = new FormControl<number | null>(null);
 
   readonly isDone = signal<boolean>(false);
+  readonly isRepeating = signal<boolean>(false);
 
   readonly priorityOrder = TASK_PRIORITY_ORDER;
   readonly priorityLabels = TASK_PRIORITY_LABELS;
@@ -60,6 +63,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
   readonly canSave = computed(() => !!this.nameValue()?.trim());
 
   protected readonly featherCheck = featherCheck;
+  protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherX = featherX;
 
   constructor() {
@@ -67,6 +71,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
     this.nameCtrl.setValue(this.data.name);
     this.descriptionCtrl.setValue(this.data.description);
     this.isDone.set(this.data.status === 'done');
+    this.isRepeating.set(this.data.isRepeating);
     this.priorityCtrl.setValue(this.data.priority);
     this.itineraryListCtrl.setValue(this.data.itineraryListId);
     if (this.data.dueAt) {
@@ -76,6 +81,10 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
 
   toggleDone(): void {
     this.isDone.update(v => !v);
+  }
+
+  toggleRepeating(): void {
+    this.isRepeating.update(v => !v);
   }
 
   onSave(): void {
@@ -91,6 +100,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
       status,
       priority: this.priorityCtrl.value,
       dueAt: local ? new Date(local).toISOString() : null,
+      isRepeating: this.isRepeating(),
       itineraryListId: this.itineraryListCtrl.value ?? null,
     });
   }
