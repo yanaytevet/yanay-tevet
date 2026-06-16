@@ -1,5 +1,7 @@
 import {ApplicationConfig, inject, provideAppInitializer, provideZoneChangeDetection} from '@angular/core';
 import {provideRouter} from '@angular/router';
+import {provideLottieOptions} from 'ngx-lottie';
+import player from 'lottie-web';
 
 import {routes} from './app.routes';
 import {ApiConfigService} from './shared/api/api-config.service';
@@ -11,6 +13,7 @@ import {DarkModeService} from './common/services/dark-mode.service';
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({eventCoalescing: true}),
+        provideLottieOptions({player: () => player}),
         provideHttpClient(),
         provideRouter(routes),
         provideAppInitializer(() => {

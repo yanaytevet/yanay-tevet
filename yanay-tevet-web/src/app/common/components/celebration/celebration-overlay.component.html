@@ -1,6 +1,9 @@
 @if (celebrationService.bursts().length > 0) {
     <div class="fixed inset-0 z-[9999] pointer-events-none overflow-hidden">
         @for (burst of celebrationService.bursts(); track burst.id) {
+            <div class="absolute inset-0">
+                <ng-lottie [options]="burst.confettiOptions" [styles]="confettiStyles"></ng-lottie>
+            </div>
             @for (piece of burst.confetti; track $index) {
                 <div class="absolute celebration-confetti"
                      [style.left.vw]="piece.left"
@@ -13,8 +16,10 @@
                      [style.--drift]="piece.drift + 'px'"
                      [style.--rot]="piece.rotate + 'deg'"></div>
             }
-            <div class="absolute text-[80px] celebration-creature"
-                 [class.celebration-creature-rtl]="burst.flyRightToLeft">{{ burst.creature }}</div>
+            <div class="absolute celebration-creature"
+                 [class.celebration-creature-rtl]="burst.flyRightToLeft">
+                <ng-lottie [options]="burst.creatureOptions" [styles]="creatureStyles"></ng-lottie>
+            </div>
         }
     </div>
 }
