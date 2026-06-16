@@ -1,0 +1,20 @@
+@if (celebrationService.bursts().length > 0) {
+    <div class="fixed inset-0 z-[9999] pointer-events-none overflow-hidden">
+        @for (burst of celebrationService.bursts(); track burst.id) {
+            @for (piece of burst.confetti; track $index) {
+                <div class="absolute celebration-confetti"
+                     [style.left.vw]="piece.left"
+                     [style.width.px]="piece.size"
+                     [style.height.px]="piece.size"
+                     [style.background]="piece.color"
+                     [style.border-radius]="piece.round ? '9999px' : '2px'"
+                     [style.animation-delay.ms]="piece.delayMs"
+                     [style.animation-duration.ms]="piece.durationMs"
+                     [style.--drift]="piece.drift + 'px'"
+                     [style.--rot]="piece.rotate + 'deg'"></div>
+            }
+            <div class="absolute text-[80px] celebration-creature"
+                 [class.celebration-creature-rtl]="burst.flyRightToLeft">{{ burst.creature }}</div>
+        }
+    </div>
+}

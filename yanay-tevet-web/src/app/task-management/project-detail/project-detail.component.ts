@@ -37,6 +37,7 @@ import {
 } from '../../../generated-files/api/task-management';
 import {paginateItineraryListsView} from '../../../generated-files/api/itinerary-lists';
 import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button/menu-button.component';
+import {CelebrationService} from '../../common/components/celebration/celebration.service';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
@@ -68,6 +69,7 @@ export class ProjectDetailComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+  private readonly celebrationService = inject(CelebrationService);
 
   readonly projectId = signal<number | null>(null);
   readonly project = signal<TaskProjectSchema | null>(null);
@@ -157,12 +159,6 @@ export class ProjectDetailComponent {
       return [task.id, actions];
     })));
 
-  private readonly celebrateClasses = [
-    'celebrate-tada', 'celebrate-bounce', 'celebrate-wiggle', 'celebrate-jelly', 'celebrate-pop-big',
-  ];
-  readonly celebrateId = signal<number | null>(null);
-  readonly celebrateCls = signal<string>('');
-  private celebrateTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly featherArchive = featherArchive;
   protected readonly featherArrowLeft = featherArrowLeft;
@@ -265,19 +261,9 @@ export class ProjectDetailComponent {
     }
     const becomingDone = task.status !== 'done';
     if (becomingDone) {
-      this.triggerCelebration(task.id);
+      this.celebrationService.celebrate();
     }
     await this.patchTask(task, {status: becomingDone ? 'done' : 'todo'});
-  }
-
-  private triggerCelebration(taskId: number): void {
-    const cls = this.celebrateClasses[Math.floor(Math.random() * this.celebrateClasses.length)];
-    this.celebrateCls.set(cls);
-    this.celebrateId.set(taskId);
-    if (this.celebrateTimer !== null) {
-      clearTimeout(this.celebrateTimer);
-    }
-    this.celebrateTimer = setTimeout(() => this.celebrateId.set(null), 800);
   }
 
   async editTask(task: TaskSchema): Promise<void> {
