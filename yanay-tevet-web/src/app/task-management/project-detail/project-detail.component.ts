@@ -13,6 +13,7 @@ import {
   featherCornerDownRight,
   featherEdit,
   featherLink,
+  featherMoreHorizontal,
   featherPlus,
   featherRotateCcw,
   featherShare2,
@@ -35,6 +36,7 @@ import {
   updateTaskView,
 } from '../../../generated-files/api/task-management';
 import {paginateItineraryListsView} from '../../../generated-files/api/itinerary-lists';
+import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button/menu-button.component';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
@@ -53,11 +55,11 @@ import {
 @Component({
   selector: 'app-task-project-detail',
   standalone: true,
-  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule],
+  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent],
   providers: [provideIcons({
     featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
-    featherClock, featherCornerDownRight, featherEdit, featherLink, featherPlus, featherRotateCcw,
-    featherShare2, featherTrash2,
+    featherClock, featherCornerDownRight, featherEdit, featherLink, featherMoreHorizontal,
+    featherPlus, featherRotateCcw, featherShare2, featherTrash2,
   })],
   templateUrl: './project-detail.component.html',
 })
@@ -115,8 +117,52 @@ export class ProjectDetailComponent {
       .filter(t => t.due_at !== null)
       .map(t => [t.id, this.formatDue(t.due_at as string)])));
 
-  readonly priorityLabels = TASK_PRIORITY_LABELS;
-  readonly priorityChipClass = TASK_PRIORITY_CHIP_CLASS;
+  readonly priorityLabelById = computed(() =>
+    Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_LABELS[t.priority]])));
+  readonly priorityChipById = computed(() =>
+    Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_CHIP_CLASS[t.priority]])));
+
+  readonly progress = computed(() => {
+    const top = this.topLevel();
+    const total = top.length;
+    const done = top.filter(t => t.status === 'done').length;
+    return {total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100)};
+  });
+
+  readonly headerActions = computed<MenuItem[]>(() => {
+    const actions: MenuItem[] = [
+      {
+        display: this.isArchived() ? 'Unarchive' : 'Archive',
+        icon: this.isArchived() ? featherRotateCcw : featherArchive,
+        disabled: this.isUpdatingStatus(),
+        callback: () => void this.toggleArchive(),
+      },
+      {display: 'Share', icon: featherShare2, callback: () => void this.openShareDialog()},
+      {display: 'Edit', icon: featherEdit, callback: () => void this.editProject()},
+    ];
+    if (this.isOwner()) {
+      actions.push({display: 'Delete', icon: featherTrash2, callback: () => void this.deleteProject()});
+    }
+    return actions;
+  });
+
+  readonly taskMenuActionsById = computed<Record<number, MenuItem[]>>(() =>
+    Object.fromEntries(this.tasks().map(task => {
+      const actions: MenuItem[] = [];
+      if (task.parent_id === null) {
+        actions.push({display: 'Add subtask', icon: featherPlus, callback: () => this.toggleAddSubtask(task)});
+      }
+      actions.push({display: 'Edit', icon: featherEdit, callback: () => void this.editTask(task)});
+      actions.push({display: 'Delete', icon: featherTrash2, callback: () => void this.deleteTask(task)});
+      return [task.id, actions];
+    })));
+
+  private readonly celebrateClasses = [
+    'celebrate-tada', 'celebrate-bounce', 'celebrate-wiggle', 'celebrate-jelly', 'celebrate-pop-big',
+  ];
+  readonly celebrateId = signal<number | null>(null);
+  readonly celebrateCls = signal<string>('');
+  private celebrateTimer: ReturnType<typeof setTimeout> | null = null;
 
   protected readonly featherArchive = featherArchive;
   protected readonly featherArrowLeft = featherArrowLeft;
@@ -127,6 +173,7 @@ export class ProjectDetailComponent {
   protected readonly featherCornerDownRight = featherCornerDownRight;
   protected readonly featherEdit = featherEdit;
   protected readonly featherLink = featherLink;
+  protected readonly featherMoreHorizontal = featherMoreHorizontal;
   protected readonly featherPlus = featherPlus;
   protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherShare2 = featherShare2;
@@ -216,7 +263,21 @@ export class ProjectDetailComponent {
     if (this.savingTaskId() !== null) {
       return;
     }
-    await this.patchTask(task, {status: task.status === 'done' ? 'todo' : 'done'});
+    const becomingDone = task.status !== 'done';
+    if (becomingDone) {
+      this.triggerCelebration(task.id);
+    }
+    await this.patchTask(task, {status: becomingDone ? 'done' : 'todo'});
+  }
+
+  private triggerCelebration(taskId: number): void {
+    const cls = this.celebrateClasses[Math.floor(Math.random() * this.celebrateClasses.length)];
+    this.celebrateCls.set(cls);
+    this.celebrateId.set(taskId);
+    if (this.celebrateTimer !== null) {
+      clearTimeout(this.celebrateTimer);
+    }
+    this.celebrateTimer = setTimeout(() => this.celebrateId.set(null), 800);
   }
 
   async editTask(task: TaskSchema): Promise<void> {

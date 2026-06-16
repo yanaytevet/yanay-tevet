@@ -27,7 +27,20 @@
                 <p class="text-[13px] text-writing-minor leading-relaxed mb-4 whitespace-pre-line" dir="auto">{{ project.description }}</p>
             }
 
-            <div class="flex flex-wrap items-center gap-2 pt-1">
+            @if (progress().total > 0) {
+                <div class="mb-4">
+                    <div class="flex items-center justify-between text-[12px] mb-1.5">
+                        <span class="text-writing-minor">{{ progress().done }} of {{ progress().total }} done</span>
+                        <span class="font-semibold {{ progress().pct === 100 ? 'text-notion-green' : 'text-writing-minor' }}">{{ progress().pct }}%</span>
+                    </div>
+                    <div class="h-1.5 w-full rounded-full bg-layer-3 overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-500 ease-out {{ progress().pct === 100 ? 'bg-notion-green' : 'bg-notion-blue' }}"
+                             [style.width.%]="progress().pct"></div>
+                    </div>
+                </div>
+            }
+
+            <div class="hidden sm:flex flex-wrap items-center gap-2 pt-1">
                 <button type="button" class="btn cancel-btn flex items-center gap-1.5"
                         [disabled]="isUpdatingStatus()" (click)="toggleArchive()">
                     @if (isArchived()) {
@@ -52,6 +65,9 @@
                         Delete
                     </button>
                 }
+            </div>
+            <div class="sm:hidden pt-1">
+                <app-menu-button [icon]="featherMoreHorizontal" text="Actions" [actions]="headerActions()"></app-menu-button>
             </div>
         </div>
 
@@ -105,7 +121,7 @@
 
 <!-- A top-level task with its subtasks and inline subtask adder -->
 <ng-template #taskGroup let-task>
-    <div class="card p-3">
+    <div class="card p-3 transition-shadow duration-200 hover:shadow-2">
         <ng-container [ngTemplateOutlet]="taskRow"
                       [ngTemplateOutletContext]="{$implicit: task, isSubtask: false}"></ng-container>
 
@@ -130,7 +146,7 @@
 
 <!-- A single task row (used for top-level and subtasks) -->
 <ng-template #taskRow let-task let-isSubtask="isSubtask">
-    <div class="flex items-center gap-2.5 py-1">
+    <div class="flex items-center gap-2.5 py-1 {{ celebrateId() === task.id ? celebrateCls() : '' }}">
         <button type="button"
                 class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 {{ task.status === 'done' ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 hover:border-notion-blue' }}"
                 [disabled]="savingTaskId() === task.id"
@@ -138,17 +154,16 @@
                 title="Toggle done"
                 (click)="toggleDone(task)">
             @if (task.status === 'done') {
-                <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                <ng-icon [svg]="featherCheck" class="h-3 w-3 check-pop-in"></ng-icon>
             }
         </button>
 
-        <div class="min-w-0 flex-1">
-            <div class="text-[14px] text-writing truncate {{ task.status === 'done' ? 'line-through text-writing-minor' : '' }}"
-                 dir="auto">{{ task.name }}</div>
+        <div class="min-w-0 flex-1" dir="auto">
+            <div class="text-[14px] text-writing truncate {{ task.status === 'done' ? 'line-through text-writing-minor' : '' }}">{{ task.name }}</div>
             <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
                 @if (task.priority !== 'none') {
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ priorityChipClass[task.priority] }}">
-                        {{ priorityLabels[task.priority] }}
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ priorityChipById()[task.id] }}">
+                        {{ priorityLabelById()[task.id] }}
                     </span>
                 }
                 @if (task.due_at) {
@@ -184,7 +199,7 @@
             </div>
         </div>
 
-        <div class="flex items-center gap-1 shrink-0">
+        <div class="hidden sm:flex items-center gap-1 shrink-0">
             @if (!isSubtask) {
                 <button type="button" class="icon-btn text-writing-minor hover:text-writing"
                         (click)="toggleAddSubtask(task)" title="Add subtask">
@@ -197,6 +212,9 @@
             <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteTask(task)">
                 <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
             </button>
+        </div>
+        <div class="sm:hidden shrink-0 text-writing-minor">
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="taskMenuActionsById()[task.id]"></app-menu-button>
         </div>
     </div>
 </ng-template>
