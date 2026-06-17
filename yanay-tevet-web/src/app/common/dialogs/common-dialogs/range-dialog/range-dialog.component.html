@@ -6,6 +6,7 @@
         <div class="mb-4 flex flex-col">
             <span class="input-label">{{ data.minLabel || 'Minimum Value' }}</span>
             <input type="number"
+                   dir="auto"
                    formControlName="minValue"
                    class="mt-2 main-input"
                    [class.border-red-500]="getErrorMessage('min') && (minControl?.touched || minControl?.dirty)"
@@ -18,6 +19,7 @@
         <div class="mb-4 flex flex-col">
             <span class="input-label">{{ data.maxLabel || 'Maximum Value' }}</span>
             <input type="number"
+                   dir="auto"
                    formControlName="maxValue"
                    class="mt-2 main-input"
                    [class.border-red-500]="getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)"

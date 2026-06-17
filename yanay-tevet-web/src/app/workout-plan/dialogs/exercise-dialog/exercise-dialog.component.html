@@ -40,11 +40,11 @@
                     <div class="flex items-center gap-3">
                         <span class="text-[12px] text-writing-minor w-12 shrink-0">Set {{ $index + 1 }}</span>
                         @if (isReps()) {
-                            <input type="number" min="0" inputmode="numeric" class="main-input flex-1"
+                            <input type="number" min="0" inputmode="numeric" dir="auto" class="main-input flex-1"
                                    placeholder="Reps" [value]="set.reps" (input)="updateReps($index, $event)" />
                             <span class="text-[12px] text-writing-minor w-10 shrink-0">reps</span>
                         } @else {
-                            <input type="number" min="0" inputmode="numeric" class="main-input flex-1"
+                            <input type="number" min="0" inputmode="numeric" dir="auto" class="main-input flex-1"
                                    placeholder="Seconds" [value]="set.durationSeconds"
                                    (input)="updateDuration($index, $event)" />
                             <span class="text-[12px] text-writing-minor w-10 shrink-0">sec</span>

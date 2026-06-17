@@ -62,6 +62,7 @@
           <span class="field-label">Username</span>
           <input
             type="text"
+            dir="auto"
             class="dark-input"
             [class.focused]="usernameFocused()"
             placeholder="your_username"
@@ -78,6 +79,7 @@
           <div class="password-wrapper">
             <input
               [type]="showPassword() ? 'text' : 'password'"
+              dir="auto"
               class="dark-input password-input"
               [class.focused]="passwordFocused()"
               placeholder="••••••••"

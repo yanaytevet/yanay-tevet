@@ -25,6 +25,7 @@
                     <div class="mb-4">
                         <input
                             type="text"
+                            dir="auto"
                             [(ngModel)]="filterText"
                             (ngModelChange)="filterOptions()"
                             placeholder="Filter options..."
@@ -49,6 +50,7 @@
                 <div class="mt-3">
                     <input
                         type="text"
+                        dir="auto"
                         class="main-input w-full"
                         [(ngModel)]="otherText"
                         [ngModelOptions]="{standalone: true}"

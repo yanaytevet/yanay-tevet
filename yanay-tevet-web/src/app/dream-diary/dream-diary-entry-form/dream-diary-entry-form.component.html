@@ -39,6 +39,7 @@
             <div class="mb-5 flex flex-col gap-1.5">
                 <span class="input-label">Dream <span class="text-writing-least">*</span></span>
                 <textarea
+                    dir="auto"
                     class="main-input w-full leading-relaxed"
                     placeholder="Describe your dream in as much detail as you can remember..."
                     rows="12"
@@ -50,6 +51,7 @@
                 <span class="input-label">Date & Time</span>
                 <input
                     type="datetime-local"
+                    dir="auto"
                     class="main-input w-full sm:w-auto"
                     [formControl]="timeCtrl" />
             </div>

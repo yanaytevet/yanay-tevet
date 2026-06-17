@@ -74,7 +74,7 @@
             <div class="flex items-end gap-2 mb-1">
                 <div class="flex-1 flex flex-col gap-1.5">
                     <span class="input-label">Add an item</span>
-                    <input type="text" class="main-input w-full" placeholder="e.g. Sunscreen, Beach towel"
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Sunscreen, Beach towel"
                            [formControl]="newItemCtrl" (keyup.enter)="addItem()" />
                 </div>
                 <button type="button" class="btn btn-primary flex items-center gap-1.5"

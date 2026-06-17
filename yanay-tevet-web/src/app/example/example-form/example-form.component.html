@@ -8,6 +8,7 @@
     <div class="flex flex-col">
         <span class="input-label">Input Field</span>
         <input type="text"
+               dir="auto"
                [formControl]="inputDebouncer.ctrl"
                class="mt-1 main-input"
         />
@@ -16,6 +17,7 @@
     <div class="flex flex-col">
         <span class="input-label">Text Area:</span>
         <textarea
+                dir="auto"
                 class="mt-1 main-input"
                 [formControl]="textAreaDebouncer.ctrl" rows="4"></textarea>
     </div>

@@ -25,13 +25,13 @@
         } @else {
             <div class="mb-5 flex flex-col gap-1.5">
                 <span class="input-label">Name <span class="text-writing-least">*</span></span>
-                <input type="text" class="main-input w-full" placeholder="e.g. Beach day, Camping trip"
+                <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Beach day, Camping trip"
                        [formControl]="nameCtrl" (keyup.enter)="onSave()" />
             </div>
 
             <div class="mb-6 flex flex-col gap-1.5">
                 <span class="input-label">Description</span>
-                <textarea class="main-input w-full leading-relaxed" rows="4"
+                <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4"
                           placeholder="What is this list for? Any notes..."
                           [formControl]="descriptionCtrl"></textarea>
             </div>

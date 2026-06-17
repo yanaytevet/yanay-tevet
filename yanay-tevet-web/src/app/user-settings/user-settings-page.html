@@ -38,6 +38,7 @@
         <input
           class="main-input"
           type="text"
+          dir="auto"
           [ngModel]="firstName()"
           (ngModelChange)="firstName.set($event)"
           placeholder="First name">
@@ -47,6 +48,7 @@
         <input
           class="main-input"
           type="text"
+          dir="auto"
           [ngModel]="lastName()"
           (ngModelChange)="lastName.set($event)"
           placeholder="Last name">
@@ -56,6 +58,7 @@
         <input
           class="main-input"
           type="email"
+          dir="auto"
           [ngModel]="email()"
           (ngModelChange)="email.set($event)"
           placeholder="Email address">
@@ -107,6 +110,7 @@
           <input
             class="main-input"
             type="text"
+            dir="auto"
             placeholder="Search timezones..."
             [ngModel]="tzSearch()"
             (ngModelChange)="tzSearch.set($event)">
@@ -162,6 +166,7 @@
           <input
             class="main-input"
             type="password"
+            dir="auto"
             [ngModel]="oldPassword()"
             (ngModelChange)="oldPassword.set($event)"
             placeholder="Current password">
@@ -172,6 +177,7 @@
         <input
           class="main-input"
           type="password"
+          dir="auto"
           [ngModel]="newPassword()"
           (ngModelChange)="newPassword.set($event)"
           placeholder="New password">
@@ -199,6 +205,7 @@
         <input
           class="main-input"
           type="password"
+          dir="auto"
           [ngModel]="confirmNewPassword()"
           (ngModelChange)="confirmNewPassword.set($event)"
           placeholder="Confirm new password">

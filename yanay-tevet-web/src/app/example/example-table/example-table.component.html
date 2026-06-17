@@ -2,7 +2,7 @@
     <div class="mb-4">
     </div>
     <div class="flex gap-4 mb-4">
-        <input class="main-input flex-grow" placeholder="Search..." [formControl]="searchDebouncer.ctrl"/>
+        <input class="main-input flex-grow" dir="auto" placeholder="Search..." [formControl]="searchDebouncer.ctrl"/>
         <button type="button" class="btn btn-primary min-w-[160px]" (click)="createBlock()">Create Block</button>
     </div>
     <app-paginated-table

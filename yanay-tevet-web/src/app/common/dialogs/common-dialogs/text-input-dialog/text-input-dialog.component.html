@@ -8,6 +8,7 @@
             @if (!data.isTextArea) {
                 <input
                         [type]="data.inputType || 'text'"
+                        dir="auto"
                         formControlName="inputValue"
                         class="w-full main-input mt-2"
                         [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
@@ -16,6 +17,7 @@
                 >
             } @else {
                 <textarea
+                        dir="auto"
                         formControlName="inputValue"
                         class="w-full main-input mt-2"
                         [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"

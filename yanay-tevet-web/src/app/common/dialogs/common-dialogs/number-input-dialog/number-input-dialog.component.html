@@ -6,6 +6,7 @@
         <div class="mb-4 flex flex-col">
             <span class="input-label">Input {{ data.label }}</span>
             <input type="number"
+                   dir="auto"
                    formControlName="inputValue"
                    class="mt-2 main-input"
                    [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
