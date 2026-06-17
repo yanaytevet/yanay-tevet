@@ -9,13 +9,13 @@
 
     <div class="mb-4 flex flex-col gap-1.5">
         <span class="input-label">Name <span class="text-writing-least">*</span></span>
-        <input type="text" class="main-input w-full" placeholder="e.g. Sunscreen"
+        <input type="text" class="main-input w-full" placeholder="e.g. Sunscreen" dir="auto"
                [formControl]="nameCtrl" (keyup.enter)="onSave()" />
     </div>
 
     <div class="mb-2 flex flex-col gap-1.5">
         <span class="input-label">Description</span>
-        <textarea class="main-input w-full leading-relaxed" rows="3"
+        <textarea class="main-input w-full leading-relaxed" rows="3" dir="auto"
                   placeholder="Optional notes about this item..."
                   [formControl]="descriptionCtrl"></textarea>
     </div>

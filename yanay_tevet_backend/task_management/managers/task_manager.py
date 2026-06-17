@@ -41,16 +41,30 @@ class TaskManager:
         project = await TaskProject.objects.select_related('owner').filter(id=project_id).afirst()
         if project is None:
             return
-        boundary = self._last_reset_boundary(self._tzinfo_from_name(project.owner.timezone))
-        await Task.objects.filter(
-            project_id=project_id,
-            is_repeating=True,
-            last_reset_at__lt=boundary,
-        ).exclude(status=TaskStatus.TODO).aupdate(
-            status=TaskStatus.TODO,
-            completed_at=None,
-            last_reset_at=timezone.now(),
-        )
+        await self._reset_for_projects([project])
+
+    async def reset_all_due_repeating_tasks(self) -> None:
+        projects = [
+            project
+            async for project in TaskProject.objects.select_related('owner').filter(
+                memberships__user_id=self.user.id
+            ).distinct()
+        ]
+        await self._reset_for_projects(projects)
+
+    async def _reset_for_projects(self, projects: list[TaskProject]) -> None:
+        now = timezone.now()
+        for project in projects:
+            boundary = self._last_reset_boundary(self._tzinfo_from_name(project.owner.timezone))
+            await Task.objects.filter(
+                project_id=project.id,
+                is_repeating=True,
+                last_reset_at__lt=boundary,
+            ).exclude(status=TaskStatus.TODO).aupdate(
+                status=TaskStatus.TODO,
+                completed_at=None,
+                last_reset_at=now,
+            )
 
     async def create_task(self, project_id: int, writable: TaskWritableSchema) -> Task:
         await self._validate_parent(project_id, writable.parent_id)

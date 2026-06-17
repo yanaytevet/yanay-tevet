@@ -3,6 +3,7 @@ from typing import Type
 from django.db.models import Model, QuerySet
 from ninja import FilterSchema, Path, Query
 
+from task_management.managers.task_manager import TaskManager
 from task_management.models.task_project import TaskProject
 from task_management.serializers.task_project_serializers.task_project_serializer import TaskProjectSerializer
 from common.simple_api.api_request import APIRequest
@@ -17,7 +18,8 @@ class PaginateTaskProjectsFilterSchema(FilterSchema):
 class PaginateTaskProjectsView(PaginateItemsAPIView):
     @classmethod
     async def check_permitted_before_pagination(cls, request: APIRequest, query: Query, path: Path) -> None:
-        pass
+        user = await request.future_user
+        await TaskManager(user).reset_all_due_repeating_tasks()
 
     @classmethod
     def get_serializer(cls) -> Serializer:
