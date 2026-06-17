@@ -32,6 +32,7 @@ class PaginateItemsAPIView(SerializeItemMixin, ABC):
 
     async def run(self, request: APIRequest, query: PaginationQueryParams, filters: FilterSchema, path: Path) -> PaginationOutput:
         await self.check_permitted_before_pagination(request, query, path)
+        await self.run_before_pagination(request, query, path)
         query_set = await self.generate_query_set(request, query, filters, path)
         page = query.page
         page_size = query.page_size
@@ -94,6 +95,10 @@ class PaginateItemsAPIView(SerializeItemMixin, ABC):
     async def check_permitted_before_pagination(cls, request: APIRequest, query: PaginationQueryParams, path: Path
                                                 ) -> None:
         raise NotImplementedError()
+
+    @classmethod
+    async def run_before_pagination(cls, request: APIRequest, query: PaginationQueryParams, path: Path) -> None:
+        pass
 
     @classmethod
     def get_output_schema(cls) -> Type[Schema]:

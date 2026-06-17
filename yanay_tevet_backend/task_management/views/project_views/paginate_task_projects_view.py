@@ -18,6 +18,10 @@ class PaginateTaskProjectsFilterSchema(FilterSchema):
 class PaginateTaskProjectsView(PaginateItemsAPIView):
     @classmethod
     async def check_permitted_before_pagination(cls, request: APIRequest, query: Query, path: Path) -> None:
+        pass
+
+    @classmethod
+    async def run_before_pagination(cls, request: APIRequest, query: Query, path: Path) -> None:
         user = await request.future_user
         await TaskManager(user).reset_all_due_repeating_tasks()
 

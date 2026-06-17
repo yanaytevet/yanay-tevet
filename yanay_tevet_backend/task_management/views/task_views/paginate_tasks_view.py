@@ -35,6 +35,10 @@ class PaginateTasksView(PaginateItemsAPIView):
             raise ObjectDoesntExistAPIException(TaskProject, path.project_id)
         user = await request.future_user
         await ProjectMemberPermissionChecker(project).async_raise_exception_if_not_valid(user)
+
+    @classmethod
+    async def run_before_pagination(cls, request: APIRequest, query: Query, path: Path) -> None:
+        user = await request.future_user
         await TaskManager(user).reset_all_due_repeating_tasks()
 
     @classmethod
