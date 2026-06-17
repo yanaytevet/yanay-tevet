@@ -24,6 +24,10 @@ class NodeTitleManager:
 
         node_type = NodeType(node.type)
         match node_type:
+            case NodeType.PASSAGE:
+                if node.passage_data is None:
+                    raise self._missing_data(node_type)
+                node.passage_data = node.passage_data.model_copy(update={'title': title})
             case NodeType.SENTENCE:
                 if node.sentence_data is None:
                     raise self._missing_data(node_type)

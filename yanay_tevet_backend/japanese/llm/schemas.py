@@ -7,9 +7,14 @@ from japanese.enums.jlpt_level import JlptLevel
 from japanese.enums.node_type import NodeType
 from japanese.schemas.kanji_schema import KanjiSchema
 from japanese.schemas.particle_schema import ParticleSchema
+from japanese.schemas.passage_schema import PassageSchema
 from japanese.schemas.rule_schema import RuleSchema
 from japanese.schemas.sentence_schema import SentenceSchema
 from japanese.schemas.word_schema import WordSchema
+
+
+class PassageData(PassageSchema):
+    node_type: Literal[NodeType.PASSAGE] = NodeType.PASSAGE
 
 
 class SentenceData(SentenceSchema):
@@ -36,7 +41,7 @@ class RuleData(RuleSchema):
 # instead of `oneOf` — OpenAI's structured outputs reject `oneOf`. The Literal
 # `node_type` on each variant still gives Pydantic enough info to parse
 # responses into the correct subtype.
-NodeData = SentenceData | WordData | KanjiData | ParticleData | RuleData
+NodeData = PassageData | SentenceData | WordData | KanjiData | ParticleData | RuleData
 
 
 class ExtractedEntity(Schema):

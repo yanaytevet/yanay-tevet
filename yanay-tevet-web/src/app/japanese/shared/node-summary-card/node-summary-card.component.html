@@ -19,6 +19,13 @@
     </div>
   </div>
 
+  @if (node().passage_data; as data) {
+    <div class="text-[18px] font-semibold mb-1">{{ data.title }}</div>
+    @if (data.source) {
+      <div class="text-[13px] text-writing-minor">{{ data.source }}</div>
+    }
+  }
+
   @if (node().sentence_data; as data) {
     <div class="flex items-start gap-2 mb-2">
       <div class="text-[18px] leading-relaxed">

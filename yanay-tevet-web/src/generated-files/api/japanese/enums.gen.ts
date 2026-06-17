@@ -25,6 +25,7 @@ export enum NodeStatusEnum {
 }
 
 export enum NodeTypeEnum {
+  PASSAGE = 'passage',
   SENTENCE = 'sentence',
   WORD = 'word',
   KANJI = 'kanji',

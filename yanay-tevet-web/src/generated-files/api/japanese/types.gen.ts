@@ -90,6 +90,7 @@ export type NodeDetailSchema = {
      */
     canonical_key: string;
     jlpt_level: JlptLevel | null;
+    passage_data: PassageSchema | null;
     sentence_data: SentenceSchema | null;
     word_data: WordSchema | null;
     kanji_data: KanjiSchema | null;
@@ -133,6 +134,7 @@ export type NodeSummarySchema = {
      */
     canonical_key: string;
     jlpt_level: JlptLevel | null;
+    passage_data: PassageSchema | null;
     sentence_data: SentenceSchema | null;
     word_data: WordSchema | null;
     kanji_data: KanjiSchema | null;
@@ -143,7 +145,7 @@ export type NodeSummarySchema = {
 /**
  * NodeType
  */
-export type NodeType = 'sentence' | 'word' | 'kanji' | 'particle' | 'rule';
+export type NodeType = 'passage' | 'sentence' | 'word' | 'kanji' | 'particle' | 'rule';
 
 /**
  * OutgoingEdgeSchema
@@ -175,6 +177,24 @@ export type ParticleSchema = {
      * Primary Function
      */
     primary_function?: string;
+};
+
+/**
+ * PassageSchema
+ */
+export type PassageSchema = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Source
+     */
+    source?: string;
+    /**
+     * Full Text
+     */
+    full_text: string;
 };
 
 /**

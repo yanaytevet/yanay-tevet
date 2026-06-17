@@ -4,11 +4,14 @@
   <div class="mb-6">
     <h1 class="text-[28px] font-bold text-writing">Japanese</h1>
     <p class="text-[14px] text-writing-minor mt-1">
-      Explore a network of sentences, words, kanji, particles, and grammar rules.
+      Explore a network of passages, sentences, words, kanji, particles, and grammar rules.
     </p>
   </div>
 
   <app-tabs-group tabsQueryParam="type">
+    <app-tab name="passage" label="Passages">
+      <app-japanese-explore-grid nodeType="passage"/>
+    </app-tab>
     <app-tab name="sentence" label="Sentences">
       <app-japanese-explore-grid nodeType="sentence"/>
     </app-tab>

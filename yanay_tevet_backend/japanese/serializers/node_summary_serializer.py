@@ -7,6 +7,7 @@ from japanese.enums.node_type import NodeType
 from japanese.models.node import Node
 from japanese.schemas.kanji_schema import KanjiSchema
 from japanese.schemas.particle_schema import ParticleSchema
+from japanese.schemas.passage_schema import PassageSchema
 from japanese.schemas.rule_schema import RuleSchema
 from japanese.schemas.sentence_schema import SentenceSchema
 from japanese.schemas.word_schema import WordSchema
@@ -19,6 +20,7 @@ class NodeSummarySchema(Schema):
     canonical_key: str
     jlpt_level: JlptLevel | None
 
+    passage_data: PassageSchema | None
     sentence_data: SentenceSchema | None
     word_data: WordSchema | None
     kanji_data: KanjiSchema | None
@@ -34,6 +36,7 @@ class NodeSummarySerializer(Serializer[NodeSummarySchema]):
             status=NodeStatus(obj.status),
             canonical_key=obj.canonical_key,
             jlpt_level=JlptLevel(obj.jlpt_level) if obj.jlpt_level else None,
+            passage_data=obj.passage_data,
             sentence_data=obj.sentence_data,
             word_data=obj.word_data,
             kanji_data=obj.kanji_data,

@@ -163,7 +163,7 @@ class ContentGenerationService:
             case NodeType.PARTICLE:
                 assert isinstance(data, ParticleData)
                 return data.particle
-            case NodeType.SENTENCE | NodeType.RULE:
+            case NodeType.PASSAGE | NodeType.SENTENCE | NodeType.RULE:
                 return None
 
     @classmethod
@@ -256,6 +256,15 @@ class ContentGenerationService:
     async def _build_user_prompt(cls, node: Node, node_type: NodeType) -> str:
         template = CONTENT_USER_TEMPLATES[node_type]
         match node_type:
+            case NodeType.PASSAGE:
+                data = node.passage_data
+                if data is None:
+                    raise ValueError(f'Node {node.id} of type passage has no passage_data')
+                return template.format(
+                    title=data.title,
+                    source=data.source or '(unknown)',
+                    full_text=data.full_text,
+                )
             case NodeType.SENTENCE:
                 data = node.sentence_data
                 if data is None:
@@ -317,6 +326,8 @@ def _entity_data_should_replace(existing: Node, node_type: NodeType) -> bool:
     existing node already has any data of the matching type we keep it (it may
     have been enriched by an earlier content gen)."""
     match node_type:
+        case NodeType.PASSAGE:
+            return existing.passage_data is None
         case NodeType.SENTENCE:
             return existing.sentence_data is None
         case NodeType.WORD:

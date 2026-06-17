@@ -3,6 +3,7 @@ from japanese.llm.schemas import (
     KanjiData,
     NodeData,
     ParticleData,
+    PassageData,
     RuleData,
     SentenceData,
     WordData,
@@ -10,6 +11,7 @@ from japanese.llm.schemas import (
 from japanese.models.node import Node
 from japanese.schemas.kanji_schema import KanjiSchema
 from japanese.schemas.particle_schema import ParticleSchema
+from japanese.schemas.passage_schema import PassageSchema
 from japanese.schemas.rule_schema import RuleSchema
 from japanese.schemas.sentence_schema import SentenceSchema
 from japanese.schemas.word_schema import WordSchema
@@ -23,6 +25,8 @@ def apply_data_to_node(node: Node, data: NodeData) -> None:
     """
     payload = data.model_dump(exclude={'node_type'})
     match data:
+        case PassageData():
+            node.passage_data = PassageSchema(**payload)
         case SentenceData():
             node.sentence_data = SentenceSchema(**payload)
         case WordData():
@@ -37,6 +41,8 @@ def apply_data_to_node(node: Node, data: NodeData) -> None:
 
 def is_matching_data_missing(node: Node, node_type: NodeType) -> bool:
     match node_type:
+        case NodeType.PASSAGE:
+            return node.passage_data is None
         case NodeType.SENTENCE:
             return node.sentence_data is None
         case NodeType.WORD:

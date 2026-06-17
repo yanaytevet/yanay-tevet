@@ -35,7 +35,7 @@ const EDGE_TYPE_LABELS: Record<EdgeType, string> = {
 };
 
 const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
-  contains: 'Used in sentences',
+  contains: 'Appears in',
   composed_of: 'Used in words',
   uses_rule: 'Sentences using this rule',
   example_of: 'Examples',
@@ -92,6 +92,7 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       return '';
     }
     return (
+      node.passage_data?.title ??
       node.sentence_data?.japanese ??
       node.word_data?.base_form ??
       node.kanji_data?.character ??

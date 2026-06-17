@@ -25,6 +25,12 @@
     </div>
 
     <header class="card p-5 mb-6">
+      @if (n.passage_data; as data) {
+        <div class="text-[28px] font-bold leading-tight mb-1">{{ data.title }}</div>
+        @if (data.source) {
+          <div class="text-[14px] text-writing-minor">{{ data.source }}</div>
+        }
+      }
       @if (n.sentence_data; as data) {
         <div class="flex items-center gap-3 mb-2">
           <div class="text-[28px] leading-relaxed">

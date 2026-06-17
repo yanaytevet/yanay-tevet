@@ -9,6 +9,7 @@ from japanese.enums.node_status import NodeStatus
 from japanese.enums.node_type import NodeType
 from japanese.schemas.kanji_schema import KanjiSchema
 from japanese.schemas.particle_schema import ParticleSchema
+from japanese.schemas.passage_schema import PassageSchema
 from japanese.schemas.rule_schema import RuleSchema
 from japanese.schemas.sentence_schema import SentenceSchema
 from japanese.schemas.word_schema import WordSchema
@@ -66,6 +67,9 @@ class Node(models.Model):
     )
     rule_data: RuleSchema | None = SchemaField(
         RuleSchema, null=True, blank=True, default=None
+    )
+    passage_data: PassageSchema | None = SchemaField(
+        PassageSchema, null=True, blank=True, default=None
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,7 +1,7 @@
 from japanese.enums.node_type import NodeType
 
 
-INGEST_PROMPT_KEY = 'japanese_ingest_v4'
+INGEST_PROMPT_KEY = 'japanese_ingest_v5'
 
 _WORD_BASE_FORM_RULE = (
     "Word base_form MUST use the kanji writing whenever the word is conventionally written with "
@@ -17,10 +17,14 @@ _WORD_BASE_FORM_RULE = (
 
 INGEST_SYSTEM_PROMPT = (
     "You are a Japanese language classifier. Given a Japanese input, you identify its type "
-    "(sentence, word, kanji, particle, or grammar rule) and produce ONLY the minimum identifying "
-    "fields plus a deterministic canonical_key. Rich data (meanings, conjugations, mnemonics, "
-    "function descriptions, JLPT readings) is filled later by a separate content step — do not "
-    "produce it here."
+    "(passage, sentence, word, kanji, particle, or grammar rule) and produce ONLY the minimum "
+    "identifying fields plus a deterministic canonical_key. Rich data (meanings, conjugations, "
+    "mnemonics, function descriptions, JLPT readings) is filled later by a separate content step — "
+    "do not produce it here.\n\n"
+    "A 'passage' is any multi-sentence text studied as a single unit: a song, poem, paragraph, "
+    "dialogue, or short story. If the input contains two or more sentences (or is clearly song "
+    "lyrics / a paragraph), classify it as a passage — NOT as a single long sentence. A single "
+    "standalone sentence is still a sentence."
 )
 
 INGEST_USER_TEMPLATE = (
@@ -33,12 +37,18 @@ INGEST_USER_TEMPLATE = (
     "- data — pick the variant whose node_type matches the input and fill ONLY the minimum "
     "identifying fields. Exactly one variant is chosen; do not emit any other.\n\n"
     "canonical_key rules:\n"
+    "- passage: a short kebab-case slug derived from the title (e.g. 'lemon-yonezu-kenshi', "
+    "'hru-ga-kita'). Keep it deterministic and human-recognisable.\n"
     "- sentence: the input Japanese text, trimmed, internal whitespace collapsed to single spaces.\n"
     "- word: '{{base_form}}|{{reading}}' (base_form = dictionary form, reading = hiragana).\n"
     "- kanji: the single kanji character.\n"
     "- particle: the particle itself (e.g. 'は').\n"
     "- rule: a short kebab-case slug (e.g. 'te-form', 'i-adjective-past').\n\n"
     "data minimum fields by node_type:\n"
+    "- passage: title (a short human-readable title for the text — use the song/poem title if known, "
+    "otherwise summarise it in a few words), source (the artist/author/origin if identifiable, else "
+    "an empty string), and full_text (the ENTIRE input text reproduced verbatim, unchanged — do not "
+    "translate, summarise, add furigana, or drop any lines here).\n"
     "- sentence: japanese (with inline furigana as 漢字(かんじ)), english_translation.\n"
     "- word: base_form (dictionary form — for na-adjectives use the stem WITHOUT trailing な, "
     "e.g. 敬虔 not 敬虔な, 静か not 静かな; for i-adjectives keep the final い, e.g. 高い; for verbs "
@@ -61,6 +71,7 @@ INGEST_USER_TEMPLATE = (
 
 
 CONTENT_PROMPT_KEYS: dict[NodeType, str] = {
+    NodeType.PASSAGE: 'japanese_content_passage_v1',
     NodeType.SENTENCE: 'japanese_content_sentence_v4',
     NodeType.WORD: 'japanese_content_word_v4',
     NodeType.KANJI: 'japanese_content_kanji_v4',
@@ -138,6 +149,11 @@ _OUTPUT_CONTRACT = (
 
 
 CONTENT_SYSTEM_PROMPTS: dict[NodeType, str] = {
+    NodeType.PASSAGE: (
+        "You are a Japanese teacher annotating a whole passage (a song, poem, paragraph, or "
+        "dialogue) for an intermediate learner.\n"
+        f"{_FURIGANA_RULE}\n{_HTML_RULE}\n{_OUTPUT_CONTRACT}"
+    ),
     NodeType.SENTENCE: (
         "You are a Japanese teacher writing study notes for an intermediate learner.\n"
         f"{_FURIGANA_RULE}\n{_HTML_RULE}\n{_OUTPUT_CONTRACT}"
@@ -162,6 +178,30 @@ CONTENT_SYSTEM_PROMPTS: dict[NodeType, str] = {
 
 
 CONTENT_USER_TEMPLATES: dict[NodeType, str] = {
+    NodeType.PASSAGE: (
+        "Generate full content + linked sentence entities for this passage node.\n\n"
+        "Title: {title}\n"
+        "Source: {source}\n"
+        "Full text (verbatim):\n{full_text}\n\n"
+        "content_html sections:\n"
+        "1. <h2>Overview</h2> — what this passage is (song/poem/paragraph), its source if known, "
+        "and a 1–2 sentence summary of its theme and register.\n"
+        "2. <h2>Text &amp; translation</h2> — reproduce the WHOLE passage in reading order. For each "
+        "line (or short sentence), give the Japanese with inline furigana, then its English "
+        "translation directly beneath it. Use <p> per line with a <br> between the Japanese and the "
+        "English, and keep the original line/stanza order — this is the canonical reading order for "
+        "the passage. Do not drop or reorder any line.\n"
+        "3. <h2>Notes</h2> — notable vocabulary, grammar patterns, or cultural references worth "
+        "flagging. Keep individual word/kanji deep-dives out — those live in their own nodes.\n\n"
+        "data: pick node_type=passage and re-emit title, source, and full_text (full_text unchanged "
+        "and verbatim — no furigana, no translation).\n\n"
+        "extracted_entities: split the passage into its component sentences (one entity per sentence "
+        "in the text). Each entity has node_type=sentence, edge_type_from_input='contains', "
+        "canonical_key = the sentence's Japanese text trimmed with internal whitespace collapsed to "
+        "single spaces, and data = {{japanese (with inline furigana 漢字(かんじ)), english_translation}}. "
+        "Do NOT extract words, kanji, particles, or rules here — those are extracted when each "
+        "sentence's own content is generated. Only emit sentence entities."
+    ),
     NodeType.SENTENCE: (
         "Generate full content + linked entities for this sentence node.\n\n"
         "Japanese: {japanese}\n"
