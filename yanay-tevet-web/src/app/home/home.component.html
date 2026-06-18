@@ -1,7 +1,7 @@
 @if (authService.isLoggedIn()) {
 
   <div class="flex-1 overflow-y-auto px-6 py-8">
-    <div class="mx-auto w-full max-w-100">
+    <div class="mx-auto w-full max-w-4xl">
 
       <div class="text-center mb-8">
         <h1 class="text-[26px] font-bold text-writing tracking-[-0.75px] mb-2">
@@ -17,10 +17,10 @@
         <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
           Public Apps
         </div>
-        <div class="grid grid-cols-1 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <a
             [routerLink]="routingService.getGenreTrainerUrl()"
-            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+            class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
             <div class="text-3xl">🎧</div>
             <div>
               <div class="text-[15px] font-semibold text-primary-500">Genre Trainer</div>
@@ -29,7 +29,7 @@
           </a>
           <a
             [routerLink]="routingService.getJapaneseHomeUrl()"
-            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+            class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
             <div class="text-3xl">🈶</div>
             <div>
               <div class="text-[15px] font-semibold text-primary-500">Japanese</div>
@@ -45,11 +45,11 @@
           <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
             Your Apps
           </div>
-          <div class="grid grid-cols-1 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @if (hasDreamDiary()) {
               <a
                 [routerLink]="routingService.getDreamDiaryUrl()"
-                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">🌙</div>
                 <div>
                   <div class="text-[15px] font-semibold text-primary-500">Dream Diary</div>
@@ -60,7 +60,7 @@
             @if (hasApartmentHunt()) {
               <a
                 [routerLink]="routingService.getApartmentHuntUrl()"
-                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">🏠</div>
                 <div>
                   <div class="text-[15px] font-semibold text-primary-500">Apartment Hunt</div>
@@ -71,7 +71,7 @@
             @if (hasItineraryLists()) {
               <a
                 [routerLink]="routingService.getItineraryListsUrl()"
-                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">📋</div>
                 <div>
                   <div class="text-[15px] font-semibold text-primary-500">Itinerary Lists</div>
@@ -82,7 +82,7 @@
             @if (hasTaskManagement()) {
               <a
                 [routerLink]="routingService.getTaskManagementUrl()"
-                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">✅</div>
                 <div>
                   <div class="text-[15px] font-semibold text-primary-500">Task Management</div>
@@ -93,7 +93,7 @@
             @if (hasWorkoutPlan()) {
               <a
                 [routerLink]="routingService.getWorkoutPlanUrl()"
-                class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">🏋️</div>
                 <div>
                   <div class="text-[15px] font-semibold text-primary-500">Workout Plan</div>
@@ -111,10 +111,10 @@
           <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
             Admin
           </div>
-          <div class="grid grid-cols-1 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <a
               [routerLink]="routingService.getMyDashboardUrl()"
-              class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+              class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
               <div class="text-3xl">📊</div>
               <div>
                 <div class="text-[15px] font-semibold text-primary-500">My Dashboard</div>
@@ -123,7 +123,7 @@
             </a>
             <a
               [routerLink]="routingService.getAdminUsersUrl()"
-              class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow">
+              class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
               <div class="text-3xl">👥</div>
               <div>
                 <div class="text-[15px] font-semibold text-primary-500">User Management</div>
