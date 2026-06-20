@@ -1,0 +1,34 @@
+@if (renter(); as renter) {
+    <div class="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-x-6 gap-y-3 text-[13px]">
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Family status</div>
+            <div class="text-writing">{{ familyStatusLabels[renter.family_status] }}</div>
+        </div>
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Time of visit</div>
+            <div class="text-writing">{{ renter.visit_time ? (renter.visit_time | date:'medium') : '—' }}</div>
+        </div>
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Saw apartment</div>
+            <div class="text-writing">{{ renter.saw_apartment ? 'Yes' : 'No' }}</div>
+        </div>
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Animals</div>
+            <div class="text-writing">{{ renter.has_animals ? 'Has animals' : 'No animals' }}</div>
+        </div>
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Term</div>
+            <div class="text-writing">{{ renter.long_term ? 'Long term' : 'Not long term' }}</div>
+        </div>
+        <div>
+            <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Agreed rent (monthly)</div>
+            <div class="text-writing">{{ renter.agreed_rent !== null ? currencySymbol() + renter.agreed_rent : '—' }}</div>
+        </div>
+        @if (renter.notes) {
+            <div class="@lg:col-span-3">
+                <div class="text-writing-least text-[11px] uppercase tracking-wide mb-0.5">Notes</div>
+                <div class="text-writing whitespace-pre-line" dir="auto">{{ renter.notes }}</div>
+            </div>
+        }
+    </div>
+}

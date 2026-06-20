@@ -1,3 +1,4 @@
+from decimal import Decimal
 from typing import Optional, Type
 
 from django.db.models import Model
@@ -16,6 +17,7 @@ class UpdateRentalProjectSchema(Schema):
     name: Optional[str] = None
     description: Optional[str] = None
     currency: Optional[Currency] = None
+    initial_asked_rent: Optional[Decimal] = None
 
 
 class UpdateRentalProjectView(UpdateItemByIdAPIView):

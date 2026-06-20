@@ -3,6 +3,7 @@ from typing import Type
 from django.db.models import Model, QuerySet
 from ninja import FilterSchema, Path, Query
 
+from apartment_hunt.enums.project_app import ProjectApp
 from apartment_hunt.models.rental_project import RentalProject
 from apartment_hunt.serializers.rental_project_serializers.rental_project_serializer import RentalProjectSerializer
 from common.simple_api.api_request import APIRequest
@@ -15,6 +16,10 @@ class PaginateRentalProjectsFilterSchema(FilterSchema):
 
 
 class PaginateRentalProjectsView(PaginateItemsAPIView):
+    @classmethod
+    def get_project_app(cls) -> ProjectApp:
+        return ProjectApp.APARTMENT_HUNT
+
     @classmethod
     async def check_permitted_before_pagination(cls, request: APIRequest, query: Query, path: Path) -> None:
         pass
@@ -39,4 +44,8 @@ class PaginateRentalProjectsView(PaginateItemsAPIView):
     async def apply_initial_filter_and_order(cls, queryset: QuerySet, request: APIRequest,
                                              query: Query, path: Path) -> QuerySet:
         user = await request.future_user
-        return queryset.filter(memberships__user=user).distinct().order_by('-updated_at')
+        return (
+            queryset.filter(app=cls.get_project_app(), memberships__user=user)
+            .distinct()
+            .order_by('-updated_at')
+        )

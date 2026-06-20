@@ -1,0 +1,243 @@
+<div class="max-w-5xl mx-auto w-full p-4 sm:p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="back()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        All projects
+    </button>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading project...</div>
+    } @else if (loadError()) {
+        <div class="card p-10 text-center">
+            <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+            <button type="button" class="btn btn-secondary" (click)="back()">All projects</button>
+        </div>
+    } @else if (project(); as project) {
+
+        <div class="card p-4 sm:p-6 mb-6">
+            <div class="flex flex-col @lg:flex-row @lg:items-start @lg:justify-between gap-4">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-3 mb-1 flex-wrap">
+                        <h1 class="text-[20px] sm:text-[22px] font-bold text-primary-500 break-words" dir="auto">{{ project.name }}</h1>
+                        @if (isFinished()) {
+                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">
+                                {{ projectStatusLabels[project.status] }}
+                            </span>
+                        } @else {
+                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-primary-500">
+                                {{ projectStatusLabels[project.status] }}
+                            </span>
+                        }
+                    </div>
+                    @if (project.description) {
+                        <p class="text-[13px] text-writing-minor mb-2 whitespace-pre-line" dir="auto">{{ project.description }}</p>
+                    }
+                    <div class="flex items-center gap-2 sm:gap-3 text-[12px] text-writing-minor flex-wrap">
+                        <span>{{ currencySymbols[project.currency] }} {{ project.currency.toUpperCase() }}</span>
+                        @if (project.initial_asked_rent !== null) {
+                            <span>·</span>
+                            <span>Asking {{ currencySymbols[project.currency] }}{{ project.initial_asked_rent }}/mo</span>
+                        }
+                        <span>·</span>
+                        <span>Owner: {{ project.owner_username }}</span>
+                        <span>·</span>
+                        <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap @lg:justify-end @lg:shrink-0">
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="openShareDialog()">
+                        <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
+                        Share
+                    </button>
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="editProject()">
+                        <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                        Edit
+                    </button>
+                    <button type="button" class="btn btn-secondary flex items-center gap-1.5"
+                            [disabled]="isUpdatingStatus()" (click)="toggleFinished()">
+                        @if (isFinished()) {
+                            <ng-icon [svg]="featherRotateCcw" class="h-4 w-4"></ng-icon>
+                            Reopen
+                        } @else {
+                            <ng-icon [svg]="featherCheckCircle" class="h-4 w-4"></ng-icon>
+                            Finish
+                        }
+                    </button>
+                    @if (isOwner()) {
+                        <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="deleteProject()">
+                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                            Delete
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-3 gap-2">
+            <h2 class="text-[16px] font-bold text-primary-500">Renters ({{ renters().length }})</h2>
+            <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="addRenter()">
+                <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                Add renter
+            </button>
+        </div>
+
+        @if (renters().length === 0) {
+            <div class="card p-10 text-center">
+                <div class="text-4xl mb-3">🧑‍🤝‍🧑</div>
+                <p class="text-[15px] font-semibold text-primary-500 mb-1">No renters yet</p>
+                <p class="text-[13px] text-writing-minor mb-5">Add the first renter who came to see the apartment.</p>
+                <button type="button" class="btn btn-primary" (click)="addRenter()">Add renter</button>
+            </div>
+        } @else {
+
+            <!-- Desktop / wide: table -->
+            <div class="card overflow-x-auto hidden @md:block">
+                <table class="w-full text-[13px] min-w-[680px]">
+                    <thead>
+                        <tr class="text-left text-writing-minor border-b border-[rgba(0,0,0,0.08)]">
+                            <th class="font-semibold px-4 py-3">Renter</th>
+                            <th class="font-semibold px-4 py-3">Status</th>
+                            <th class="font-semibold px-4 py-3">Family</th>
+                            <th class="font-semibold px-4 py-3 whitespace-nowrap">Visit</th>
+                            <th class="font-semibold px-4 py-3 text-right">Agreed rent</th>
+                            <th class="font-semibold px-4 py-3 text-center">Saw</th>
+                            <th class="font-semibold px-4 py-3 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (renter of renters(); track renter.id) {
+                            <tr class="border-b border-[rgba(0,0,0,0.05)]">
+                                <td class="px-4 py-3">
+                                    <button type="button"
+                                            class="flex items-center gap-2 text-left w-full group"
+                                            (click)="toggleExpand(renter)">
+                                        <ng-icon [svg]="featherChevronRight"
+                                                 class="h-4 w-4 shrink-0 text-writing-minor transition-transform"
+                                                 [class.rotate-90]="expandedMap()[renter.id]"></ng-icon>
+                                        <span class="min-w-0">
+                                            <span class="font-medium text-writing group-hover:text-primary-500 transition-colors block truncate max-w-[200px]" dir="auto">
+                                                {{ renter.name || 'Unnamed' }}
+                                            </span>
+                                            <span class="text-[11px] text-writing-minor">
+                                                @if (renter.has_animals) { animals }
+                                                @if (renter.has_animals && renter.long_term) { · }
+                                                @if (renter.long_term) { long term }
+                                            </span>
+                                        </span>
+                                    </button>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <select class="main-input text-[12px] py-1 px-2 w-[160px]"
+                                            [disabled]="savingFieldId() === renter.id"
+                                            (change)="onStatusChange(renter, $any($event.target).value)">
+                                        @for (status of statusOptions; track status) {
+                                            <option [value]="status" [selected]="status === renter.status">{{ renterStatusLabels[status] }}</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td class="px-4 py-3 text-writing-minor">{{ familyStatusLabels[renter.family_status] }}</td>
+                                <td class="px-4 py-3 text-writing-minor whitespace-nowrap">
+                                    {{ renter.visit_time ? (renter.visit_time | date:'short') : '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-right text-writing whitespace-nowrap">
+                                    @if (renter.agreed_rent !== null) {
+                                        {{ currencySymbols[project.currency] }}{{ renter.agreed_rent }}
+                                    } @else { — }
+                                </td>
+                                <td class="px-4 py-3 text-center text-writing-minor">{{ renter.saw_apartment ? 'Yes' : '—' }}</td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" class="icon-btn text-writing-minor hover:text-primary-500"
+                                                (click)="editRenter(renter)">
+                                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                        </button>
+                                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                                (click)="deleteRenter(renter)">
+                                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (expandedMap()[renter.id]) {
+                                <tr class="border-b border-[rgba(0,0,0,0.05)] bg-layer-overlay">
+                                    <td colspan="7" class="px-4 py-4">
+                                        <app-renter-details-panel
+                                            [renter]="renter"
+                                            [currencySymbol]="currencySymbols[project.currency]"></app-renter-details-panel>
+                                        <div class="mt-3">
+                                            <button type="button" class="text-[12px] text-primary-500 hover:underline flex items-center gap-1"
+                                                    (click)="editRenter(renter)">
+                                                <ng-icon [svg]="featherEdit" class="h-3.5 w-3.5"></ng-icon>
+                                                Edit full details
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile: cards -->
+            <div class="flex flex-col gap-3 @md:hidden">
+                @for (renter of renters(); track renter.id) {
+                    <div class="card p-4">
+                        <div class="flex items-start gap-2">
+                            <button type="button" class="flex items-start gap-2 text-left flex-1 min-w-0"
+                                    (click)="toggleExpand(renter)">
+                                <ng-icon [svg]="featherChevronRight"
+                                         class="h-4 w-4 shrink-0 mt-0.5 text-writing-minor transition-transform"
+                                         [class.rotate-90]="expandedMap()[renter.id]"></ng-icon>
+                                <span class="min-w-0">
+                                    <span class="font-semibold text-writing block break-words" dir="auto">
+                                        {{ renter.name || 'Unnamed' }}
+                                    </span>
+                                    <span class="text-[12px] text-writing-minor">
+                                        {{ familyStatusLabels[renter.family_status] }}
+                                        @if (renter.agreed_rent !== null) {
+                                            · {{ currencySymbols[project.currency] }}{{ renter.agreed_rent }}
+                                        }
+                                        @if (renter.saw_apartment) { · saw }
+                                    </span>
+                                </span>
+                            </button>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" class="icon-btn text-writing-minor hover:text-primary-500"
+                                        (click)="editRenter(renter)">
+                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                </button>
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                        (click)="deleteRenter(renter)">
+                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-wide">Status</span>
+                            <select class="main-input w-full text-[13px] mt-1"
+                                    [disabled]="savingFieldId() === renter.id"
+                                    (change)="onStatusChange(renter, $any($event.target).value)">
+                                @for (status of statusOptions; track status) {
+                                    <option [value]="status" [selected]="status === renter.status">{{ renterStatusLabels[status] }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (expandedMap()[renter.id]) {
+                            <div class="mt-4 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+                                <app-renter-details-panel
+                                    [renter]="renter"
+                                    [currencySymbol]="currencySymbols[project.currency]"></app-renter-details-panel>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>

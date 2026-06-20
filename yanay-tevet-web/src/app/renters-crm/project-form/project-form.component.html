@@ -1,0 +1,63 @@
+<div class="max-w-2xl mx-auto w-full p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="onCancel()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        Back
+    </button>
+
+    <div class="card p-6">
+        <div class="mb-6">
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+                {{ isEditMode() ? 'Edit Project' : 'Create Project' }}
+            </h1>
+            <p class="text-[13px] text-writing-minor">A project groups the renters who came to see one apartment.</p>
+        </div>
+
+        @if (isLoading()) {
+            <div class="text-center text-writing-minor text-[14px] py-12">Loading project...</div>
+        } @else if (loadError()) {
+            <div class="text-center py-12">
+                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">Back</button>
+            </div>
+        } @else {
+            <div class="mb-5 flex flex-col gap-1.5">
+                <span class="input-label">Name <span class="text-writing-least">*</span></span>
+                <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Allenby 12 — 2nd floor"
+                       [formControl]="nameCtrl" />
+            </div>
+
+            <div class="mb-5 flex flex-col gap-1.5">
+                <span class="input-label">Description</span>
+                <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4"
+                          placeholder="The apartment you're renting out, terms, must-haves for a renter..."
+                          [formControl]="descriptionCtrl"></textarea>
+            </div>
+
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-6">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Currency</span>
+                    <select class="main-input w-full" [formControl]="currencyCtrl">
+                        @for (currency of currencyOptions; track currency) {
+                            <option [value]="currency">{{ currencyLabels[currency] }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Initial asked rent (monthly)</span>
+                    <input type="number" min="0" dir="auto" class="main-input w-full"
+                           [formControl]="initialAskedRentCtrl" />
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+                <button type="button" class="btn cancel-btn" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+                    {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Create Project') }}
+                </button>
+            </div>
+        }
+    </div>
+</div>

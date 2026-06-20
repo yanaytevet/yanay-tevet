@@ -221,6 +221,46 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getRentersCrmUrl());
   }
 
+  getRentersCrmNewProjectUrl(): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm/projects/new']);
+  }
+
+  navigateToRentersCrmNewProject(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmNewProjectUrl());
+  }
+
+  getRentersCrmProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm/projects', projectId]);
+  }
+
+  navigateToRentersCrmProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmProjectUrl(projectId));
+  }
+
+  getRentersCrmEditProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm/projects', projectId, 'edit']);
+  }
+
+  navigateToRentersCrmEditProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmEditProjectUrl(projectId));
+  }
+
+  getRentersCrmNewRenterUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm/projects', projectId, 'renters', 'new']);
+  }
+
+  navigateToRentersCrmNewRenter(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmNewRenterUrl(projectId));
+  }
+
+  getRentersCrmEditRenterUrl(projectId: number, renterId: number): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm/projects', projectId, 'renters', renterId, 'edit']);
+  }
+
+  navigateToRentersCrmEditRenter(projectId: number, renterId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmEditRenterUrl(projectId, renterId));
+  }
+
   // Apartment Hunt (sub-app of Home Sweet Home)
   getApartmentHuntUrl(): UrlTree {
     return this.router.createUrlTree(['/home-sweet-home/apartment-hunt']);

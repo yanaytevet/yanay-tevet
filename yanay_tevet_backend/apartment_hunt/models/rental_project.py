@@ -4,12 +4,14 @@ from django.db import models
 from django.db.models import Manager
 
 from apartment_hunt.enums.currency import Currency
+from apartment_hunt.enums.project_app import ProjectApp
 from apartment_hunt.enums.project_status import ProjectStatus
 from users.models import User
 
 if TYPE_CHECKING:
     from apartment_hunt.models.project_membership import ProjectMembership
     from apartment_hunt.models.apartment_prospect import ApartmentProspect
+    from apartment_hunt.models.renter_prospect import RenterProspect
 
 
 class RentalProject(models.Model):
@@ -18,14 +20,22 @@ class RentalProject(models.Model):
         owner_id: int
         memberships: Manager['ProjectMembership']
         prospects: Manager['ApartmentProspect']
+        renter_prospects: Manager['RenterProspect']
 
-    list_display = ['id', 'name', 'owner', 'currency', 'status', 'updated_at']
-    list_filter = ['currency', 'status']
+    list_display = ['id', 'name', 'owner', 'app', 'currency', 'status', 'updated_at']
+    list_filter = ['app', 'currency', 'status']
     raw_id_fields = ['owner']
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owned_rental_projects')
+    app: ProjectApp = models.CharField(
+        max_length=32,
+        choices=ProjectApp.choices(),
+        default=ProjectApp.APARTMENT_HUNT,
+        blank=True,
+    )
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, default='')
+    initial_asked_rent = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     status: ProjectStatus = models.CharField(
         max_length=16,
         choices=ProjectStatus.choices(),

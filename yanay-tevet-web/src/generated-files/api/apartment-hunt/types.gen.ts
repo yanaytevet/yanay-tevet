@@ -72,6 +72,11 @@ export type PaginationOutputRentalProjectSchema = {
 };
 
 /**
+ * ProjectApp
+ */
+export type ProjectApp = 'apartment_hunt' | 'renters_crm';
+
+/**
  * ProjectStatus
  */
 export type ProjectStatus = 'active' | 'finished';
@@ -84,6 +89,7 @@ export type RentalProjectSchema = {
      * Id
      */
     id: number;
+    app: ProjectApp;
     /**
      * Name
      */
@@ -94,6 +100,10 @@ export type RentalProjectSchema = {
     description: string;
     currency: Currency;
     status: ProjectStatus;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent: number | null;
     /**
      * Owner Id
      */
@@ -129,6 +139,10 @@ export type CreateRentalProjectSchema = {
      */
     description?: string;
     currency?: Currency;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent?: number | string | null;
 };
 
 /**
@@ -154,6 +168,10 @@ export type UpdateRentalProjectSchema = {
      */
     description?: string | null;
     currency?: Currency | null;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent?: number | string | null;
 };
 
 /**

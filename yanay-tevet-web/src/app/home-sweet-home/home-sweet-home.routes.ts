@@ -48,11 +48,36 @@ export const HOME_SWEET_HOME_ROUTES: Routes = [
         loadComponent: () =>
           import('./villa-villekulla/villa-villekulla.component').then(m => m.VillaVillekullaComponent),
       },
-      // Renters CRM sub-app (placeholder)
+      // Renters CRM sub-app
       {
         path: 'renters-crm',
         loadComponent: () =>
-          import('./renters-crm/renters-crm.component').then(m => m.RentersCrmComponent),
+          import('../renters-crm/projects-list/projects-list.component').then(m => m.RentersProjectsListComponent),
+      },
+      {
+        path: 'renters-crm/projects/new',
+        loadComponent: () =>
+          import('../renters-crm/project-form/project-form.component').then(m => m.RentersProjectFormComponent),
+      },
+      {
+        path: 'renters-crm/projects/:id/edit',
+        loadComponent: () =>
+          import('../renters-crm/project-form/project-form.component').then(m => m.RentersProjectFormComponent),
+      },
+      {
+        path: 'renters-crm/projects/:projectId/renters/new',
+        loadComponent: () =>
+          import('../renters-crm/renter-form/renter-form.component').then(m => m.RenterFormComponent),
+      },
+      {
+        path: 'renters-crm/projects/:projectId/renters/:id/edit',
+        loadComponent: () =>
+          import('../renters-crm/renter-form/renter-form.component').then(m => m.RenterFormComponent),
+      },
+      {
+        path: 'renters-crm/projects/:id',
+        loadComponent: () =>
+          import('../renters-crm/project-detail/project-detail.component').then(m => m.RentersProjectDetailComponent),
       },
     ],
   },

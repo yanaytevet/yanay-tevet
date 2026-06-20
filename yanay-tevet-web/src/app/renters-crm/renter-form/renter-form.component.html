@@ -1,0 +1,100 @@
+<div class="max-w-3xl mx-auto w-full p-6">
+
+    <button type="button"
+            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
+            (click)="onCancel()">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        Back to project
+    </button>
+
+    <div class="card p-6">
+        <div class="mb-6">
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+                {{ isEditMode() ? 'Edit Renter' : 'New Renter' }}
+            </h1>
+            <p class="text-[13px] text-writing-minor">Track who came to see the apartment and where they stand.</p>
+        </div>
+
+        @if (isLoading()) {
+            <div class="text-center text-writing-minor text-[14px] py-12">Loading renter...</div>
+        } @else if (loadError()) {
+            <div class="text-center py-12">
+                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <button type="button" class="btn btn-secondary" (click)="onCancel()">Back</button>
+            </div>
+        } @else {
+
+            <!-- Basics -->
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
+                <div class="flex flex-col gap-1.5 @md:col-span-2">
+                    <span class="input-label">Name <span class="text-writing-least">*</span></span>
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Dana & Yossi"
+                           [formControl]="form.controls.name" />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Status</span>
+                    <select class="main-input w-full" [formControl]="form.controls.status">
+                        @for (status of statusOptions; track status) {
+                            <option [value]="status">{{ statusLabels[status] }}</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Family status</span>
+                    <select class="main-input w-full" [formControl]="form.controls.family_status">
+                        @for (family of familyStatusOptions; track family) {
+                            <option [value]="family">{{ familyStatusLabels[family] }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Visit -->
+            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Visit</div>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Time of visit</span>
+                    <input type="datetime-local" dir="auto" class="main-input w-full" [formControl]="form.controls.visit_time" />
+                </div>
+                <div class="flex items-center gap-2 pt-6">
+                    <input type="checkbox" id="saw_apartment" class="h-4 w-4" [formControl]="form.controls.saw_apartment" />
+                    <span class="text-[14px] text-writing">Saw the apartment</span>
+                </div>
+            </div>
+
+            <!-- Preferences -->
+            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Preferences</div>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="has_animals" class="h-4 w-4" [formControl]="form.controls.has_animals" />
+                    <span class="text-[14px] text-writing">Has animals</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="long_term" class="h-4 w-4" [formControl]="form.controls.long_term" />
+                    <span class="text-[14px] text-writing">Long term</span>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Agreed rent (monthly)</span>
+                    <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.agreed_rent" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 mt-4">
+                <div class="flex flex-col gap-1.5">
+                    <span class="input-label">Notes</span>
+                    <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-[rgba(0,0,0,0.06)]">
+                <button type="button" class="btn cancel-btn" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+                    {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Create Renter') }}
+                </button>
+            </div>
+        }
+    </div>
+</div>
