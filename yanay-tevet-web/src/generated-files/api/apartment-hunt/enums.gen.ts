@@ -8,6 +8,7 @@ export enum CurrencyEnum {
 export enum ProjectAppEnum {
   APARTMENT_HUNT = 'apartment_hunt',
   RENTERS_CRM = 'renters_crm',
+  VILLA_VILLEKULLA = 'villa_villekulla',
 }
 
 export enum ProjectStatusEnum {

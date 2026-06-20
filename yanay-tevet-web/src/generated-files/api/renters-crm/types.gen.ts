@@ -74,7 +74,7 @@ export type PaginationOutputRentalProjectSchema = {
 /**
  * ProjectApp
  */
-export type ProjectApp = 'apartment_hunt' | 'renters_crm';
+export type ProjectApp = 'apartment_hunt' | 'renters_crm' | 'villa_villekulla';
 
 /**
  * ProjectStatus

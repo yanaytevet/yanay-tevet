@@ -1,0 +1,32 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+
+    <div class="flex items-start justify-between mb-1">
+        <h2 class="text-[18px] font-bold text-primary-500">Book the unit</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+    <p class="text-[13px] text-writing-minor mb-5">Pick your check-in and check-out dates. The night you check out is free for the next guest.</p>
+
+    <div class="flex gap-3 mb-4">
+        <div class="flex-1 flex flex-col gap-1.5">
+            <span class="input-label">Check-in</span>
+            <input type="date" class="main-input w-full" [formControl]="startCtrl" />
+        </div>
+        <div class="flex-1 flex flex-col gap-1.5">
+            <span class="input-label">Check-out</span>
+            <input type="date" class="main-input w-full" [formControl]="endCtrl" />
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5 mb-6">
+        <span class="input-label">Note (optional)</span>
+        <textarea class="main-input w-full" rows="2" dir="auto"
+                  placeholder="e.g. visiting with the kids" [formControl]="noteCtrl"></textarea>
+    </div>
+
+    <div class="flex justify-end gap-2">
+        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="isBooking()" (click)="onBook()">Book</button>
+    </div>
+</div>

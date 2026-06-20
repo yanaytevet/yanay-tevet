@@ -3,3 +3,683 @@
 export type ClientOptions = {
     baseURL: string;
 };
+
+/**
+ * PaginateRentalProjectsFilterSchema
+ */
+export type PaginateRentalProjectsFilterSchema = {
+    [key: string]: unknown;
+};
+
+/**
+ * PaginationQueryParams
+ */
+export type PaginationQueryParams = {
+    /**
+     * Page
+     */
+    page?: number;
+    /**
+     * Page Size
+     */
+    page_size?: number;
+    /**
+     * Order By
+     */
+    order_by?: Array<string> | null;
+    /**
+     * Dict Filter
+     */
+    dict_filter?: string | null;
+};
+
+/**
+ * EmptySchema
+ */
+export type EmptySchema = {
+    [key: string]: unknown;
+};
+
+/**
+ * Currency
+ */
+export type Currency = 'nis' | 'usd' | 'eur' | 'gbp';
+
+/**
+ * PaginationOutput[RentalProjectSchema]
+ */
+export type PaginationOutputRentalProjectSchema = {
+    /**
+     * Total Amount
+     */
+    total_amount: number;
+    /**
+     * Pages Amount
+     */
+    pages_amount: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Data
+     */
+    data: Array<RentalProjectSchema>;
+};
+
+/**
+ * ProjectApp
+ */
+export type ProjectApp = 'apartment_hunt' | 'renters_crm' | 'villa_villekulla';
+
+/**
+ * ProjectStatus
+ */
+export type ProjectStatus = 'active' | 'finished';
+
+/**
+ * RentalProjectSchema
+ */
+export type RentalProjectSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    app: ProjectApp;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    currency: Currency;
+    status: ProjectStatus;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent: number | null;
+    /**
+     * Owner Id
+     */
+    owner_id: number;
+    /**
+     * Owner Username
+     */
+    owner_username: string;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CreateRentalProjectSchema
+ */
+export type CreateRentalProjectSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string;
+    currency?: Currency;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent?: number | string | null;
+};
+
+/**
+ * ItemByIdPath
+ */
+export type ItemByIdPath = {
+    /**
+     * Object Id
+     */
+    object_id: number;
+};
+
+/**
+ * UpdateRentalProjectSchema
+ */
+export type UpdateRentalProjectSchema = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    currency?: Currency | null;
+    /**
+     * Initial Asked Rent
+     */
+    initial_asked_rent?: number | string | null;
+};
+
+/**
+ * InviteToVillaVillekullaSchema
+ */
+export type InviteToVillaVillekullaSchema = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+    role?: ProjectRole;
+};
+
+/**
+ * ProjectRole
+ */
+export type ProjectRole = 'owner' | 'collaborator';
+
+/**
+ * UnshareRentalProjectSchema
+ */
+export type UnshareRentalProjectSchema = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+};
+
+/**
+ * ProjectMembersSchema
+ */
+export type ProjectMembersSchema = {
+    /**
+     * Members
+     */
+    members: Array<ProjectMembershipSchema>;
+};
+
+/**
+ * ProjectMembershipSchema
+ */
+export type ProjectMembershipSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * User Id
+     */
+    user_id: number;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    role: ProjectRole;
+};
+
+/**
+ * UnitSchema
+ */
+export type UnitSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Project Id
+     */
+    project_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+};
+
+/**
+ * UnitsListSchema
+ */
+export type UnitsListSchema = {
+    /**
+     * Units
+     */
+    units: Array<UnitSchema>;
+};
+
+/**
+ * CreateUnitSchema
+ */
+export type CreateUnitSchema = {
+    /**
+     * Project Id
+     */
+    project_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string;
+};
+
+/**
+ * PaginateUnitBookingsFilterSchema
+ */
+export type PaginateUnitBookingsFilterSchema = {
+    /**
+     * To Date
+     */
+    to_date?: string | null;
+    /**
+     * From Date
+     */
+    from_date?: string | null;
+};
+
+/**
+ * UnitBookingsByUnitPath
+ */
+export type UnitBookingsByUnitPath = {
+    /**
+     * Unit Id
+     */
+    unit_id: number;
+};
+
+/**
+ * PaginationOutput[UnitBookingSchema]
+ */
+export type PaginationOutputUnitBookingSchema = {
+    /**
+     * Total Amount
+     */
+    total_amount: number;
+    /**
+     * Pages Amount
+     */
+    pages_amount: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Data
+     */
+    data: Array<UnitBookingSchema>;
+};
+
+/**
+ * UnitBookingSchema
+ */
+export type UnitBookingSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Unit Id
+     */
+    unit_id: number;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    /**
+     * Note
+     */
+    note: string;
+    /**
+     * Created By Id
+     */
+    created_by_id: number | null;
+    /**
+     * Created By Name
+     */
+    created_by_name: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CreateUnitBookingSchema
+ */
+export type CreateUnitBookingSchema = {
+    /**
+     * Unit Id
+     */
+    unit_id: number;
+    /**
+     * Start Date
+     */
+    start_date: string;
+    /**
+     * End Date
+     */
+    end_date: string;
+    /**
+     * Note
+     */
+    note?: string;
+};
+
+export type PaginateVillaVillekullaProjectsViewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Order By
+         */
+        order_by?: Array<string> | null;
+        /**
+         * Dict Filter
+         */
+        dict_filter?: string | null;
+    };
+    url: '/api/villa-villekulla/projects/';
+};
+
+export type PaginateVillaVillekullaProjectsViewResponses = {
+    /**
+     * OK
+     */
+    200: PaginationOutputRentalProjectSchema;
+};
+
+export type PaginateVillaVillekullaProjectsViewResponse = PaginateVillaVillekullaProjectsViewResponses[keyof PaginateVillaVillekullaProjectsViewResponses];
+
+export type CreateVillaVillekullaProjectViewData = {
+    body: CreateRentalProjectSchema;
+    path?: never;
+    query?: never;
+    url: '/api/villa-villekulla/projects/';
+};
+
+export type CreateVillaVillekullaProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: RentalProjectSchema;
+};
+
+export type CreateVillaVillekullaProjectViewResponse = CreateVillaVillekullaProjectViewResponses[keyof CreateVillaVillekullaProjectViewResponses];
+
+export type DeleteRentalProjectViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/';
+};
+
+export type DeleteRentalProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetRentalProjectViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/';
+};
+
+export type GetRentalProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: RentalProjectSchema;
+};
+
+export type GetRentalProjectViewResponse = GetRentalProjectViewResponses[keyof GetRentalProjectViewResponses];
+
+export type UpdateRentalProjectViewData = {
+    body: UpdateRentalProjectSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/';
+};
+
+export type UpdateRentalProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: RentalProjectSchema;
+};
+
+export type UpdateRentalProjectViewResponse = UpdateRentalProjectViewResponses[keyof UpdateRentalProjectViewResponses];
+
+export type ShareVillaVillekullaProjectViewData = {
+    body: InviteToVillaVillekullaSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/share/';
+};
+
+export type ShareVillaVillekullaProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: RentalProjectSchema;
+};
+
+export type ShareVillaVillekullaProjectViewResponse = ShareVillaVillekullaProjectViewResponses[keyof ShareVillaVillekullaProjectViewResponses];
+
+export type UnshareRentalProjectViewData = {
+    body: UnshareRentalProjectSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/unshare/';
+};
+
+export type UnshareRentalProjectViewResponses = {
+    /**
+     * OK
+     */
+    200: RentalProjectSchema;
+};
+
+export type UnshareRentalProjectViewResponse = UnshareRentalProjectViewResponses[keyof UnshareRentalProjectViewResponses];
+
+export type ListProjectMembersViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/members/';
+};
+
+export type ListProjectMembersViewResponses = {
+    /**
+     * OK
+     */
+    200: ProjectMembersSchema;
+};
+
+export type ListProjectMembersViewResponse = ListProjectMembersViewResponses[keyof ListProjectMembersViewResponses];
+
+export type ListUnitsViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/projects/{object_id}/units/';
+};
+
+export type ListUnitsViewResponses = {
+    /**
+     * OK
+     */
+    200: UnitsListSchema;
+};
+
+export type ListUnitsViewResponse = ListUnitsViewResponses[keyof ListUnitsViewResponses];
+
+export type CreateUnitViewData = {
+    body: CreateUnitSchema;
+    path?: never;
+    query?: never;
+    url: '/api/villa-villekulla/units/';
+};
+
+export type CreateUnitViewResponses = {
+    /**
+     * OK
+     */
+    200: UnitSchema;
+};
+
+export type CreateUnitViewResponse = CreateUnitViewResponses[keyof CreateUnitViewResponses];
+
+export type PaginateUnitBookingsViewData = {
+    body?: never;
+    path: {
+        /**
+         * Unit Id
+         */
+        unit_id: number;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Order By
+         */
+        order_by?: Array<string> | null;
+        /**
+         * Dict Filter
+         */
+        dict_filter?: string | null;
+        /**
+         * To Date
+         */
+        to_date?: string | null;
+        /**
+         * From Date
+         */
+        from_date?: string | null;
+    };
+    url: '/api/villa-villekulla/units/{unit_id}/bookings/';
+};
+
+export type PaginateUnitBookingsViewResponses = {
+    /**
+     * OK
+     */
+    200: PaginationOutputUnitBookingSchema;
+};
+
+export type PaginateUnitBookingsViewResponse = PaginateUnitBookingsViewResponses[keyof PaginateUnitBookingsViewResponses];
+
+export type CreateUnitBookingViewData = {
+    body: CreateUnitBookingSchema;
+    path?: never;
+    query?: never;
+    url: '/api/villa-villekulla/bookings/';
+};
+
+export type CreateUnitBookingViewResponses = {
+    /**
+     * OK
+     */
+    200: UnitBookingSchema;
+};
+
+export type CreateUnitBookingViewResponse = CreateUnitBookingViewResponses[keyof CreateUnitBookingViewResponses];
+
+export type DeleteUnitBookingViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/bookings/{object_id}/';
+};
+
+export type DeleteUnitBookingViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};

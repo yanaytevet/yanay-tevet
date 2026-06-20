@@ -6,6 +6,10 @@ import {toObservable} from '@angular/core/rxjs-interop';
 import {Permissions} from '../../../generated-files/auth';
 
 export function hasPermissionGuard(permission: Permissions): CanActivateFn {
+    return hasAnyPermissionGuard(permission);
+}
+
+export function hasAnyPermissionGuard(...permissions: Permissions[]): CanActivateFn {
     return (_route, state) => {
         const authService = inject(AuthenticationService);
         const router = inject(Router);
@@ -19,7 +23,7 @@ export function hasPermissionGuard(permission: Permissions): CanActivateFn {
                 return router.createUrlTree(['/login'], {queryParams: {redirect: state.url}});
             }
             const user = authService.user();
-            const hasPermission = user?.is_admin || user?.permissions?.includes(permission);
+            const hasPermission = user?.is_admin || permissions.some(p => user?.permissions?.includes(p));
             return hasPermission ? true : router.createUrlTree(['/']);
         });
     };

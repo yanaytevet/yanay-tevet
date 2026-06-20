@@ -1,5 +1,6 @@
 import {Routes} from '@angular/router';
 import {HomeSweetHomeComponent} from './home-sweet-home.component';
+import {homeSweetHomeRedirectGuard} from './home-sweet-home-redirect.guard';
 
 export const HOME_SWEET_HOME_ROUTES: Routes = [
   {
@@ -8,8 +9,9 @@ export const HOME_SWEET_HOME_ROUTES: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'apartment-hunt',
         pathMatch: 'full',
+        canActivate: [homeSweetHomeRedirectGuard],
+        children: [],
       },
       // Apartment Hunt sub-app
       {

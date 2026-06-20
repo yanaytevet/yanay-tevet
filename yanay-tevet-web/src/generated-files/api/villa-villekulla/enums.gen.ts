@@ -20,18 +20,3 @@ export enum ProjectRoleEnum {
   OWNER = 'owner',
   COLLABORATOR = 'collaborator',
 }
-
-export enum FamilyStatusEnum {
-  FAMILY_WITH_CHILDREN = 'family_with_children',
-  COUPLE = 'couple',
-  SINGLE = 'single',
-}
-
-export enum RenterStatusEnum {
-  CONTACTED = 'contacted',
-  SCHEDULED_TO_SEE = 'scheduled_to_see',
-  VISITED = 'visited',
-  DECLINED = 'declined',
-  WANT_TO_SIGN = 'want_to_sign',
-  SIGNED = 'signed',
-}

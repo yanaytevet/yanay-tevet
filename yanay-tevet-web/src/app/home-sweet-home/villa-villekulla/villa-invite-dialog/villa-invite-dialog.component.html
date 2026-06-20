@@ -1,0 +1,75 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+
+    <div class="flex items-start justify-between mb-1">
+        <h2 class="text-[18px] font-bold text-primary-500">Invite people</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+    <p class="text-[13px] text-writing-minor mb-5">Friends can view the calendar and book the unit. Co-admins can also manage bookings and invite others.</p>
+
+    <div class="flex flex-col gap-2 mb-5">
+        <div class="flex flex-col gap-1.5">
+            <span class="input-label">Username or email</span>
+            <input type="text" dir="auto" class="main-input w-full" placeholder="username or email"
+                   [formControl]="identifierCtrl"
+                   (keyup.enter)="onInvite()" />
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="flex rounded-full bg-layer-3 p-0.5">
+                <button type="button"
+                        class="px-3 py-1 text-[12px] font-semibold rounded-full transition-colors"
+                        [class.bg-layer-1]="role() === 'collaborator'"
+                        [class.text-writing]="role() === 'collaborator'"
+                        [class.text-writing-minor]="role() !== 'collaborator'"
+                        (click)="setRole('collaborator')">
+                    Friend
+                </button>
+                <button type="button"
+                        class="px-3 py-1 text-[12px] font-semibold rounded-full transition-colors"
+                        [class.bg-layer-1]="role() === 'owner'"
+                        [class.text-writing]="role() === 'owner'"
+                        [class.text-writing-minor]="role() !== 'owner'"
+                        (click)="setRole('owner')">
+                    Co-admin
+                </button>
+            </div>
+            <button type="button" class="btn btn-primary flex items-center gap-1.5 ml-auto"
+                    [disabled]="isInviting()" (click)="onInvite()">
+                <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
+                Invite
+            </button>
+        </div>
+    </div>
+
+    <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-2">People with access</div>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[13px] py-6">Loading...</div>
+    } @else {
+        <div class="flex flex-col gap-1">
+            @for (member of members(); track member.user_id) {
+                <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-layer-3">
+                    <div class="min-w-0">
+                        <div class="text-[14px] text-writing truncate">{{ member.full_name || member.username }}</div>
+                        <div class="text-[12px] text-writing-minor truncate">{{ member.username }}</div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-2 text-writing-minor">
+                            {{ member.role === 'owner' ? 'Co-admin' : 'Friend' }}
+                        </span>
+                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                [disabled]="removingUserId() === member.user_id"
+                                (click)="onRemove(member)">
+                            <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="flex justify-end mt-6">
+        <button type="button" class="btn cancel-btn" (click)="onClose()">Done</button>
+    </div>
+</div>

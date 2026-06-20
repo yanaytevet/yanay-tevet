@@ -3,7 +3,7 @@ import {LayoutComponent} from './layout/layout.component';
 import {HomeComponent} from './home/home.component';
 import {loggedInGuard} from './common/authentication/logged-in.guard';
 import {notLoggedInGuard} from './common/authentication/not-logged-in.guard';
-import {hasPermissionGuard} from './common/authentication/has-permission.guard';
+import {hasPermissionGuard, hasAnyPermissionGuard} from './common/authentication/has-permission.guard';
 import {adminGuard} from './common/authentication/admin.guard';
 
 export const routes: Routes = [
@@ -141,7 +141,7 @@ export const routes: Routes = [
                 path: 'home-sweet-home',
                 loadChildren: () =>
                     import('./home-sweet-home/home-sweet-home.routes').then(m => m.HOME_SWEET_HOME_ROUTES),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
+                canActivate: [hasAnyPermissionGuard('apartment_hunt', 'villa_villekulla', 'renters_crm')],
             },
             {
                 path: 'itinerary-lists',
