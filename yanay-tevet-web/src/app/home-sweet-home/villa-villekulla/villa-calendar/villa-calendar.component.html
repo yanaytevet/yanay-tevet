@@ -1,0 +1,84 @@
+<div class="max-w-4xl mx-auto w-full p-6">
+
+    @if (showBack()) {
+        <button type="button" class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-writing mb-4" (click)="back()">
+            <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+            All properties
+        </button>
+    }
+
+    @if (isLoading()) {
+        <div class="card p-10 text-center text-writing-minor text-[13px]">Loading…</div>
+    } @else if (loadError()) {
+        <div class="card p-10 text-center text-writing-minor text-[13px]">{{ loadError() }}</div>
+    } @else if (project()) {
+        <div class="flex items-start justify-between gap-3 mb-5">
+            <div class="min-w-0">
+                <h1 class="text-[22px] font-bold text-primary-500 mb-1 truncate">{{ project()!.name }}</h1>
+                @if (unit(); as u) {
+                    <p class="text-[13px] text-writing-minor">Pick a free day to book {{ u.name }}.</p>
+                }
+            </div>
+            @if (canManageAll()) {
+                <button type="button" class="btn btn-secondary inline-flex items-center gap-1.5 shrink-0" (click)="openInvite()">
+                    <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
+                    Invite
+                </button>
+            }
+        </div>
+
+        @if (unit() === null) {
+            <div class="card p-10 text-center text-writing-minor text-[13px]">This property has no bookable unit yet.</div>
+        } @else {
+            <div class="card p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="prevMonth()">
+                        <ng-icon [svg]="featherChevronLeft" class="h-5 w-5"></ng-icon>
+                    </button>
+                    <span class="text-[15px] font-semibold text-writing">{{ monthLabel() }}</span>
+                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="nextMonth()">
+                        <ng-icon [svg]="featherChevronRight" class="h-5 w-5"></ng-icon>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 mb-1">
+                    @for (label of weekdayLabels; track label) {
+                        <div class="text-center text-[11px] font-semibold uppercase tracking-wide text-writing-least py-1">{{ label }}</div>
+                    }
+                </div>
+
+                <div class="grid grid-cols-7 gap-1">
+                    @for (cell of cells(); track cell.iso) {
+                        <button type="button"
+                                [disabled]="cell.disabled"
+                                (click)="onDayClick(cell)"
+                                class="relative flex flex-col items-start text-left p-1.5 rounded-lg border min-h-[58px] transition-colors"
+                                [ngClass]="cell.classes">
+                            <span class="text-[12px] font-semibold"
+                                  [class.text-notion-blue]="cell.isToday"
+                                  [class.text-writing]="!cell.isToday">{{ cell.dayNum }}</span>
+                            @if (cell.showLabel) {
+                                <span class="mt-auto text-[10px] leading-tight font-medium truncate w-full"
+                                      [class.text-notion-blue]="cell.mine"
+                                      [class.text-writing-minor]="!cell.mine">
+                                    {{ cell.label }}
+                                </span>
+                            }
+                        </button>
+                    }
+                </div>
+
+                <div class="flex items-center gap-4 mt-4 text-[11px] text-writing-minor">
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block h-3 w-3 rounded bg-notion-blue/15 border border-notion-blue/40"></span>
+                        Your booking
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="inline-block h-3 w-3 rounded bg-layer-4 border border-layer-4"></span>
+                        Booked
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

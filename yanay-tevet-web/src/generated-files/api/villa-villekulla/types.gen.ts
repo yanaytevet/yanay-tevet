@@ -284,53 +284,13 @@ export type CreateUnitSchema = {
 };
 
 /**
- * PaginateUnitBookingsFilterSchema
+ * UnitCalendarPath
  */
-export type PaginateUnitBookingsFilterSchema = {
-    /**
-     * To Date
-     */
-    to_date?: string | null;
-    /**
-     * From Date
-     */
-    from_date?: string | null;
-};
-
-/**
- * UnitBookingsByUnitPath
- */
-export type UnitBookingsByUnitPath = {
+export type UnitCalendarPath = {
     /**
      * Unit Id
      */
     unit_id: number;
-};
-
-/**
- * PaginationOutput[UnitBookingSchema]
- */
-export type PaginationOutputUnitBookingSchema = {
-    /**
-     * Total Amount
-     */
-    total_amount: number;
-    /**
-     * Pages Amount
-     */
-    pages_amount: number;
-    /**
-     * Page
-     */
-    page: number;
-    /**
-     * Page Size
-     */
-    page_size: number;
-    /**
-     * Data
-     */
-    data: Array<UnitBookingSchema>;
 };
 
 /**
@@ -372,6 +332,20 @@ export type UnitBookingSchema = {
 };
 
 /**
+ * UnitCalendarSchema
+ */
+export type UnitCalendarSchema = {
+    /**
+     * Bookings
+     */
+    bookings: Array<UnitBookingSchema>;
+    /**
+     * Can Manage All
+     */
+    can_manage_all: boolean;
+};
+
+/**
  * CreateUnitBookingSchema
  */
 export type CreateUnitBookingSchema = {
@@ -391,6 +365,24 @@ export type CreateUnitBookingSchema = {
      * Note
      */
     note?: string;
+};
+
+/**
+ * UpdateUnitBookingSchema
+ */
+export type UpdateUnitBookingSchema = {
+    /**
+     * Note
+     */
+    note?: string | null;
+    /**
+     * Start Date
+     */
+    start_date?: string | null;
+    /**
+     * End Date
+     */
+    end_date?: string | null;
 };
 
 export type PaginateVillaVillekullaProjectsViewData = {
@@ -603,7 +595,7 @@ export type CreateUnitViewResponses = {
 
 export type CreateUnitViewResponse = CreateUnitViewResponses[keyof CreateUnitViewResponses];
 
-export type PaginateUnitBookingsViewData = {
+export type GetUnitCalendarViewData = {
     body?: never;
     path: {
         /**
@@ -611,43 +603,18 @@ export type PaginateUnitBookingsViewData = {
          */
         unit_id: number;
     };
-    query?: {
-        /**
-         * Page
-         */
-        page?: number;
-        /**
-         * Page Size
-         */
-        page_size?: number;
-        /**
-         * Order By
-         */
-        order_by?: Array<string> | null;
-        /**
-         * Dict Filter
-         */
-        dict_filter?: string | null;
-        /**
-         * To Date
-         */
-        to_date?: string | null;
-        /**
-         * From Date
-         */
-        from_date?: string | null;
-    };
+    query?: never;
     url: '/api/villa-villekulla/units/{unit_id}/bookings/';
 };
 
-export type PaginateUnitBookingsViewResponses = {
+export type GetUnitCalendarViewResponses = {
     /**
      * OK
      */
-    200: PaginationOutputUnitBookingSchema;
+    200: UnitCalendarSchema;
 };
 
-export type PaginateUnitBookingsViewResponse = PaginateUnitBookingsViewResponses[keyof PaginateUnitBookingsViewResponses];
+export type GetUnitCalendarViewResponse = GetUnitCalendarViewResponses[keyof GetUnitCalendarViewResponses];
 
 export type CreateUnitBookingViewData = {
     body: CreateUnitBookingSchema;
@@ -683,3 +650,24 @@ export type DeleteUnitBookingViewResponses = {
      */
     200: unknown;
 };
+
+export type UpdateUnitBookingViewData = {
+    body: UpdateUnitBookingSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/villa-villekulla/bookings/{object_id}/';
+};
+
+export type UpdateUnitBookingViewResponses = {
+    /**
+     * OK
+     */
+    200: UnitBookingSchema;
+};
+
+export type UpdateUnitBookingViewResponse = UpdateUnitBookingViewResponses[keyof UpdateUnitBookingViewResponses];

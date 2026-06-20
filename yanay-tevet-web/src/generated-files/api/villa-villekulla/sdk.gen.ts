@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateUnitBookingViewData, CreateUnitBookingViewResponses, CreateUnitViewData, CreateUnitViewResponses, CreateVillaVillekullaProjectViewData, CreateVillaVillekullaProjectViewResponses, DeleteRentalProjectViewData, DeleteRentalProjectViewResponses, DeleteUnitBookingViewData, DeleteUnitBookingViewResponses, GetRentalProjectViewData, GetRentalProjectViewResponses, ListProjectMembersViewData, ListProjectMembersViewResponses, ListUnitsViewData, ListUnitsViewResponses, PaginateUnitBookingsViewData, PaginateUnitBookingsViewResponses, PaginateVillaVillekullaProjectsViewData, PaginateVillaVillekullaProjectsViewResponses, ShareVillaVillekullaProjectViewData, ShareVillaVillekullaProjectViewResponses, UnshareRentalProjectViewData, UnshareRentalProjectViewResponses, UpdateRentalProjectViewData, UpdateRentalProjectViewResponses } from './types.gen';
+import type { CreateUnitBookingViewData, CreateUnitBookingViewResponses, CreateUnitViewData, CreateUnitViewResponses, CreateVillaVillekullaProjectViewData, CreateVillaVillekullaProjectViewResponses, DeleteRentalProjectViewData, DeleteRentalProjectViewResponses, DeleteUnitBookingViewData, DeleteUnitBookingViewResponses, GetRentalProjectViewData, GetRentalProjectViewResponses, GetUnitCalendarViewData, GetUnitCalendarViewResponses, ListProjectMembersViewData, ListProjectMembersViewResponses, ListUnitsViewData, ListUnitsViewResponses, PaginateVillaVillekullaProjectsViewData, PaginateVillaVillekullaProjectsViewResponses, ShareVillaVillekullaProjectViewData, ShareVillaVillekullaProjectViewResponses, UnshareRentalProjectViewData, UnshareRentalProjectViewResponses, UpdateRentalProjectViewData, UpdateRentalProjectViewResponses, UpdateUnitBookingViewData, UpdateUnitBookingViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -132,9 +132,9 @@ export const createUnitView = <ThrowOnError extends boolean = false>(options: Op
 });
 
 /**
- * Pagination
+ * Get
  */
-export const paginateUnitBookingsView = <ThrowOnError extends boolean = false>(options: Options<PaginateUnitBookingsViewData, ThrowOnError>) => (options.client ?? client).get<PaginateUnitBookingsViewResponses, unknown, ThrowOnError>({
+export const getUnitCalendarView = <ThrowOnError extends boolean = false>(options: Options<GetUnitCalendarViewData, ThrowOnError>) => (options.client ?? client).get<GetUnitCalendarViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/villa-villekulla/units/{unit_id}/bookings/',
     ...options
@@ -157,6 +157,19 @@ export const createUnitBookingView = <ThrowOnError extends boolean = false>(opti
  * Delete
  */
 export const deleteUnitBookingView = <ThrowOnError extends boolean = false>(options: Options<DeleteUnitBookingViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteUnitBookingViewResponses, unknown, ThrowOnError>({
+    url: '/api/villa-villekulla/bookings/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Patch
+ */
+export const updateUnitBookingView = <ThrowOnError extends boolean = false>(options: Options<UpdateUnitBookingViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateUnitBookingViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
     url: '/api/villa-villekulla/bookings/{object_id}/',
     ...options,
     headers: {

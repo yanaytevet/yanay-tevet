@@ -213,6 +213,14 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getVillaVillekullaUrl());
   }
 
+  getVillaVillekullaProjectUrl(projectId: number): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/villa-villekulla/projects', projectId]);
+  }
+
+  navigateToVillaVillekullaProject(projectId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getVillaVillekullaProjectUrl(projectId));
+  }
+
   getRentersCrmUrl(): UrlTree {
     return this.router.createUrlTree(['/home-sweet-home/renters-crm']);
   }

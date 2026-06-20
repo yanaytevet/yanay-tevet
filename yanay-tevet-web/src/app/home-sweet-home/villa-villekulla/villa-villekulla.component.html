@@ -2,88 +2,46 @@
 
     @if (isLoading()) {
         <div class="card p-10 text-center text-writing-minor text-[13px]">Loading…</div>
-    } @else if (project() === null) {
-        <div class="card p-10 text-center">
-            <div class="text-4xl mb-3">🏡</div>
+    } @else {
+        <div class="flex items-center justify-between gap-3 mb-5">
+            <div>
+                <h1 class="text-[22px] font-bold text-primary-500 mb-1">Villa Villekulla</h1>
+                <p class="text-[13px] text-writing-minor">Properties you can book.</p>
+            </div>
             @if (isSiteAdmin()) {
-                <p class="text-[15px] font-semibold text-primary-500 mb-1">No property yet</p>
-                <p class="text-[13px] text-writing-minor mb-5">Create the property, then invite friends to book the unit.</p>
-                <button type="button" class="btn btn-primary inline-flex items-center gap-1.5" (click)="createProject()">
+                <button type="button" class="btn btn-primary inline-flex items-center gap-1.5 shrink-0" (click)="createProject()">
                     <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-                    Create property
+                    New property
                 </button>
-            } @else {
-                <p class="text-[15px] font-semibold text-primary-500 mb-1">Nothing here yet</p>
-                <p class="text-[13px] text-writing-minor">You don't have access to a property yet. Ask the host to invite you.</p>
             }
         </div>
-    } @else {
-        <div class="flex items-start justify-between gap-3 mb-5">
-            <div class="min-w-0">
-                <h1 class="text-[22px] font-bold text-primary-500 mb-1 truncate">{{ project()!.name }}</h1>
-                @if (unit(); as u) {
-                    <p class="text-[13px] text-writing-minor">Pick a free day to book {{ u.name }}.</p>
+
+        @if (projects().length === 0) {
+            <div class="card p-10 text-center">
+                <div class="text-4xl mb-3">🏡</div>
+                @if (isSiteAdmin()) {
+                    <p class="text-[15px] font-semibold text-primary-500 mb-1">No property yet</p>
+                    <p class="text-[13px] text-writing-minor">Create your first property to start taking bookings.</p>
+                } @else {
+                    <p class="text-[15px] font-semibold text-primary-500 mb-1">Nothing here yet</p>
+                    <p class="text-[13px] text-writing-minor">You don't have access to a property yet. Ask the host to invite you.</p>
                 }
             </div>
-            @if (canManage()) {
-                <button type="button" class="btn btn-secondary inline-flex items-center gap-1.5 shrink-0" (click)="openInvite()">
-                    <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
-                    Invite
-                </button>
-            }
-        </div>
-
-        @if (unit() === null) {
-            <div class="card p-10 text-center text-writing-minor text-[13px]">This property has no bookable unit yet.</div>
         } @else {
-            <div class="card p-4 sm:p-5">
-                <div class="flex items-center justify-between mb-4">
-                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="prevMonth()">
-                        <ng-icon [svg]="featherChevronLeft" class="h-5 w-5"></ng-icon>
-                    </button>
-                    <span class="text-[15px] font-semibold text-writing">{{ monthLabel() }}</span>
-                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="nextMonth()">
-                        <ng-icon [svg]="featherChevronRight" class="h-5 w-5"></ng-icon>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-7 gap-1 mb-1">
-                    @for (label of weekdayLabels; track label) {
-                        <div class="text-center text-[11px] font-semibold uppercase tracking-wide text-writing-least py-1">{{ label }}</div>
-                    }
-                </div>
-
-                <div class="grid grid-cols-7 gap-1">
-                    @for (cell of cells(); track cell.iso) {
-                        <button type="button"
-                                [disabled]="cell.disabled"
-                                (click)="onDayClick(cell)"
-                                class="relative flex flex-col items-start text-left p-1.5 rounded-lg border min-h-[58px] transition-colors"
-                                [ngClass]="cell.classes">
-                            <span class="text-[12px] font-semibold"
-                                  [class.text-notion-blue]="cell.isToday"
-                                  [class.text-writing]="!cell.isToday">{{ cell.dayNum }}</span>
-                            @if (cell.isBookingStart) {
-                                <span class="mt-auto text-[10px] leading-tight font-medium truncate w-full"
-                                      [class.text-notion-blue]="cell.mine"
-                                      [class.text-writing-minor]="!cell.mine">
-                                    {{ cell.mine ? 'You' : cell.bookerName }}
-                                </span>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+                @for (project of projects(); track project.id) {
+                    <button type="button"
+                            class="card p-4 text-left flex items-center justify-between gap-3 hover:bg-layer-3 transition-colors cursor-pointer"
+                            (click)="open(project)">
+                        <div class="min-w-0">
+                            <div class="text-[15px] font-semibold text-primary-500 truncate">{{ project.name }}</div>
+                            @if (project.description) {
+                                <div class="text-[13px] text-writing-minor truncate">{{ project.description }}</div>
                             }
-                        </button>
-                    }
-                </div>
-
-                <div class="flex items-center gap-4 mt-4 text-[11px] text-writing-minor">
-                    <div class="flex items-center gap-1.5">
-                        <span class="inline-block h-3 w-3 rounded bg-notion-blue/15 border border-notion-blue/40"></span>
-                        Your booking
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="inline-block h-3 w-3 rounded bg-layer-4 border border-layer-4"></span>
-                        Booked
-                    </div>
-                </div>
+                        </div>
+                        <ng-icon [svg]="featherChevronRight" class="h-5 w-5 text-writing-least shrink-0"></ng-icon>
+                    </button>
+                }
             </div>
         }
     }

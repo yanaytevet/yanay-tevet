@@ -44,11 +44,16 @@ export const HOME_SWEET_HOME_ROUTES: Routes = [
         loadComponent: () =>
           import('../apartment-hunt/project-detail/project-detail.component').then(m => m.ProjectDetailComponent),
       },
-      // Villa Villekulla sub-app (placeholder)
+      // Villa Villekulla sub-app
       {
         path: 'villa-villekulla',
         loadComponent: () =>
           import('./villa-villekulla/villa-villekulla.component').then(m => m.VillaVillekullaComponent),
+      },
+      {
+        path: 'villa-villekulla/projects/:id',
+        loadComponent: () =>
+          import('./villa-villekulla/villa-calendar/villa-calendar.component').then(m => m.VillaCalendarComponent),
       },
       // Renters CRM sub-app
       {

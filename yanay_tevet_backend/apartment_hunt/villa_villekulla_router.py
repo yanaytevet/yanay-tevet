@@ -9,7 +9,8 @@ from apartment_hunt.views.project_views.unshare_rental_project_view import Unsha
 from apartment_hunt.views.project_views.update_rental_project_view import UpdateRentalProjectView
 from apartment_hunt.views.unit_booking_views.create_unit_booking_view import CreateUnitBookingView
 from apartment_hunt.views.unit_booking_views.delete_unit_booking_view import DeleteUnitBookingView
-from apartment_hunt.views.unit_booking_views.paginate_unit_bookings_view import PaginateUnitBookingsView
+from apartment_hunt.views.unit_booking_views.get_unit_calendar_view import GetUnitCalendarView
+from apartment_hunt.views.unit_booking_views.update_unit_booking_view import UpdateUnitBookingView
 from apartment_hunt.views.unit_views.create_unit_view import CreateUnitView
 from apartment_hunt.views.unit_views.list_units_view import ListUnitsView
 from common.django_utils.api_router_creator import ApiRouterCreator
@@ -33,6 +34,7 @@ ListUnitsView.register_get(router, 'projects/{int:object_id}/units/')
 CreateUnitView.register_post(router, 'units/')
 
 # --- Bookings ---
-PaginateUnitBookingsView.register_get(router, 'units/{int:unit_id}/bookings/')
+GetUnitCalendarView.register_get(router, 'units/{int:unit_id}/bookings/')
 CreateUnitBookingView.register_post(router, 'bookings/')
+UpdateUnitBookingView.register_patch_by_id(router, prefix='bookings')
 DeleteUnitBookingView.register_delete_by_id(router, prefix='bookings')
