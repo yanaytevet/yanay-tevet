@@ -1,4 +1,4 @@
-from apartment_hunt.permissions_checkers.apartment_hunt_permission_checker import ApartmentHuntPermissionChecker
+from apartment_hunt.permissions_checkers.renters_crm_permission_checker import RentersCrmPermissionChecker
 from apartment_hunt.views.project_views.create_renters_project_view import CreateRentersProjectView
 from apartment_hunt.views.project_views.delete_rental_project_view import DeleteRentalProjectView
 from apartment_hunt.views.project_views.get_rental_project_view import GetRentalProjectView
@@ -18,9 +18,9 @@ from apartment_hunt.views.renter_prospect_views.paginate_renter_prospects_view i
 from apartment_hunt.views.renter_prospect_views.update_renter_prospect_view import UpdateRenterProspectView
 from common.django_utils.api_router_creator import ApiRouterCreator
 
-# Renters CRM sub-app of Home Sweet Home. Shares the apartment_hunt app and
-# permission; projects reuse the RentalProject machinery (app=renters_crm).
-api, router = ApiRouterCreator.create_api_and_router('renters-crm', ApartmentHuntPermissionChecker())
+# Renters CRM sub-app of Home Sweet Home. Shares the apartment_hunt app but has
+# its own permission; projects reuse the RentalProject machinery (app=renters_crm).
+api, router = ApiRouterCreator.create_api_and_router('renters-crm', RentersCrmPermissionChecker())
 
 # --- Projects ---
 PaginateRentersProjectsView.register_get(router, 'projects/')

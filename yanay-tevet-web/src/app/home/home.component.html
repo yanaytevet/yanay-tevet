@@ -40,7 +40,7 @@
       </div>
 
       <!-- Apps the user has access to -->
-      @if (hasDreamDiary() || hasApartmentHunt() || hasItineraryLists() || hasTaskManagement()) {
+      @if (hasDreamDiary() || hasHomeSweetHome() || hasItineraryLists() || hasTaskManagement()) {
         <div class="mb-8">
           <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
             Your Apps
@@ -57,9 +57,9 @@
                 </div>
               </a>
             }
-            @if (hasApartmentHunt()) {
+            @if (hasHomeSweetHome()) {
               <a
-                [routerLink]="routingService.getHomeSweetHomeUrl()"
+                [routerLink]="homeSweetHomeUrl()"
                 class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
                 <div class="text-3xl">🏠</div>
                 <div>

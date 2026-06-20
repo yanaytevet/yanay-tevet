@@ -39,6 +39,8 @@ export class UserManagementComponent extends BasePageComponent {
     {value: PermissionsEnum.EDITOR, label: 'Editor', description: 'Content editing tools'},
     {value: PermissionsEnum.DREAM_DIARY, label: 'Dream Diary', description: 'Access to Dream Diary'},
     {value: PermissionsEnum.APARTMENT_HUNT, label: 'Apartment Hunt', description: 'Access to Apartment Hunt'},
+    {value: PermissionsEnum.RENTERS_CRM, label: 'Renters CRM', description: 'Access to Renters CRM'},
+    {value: PermissionsEnum.VILLA_VILLEKULLA, label: 'Villa Villekulla', description: 'Access to Villa Villekulla'},
     {value: PermissionsEnum.ITINERARY_LISTS, label: 'Itinerary Lists', description: 'Access to Itinerary Lists'},
     {value: PermissionsEnum.TASK_MANAGEMENT, label: 'Task Management', description: 'Access to Task Management'},
     {value: PermissionsEnum.WORKOUT_PLAN, label: 'Workout Plan', description: 'Access to Workout Plan'},

@@ -30,6 +30,20 @@ export class AppNavigationLeftDrawer implements OnInit {
   public layoutService = inject(LayoutService);
 
   public readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
+  public readonly hasRentersCrm = computed(() => this.authService.hasPermission('renters_crm'));
+  public readonly hasVillaVillekulla = computed(() => this.authService.hasPermission('villa_villekulla'));
+  public readonly hasHomeSweetHome = computed(
+    () => this.hasApartmentHunt() || this.hasRentersCrm() || this.hasVillaVillekulla(),
+  );
+  public readonly homeSweetHomeUrl = computed(() => {
+    if (this.hasApartmentHunt()) {
+      return this.routingService.getApartmentHuntUrl();
+    }
+    if (this.hasVillaVillekulla()) {
+      return this.routingService.getVillaVillekullaUrl();
+    }
+    return this.routingService.getRentersCrmUrl();
+  });
   public readonly hasItineraryLists = computed(() => this.authService.hasPermission('itinerary_lists'));
   public readonly hasTaskManagement = computed(() => this.authService.hasPermission('task_management'));
   public readonly hasWorkoutPlan = computed(() => this.authService.hasPermission('workout_plan'));
