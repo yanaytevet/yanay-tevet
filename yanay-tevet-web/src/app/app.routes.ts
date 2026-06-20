@@ -138,39 +138,9 @@ export const routes: Routes = [
                 canActivate: [adminGuard],
             },
             {
-                path: 'apartment-hunt',
-                loadComponent: () =>
-                    import('./apartment-hunt/projects-list/projects-list.component').then(m => m.ProjectsListComponent),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
-            },
-            {
-                path: 'apartment-hunt/projects/new',
-                loadComponent: () =>
-                    import('./apartment-hunt/project-form/project-form.component').then(m => m.ProjectFormComponent),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
-            },
-            {
-                path: 'apartment-hunt/projects/:id/edit',
-                loadComponent: () =>
-                    import('./apartment-hunt/project-form/project-form.component').then(m => m.ProjectFormComponent),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
-            },
-            {
-                path: 'apartment-hunt/projects/:projectId/prospects/new',
-                loadComponent: () =>
-                    import('./apartment-hunt/prospect-form/prospect-form.component').then(m => m.ProspectFormComponent),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
-            },
-            {
-                path: 'apartment-hunt/projects/:projectId/prospects/:id/edit',
-                loadComponent: () =>
-                    import('./apartment-hunt/prospect-form/prospect-form.component').then(m => m.ProspectFormComponent),
-                canActivate: [hasPermissionGuard('apartment_hunt')],
-            },
-            {
-                path: 'apartment-hunt/projects/:id',
-                loadComponent: () =>
-                    import('./apartment-hunt/project-detail/project-detail.component').then(m => m.ProjectDetailComponent),
+                path: 'home-sweet-home',
+                loadChildren: () =>
+                    import('./home-sweet-home/home-sweet-home.routes').then(m => m.HOME_SWEET_HOME_ROUTES),
                 canActivate: [hasPermissionGuard('apartment_hunt')],
             },
             {

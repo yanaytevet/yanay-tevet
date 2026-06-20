@@ -10,6 +10,8 @@ from genre_trainer.genre_trainer_router import api as genre_trainer_api
 from japanese.japanese_router import api as japanese_api
 from my_dashboard.my_dashboard_router import api as my_dashboard_api
 from apartment_hunt.apartment_hunt_router import api as apartment_hunt_api
+from apartment_hunt.villa_villekulla_router import api as villa_villekulla_api
+from apartment_hunt.renters_crm_router import api as renters_crm_api
 from itinerary_lists.itinerary_lists_router import api as itinerary_lists_api
 from task_management.task_management_router import api as task_management_api
 from workout_plan.workout_plan_router import api as workout_plan_api
@@ -28,6 +30,8 @@ urlpatterns = [
     path(r'api/japanese/', japanese_api.urls),
     path(r'api/my-dashboard/', my_dashboard_api.urls),
     path(r'api/apartment-hunt/', apartment_hunt_api.urls),
+    path(r'api/villa-villekulla/', villa_villekulla_api.urls),
+    path(r'api/renters-crm/', renters_crm_api.urls),
     path(r'api/itinerary-lists/', itinerary_lists_api.urls),
     path(r'api/task-management/', task_management_api.urls),
     path(r'api/workout-plan/', workout_plan_api.urls),

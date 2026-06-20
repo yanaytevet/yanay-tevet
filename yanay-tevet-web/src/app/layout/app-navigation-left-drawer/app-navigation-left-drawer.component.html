@@ -62,15 +62,39 @@
                 Dream Diary
             </a>
 
-            <!-- Apartment Hunt -->
+            <!-- Home Sweet Home -->
             @if (hasApartmentHunt()) {
                 <a
                     class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getApartmentHuntUrl()"
+                    [routerLink]="routingService.getHomeSweetHomeUrl()"
                     routerLinkActive="bg-layer-overlay"
+                    [routerLinkActiveOptions]="{exact: true}"
                     (click)="layoutService.closeBothDrawers()">
-                    Apartment Hunt
+                    Home Sweet Home
                 </a>
+                <div class="flex flex-col ml-4 border-l border-outline-border-1">
+                    <a
+                        class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                        [routerLink]="routingService.getApartmentHuntUrl()"
+                        routerLinkActive="bg-layer-overlay !text-writing"
+                        (click)="layoutService.closeBothDrawers()">
+                        Apartment Hunt
+                    </a>
+                    <a
+                        class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                        [routerLink]="routingService.getVillaVillekullaUrl()"
+                        routerLinkActive="bg-layer-overlay !text-writing"
+                        (click)="layoutService.closeBothDrawers()">
+                        Villa Villekulla
+                    </a>
+                    <a
+                        class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
+                        [routerLink]="routingService.getRentersCrmUrl()"
+                        routerLinkActive="bg-layer-overlay !text-writing"
+                        (click)="layoutService.closeBothDrawers()">
+                        Renters CRM
+                    </a>
+                </div>
             }
 
             <!-- Itinerary Lists -->

@@ -196,9 +196,34 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getAdminUsersUrl());
   }
 
-  // Apartment Hunt
+  // Home Sweet Home (umbrella)
+  getHomeSweetHomeUrl(): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home']);
+  }
+
+  navigateToHomeSweetHome(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getHomeSweetHomeUrl());
+  }
+
+  getVillaVillekullaUrl(): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/villa-villekulla']);
+  }
+
+  navigateToVillaVillekulla(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getVillaVillekullaUrl());
+  }
+
+  getRentersCrmUrl(): UrlTree {
+    return this.router.createUrlTree(['/home-sweet-home/renters-crm']);
+  }
+
+  navigateToRentersCrm(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getRentersCrmUrl());
+  }
+
+  // Apartment Hunt (sub-app of Home Sweet Home)
   getApartmentHuntUrl(): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt']);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt']);
   }
 
   navigateToApartmentHunt(): Promise<boolean> {
@@ -206,7 +231,7 @@ export class RoutingService {
   }
 
   getApartmentHuntNewProjectUrl(): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt/projects/new']);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt/projects/new']);
   }
 
   navigateToApartmentHuntNewProject(): Promise<boolean> {
@@ -214,7 +239,7 @@ export class RoutingService {
   }
 
   getApartmentHuntProjectUrl(projectId: number): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt/projects', projectId]);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt/projects', projectId]);
   }
 
   navigateToApartmentHuntProject(projectId: number): Promise<boolean> {
@@ -222,7 +247,7 @@ export class RoutingService {
   }
 
   getApartmentHuntEditProjectUrl(projectId: number): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'edit']);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt/projects', projectId, 'edit']);
   }
 
   navigateToApartmentHuntEditProject(projectId: number): Promise<boolean> {
@@ -230,7 +255,7 @@ export class RoutingService {
   }
 
   getApartmentHuntNewProspectUrl(projectId: number): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'prospects', 'new']);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt/projects', projectId, 'prospects', 'new']);
   }
 
   navigateToApartmentHuntNewProspect(projectId: number): Promise<boolean> {
@@ -238,7 +263,7 @@ export class RoutingService {
   }
 
   getApartmentHuntEditProspectUrl(projectId: number, prospectId: number): UrlTree {
-    return this.router.createUrlTree(['/apartment-hunt/projects', projectId, 'prospects', prospectId, 'edit']);
+    return this.router.createUrlTree(['/home-sweet-home/apartment-hunt/projects', projectId, 'prospects', prospectId, 'edit']);
   }
 
   navigateToApartmentHuntEditProspect(projectId: number, prospectId: number): Promise<boolean> {
