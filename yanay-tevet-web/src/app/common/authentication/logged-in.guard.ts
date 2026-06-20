@@ -4,7 +4,7 @@ import {AuthenticationService} from './authentication.service';
 import {filter, firstValueFrom} from 'rxjs';
 import {toObservable} from '@angular/core/rxjs-interop';
 
-export const loggedInGuard: CanActivateFn = () => {
+export const loggedInGuard: CanActivateFn = (_route, state) => {
     const authService = inject(AuthenticationService);
     const router = inject(Router);
 
@@ -13,6 +13,8 @@ export const loggedInGuard: CanActivateFn = () => {
     );
 
     return firstValueFrom(obs).then(isLoggedIn => {
-        return isLoggedIn ? true : router.createUrlTree(['/login']);
+        return isLoggedIn
+            ? true
+            : router.createUrlTree(['/login'], {queryParams: {redirect: state.url}});
     });
 };

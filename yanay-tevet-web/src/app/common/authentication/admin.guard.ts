@@ -4,7 +4,7 @@ import {AuthenticationService} from './authentication.service';
 import {filter, firstValueFrom} from 'rxjs';
 import {toObservable} from '@angular/core/rxjs-interop';
 
-export const adminGuard: CanActivateFn = () => {
+export const adminGuard: CanActivateFn = (_route, state) => {
     const authService = inject(AuthenticationService);
     const router = inject(Router);
 
@@ -14,7 +14,7 @@ export const adminGuard: CanActivateFn = () => {
 
     return firstValueFrom(obs).then(isLoggedIn => {
         if (!isLoggedIn) {
-            return router.createUrlTree(['/login']);
+            return router.createUrlTree(['/login'], {queryParams: {redirect: state.url}});
         }
         return authService.user()?.is_admin ? true : router.createUrlTree(['/']);
     });

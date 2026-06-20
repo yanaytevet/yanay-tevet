@@ -1,5 +1,5 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
-import {RouterLink} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {RoutingService} from '../shared/services/routing.service';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {WebAuthnAuthService} from '../common/services/webauthn-auth.service';
@@ -16,6 +16,8 @@ export class LoginComponent implements OnInit {
   private routingService = inject(RoutingService);
   private webAuthnService = inject(WebAuthnAuthService);
   private googleAuthService = inject(GoogleAuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   readonly username = signal('');
   readonly password = signal('');
@@ -32,6 +34,14 @@ export class LoginComponent implements OnInit {
     this.passkeySupported.set(await this.webAuthnService.isPasskeySupported());
   }
 
+  private navigateAfterLogin(): Promise<boolean> {
+    const redirect = this.route.snapshot.queryParamMap.get('redirect');
+    if (redirect) {
+      return this.router.navigateByUrl(redirect);
+    }
+    return this.routingService.navigateToHome();
+  }
+
   async onGoogleLogin() {
     this.isGoogleLoading.set(true);
     this.error.set('');
@@ -39,7 +49,7 @@ export class LoginComponent implements OnInit {
       const code = await this.googleAuthService.signIn();
       await this.authService.loginWithGoogle(code);
       if (this.authService.isLoggedIn()) {
-        await this.routingService.navigateToHome();
+        await this.navigateAfterLogin();
       } else {
         this.error.set('Google sign-in failed. Please try again.');
       }
@@ -62,7 +72,7 @@ export class LoginComponent implements OnInit {
     this.error.set('');
     await this.authService.tryLogin(this.username(), this.password());
     if (this.authService.isLoggedIn()) {
-      await this.routingService.navigateToHome();
+      await this.navigateAfterLogin();
     } else {
       this.error.set('Incorrect username or password. Please try again.');
     }
@@ -80,7 +90,7 @@ export class LoginComponent implements OnInit {
     try {
       await this.authService.loginWithPasskey();
       if (this.authService.isLoggedIn()) {
-        await this.routingService.navigateToHome();
+        await this.navigateAfterLogin();
       }
     } catch {
       this.passkeyFailed.set(true);

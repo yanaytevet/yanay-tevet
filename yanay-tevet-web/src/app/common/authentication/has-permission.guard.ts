@@ -6,7 +6,7 @@ import {toObservable} from '@angular/core/rxjs-interop';
 import {Permissions} from '../../../generated-files/auth';
 
 export function hasPermissionGuard(permission: Permissions): CanActivateFn {
-    return () => {
+    return (_route, state) => {
         const authService = inject(AuthenticationService);
         const router = inject(Router);
 
@@ -16,7 +16,7 @@ export function hasPermissionGuard(permission: Permissions): CanActivateFn {
 
         return firstValueFrom(obs).then(isLoggedIn => {
             if (!isLoggedIn) {
-                return router.createUrlTree(['/login']);
+                return router.createUrlTree(['/login'], {queryParams: {redirect: state.url}});
             }
             const user = authService.user();
             const hasPermission = user?.is_admin || user?.permissions?.includes(permission);
