@@ -1,4 +1,5 @@
 import asyncio
+import contextvars
 import logging
 import threading
 from collections.abc import Coroutine
@@ -9,6 +10,22 @@ logger = logging.getLogger(__name__)
 # Keep strong references to the runner threads so they are not garbage collected
 # while still doing work.
 _background_threads: set[threading.Thread] = set()
+
+# The server's main event loop, captured from the request that spawned the task.
+#
+# The background task runs on its own throwaway loop (see _run), but channel-layer
+# broadcasts (group_send) must run on the main server loop — that loop owns the
+# websocket consumers and their Redis receive connections. Publishing from the
+# throwaway loop uses connections bound to a loop that is about to be torn down,
+# which silently dropped the "generation finished" message in production (uvicorn
+# uses uvloop, the dev server uses plain asyncio — hence the prod-only symptom).
+#
+# BaseWebsocketEventsManager reads this to redirect its group_send onto the main
+# loop via run_coroutine_threadsafe. Outside a background task it stays None and
+# the broadcast runs inline on whatever loop is already current.
+server_event_loop: contextvars.ContextVar[asyncio.AbstractEventLoop | None] = contextvars.ContextVar(
+    'server_event_loop', default=None,
+)
 
 
 def run_in_background(coro: Coroutine[Any, Any, Any]) -> None:
@@ -24,13 +41,23 @@ def run_in_background(coro: Coroutine[Any, Any, Any]) -> None:
 
     Running the coroutine in its own thread + event loop gives it a fresh executor
     that lives for the entire task, independent of the request lifecycle.
+
+    We capture the caller's (server's main) event loop and hand it to the task so
+    that channel-layer broadcasts can be run back on it — see server_event_loop.
     """
-    thread = threading.Thread(target=_run, args=(coro,), daemon=True)
+    try:
+        main_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        main_loop = None
+    thread = threading.Thread(target=_run, args=(coro, main_loop), daemon=True)
     _background_threads.add(thread)
     thread.start()
 
 
-def _run(coro: Coroutine[Any, Any, Any]) -> None:
+def _run(coro: Coroutine[Any, Any, Any], main_loop: asyncio.AbstractEventLoop | None) -> None:
+    # Set before asyncio.run so the value is captured into the task's context and
+    # is visible to every coroutine it awaits.
+    server_event_loop.set(main_loop)
     try:
         asyncio.run(coro)
     except Exception:
