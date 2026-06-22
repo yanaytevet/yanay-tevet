@@ -56,15 +56,21 @@ class TaskManager:
         now = timezone.now()
         for project in projects:
             boundary = self._last_reset_boundary(self._tzinfo_from_name(project.owner.timezone))
-            await Task.objects.filter(
+            due_tasks = Task.objects.filter(
                 project_id=project.id,
                 is_repeating=True,
                 last_reset_at__lt=boundary,
-            ).exclude(status=TaskStatus.TODO).aupdate(
+            )
+            # Reset tasks that were started/completed in a previous cycle back to TODO.
+            await due_tasks.exclude(status=TaskStatus.TODO).aupdate(
                 status=TaskStatus.TODO,
                 completed_at=None,
                 last_reset_at=now,
             )
+            # Advance the boundary for tasks already in TODO too. Otherwise their
+            # last_reset_at stays stale, and they would be wrongly reset the moment
+            # they leave TODO later in the same day.
+            await due_tasks.filter(status=TaskStatus.TODO).aupdate(last_reset_at=now)
 
     async def create_task(self, project_id: int, writable: TaskWritableSchema) -> Task:
         await self._validate_parent(project_id, writable.parent_id)
