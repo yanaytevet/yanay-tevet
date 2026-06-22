@@ -1,8 +1,14 @@
 <div class="max-w-4xl mx-auto w-full p-6">
 
-    <div class="mb-6">
-        <h1 class="text-[22px] font-bold text-primary-500 mb-1">User Management</h1>
-        <p class="text-[13px] text-writing-minor">View all users and grant or revoke their permissions.</p>
+    <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-[22px] font-bold text-primary-500 mb-1">User Management</h1>
+            <p class="text-[13px] text-writing-minor">View all users and grant or revoke their permissions.</p>
+        </div>
+        <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="openInviteDialog()">
+            <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
+            Invite by email
+        </button>
     </div>
 
     <div class="mb-5">

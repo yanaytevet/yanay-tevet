@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {featherChevronLeft, featherChevronRight} from '@ng-icons/feather-icons';
+import {featherChevronLeft, featherChevronRight, featherUserPlus} from '@ng-icons/feather-icons';
 import {
   AdminUserOutput,
   adminUsersPaginationView,
@@ -14,6 +14,7 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {InputDebounce} from '../../common/data/input-debouncer';
 import {BasePageComponent} from '../../common/components/base-page-component';
 import {TooltipDirective} from '../../common/components/tooltip/tooltip.directive';
+import {InviteUserDialogComponent} from './invite-user-dialog/invite-user-dialog.component';
 
 interface PermissionOption {
   value: Permissions;
@@ -72,6 +73,7 @@ export class UserManagementComponent extends BasePageComponent {
 
   protected readonly featherChevronLeft = featherChevronLeft;
   protected readonly featherChevronRight = featherChevronRight;
+  protected readonly featherUserPlus = featherUserPlus;
 
   constructor() {
     super();
@@ -104,6 +106,13 @@ export class UserManagementComponent extends BasePageComponent {
       this.totalAmount.set(result.data.total_amount);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  async openInviteDialog(): Promise<void> {
+    const invited = await this.dialogService.open<void, boolean>(InviteUserDialogComponent, undefined, 40);
+    if (invited) {
+      await this.loadUsers();
     }
   }
 
