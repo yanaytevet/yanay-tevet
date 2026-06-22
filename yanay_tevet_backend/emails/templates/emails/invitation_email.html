@@ -1,0 +1,40 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}You've been invited — Yanay Tevet{% endblock %}
+
+{% block body %}
+  <h1 style="margin:0 0 16px;font-size:24px;font-weight:700;color:#000000f2;letter-spacing:-0.4px;line-height:1.3;">
+    You've been invited 🎉
+  </h1>
+
+  <p style="margin:0 0 16px;font-size:15px;color:rgba(0,0,0,0.75);line-height:1.7;">
+    {% if inviter_name %}<strong style="color:#000000f2;">{{ inviter_name }}</strong> has invited you{% else %}You've been invited{% endif %}
+    to <strong style="color:#000000f2;">Yanay Tevet</strong>.
+  </p>
+
+  <p style="margin:0 0 24px;font-size:15px;color:rgba(0,0,0,0.75);line-height:1.7;">
+    Sign in with this email address and your access will be waiting for you.
+  </p>
+
+  {% if invitation_message %}
+  <div style="margin:0 0 24px;padding:16px 20px;background-color:#f6f5f4;border-left:3px solid #0075de;border-radius:0 4px 4px 0;">
+    <p style="margin:0;font-size:14px;color:rgba(0,0,0,0.75);line-height:1.6;">
+      {{ invitation_message }}
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- CTA button -->
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td style="border-radius:6px;background-color:#0075de;">
+        <a href="{{ frontend_url }}"
+           style="display:inline-block;padding:12px 24px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:6px;letter-spacing:0.1px;">
+          Accept invitation
+        </a>
+      </td>
+    </tr>
+  </table>
+{% endblock %}
+
+{% block footer_extra %}You're receiving this because someone invited you to Yanay Tevet.{% endblock %}

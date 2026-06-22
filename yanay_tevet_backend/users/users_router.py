@@ -1,5 +1,6 @@
 from common.django_utils.api_router_creator import ApiRouterCreator
 from users.views.users_views.admin_users_pagination_view import AdminUsersPaginationView
+from users.views.users_views.invite_user_view import InviteUserView
 from users.views.users_views.my_user_view import MyUserItemView
 from users.views.users_views.update_my_timezone_view import UpdateMyTimezoneView
 from users.views.users_views.update_my_user_view import UpdateMyUserView
@@ -11,6 +12,7 @@ api, router = ApiRouterCreator.create_api_and_router('users')
 MyUserItemView.register_get(router, 'my/')
 AdminUsersPaginationView.register_get(router, 'by-admin/')
 UpdateUserPermissionsView.register_post(router, 'by-admin/update-permissions/')
+InviteUserView.register_post(router, 'by-admin/invite/')
 UpdateMyUserView.register_post(router, 'update-my-user/')
 UpdateMyTimezoneView.register_post(router, 'update-my-timezone/')
 UploadUserProfileImageView.register_post(router, 'upload-profile-image/')

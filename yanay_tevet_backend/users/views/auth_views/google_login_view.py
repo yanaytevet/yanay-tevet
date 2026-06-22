@@ -14,6 +14,7 @@ from common.simple_api.enums.status_code import StatusCode
 from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from common.simple_api.views.simple_views.simple_post_api_view import SimplePostAPIView
 from users.managers.django_auth import DjangoAuth
+from users.managers.invitation_manager import InvitationManager
 from users.models import User
 from users.schemas.auth_schema import AuthSchema
 from users.serializers.user.user_serializer import UserSerializer
@@ -124,4 +125,5 @@ class GoogleLoginView(SimplePostAPIView):
             last_name=last_name,
             pic_url=pic_url,
         )
+        await InvitationManager().apply_for_user(user)
         return user

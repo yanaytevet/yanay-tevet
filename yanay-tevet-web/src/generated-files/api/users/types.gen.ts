@@ -192,6 +192,30 @@ export type UpdateUserPermissionsInputSchema = {
 };
 
 /**
+ * InviteUserOutput
+ */
+export type InviteUserOutput = {
+    /**
+     * Applied Immediately
+     */
+    applied_immediately: boolean;
+};
+
+/**
+ * InviteUserInputSchema
+ */
+export type InviteUserInputSchema = {
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Permissions
+     */
+    permissions?: Array<Permissions>;
+};
+
+/**
  * UpdateMyUserInputSchema
  */
 export type UpdateMyUserInputSchema = {
@@ -294,6 +318,22 @@ export type UpdateUserPermissionsViewResponses = {
 };
 
 export type UpdateUserPermissionsViewResponse = UpdateUserPermissionsViewResponses[keyof UpdateUserPermissionsViewResponses];
+
+export type InviteUserViewData = {
+    body: InviteUserInputSchema;
+    path?: never;
+    query?: never;
+    url: '/api/users/by-admin/invite/';
+};
+
+export type InviteUserViewResponses = {
+    /**
+     * OK
+     */
+    200: InviteUserOutput;
+};
+
+export type InviteUserViewResponse = InviteUserViewResponses[keyof InviteUserViewResponses];
 
 export type UpdateMyUserViewData = {
     body: UpdateMyUserInputSchema;
