@@ -1,4 +1,5 @@
 export interface WebsocketEvent {
+  is_heartbeat?: boolean;
   is_connection_event: boolean;
   action_hash: string;
   group_name: string;

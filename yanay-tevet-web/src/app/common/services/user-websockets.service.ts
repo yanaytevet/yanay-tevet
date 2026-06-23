@@ -46,6 +46,11 @@ export class UserWebsocketsService {
     this.ws = new WebSocket(url);
     this.ws.onmessage = (event) => {
       const eventJsonData: WebsocketEvent = JSON.parse(event.data);
+      if (eventJsonData.is_heartbeat) {
+        // Server keepalive (see MainWebsocketConsumer) — keeps Cloudflare from
+        // dropping an idle connection during long-running work. Nothing to do.
+        return;
+      }
       if (eventJsonData.is_connection_event) {
         this._websocketConnectedToGroupListener.next(eventJsonData);
       } else {
