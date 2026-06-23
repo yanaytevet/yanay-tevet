@@ -25,6 +25,10 @@ export class VillaBookingDetailsDialogComponent extends BaseDialogComponent<Vill
   private readonly dialogService = inject(DialogService);
 
   readonly booking = this.data.booking;
+  // Show who made the booking only when it differs from who it is for (admin booked on their behalf).
+  readonly bookedByOther =
+    this.data.booking.created_by_name !== '' &&
+    this.data.booking.created_by_id !== this.data.booking.booked_for_id;
   readonly noteCtrl = new FormControl<string>(this.data.booking.note, {nonNullable: true});
   readonly isSaving = signal<boolean>(false);
   readonly isDeleting = signal<boolean>(false);

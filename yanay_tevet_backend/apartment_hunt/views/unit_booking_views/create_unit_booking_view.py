@@ -20,6 +20,7 @@ class CreateUnitBookingSchema(Schema):
     start_date: date
     end_date: date
     note: str = ''
+    booked_for_id: int | None = None
 
 
 class CreateUnitBookingView(CreateItemAPIView):
@@ -49,5 +50,5 @@ class CreateUnitBookingView(CreateItemAPIView):
     async def create_object(cls, request: APIRequest, data: CreateUnitBookingSchema, path: Path) -> Model:
         user = await request.future_user
         return await UnitBookingManager(user).create_booking(
-            data.unit_id, data.start_date, data.end_date, data.note
+            data.unit_id, data.start_date, data.end_date, data.note, data.booked_for_id
         )

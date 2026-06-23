@@ -10,8 +10,13 @@
         </button>
     </div>
 
-    @if (booking.created_by_name) {
-        <div class="text-[13px] text-writing-minor mb-4">Booked by <span class="text-writing font-medium">{{ booking.created_by_name }}</span></div>
+    @if (booking.booked_for_name) {
+        <div class="text-[13px] text-writing-minor mb-4">
+            Booked for <span class="text-writing font-medium">{{ booking.booked_for_name }}</span>
+            @if (bookedByOther) {
+                <span> · by {{ booking.created_by_name }}</span>
+            }
+        </div>
     }
 
     <div class="flex flex-col gap-1.5 mb-6">

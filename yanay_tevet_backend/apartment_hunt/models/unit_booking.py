@@ -11,14 +11,20 @@ class UnitBooking(models.Model):
         id: int
         unit_id: int
         created_by_id: int
+        booked_for_id: int
 
-    list_display = ['id', 'unit', 'created_by', 'start_date', 'end_date', 'created_at']
+    list_display = ['id', 'unit', 'created_by', 'booked_for', 'start_date', 'end_date', 'created_at']
     list_filter = ['start_date', 'end_date']
-    raw_id_fields = ['unit', 'created_by']
+    raw_id_fields = ['unit', 'created_by', 'booked_for']
 
     unit = models.ForeignKey(Unit, on_delete=models.CASCADE, related_name='bookings')
     created_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='unit_bookings'
+    )
+    # The member the stay is for. Usually the creator, but an admin/owner can book
+    # on behalf of another project member.
+    booked_for = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='unit_bookings_as_guest'
     )
 
     # A booking occupies the nights [start_date, end_date): check-in inclusive,

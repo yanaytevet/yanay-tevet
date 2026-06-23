@@ -6,14 +6,15 @@ from users.models import User
 
 
 class BookingPermissionChecker(PermissionsChecker):
-    """A booking can be managed by the member who created it, or by a project owner."""
+    """A booking can be managed by the member who created it, the member it is for,
+    or a project owner."""
 
     def __init__(self, booking: UnitBooking, project: RentalProject) -> None:
         self.booking = booking
         self.project = project
 
     async def async_raise_exception_if_not_valid(self, user: User | None) -> None:
-        if user is not None and self.booking.created_by_id == user.id:
+        if user is not None and user.id in (self.booking.created_by_id, self.booking.booked_for_id):
             return
         await ProjectMemberPermissionChecker(
             self.project, require_owner=True

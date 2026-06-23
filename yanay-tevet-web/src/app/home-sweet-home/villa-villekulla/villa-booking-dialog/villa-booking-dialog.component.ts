@@ -4,6 +4,7 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherX} from '@ng-icons/feather-icons';
 import {
   createUnitBookingView,
+  ProjectMembershipSchema,
   UnitBookingSchema,
 } from '../../../../generated-files/api/villa-villekulla';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
@@ -13,6 +14,17 @@ export interface VillaBookingDialogData {
   unitId: number;
   defaultStart: string;
   bookings: UnitBookingSchema[];
+  // When the viewer can book on behalf of others, the project members and the
+  // current user so the dialog can offer a "booking for" dropdown.
+  canManageAll: boolean;
+  members: ProjectMembershipSchema[];
+  currentUserId: number;
+  currentUserName: string;
+}
+
+interface BookForOption {
+  id: number;
+  name: string;
 }
 
 // Date math on the y-m-d parts only — avoids the UTC shift that Date.toISOString() causes.
@@ -38,8 +50,18 @@ export class VillaBookingDialogComponent extends BaseDialogComponent<VillaBookin
   readonly startCtrl = new FormControl<string>(this.data.defaultStart, {nonNullable: true});
   readonly endCtrl = new FormControl<string>(addDays(this.data.defaultStart, 1), {nonNullable: true});
   readonly noteCtrl = new FormControl<string>('', {nonNullable: true});
+  readonly bookForCtrl = new FormControl<number>(this.data.currentUserId, {nonNullable: true});
   readonly isBooking = signal<boolean>(false);
   readonly errorMsg = signal<string | null>(null);
+
+  // The current user first (the default), then every other project member.
+  readonly bookForOptions: BookForOption[] = [
+    {id: this.data.currentUserId, name: `${this.data.currentUserName} (you)`},
+    ...this.data.members
+      .filter(m => m.user_id !== this.data.currentUserId)
+      .map(m => ({id: m.user_id, name: m.full_name || m.username})),
+  ];
+  readonly showBookFor = this.data.canManageAll && this.bookForOptions.length > 1;
 
   protected readonly featherX = featherX;
 
@@ -74,6 +96,7 @@ export class VillaBookingDialogComponent extends BaseDialogComponent<VillaBookin
           start_date: this.startCtrl.value,
           end_date: this.endCtrl.value,
           note: this.noteCtrl.value.trim(),
+          booked_for_id: this.showBookFor ? this.bookForCtrl.value : null,
         },
       });
       this.emitClose(res.data);

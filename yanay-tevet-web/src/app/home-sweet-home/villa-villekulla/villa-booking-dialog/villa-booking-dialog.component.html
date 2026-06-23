@@ -19,6 +19,17 @@
         </div>
     </div>
 
+    @if (showBookFor) {
+        <div class="flex flex-col gap-1.5 mb-4">
+            <span class="input-label">Booking for</span>
+            <select class="main-input w-full" [formControl]="bookForCtrl">
+                @for (option of bookForOptions; track option.id) {
+                    <option [ngValue]="option.id">{{ option.name }}</option>
+                }
+            </select>
+        </div>
+    }
+
     <div class="flex flex-col gap-1.5 mb-4">
         <span class="input-label">Note (optional)</span>
         <textarea class="main-input w-full" rows="2" dir="auto"

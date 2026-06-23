@@ -11,8 +11,10 @@ import {
 import {
   getRentalProjectView,
   getUnitCalendarView,
+  listProjectMembersView,
   listUnitsView,
   paginateVillaVillekullaProjectsView,
+  ProjectMembershipSchema,
   RentalProjectSchema,
   UnitBookingSchema,
   UnitSchema,
@@ -84,6 +86,7 @@ export class VillaCalendarComponent {
   readonly unit = signal<UnitSchema | null>(null);
   readonly bookings = signal<UnitBookingSchema[]>([]);
   readonly canManageAll = signal<boolean>(false);
+  readonly members = signal<ProjectMembershipSchema[]>([]);
   readonly showBack = signal<boolean>(false);
   readonly viewMonth = signal<Date>(this.startOfMonth(new Date()));
 
@@ -117,7 +120,7 @@ export class VillaCalendarComponent {
       const booking = bookingByIso.get(iso) ?? null;
       const inMonth = date.getMonth() === month.getMonth();
       const isPast = iso < this.todayIso;
-      const mine = booking !== null && userId !== null && booking.created_by_id === userId;
+      const mine = booking !== null && userId !== null && booking.booked_for_id === userId;
       const prev = result[i - 1];
       const isSegmentStart = booking !== null && (i % 7 === 0 || !prev || prev.booking?.id !== booking.id);
       result.push({
@@ -129,7 +132,7 @@ export class VillaCalendarComponent {
         booking,
         mine,
         showLabel: isSegmentStart,
-        label: booking === null ? '' : mine ? 'You' : booking.created_by_name || 'Booked',
+        label: booking === null ? '' : mine ? 'You' : booking.booked_for_name || 'Booked',
         disabled: isPast && booking === null,
         classes: cellClasses(inMonth, isPast, booking, mine),
       });
@@ -183,6 +186,13 @@ export class VillaCalendarComponent {
     const res = await getUnitCalendarView({path: {unit_id: unitId}});
     this.bookings.set(res.data.bookings);
     this.canManageAll.set(res.data.can_manage_all);
+    if (res.data.can_manage_all) {
+      const project = this.project();
+      if (project !== null) {
+        const membersRes = await listProjectMembersView({path: {object_id: project.id}});
+        this.members.set(membersRes.data.members);
+      }
+    }
   }
 
   prevMonth(): void {
@@ -211,12 +221,29 @@ export class VillaCalendarComponent {
     if (unit === null) {
       return;
     }
+    const currentUser = this.authService.user();
     const created = await this.dialogService.open<
-      {unitId: number; defaultStart: string; bookings: UnitBookingSchema[]},
+      {
+        unitId: number;
+        defaultStart: string;
+        bookings: UnitBookingSchema[];
+        canManageAll: boolean;
+        members: ProjectMembershipSchema[];
+        currentUserId: number;
+        currentUserName: string;
+      },
       UnitBookingSchema
     >(
       VillaBookingDialogComponent,
-      {unitId: unit.id, defaultStart: cell.iso, bookings: this.bookings()},
+      {
+        unitId: unit.id,
+        defaultStart: cell.iso,
+        bookings: this.bookings(),
+        canManageAll: this.canManageAll(),
+        members: this.members(),
+        currentUserId: currentUser?.id ?? 0,
+        currentUserName: currentUser?.full_name ?? 'You',
+      },
       45,
     );
     if (created !== null) {

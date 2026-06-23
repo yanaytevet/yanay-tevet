@@ -348,6 +348,14 @@ export type UnitBookingSchema = {
      */
     created_by_name: string;
     /**
+     * Booked For Id
+     */
+    booked_for_id: number | null;
+    /**
+     * Booked For Name
+     */
+    booked_for_name: string;
+    /**
      * Created At
      */
     created_at: string;
@@ -387,6 +395,10 @@ export type CreateUnitBookingSchema = {
      * Note
      */
     note?: string;
+    /**
+     * Booked For Id
+     */
+    booked_for_id?: number | null;
 };
 
 /**
