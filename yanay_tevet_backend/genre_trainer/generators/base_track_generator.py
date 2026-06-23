@@ -128,6 +128,77 @@ def _chorus(f: float, dt: float, depth: float, wet: float) -> dict:
     return {'type': 'Chorus', 'options': {'frequency': f, 'delayTime': dt, 'depth': depth}, 'wet': wet}
 
 
+# ---------------------------------------------------------------------------
+# KEY COHERENCE
+#
+# Every melodic layer pool is hand-written in its own key (the bass pool might
+# hold A-minor, E-minor and D-minor lines; the lead pool E-Phrygian, etc.).
+# Layers are picked independently, so without correction a track can stack an
+# A-minor bass under a G-rooted stab over a C pad — three different roots at
+# once, which reads instantly as "out of tune / cheap".
+#
+# _apply_key_coherence picks one root for the whole track and transposes every
+# melodic-role layer so its own root lands on that shared root. Internal
+# intervals (and therefore each pattern's mode/character) are preserved; only
+# the absolute pitch moves, by at most a tritone so registers stay put.
+# Percussion roles (kick/snare/hihat/perc) are left untouched — their note
+# names are just triggers for noise/metal voices, not musical pitches.
+# ---------------------------------------------------------------------------
+_MELODIC_ROLES = frozenset({'bass', 'sub', 'lead', 'stab', 'pad'})
+
+_PC_BY_LETTER = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11}
+_NAME_BY_PC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# Common minor-friendly dance roots (pitch classes): A C D E F G B F# Bb Eb.
+_TRACK_ROOT_PCS = [9, 0, 2, 4, 5, 7, 11, 6, 10, 3]
+
+
+def _note_to_midi(note: str) -> int:
+    pc = _PC_BY_LETTER[note[0].upper()]
+    i = 1
+    while i < len(note) and note[i] in ('#', 'b'):
+        pc += 1 if note[i] == '#' else -1
+        i += 1
+    octave = int(note[i:])
+    return (octave + 1) * 12 + pc
+
+
+def _midi_to_note(midi: int) -> str:
+    return f'{_NAME_BY_PC[midi % 12]}{midi // 12 - 1}'
+
+
+def _transpose_step(step: str | None, shift: int) -> str | None:
+    """Shift a step (single note or comma-separated chord) by `shift` semitones."""
+    if step is None or shift == 0:
+        return step
+    return ','.join(_midi_to_note(_note_to_midi(n) + shift) for n in step.split(','))
+
+
+def _detect_root_pc(steps: list) -> int | None:
+    """Root pitch class of a pattern: the most common primary pitch (for chords,
+    the first/lowest note of each step), tie-broken toward the first hit."""
+    primaries = [_note_to_midi(s.split(',')[0]) % 12 for s in steps if s is not None]
+    if not primaries:
+        return None
+    counts: dict[int, int] = {}
+    for pc in primaries:
+        counts[pc] = counts.get(pc, 0) + 1
+    return max(counts, key=lambda pc: (counts[pc], pc == primaries[0]))
+
+
+def _transpose_layer_to_root(layer: dict[str, Any], target_pc: int) -> None:
+    steps = layer['pattern']['steps']
+    root = _detect_root_pc(steps)
+    if root is None:
+        return
+    shift = (target_pc - root) % 12
+    if shift > 6:
+        shift -= 12  # keep movement within a tritone so registers don't jump an octave
+    if shift == 0:
+        return
+    layer['pattern']['steps'] = [_transpose_step(s, shift) for s in steps]
+
+
 class BaseTrackGenerator:
     GENRE: GenreType
     BPM_RANGE: tuple[int, int]
@@ -158,3 +229,15 @@ class BaseTrackGenerator:
         if random.random() < probability:
             return random.choice(pool)
         return None
+
+    @classmethod
+    def _apply_key_coherence(cls, layers: list[dict[str, Any]], root_pc: int | None = None) -> int:
+        """Transpose every melodic-role layer onto one shared root so the track is
+        in a single key. Returns the chosen root pitch class. Call once at the end
+        of _generate_layers, after all layers (and their velocities) are assembled."""
+        if root_pc is None:
+            root_pc = random.choice(_TRACK_ROOT_PCS)
+        for layer in layers:
+            if layer['role'] in _MELODIC_ROLES:
+                _transpose_layer_to_root(layer, root_pc)
+        return root_pc

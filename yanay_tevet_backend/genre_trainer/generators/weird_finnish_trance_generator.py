@@ -274,4 +274,5 @@ class WeirdFinnishTranceTrackGenerator(BaseTrackGenerator):
             arp['entry_loop'] = random.choice([0, 2])
             layers.append(arp)
 
+        cls._apply_key_coherence(layers)
         return layers

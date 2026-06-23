@@ -282,4 +282,6 @@ class HardTechnoTrackGenerator(BaseTrackGenerator):
         lead['pattern']['velocities'] = _vel(lead['pattern']['steps'], accent_prob=0.3, ghost_prob=0.0)
         sub['pattern']['velocities'] = _vel(sub['pattern']['steps'], accent_prob=0.1, ghost_prob=0.0)
 
-        return [kick, snare, hihat, bass, lead, sub]
+        layers = [kick, snare, hihat, bass, lead, sub]
+        cls._apply_key_coherence(layers)
+        return layers

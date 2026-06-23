@@ -278,4 +278,5 @@ class GoaTrackGenerator(BaseTrackGenerator):
         if random.random() < 0.45:
             layers.append(copy.deepcopy(cls._pick(_PADS)))
 
+        cls._apply_key_coherence(layers)
         return layers

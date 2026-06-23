@@ -349,4 +349,5 @@ class PsytranceTrackGenerator(BaseTrackGenerator):
         if random.random() < 0.55:
             layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
+        cls._apply_key_coherence(layers)
         return layers

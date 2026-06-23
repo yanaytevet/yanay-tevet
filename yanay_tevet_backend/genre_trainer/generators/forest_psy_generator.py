@@ -160,4 +160,5 @@ class ForestPsyTrackGenerator(BaseTrackGenerator):
             texture['entry_loop'] = random.choice([0, 2])
             layers.append(texture)
 
+        cls._apply_key_coherence(layers)
         return layers

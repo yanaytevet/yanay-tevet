@@ -121,4 +121,6 @@ class HightekTrackGenerator(BaseTrackGenerator):
         hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
         bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.28, ghost_prob=0.08)
 
-        return [kick, perc, hihat, bass]
+        layers = [kick, perc, hihat, bass]
+        cls._apply_key_coherence(layers)
+        return layers

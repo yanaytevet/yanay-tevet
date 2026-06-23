@@ -177,4 +177,5 @@ class MelodicTechnoTrackGenerator(BaseTrackGenerator):
             lead['entry_loop'] = random.choice([2, 4])
             layers.append(lead)
 
+        cls._apply_key_coherence(layers)
         return layers

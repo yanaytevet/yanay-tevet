@@ -241,4 +241,5 @@ class AcidTechnoTrackGenerator(BaseTrackGenerator):
         if random.random() < 0.4:
             hihat['dropout_prob'] = random.choice([0.2, 0.25, 0.3])
 
+        cls._apply_key_coherence(layers)
         return layers

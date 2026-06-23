@@ -134,4 +134,6 @@ class TekTrackGenerator(BaseTrackGenerator):
         if random.random() < 0.5:
             lead['entry_loop'] = random.choice([2, 4])
 
-        return [kick, perc, hihat, bass, lead]
+        layers = [kick, perc, hihat, bass, lead]
+        cls._apply_key_coherence(layers)
+        return layers

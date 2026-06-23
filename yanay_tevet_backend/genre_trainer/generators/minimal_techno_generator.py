@@ -138,4 +138,5 @@ class MinimalTechnoTrackGenerator(BaseTrackGenerator):
             stab['entry_loop'] = random.choice([2, 4])
             layers.append(stab)
 
+        cls._apply_key_coherence(layers)
         return layers

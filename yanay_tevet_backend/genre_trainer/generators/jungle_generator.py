@@ -166,4 +166,5 @@ class JungleTrackGenerator(BaseTrackGenerator):
             pad['entry_loop'] = random.choice([0, 2])
             layers.append(pad)
 
+        cls._apply_key_coherence(layers)
         return layers

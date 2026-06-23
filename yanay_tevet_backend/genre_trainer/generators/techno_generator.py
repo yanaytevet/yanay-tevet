@@ -313,4 +313,5 @@ class TechnoTrackGenerator(BaseTrackGenerator):
         if fill:
             layers.append(copy.deepcopy(fill))
 
+        cls._apply_key_coherence(layers)
         return layers
