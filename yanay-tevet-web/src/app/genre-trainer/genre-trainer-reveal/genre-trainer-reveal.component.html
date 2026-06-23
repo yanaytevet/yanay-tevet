@@ -5,6 +5,12 @@
       @if (service.isCorrect()) { Correct! } @else { Not quite. }
     </p>
 
+    @if (!service.isCorrect() && !service.easyMode() && service.selectedGenreLabel()) {
+      <p class="text-rose-600 text-sm mb-1">
+        You guessed <span class="font-semibold">{{ service.selectedGenreLabel() }}</span>.
+      </p>
+    }
+
     @if (service.easyMode()) {
       <p class="text-secondary-400 text-sm">
         Family: <span class="font-semibold text-primary-500">{{ service.trackGenreFamily()?.name }}</span>
@@ -23,6 +29,12 @@
       <p class="text-xs text-secondary-400 mt-1">
         This track: <span class="font-semibold text-primary-500">{{ service.track()!.bpm }} BPM</span>
       </p>
+      @if (service.currentGenreStat(); as stat) {
+        <p class="text-xs text-secondary-400 mt-1">
+          Your record on <span class="font-semibold text-primary-500">{{ service.trackGenreLabel() }}</span>:
+          <span class="font-semibold text-primary-500">{{ stat.correct }}/{{ stat.seen }}</span>
+        </p>
+      }
     </div>
 
     @if (service.trackGenreFamily(); as family) {

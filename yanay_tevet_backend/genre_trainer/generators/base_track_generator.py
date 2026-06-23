@@ -199,6 +199,47 @@ def _transpose_layer_to_root(layer: dict[str, Any], target_pc: int) -> None:
     layer['pattern']['steps'] = [_transpose_step(s, shift) for s in steps]
 
 
+# ---------------------------------------------------------------------------
+# KICK ENHANCEMENT
+#
+# Every genre's kick was a bare MembraneSynth thump — near-identical across
+# genres and lacking attack definition, which is exactly why the kick-defined
+# genres (techno / tek / hard-techno) were hard to tell apart. _enhance_kick
+# adds a short, bright "click transient" layer locked to the kick hits (the
+# part the ear reads as punch/attack) and, for kick-defined genres, a
+# saturating distortion. Click brightness/level and saturation are chosen per
+# profile so the kick itself becomes a genre cue: hard genres click bright and
+# distort; deep/house kicks stay round and soft.
+# ---------------------------------------------------------------------------
+_KICK_PROFILES = {
+    GenreType.TEK: 'hard',
+    GenreType.HIGHTEK: 'hard',
+    GenreType.HARD_TECHNO: 'hard',
+    GenreType.DARK_PSY: 'hard',
+    GenreType.FOREST_PSY: 'hard',
+    GenreType.PSY_BASS: 'deep',
+    GenreType.MELODIC_TECHNO: 'deep',
+    GenreType.MINIMAL_TECHNO: 'deep',
+    GenreType.HOUSE: 'deep',
+}  # everything else falls back to 'punchy'
+
+# profile -> (MetalSynth frequency, click volume dB, decay seconds)
+_KICK_CLICK_PARAMS = {
+    'hard': (820, -9, 0.018),
+    'punchy': (620, -13, 0.022),
+    'deep': (380, -17, 0.028),
+}
+
+
+def _build_kick_click(kick_steps: list, profile: str) -> dict[str, Any]:
+    freq, vol, decay = _KICK_CLICK_PARAMS[profile]
+    steps = ['C5' if s is not None else None for s in kick_steps]
+    return _cfg('kick_click', 'kick', vol, '32n', 'MetalSynth',
+                {'frequency': freq, 'envelope': {'attack': 0.001, 'decay': decay, 'release': 0.005},
+                 'harmonicity': 3.2, 'modulationIndex': 16, 'resonance': 7000, 'octaves': 1.0},
+                [], steps)
+
+
 class BaseTrackGenerator:
     GENRE: GenreType
     BPM_RANGE: tuple[int, int]
@@ -208,17 +249,35 @@ class BaseTrackGenerator:
 
     @classmethod
     def generate(cls) -> dict[str, Any]:
+        layers = cls._generate_layers()
+        cls._enhance_kick(layers)
         return {
             'id': f'{cls.GENRE.value}_{uuid.uuid4().hex[:6]}',
             'genre': cls.GENRE.value,
             'bpm': random.randint(*cls.BPM_RANGE),
             'swing': cls.SWING,
-            'layers': cls._generate_layers(),
+            'layers': layers,
         }
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
         raise NotImplementedError
+
+    @classmethod
+    def _enhance_kick(cls, layers: list[dict[str, Any]]) -> None:
+        """Give the kick attack definition and a genre-specific character. Adds a
+        click-transient layer locked to the kick hits, plus saturation for the
+        kick-defined ('hard') genres. The extra distortion is appended last so it
+        never shifts existing effect indices (automation targets stay valid)."""
+        profile = _KICK_PROFILES.get(cls.GENRE, 'punchy')
+        kick = next((layer for layer in layers if layer['role'] == 'kick'), None)
+        if kick is None:
+            return
+        if profile == 'hard' and not any(e['type'] == 'Distortion' for e in kick['effects']):
+            kick['effects'].append(_dist(0.35, 0.45))
+        click = _build_kick_click(kick['pattern']['steps'], profile)
+        click['pattern']['velocities'] = _vel_kick(click['pattern']['steps'])
+        layers.append(click)
 
     @classmethod
     def _pick(cls, pool: list[dict[str, Any]]) -> dict[str, Any]:
