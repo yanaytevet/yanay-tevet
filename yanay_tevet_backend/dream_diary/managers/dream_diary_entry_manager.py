@@ -16,7 +16,6 @@ from users.models import User
 
 class DreamAnalysisSchema(BaseModel):
     title: str
-    interpretation: str
 
 
 class DreamDiaryEntryManager:
@@ -40,13 +39,10 @@ class DreamDiaryEntryManager:
         entry.image_url = res['secure_url']
         await entry.asave()
 
-    async def generate_title_and_interpretation(self, entry: DreamDiaryEntry) -> None:
+    async def generate_title(self, entry: DreamDiaryEntry) -> None:
         prompt = (
-            f"Analyze this dream journal entry and return a JSON object with two fields:\n"
-            f"- title: a short, evocative title (5 words or fewer)\n"
-            f"- interpretation: a thoughtful interpretation of the dream drawing on multiple psychological "
-            f"theories (e.g. Freudian symbolism, Jungian archetypes, cognitive theories, emotional processing). "
-            f"Keep the interpretation to 2-4 paragraphs.\n\n"
+            f"Analyze this dream journal entry and return a JSON object with one field:\n"
+            f"- title: a short, evocative title (5 words or fewer)\n\n"
             f"Dream: {entry.text}"
         )
         result = await TextGenerativeAI.generate_schema(
@@ -55,7 +51,6 @@ class DreamDiaryEntryManager:
             system_prompt="You are a knowledgeable dream analyst with expertise in psychology and psychoanalysis.",
         )
         entry.title = result.title
-        entry.interpretation = result.interpretation
         await entry.asave()
 
     async def generate_image(self, entry: DreamDiaryEntry) -> None:

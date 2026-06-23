@@ -47,14 +47,8 @@ export class DreamDiaryComponent {
   loggedDates = signal<string[]>([]);
   uploadingId = signal<number | null>(null);
   generatingImageId = signal<number | null>(null);
-  expandedInterpretationIds = signal<Set<number>>(new Set());
 
   hasMore = computed(() => this.entries().length < this.totalAmount());
-
-  readonly interpretationExpanded = computed(() => {
-    const ids = this.expandedInterpretationIds();
-    return Object.fromEntries(this.entries().map(e => [e.id, ids.has(e.id)]));
-  });
 
   calendarDays = computed<CalendarDay[]>(() => {
     const logged = new Set(this.loggedDates());
@@ -221,18 +215,6 @@ export class DreamDiaryComponent {
     } finally {
       this.generatingImageId.set(null);
     }
-  }
-
-  toggleInterpretation(entryId: number): void {
-    this.expandedInterpretationIds.update(prev => {
-      const next = new Set(prev);
-      if (next.has(entryId)) {
-        next.delete(entryId);
-      } else {
-        next.add(entryId);
-      }
-      return next;
-    });
   }
 
   formatTime(isoString: string): string {
