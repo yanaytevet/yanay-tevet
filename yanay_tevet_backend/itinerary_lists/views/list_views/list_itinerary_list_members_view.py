@@ -13,10 +13,17 @@ from common.simple_api.api_request import APIRequest
 from common.simple_api.exceptions.object_doesnt_exist_api_exception import ObjectDoesntExistAPIException
 from common.simple_api.views.item_by_id_api_mixin import ItemByIdPath
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
+from users.enums.invitation_membership_type import InvitationMembershipType
+from users.managers.invitation_manager import InvitationManager
+from users.serializers.invitation.pending_invitation_serializer import (
+    PendingInvitationSchema,
+    PendingInvitationSerializer,
+)
 
 
 class ListMembersSchema(Schema):
     members: list[ListMembershipSchema]
+    pending_invitations: list[PendingInvitationSchema]
 
 
 class ListItineraryListMembersView(SimpleGetAPIView):
@@ -42,4 +49,9 @@ class ListItineraryListMembersView(SimpleGetAPIView):
         memberships = await ItineraryListManager(user).list_members(itinerary_list)
         serializer = ListMembershipSerializer()
         members = [await serializer.serialize(m) for m in memberships]
-        return ListMembersSchema(members=members)
+        pending = await InvitationManager().list_pending_for_membership(
+            InvitationMembershipType.ITINERARY_LIST, itinerary_list.id
+        )
+        pending_serializer = PendingInvitationSerializer()
+        pending_invitations = [await pending_serializer.serialize(p) for p in pending]
+        return ListMembersSchema(members=members, pending_invitations=pending_invitations)

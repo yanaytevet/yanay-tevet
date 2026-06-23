@@ -1,7 +1,7 @@
 import {Component, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {featherX, featherUserPlus} from '@ng-icons/feather-icons';
+import {featherX, featherUserPlus, featherMail} from '@ng-icons/feather-icons';
 import {BaseDialogComponent} from '../base-dialog.component';
 import {DialogService} from '../dialogs.service';
 
@@ -12,12 +12,21 @@ export interface ShareDialogMember {
   role: string;
 }
 
+export interface ShareDialogPendingInvitation {
+  email: string;
+}
+
+export interface ShareDialogAccess {
+  members: ShareDialogMember[];
+  pendingInvitations: ShareDialogPendingInvitation[];
+}
+
 export interface ShareDialogData {
   objectId: number;
   isOwner: boolean;
   title: string;
   subtitle: string;
-  listMembers: (objectId: number) => Promise<ShareDialogMember[]>;
+  listMembers: (objectId: number) => Promise<ShareDialogAccess>;
   share: (objectId: number, identifier: string) => Promise<void>;
   unshare: (objectId: number, identifier: string) => Promise<void>;
 }
@@ -26,13 +35,14 @@ export interface ShareDialogData {
   selector: 'app-share-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({featherX, featherUserPlus})],
+  providers: [provideIcons({featherX, featherUserPlus, featherMail})],
   templateUrl: './share-dialog.component.html',
 })
 export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, null> {
   private readonly dialogService = inject(DialogService);
 
   readonly members = signal<ShareDialogMember[]>([]);
+  readonly pendingInvitations = signal<ShareDialogPendingInvitation[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isSharing = signal<boolean>(false);
   readonly removingUserId = signal<number | null>(null);
@@ -41,6 +51,7 @@ export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, n
 
   protected readonly featherX = featherX;
   protected readonly featherUserPlus = featherUserPlus;
+  protected readonly featherMail = featherMail;
 
   constructor() {
     super();
@@ -50,7 +61,9 @@ export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, n
   private async loadMembers(): Promise<void> {
     this.isLoading.set(true);
     try {
-      this.members.set(await this.data.listMembers(this.data.objectId));
+      const access = await this.data.listMembers(this.data.objectId);
+      this.members.set(access.members);
+      this.pendingInvitations.set(access.pendingInvitations);
     } finally {
       this.isLoading.set(false);
     }

@@ -1,6 +1,6 @@
 import asyncio
 import json
-import re
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -14,10 +14,10 @@ from common.simple_api.enums.status_code import StatusCode
 from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from common.simple_api.views.simple_views.simple_post_api_view import SimplePostAPIView
 from users.managers.django_auth import DjangoAuth
-from users.managers.invitation_manager import InvitationManager
 from users.models import User
 from users.schemas.auth_schema import AuthSchema
 from users.serializers.user.user_serializer import UserSerializer
+from yanay_tevet_backend.logger import app_logger
 
 invalid_token_exception = RestAPIException(
     status_code=StatusCode.HTTP_401_UNAUTHORIZED,
@@ -64,12 +64,22 @@ class GoogleLoginView(SimplePostAPIView):
                 data=post_data,
                 method='POST',
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                return json.loads(resp.read().decode('utf-8'))
+            try:
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    return json.loads(resp.read().decode('utf-8'))
+            except urllib.error.HTTPError as http_error:
+                body = http_error.read().decode('utf-8', errors='replace')
+                app_logger.logger.warning(
+                    'Google token exchange failed (HTTP %s): %s', http_error.code, body,
+                )
+                raise invalid_token_exception
 
         try:
             result = await asyncio.to_thread(_do_exchange)
-        except Exception:
+        except RestAPIException:
+            raise
+        except Exception as e:
+            app_logger.logger.exception(e)
             raise invalid_token_exception
 
         id_token_str = result.get('id_token')
@@ -86,7 +96,8 @@ class GoogleLoginView(SimplePostAPIView):
                 google_requests.Request(),
                 settings.GOOGLE_CLIENT_ID,
             )
-        except Exception:
+        except Exception as e:
+            app_logger.logger.warning('Google id_token verification failed: %s', e)
             raise invalid_token_exception
 
         email = id_info.get('email', '')
@@ -111,19 +122,11 @@ class GoogleLoginView(SimplePostAPIView):
         if user:
             return user
 
-        base_username = re.sub(r'[^a-z0-9_]', '_', email.split('@')[0].lower())
-        username = base_username
-        counter = 1
-        while await User.objects.filter(username=username).aexists():
-            username = f'{base_username}_{counter}'
-            counter += 1
-
         user = await User.objects.acreate(
-            username=username,
+            username=email,
             email=email,
             first_name=first_name,
             last_name=last_name,
             pic_url=pic_url,
         )
-        await InvitationManager().apply_for_user(user)
         return user

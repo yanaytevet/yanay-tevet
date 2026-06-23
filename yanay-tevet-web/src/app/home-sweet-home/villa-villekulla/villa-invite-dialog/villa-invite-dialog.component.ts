@@ -1,7 +1,7 @@
 import {Component, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {featherX, featherUserPlus} from '@ng-icons/feather-icons';
+import {featherX, featherUserPlus, featherMail} from '@ng-icons/feather-icons';
 import {
   listProjectMembersView,
   ProjectMembershipSchema,
@@ -20,13 +20,14 @@ export interface VillaInviteDialogData {
   selector: 'app-villa-invite-dialog',
   standalone: true,
   imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({featherX, featherUserPlus})],
+  providers: [provideIcons({featherX, featherUserPlus, featherMail})],
   templateUrl: './villa-invite-dialog.component.html',
 })
 export class VillaInviteDialogComponent extends BaseDialogComponent<VillaInviteDialogData, null> {
   private readonly dialogService = inject(DialogService);
 
   readonly members = signal<ProjectMembershipSchema[]>([]);
+  readonly pendingInvitations = signal<{email: string}[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isInviting = signal<boolean>(false);
   readonly removingUserId = signal<number | null>(null);
@@ -36,6 +37,7 @@ export class VillaInviteDialogComponent extends BaseDialogComponent<VillaInviteD
 
   protected readonly featherX = featherX;
   protected readonly featherUserPlus = featherUserPlus;
+  protected readonly featherMail = featherMail;
 
   constructor() {
     super();
@@ -47,6 +49,7 @@ export class VillaInviteDialogComponent extends BaseDialogComponent<VillaInviteD
     try {
       const res = await listProjectMembersView({path: {object_id: this.data.projectId}});
       this.members.set(res.data.members);
+      this.pendingInvitations.set(res.data.pending_invitations);
     } finally {
       this.isLoading.set(false);
     }

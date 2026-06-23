@@ -201,6 +201,24 @@ export type UnshareRentalProjectSchema = {
 };
 
 /**
+ * PendingInvitationSchema
+ */
+export type PendingInvitationSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
  * ProjectMembersSchema
  */
 export type ProjectMembersSchema = {
@@ -208,6 +226,10 @@ export type ProjectMembersSchema = {
      * Members
      */
     members: Array<ProjectMembershipSchema>;
+    /**
+     * Pending Invitations
+     */
+    pending_invitations: Array<PendingInvitationSchema>;
 };
 
 /**

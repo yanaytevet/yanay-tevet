@@ -56,6 +56,19 @@ class InvitationManager:
         await self._send_email(invitation)
         return InvitationResult(applied_immediately=False, invitation=invitation)
 
+    async def list_pending_for_membership(
+        self, membership_type: InvitationMembershipType, object_id: int
+    ) -> list[Invitation]:
+        """Pending invitations whose membership targets the given object."""
+        return [
+            invitation
+            async for invitation in Invitation.objects.filter(
+                status=InvitationStatus.PENDING,
+                membership__type=membership_type.value,
+                membership__object_id=object_id,
+            )
+        ]
+
     async def apply_for_user(self, user: User) -> None:
         """Apply every pending invitation addressed to a freshly created user."""
         if not user.email:

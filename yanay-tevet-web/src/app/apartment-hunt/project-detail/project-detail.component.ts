@@ -205,8 +205,10 @@ export class ProjectDetailComponent {
       isOwner: this.isOwner(),
       title: 'Share project',
       subtitle: 'People you add can view and edit this project\'s apartments.',
-      listMembers: async (objectId: number) =>
-        (await listProjectMembersView({path: {object_id: objectId}})).data.members,
+      listMembers: async (objectId: number) => {
+        const data = (await listProjectMembersView({path: {object_id: objectId}})).data;
+        return {members: data.members, pendingInvitations: data.pending_invitations};
+      },
       share: async (objectId: number, identifier: string) => {
         await shareRentalProjectView({body: {identifier, role: 'collaborator'}, path: {object_id: objectId}});
       },

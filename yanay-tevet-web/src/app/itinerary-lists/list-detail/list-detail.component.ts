@@ -270,8 +270,10 @@ export class ListDetailComponent {
       isOwner: this.isOwner(),
       title: 'Share list',
       subtitle: 'People you add can view and edit this list and its items.',
-      listMembers: async (objectId: number) =>
-        (await listItineraryListMembersView({path: {object_id: objectId}})).data.members,
+      listMembers: async (objectId: number) => {
+        const data = (await listItineraryListMembersView({path: {object_id: objectId}})).data;
+        return {members: data.members, pendingInvitations: data.pending_invitations};
+      },
       share: async (objectId: number, identifier: string) => {
         await shareItineraryListView({body: {identifier, role: 'collaborator'}, path: {object_id: objectId}});
       },

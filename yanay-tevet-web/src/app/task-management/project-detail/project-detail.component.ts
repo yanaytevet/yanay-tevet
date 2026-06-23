@@ -373,8 +373,10 @@ export class ProjectDetailComponent {
       isOwner: this.isOwner(),
       title: 'Share project',
       subtitle: 'People you add can view and edit this project and its tasks.',
-      listMembers: async (objectId: number) =>
-        (await listTaskProjectMembersView({path: {object_id: objectId}})).data.members,
+      listMembers: async (objectId: number) => {
+        const data = (await listTaskProjectMembersView({path: {object_id: objectId}})).data;
+        return {members: data.members, pendingInvitations: data.pending_invitations};
+      },
       share: async (objectId: number, identifier: string) => {
         await shareTaskProjectView({body: {identifier, role: 'collaborator'}, path: {object_id: objectId}});
       },

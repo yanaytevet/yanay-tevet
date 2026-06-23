@@ -190,6 +190,10 @@ export type ListMembersSchema = {
      * Members
      */
     members: Array<ListMembershipSchema>;
+    /**
+     * Pending Invitations
+     */
+    pending_invitations: Array<PendingInvitationSchema>;
 };
 
 /**
@@ -213,6 +217,24 @@ export type ListMembershipSchema = {
      */
     full_name: string;
     role: ListRole;
+};
+
+/**
+ * PendingInvitationSchema
+ */
+export type PendingInvitationSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
