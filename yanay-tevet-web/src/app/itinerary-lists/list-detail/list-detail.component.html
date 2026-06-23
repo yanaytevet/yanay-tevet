@@ -120,5 +120,56 @@
                 </div>
             }
         </div>
+
+        <div class="card p-4 mt-5">
+            <div class="flex items-center justify-between gap-2 mb-3">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-[15px] font-bold text-primary-500">Tasks</h2>
+                    @if (tasks().length > 0) {
+                        <span class="text-[12px] text-writing-minor">{{ taskCounts().done }}/{{ taskCounts().total }} done</span>
+                    }
+                </div>
+                <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="addTask()">
+                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                    Add task
+                </button>
+            </div>
+
+            @if (tasks().length === 0) {
+                <div class="text-center text-writing-minor text-[13px] py-8">No tasks yet. Add one above.</div>
+            } @else {
+                <div class="flex flex-col divide-y divide-[rgba(0,0,0,0.06)]">
+                    @for (task of tasks(); track task.id) {
+                        <div class="flex items-center gap-3 py-2.5">
+                            <button type="button"
+                                    class="icon-btn shrink-0 transition-opacity disabled:opacity-50"
+                                    [class.text-notion-blue]="task.status === 'done'"
+                                    [class.text-writing-minor]="task.status !== 'done'"
+                                    [disabled]="savingTaskId() === task.id"
+                                    (click)="toggleTask(task)">
+                                <ng-icon [svg]="task.status === 'done' ? featherCheckSquare : featherSquare" class="h-5 w-5"></ng-icon>
+                            </button>
+                            <div class="min-w-0 flex-1">
+                                <div class="text-[14px] truncate" dir="auto"
+                                     [class.line-through]="task.status === 'done'"
+                                     [class.text-writing-minor]="task.status === 'done'"
+                                     [class.text-writing]="task.status !== 'done'">{{ task.name }}</div>
+                                @if (task.description) {
+                                    <div class="text-[12px] text-writing-minor line-clamp-2" dir="auto">{{ task.description }}</div>
+                                }
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editTask(task)">
+                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                </button>
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteTask(task)">
+                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     }
 </div>

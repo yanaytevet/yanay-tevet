@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ActivateItineraryListViewData, ActivateItineraryListViewResponses, CreateItineraryItemViewData, CreateItineraryItemViewResponses, CreateItineraryListViewData, CreateItineraryListViewResponses, DeleteItineraryItemViewData, DeleteItineraryItemViewResponses, DeleteItineraryListViewData, DeleteItineraryListViewResponses, FinishItineraryListViewData, FinishItineraryListViewResponses, GetItineraryItemViewData, GetItineraryItemViewResponses, GetItineraryListViewData, GetItineraryListViewResponses, ListItineraryListMembersViewData, ListItineraryListMembersViewResponses, PaginateItineraryItemsViewData, PaginateItineraryItemsViewResponses, PaginateItineraryListsViewData, PaginateItineraryListsViewResponses, ShareItineraryListViewData, ShareItineraryListViewResponses, UnshareItineraryListViewData, UnshareItineraryListViewResponses, UpdateItineraryItemViewData, UpdateItineraryItemViewResponses, UpdateItineraryListViewData, UpdateItineraryListViewResponses } from './types.gen';
+import type { ActivateItineraryListViewData, ActivateItineraryListViewResponses, CreateItineraryItemViewData, CreateItineraryItemViewResponses, CreateItineraryListViewData, CreateItineraryListViewResponses, CreateItineraryTaskViewData, CreateItineraryTaskViewResponses, DeleteItineraryItemViewData, DeleteItineraryItemViewResponses, DeleteItineraryListViewData, DeleteItineraryListViewResponses, DeleteItineraryTaskViewData, DeleteItineraryTaskViewResponses, FinishItineraryListViewData, FinishItineraryListViewResponses, GetItineraryItemViewData, GetItineraryItemViewResponses, GetItineraryListViewData, GetItineraryListViewResponses, GetItineraryTaskViewData, GetItineraryTaskViewResponses, ListItineraryListMembersViewData, ListItineraryListMembersViewResponses, PaginateItineraryItemsViewData, PaginateItineraryItemsViewResponses, PaginateItineraryListsViewData, PaginateItineraryListsViewResponses, PaginateItineraryTasksViewData, PaginateItineraryTasksViewResponses, ShareItineraryListViewData, ShareItineraryListViewResponses, UnshareItineraryListViewData, UnshareItineraryListViewResponses, UpdateItineraryItemViewData, UpdateItineraryItemViewResponses, UpdateItineraryListViewData, UpdateItineraryListViewResponses, UpdateItineraryTaskViewData, UpdateItineraryTaskViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -184,6 +184,62 @@ export const getItineraryItemView = <ThrowOnError extends boolean = false>(optio
 export const updateItineraryItemView = <ThrowOnError extends boolean = false>(options: Options<UpdateItineraryItemViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateItineraryItemViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/itinerary-lists/items/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Pagination
+ */
+export const paginateItineraryTasksView = <ThrowOnError extends boolean = false>(options: Options<PaginateItineraryTasksViewData, ThrowOnError>) => (options.client ?? client).get<PaginateItineraryTasksViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/itinerary-lists/lists/{list_id}/tasks/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const createItineraryTaskView = <ThrowOnError extends boolean = false>(options: Options<CreateItineraryTaskViewData, ThrowOnError>) => (options.client ?? client).post<CreateItineraryTaskViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/itinerary-lists/tasks/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deleteItineraryTaskView = <ThrowOnError extends boolean = false>(options: Options<DeleteItineraryTaskViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteItineraryTaskViewResponses, unknown, ThrowOnError>({
+    url: '/api/itinerary-lists/tasks/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get
+ */
+export const getItineraryTaskView = <ThrowOnError extends boolean = false>(options: Options<GetItineraryTaskViewData, ThrowOnError>) => (options.client ?? client).get<GetItineraryTaskViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/itinerary-lists/tasks/{object_id}/',
+    ...options
+});
+
+/**
+ * Patch
+ */
+export const updateItineraryTaskView = <ThrowOnError extends boolean = false>(options: Options<UpdateItineraryTaskViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateItineraryTaskViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/itinerary-lists/tasks/{object_id}/',
     ...options,
     headers: {
         'Content-Type': 'application/json',

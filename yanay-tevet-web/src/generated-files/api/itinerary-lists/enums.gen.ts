@@ -14,3 +14,8 @@ export enum ItemStatusEnum {
   READY = 'ready',
   IN_THE_CAR = 'in_the_car',
 }
+
+export enum TaskStatusEnum {
+  TO_DO = 'to_do',
+  DONE = 'done',
+}

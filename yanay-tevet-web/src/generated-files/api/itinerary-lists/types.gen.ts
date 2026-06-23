@@ -365,6 +365,134 @@ export type ItineraryItemWritableSchema = {
     order?: number | null;
 };
 
+/**
+ * PaginateItineraryTasksFilterSchema
+ */
+export type PaginateItineraryTasksFilterSchema = {
+    /**
+     * Status
+     */
+    status?: string | null;
+};
+
+/**
+ * TasksByListPath
+ */
+export type TasksByListPath = {
+    /**
+     * List Id
+     */
+    list_id: number;
+};
+
+/**
+ * ItineraryTaskSchema
+ */
+export type ItineraryTaskSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Itinerary List Id
+     */
+    itinerary_list_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    status: TaskStatus;
+    /**
+     * Order
+     */
+    order: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * PaginationOutput[ItineraryTaskSchema]
+ */
+export type PaginationOutputItineraryTaskSchema = {
+    /**
+     * Total Amount
+     */
+    total_amount: number;
+    /**
+     * Pages Amount
+     */
+    pages_amount: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Data
+     */
+    data: Array<ItineraryTaskSchema>;
+};
+
+/**
+ * TaskStatus
+ */
+export type TaskStatus = 'to_do' | 'done';
+
+/**
+ * CreateItineraryTaskSchema
+ */
+export type CreateItineraryTaskSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    status?: TaskStatus | null;
+    /**
+     * Order
+     */
+    order?: number | null;
+    /**
+     * Itinerary List Id
+     */
+    itinerary_list_id: number;
+};
+
+/**
+ * ItineraryTaskWritableSchema
+ */
+export type ItineraryTaskWritableSchema = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    status?: TaskStatus | null;
+    /**
+     * Order
+     */
+    order?: number | null;
+};
+
 export type PaginateItineraryListsViewData = {
     body?: never;
     path?: never;
@@ -698,3 +826,122 @@ export type UpdateItineraryItemViewResponses = {
 };
 
 export type UpdateItineraryItemViewResponse = UpdateItineraryItemViewResponses[keyof UpdateItineraryItemViewResponses];
+
+export type PaginateItineraryTasksViewData = {
+    body?: never;
+    path: {
+        /**
+         * List Id
+         */
+        list_id: number;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Order By
+         */
+        order_by?: Array<string> | null;
+        /**
+         * Dict Filter
+         */
+        dict_filter?: string | null;
+        /**
+         * Status
+         */
+        status?: string | null;
+    };
+    url: '/api/itinerary-lists/lists/{list_id}/tasks/';
+};
+
+export type PaginateItineraryTasksViewResponses = {
+    /**
+     * OK
+     */
+    200: PaginationOutputItineraryTaskSchema;
+};
+
+export type PaginateItineraryTasksViewResponse = PaginateItineraryTasksViewResponses[keyof PaginateItineraryTasksViewResponses];
+
+export type CreateItineraryTaskViewData = {
+    body: CreateItineraryTaskSchema;
+    path?: never;
+    query?: never;
+    url: '/api/itinerary-lists/tasks/';
+};
+
+export type CreateItineraryTaskViewResponses = {
+    /**
+     * OK
+     */
+    200: ItineraryTaskSchema;
+};
+
+export type CreateItineraryTaskViewResponse = CreateItineraryTaskViewResponses[keyof CreateItineraryTaskViewResponses];
+
+export type DeleteItineraryTaskViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/itinerary-lists/tasks/{object_id}/';
+};
+
+export type DeleteItineraryTaskViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetItineraryTaskViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/itinerary-lists/tasks/{object_id}/';
+};
+
+export type GetItineraryTaskViewResponses = {
+    /**
+     * OK
+     */
+    200: ItineraryTaskSchema;
+};
+
+export type GetItineraryTaskViewResponse = GetItineraryTaskViewResponses[keyof GetItineraryTaskViewResponses];
+
+export type UpdateItineraryTaskViewData = {
+    body: ItineraryTaskWritableSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/itinerary-lists/tasks/{object_id}/';
+};
+
+export type UpdateItineraryTaskViewResponses = {
+    /**
+     * OK
+     */
+    200: ItineraryTaskSchema;
+};
+
+export type UpdateItineraryTaskViewResponse = UpdateItineraryTaskViewResponses[keyof UpdateItineraryTaskViewResponses];

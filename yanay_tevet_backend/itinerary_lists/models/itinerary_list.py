@@ -9,6 +9,7 @@ from users.models import User
 if TYPE_CHECKING:
     from itinerary_lists.models.itinerary_list_membership import ItineraryListMembership
     from itinerary_lists.models.itinerary_item import ItineraryItem
+    from itinerary_lists.models.itinerary_task import ItineraryTask
 
 
 class ItineraryList(models.Model):
@@ -17,6 +18,7 @@ class ItineraryList(models.Model):
         owner_id: int
         memberships: Manager['ItineraryListMembership']
         items: Manager['ItineraryItem']
+        tasks: Manager['ItineraryTask']
 
     list_display = ['id', 'name', 'owner', 'status', 'activated_at', 'updated_at']
     list_filter = ['status']

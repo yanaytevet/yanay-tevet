@@ -1,4 +1,4 @@
-import {ItemStatus, ListStatus} from '../../generated-files/api/itinerary-lists';
+import {ItemStatus, ListStatus, TaskStatus} from '../../generated-files/api/itinerary-lists';
 
 export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
   need_to_buy: 'Need to buy',
@@ -23,6 +23,13 @@ export const ITEM_STATUS_CHIP_CLASS: Record<ItemStatus, string> = {
   ready: 'status-ready',
   in_the_car: 'status-in-car',
 };
+
+export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
+  to_do: 'To do',
+  done: 'Done',
+};
+
+export const TASK_STATUS_ORDER: TaskStatus[] = ['to_do', 'done'];
 
 export const LIST_STATUS_LABELS: Record<ListStatus, string> = {
   standby: 'Standby',

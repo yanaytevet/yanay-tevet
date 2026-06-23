@@ -5,6 +5,7 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
   featherCheckCircle,
+  featherCheckSquare,
   featherEdit,
   featherHome,
   featherPackage,
@@ -12,24 +13,31 @@ import {
   featherPlus,
   featherShare2,
   featherShoppingCart,
+  featherSquare,
   featherTrash2,
   featherTruck,
 } from '@ng-icons/feather-icons';
 import {
   activateItineraryListView,
   createItineraryItemView,
+  createItineraryTaskView,
   deleteItineraryItemView,
   deleteItineraryListView,
+  deleteItineraryTaskView,
   finishItineraryListView,
   getItineraryListView,
   ItemStatus,
   ItineraryItemSchema,
   ItineraryListSchema,
+  ItineraryTaskSchema,
   listItineraryListMembersView,
   paginateItineraryItemsView,
+  paginateItineraryTasksView,
   shareItineraryListView,
+  TaskStatus,
   unshareItineraryListView,
   updateItineraryItemView,
+  updateItineraryTaskView,
 } from '../../../generated-files/api/itinerary-lists';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
@@ -41,6 +49,7 @@ import {
   ITEM_STATUS_LABELS,
   ITEM_STATUS_NEXT,
   ITEM_STATUS_ORDER,
+  TASK_STATUS_LABELS,
 } from '../itinerary-lists.constants';
 
 @Component({
@@ -48,8 +57,8 @@ import {
   standalone: true,
   imports: [NgIcon, ReactiveFormsModule],
   providers: [provideIcons({
-    featherArrowLeft, featherCheckCircle, featherEdit, featherHome, featherPackage, featherPlay,
-    featherPlus, featherShare2, featherShoppingCart, featherTrash2, featherTruck,
+    featherArrowLeft, featherCheckCircle, featherCheckSquare, featherEdit, featherHome, featherPackage,
+    featherPlay, featherPlus, featherShare2, featherShoppingCart, featherSquare, featherTrash2, featherTruck,
   })],
   templateUrl: './list-detail.component.html',
 })
@@ -62,10 +71,12 @@ export class ListDetailComponent {
   readonly listId = signal<number | null>(null);
   readonly list = signal<ItineraryListSchema | null>(null);
   readonly items = signal<ItineraryItemSchema[]>([]);
+  readonly tasks = signal<ItineraryTaskSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly loadError = signal<string | null>(null);
   readonly isUpdatingStatus = signal<boolean>(false);
   readonly savingItemId = signal<number | null>(null);
+  readonly savingTaskId = signal<number | null>(null);
 
   readonly newItemCtrl = new FormControl<string>('', {nonNullable: true});
   readonly isAdding = signal<boolean>(false);
@@ -84,9 +95,16 @@ export class ListDetailComponent {
     return counts;
   });
 
+  readonly taskCounts = computed(() => {
+    const tasks = this.tasks();
+    const done = tasks.filter(t => t.status === 'done').length;
+    return {done, total: tasks.length};
+  });
+
   readonly statusLabels = ITEM_STATUS_LABELS;
   readonly statusOrder = ITEM_STATUS_ORDER;
   readonly statusChipClass = ITEM_STATUS_CHIP_CLASS;
+  readonly taskStatusLabels = TASK_STATUS_LABELS;
   readonly statusIcon: Record<ItemStatus, string> = {
     need_to_buy: featherShoppingCart,
     in_the_house: featherHome,
@@ -96,10 +114,12 @@ export class ListDetailComponent {
 
   protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherCheckCircle = featherCheckCircle;
+  protected readonly featherCheckSquare = featherCheckSquare;
   protected readonly featherEdit = featherEdit;
   protected readonly featherPlay = featherPlay;
   protected readonly featherPlus = featherPlus;
   protected readonly featherShare2 = featherShare2;
+  protected readonly featherSquare = featherSquare;
   protected readonly featherTrash2 = featherTrash2;
 
   constructor() {
@@ -117,12 +137,14 @@ export class ListDetailComponent {
     this.isLoading.set(true);
     this.loadError.set(null);
     try {
-      const [listRes, itemsRes] = await Promise.all([
+      const [listRes, itemsRes, tasksRes] = await Promise.all([
         getItineraryListView({path: {object_id: id}}),
         paginateItineraryItemsView({path: {list_id: id}, query: {page: 0, page_size: 500}}),
+        paginateItineraryTasksView({path: {list_id: id}, query: {page: 0, page_size: 500}}),
       ]);
       this.list.set(listRes.data);
       this.items.set(itemsRes.data.data);
+      this.tasks.set(tasksRes.data.data);
     } catch {
       this.loadError.set('Could not load this list. You may not have access to it.');
     } finally {
@@ -223,6 +245,86 @@ export class ListDetailComponent {
     try {
       await deleteItineraryItemView({path: {object_id: item.id}});
       this.items.update(prev => prev.filter(i => i.id !== item.id));
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    }
+  }
+
+  async addTask(): Promise<void> {
+    const listId = this.listId();
+    if (listId === null) {
+      return;
+    }
+    const result = await this.dialogService.open<ItemDialogData, ItemDialogResult>(
+      ItemDialogComponent,
+      {title: 'Add task', name: '', description: '', confirmActionName: 'Add'},
+      45,
+    );
+    if (!result) {
+      return;
+    }
+    try {
+      const res = await createItineraryTaskView({
+        body: {itinerary_list_id: listId, name: result.name, description: result.description},
+      });
+      this.tasks.update(prev => [...prev, res.data]);
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    }
+  }
+
+  async toggleTask(task: ItineraryTaskSchema): Promise<void> {
+    if (this.savingTaskId() !== null) {
+      return;
+    }
+    const next: TaskStatus = task.status === 'done' ? 'to_do' : 'done';
+    this.savingTaskId.set(task.id);
+    try {
+      const res = await updateItineraryTaskView({body: {status: next}, path: {object_id: task.id}});
+      this.tasks.update(prev => prev.map(t => (t.id === task.id ? res.data : t)));
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    } finally {
+      this.savingTaskId.set(null);
+    }
+  }
+
+  async editTask(task: ItineraryTaskSchema): Promise<void> {
+    const result = await this.dialogService.open<ItemDialogData, ItemDialogResult>(
+      ItemDialogComponent,
+      {title: 'Edit task', name: task.name, description: task.description, confirmActionName: 'Save'},
+      45,
+    );
+    if (!result) {
+      return;
+    }
+    this.savingTaskId.set(task.id);
+    try {
+      const res = await updateItineraryTaskView({
+        body: {name: result.name, description: result.description},
+        path: {object_id: task.id},
+      });
+      this.tasks.update(prev => prev.map(t => (t.id === task.id ? res.data : t)));
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    } finally {
+      this.savingTaskId.set(null);
+    }
+  }
+
+  async deleteTask(task: ItineraryTaskSchema): Promise<void> {
+    const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
+      title: 'Delete task',
+      text: `Delete "${task.name}"?`,
+      confirmActionName: 'Delete',
+      cancelActionName: 'Cancel',
+    });
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await deleteItineraryTaskView({path: {object_id: task.id}});
+      this.tasks.update(prev => prev.filter(t => t.id !== task.id));
     } catch (err) {
       await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
     }
