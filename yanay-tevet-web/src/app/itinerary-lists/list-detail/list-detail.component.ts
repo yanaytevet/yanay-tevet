@@ -80,6 +80,8 @@ export class ListDetailComponent {
 
   readonly newItemCtrl = new FormControl<string>('', {nonNullable: true});
   readonly isAdding = signal<boolean>(false);
+  readonly newTaskCtrl = new FormControl<string>('', {nonNullable: true});
+  readonly isAddingTask = signal<boolean>(false);
 
   readonly isOwner = computed(() => {
     const list = this.list();
@@ -98,7 +100,7 @@ export class ListDetailComponent {
   readonly taskCounts = computed(() => {
     const tasks = this.tasks();
     const done = tasks.filter(t => t.status === 'done').length;
-    return {done, total: tasks.length};
+    return {done, toDo: tasks.length - done, total: tasks.length};
   });
 
   readonly statusLabels = ITEM_STATUS_LABELS;
@@ -251,25 +253,20 @@ export class ListDetailComponent {
   }
 
   async addTask(): Promise<void> {
+    const name = this.newTaskCtrl.value.trim();
     const listId = this.listId();
-    if (listId === null) {
+    if (!name || listId === null || this.isAddingTask()) {
       return;
     }
-    const result = await this.dialogService.open<ItemDialogData, ItemDialogResult>(
-      ItemDialogComponent,
-      {title: 'Add task', name: '', description: '', confirmActionName: 'Add'},
-      45,
-    );
-    if (!result) {
-      return;
-    }
+    this.isAddingTask.set(true);
     try {
-      const res = await createItineraryTaskView({
-        body: {itinerary_list_id: listId, name: result.name, description: result.description},
-      });
+      const res = await createItineraryTaskView({body: {itinerary_list_id: listId, name}});
       this.tasks.update(prev => [...prev, res.data]);
+      this.newTaskCtrl.setValue('');
     } catch (err) {
       await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    } finally {
+      this.isAddingTask.set(false);
     }
   }
 

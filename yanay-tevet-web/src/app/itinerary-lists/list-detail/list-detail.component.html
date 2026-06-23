@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        @if (items().length > 0) {
+        @if (items().length > 0 || tasks().length > 0) {
             <div class="flex flex-wrap gap-1.5 mb-4">
                 @for (status of statusOrder; track status) {
                     @if (statusCounts()[status] > 0) {
@@ -66,6 +66,18 @@
                             {{ statusCounts()[status] }} {{ statusLabels[status] }}
                         </span>
                     }
+                }
+                @if (taskCounts().done > 0) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-layer-3 text-notion-blue">
+                        <ng-icon [svg]="featherCheckSquare" class="h-3.5 w-3.5"></ng-icon>
+                        {{ taskCounts().done }} task{{ taskCounts().done === 1 ? '' : 's' }} done
+                    </span>
+                }
+                @if (taskCounts().toDo > 0) {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-semibold bg-layer-3 text-writing-minor">
+                        <ng-icon [svg]="featherSquare" class="h-3.5 w-3.5"></ng-icon>
+                        {{ taskCounts().toDo }} task{{ taskCounts().toDo === 1 ? '' : 's' }} to do
+                    </span>
                 }
             </div>
         }
@@ -122,23 +134,24 @@
         </div>
 
         <div class="card p-4 mt-5">
-            <div class="flex items-center justify-between gap-2 mb-3">
-                <div class="flex items-center gap-2">
-                    <h2 class="text-[15px] font-bold text-primary-500">Tasks</h2>
-                    @if (tasks().length > 0) {
-                        <span class="text-[12px] text-writing-minor">{{ taskCounts().done }}/{{ taskCounts().total }} done</span>
-                    }
+            <h2 class="text-[15px] font-bold text-primary-500 mb-3">Tasks</h2>
+            <div class="flex items-end gap-2 mb-1">
+                <div class="flex-1 flex flex-col gap-1.5">
+                    <span class="input-label">Add a task</span>
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book parking, Confirm reservation"
+                           [formControl]="newTaskCtrl" (keyup.enter)="addTask()" />
                 </div>
-                <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="addTask()">
+                <button type="button" class="btn btn-primary flex items-center gap-1.5"
+                        [disabled]="isAddingTask()" (click)="addTask()">
                     <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-                    Add task
+                    Add
                 </button>
             </div>
 
             @if (tasks().length === 0) {
-                <div class="text-center text-writing-minor text-[13px] py-8">No tasks yet. Add one above.</div>
+                <div class="text-center text-writing-minor text-[13px] py-8">No tasks yet. Add your first one above.</div>
             } @else {
-                <div class="flex flex-col divide-y divide-[rgba(0,0,0,0.06)]">
+                <div class="flex flex-col divide-y divide-[rgba(0,0,0,0.06)] mt-2">
                     @for (task of tasks(); track task.id) {
                         <div class="flex items-center gap-3 py-2.5">
                             <button type="button"

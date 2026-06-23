@@ -3,9 +3,11 @@ from django.utils import timezone
 from itinerary_lists.enums.item_status import ItemStatus
 from itinerary_lists.enums.list_role import ListRole
 from itinerary_lists.enums.list_status import ListStatus
+from itinerary_lists.enums.task_status import TaskStatus
 from itinerary_lists.models.itinerary_item import ItineraryItem
 from itinerary_lists.models.itinerary_list import ItineraryList
 from itinerary_lists.models.itinerary_list_membership import ItineraryListMembership
+from itinerary_lists.models.itinerary_task import ItineraryTask
 from common.simple_api.enums.status_code import StatusCode
 from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from users.models import User
@@ -34,6 +36,9 @@ class ItineraryListManager:
         await ItineraryItem.objects.filter(
             itinerary_list_id=itinerary_list.id
         ).exclude(status=ItemStatus.NEED_TO_BUY).aupdate(status=ItemStatus.IN_THE_HOUSE)
+        await ItineraryTask.objects.filter(
+            itinerary_list_id=itinerary_list.id
+        ).aupdate(status=TaskStatus.TO_DO)
 
     async def _find_user(self, identifier: str) -> User | None:
         identifier = identifier.strip()

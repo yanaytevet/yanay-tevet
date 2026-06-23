@@ -74,6 +74,10 @@ export type ItineraryListSchema = {
      */
     item_count: number;
     /**
+     * Task Count
+     */
+    task_count: number;
+    /**
      * Activated At
      */
     activated_at: string | null;

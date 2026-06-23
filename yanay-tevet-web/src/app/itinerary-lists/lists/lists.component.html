@@ -39,6 +39,8 @@
                         <div class="flex items-center gap-3 text-[12px] text-writing-minor">
                             <span>{{ list.item_count }} item{{ list.item_count === 1 ? '' : 's' }}</span>
                             <span>·</span>
+                            <span>{{ list.task_count }} task{{ list.task_count === 1 ? '' : 's' }}</span>
+                            <span>·</span>
                             <span>{{ list.member_count }} member{{ list.member_count === 1 ? '' : 's' }}</span>
                         </div>
                     </div>
@@ -65,6 +67,8 @@
                         }
                         <div class="flex items-center gap-3 text-[12px] text-writing-minor">
                             <span>{{ list.item_count }} item{{ list.item_count === 1 ? '' : 's' }}</span>
+                            <span>·</span>
+                            <span>{{ list.task_count }} task{{ list.task_count === 1 ? '' : 's' }}</span>
                             <span>·</span>
                             <span>{{ list.member_count }} member{{ list.member_count === 1 ? '' : 's' }}</span>
                         </div>
