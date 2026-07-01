@@ -104,6 +104,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
+            "port": 4201,
             "headers": {
               "Cross-Origin-Opener-Policy": "same-origin-allow-popups"
             }
