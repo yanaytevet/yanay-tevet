@@ -46,9 +46,9 @@ if (fs.existsSync(generatedFilesDir)) {
 
 // Verify the backend is reachable before invoking the generator (which creates error log files on failure)
 try {
-  execSync(`curl -sf --max-time 3 "http://localhost:8000/${paths[0]}openapi.json" -o /dev/null`, { stdio: 'ignore' });
+  execSync(`curl -sf --max-time 3 "http://localhost:8001/${paths[0]}openapi.json" -o /dev/null`, { stdio: 'ignore' });
 } catch {
-  console.error('ERROR: Backend is not running at http://localhost:8000. Start the backend first, then re-run create-api.');
+  console.error('ERROR: Backend is not running at http://localhost:8001. Start the backend first, then re-run create-api.');
   process.exit(1);
 }
 
@@ -62,7 +62,7 @@ paths.forEach(pathUrl => {
   }
 
   // Run the OpenAPI command
-  const command = `npx --loglevel silent @hey-api/openapi-ts -i http://localhost:8000/${pathUrl}openapi.json -o src/generated-files/${pathUrl} -c @hey-api/client-axios --silent`;
+  const command = `npx --loglevel silent @hey-api/openapi-ts -i http://localhost:8001/${pathUrl}openapi.json -o src/generated-files/${pathUrl} -c @hey-api/client-axios --silent`;
 
   console.log(`Generating client for ${pathUrl}...`);
   console.log(`Running command: ${command}`);

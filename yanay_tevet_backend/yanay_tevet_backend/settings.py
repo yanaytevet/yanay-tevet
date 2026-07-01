@@ -37,7 +37,7 @@ CHATGPT_API_KEY = os.environ.get("CHATGPT_API_KEY")
 OPENAI_ADMIN_API_KEY = os.environ.get("OPENAI_ADMIN_API_KEY")
 WEBAUTHN_RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Yanay Tevet")
 WEBAUTHN_ORIGIN = FRONTEND_URL
-WEBAUTHN_RP_ID = FRONTEND_URL.replace('https://', '').replace('http://', '').replace(':4200', '')
+WEBAUTHN_RP_ID = FRONTEND_URL.replace('https://', '').replace('http://', '').replace(':4201', '')
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 

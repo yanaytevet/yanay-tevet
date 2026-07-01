@@ -38,7 +38,7 @@ services:
       CHATGPT_API_KEY: ${CHATGPT_API_KEY}
       OPENAI_ADMIN_API_KEY: ${OPENAI_ADMIN_API_KEY}
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - ../../yanay_tevet_backend:/app
       - logs:/var/log/yanay_tevet/
@@ -52,3 +52,4 @@ volumes:
 networks:
   common-network:
     external: true
+    name: yanay_tevet-network
