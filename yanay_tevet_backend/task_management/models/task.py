@@ -52,6 +52,9 @@ class Task(models.Model):
     order = models.PositiveIntegerField(default=0, blank=True)
 
     is_repeating = models.BooleanField(default=False, blank=True)
+    # Weekdays the task resets on, as ints 0=Sunday .. 6=Saturday (JS Date.getDay()).
+    # Empty list means it resets every day.
+    repeat_days = models.JSONField(default=list, blank=True)
     last_reset_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

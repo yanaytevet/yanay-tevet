@@ -6,8 +6,12 @@ import {featherCheck, featherRotateCcw, featherX} from '@ng-icons/feather-icons'
 import {TaskPriority, TaskStatus} from '../../../../generated-files/api/task-management';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {
+  describeRepeatSchedule,
+  formatRepeatDays,
+  REPEAT_PRESETS,
   TASK_PRIORITY_LABELS,
   TASK_PRIORITY_ORDER,
+  WEEKDAYS,
 } from '../../task-management.constants';
 
 export interface TaskDialogItineraryList {
@@ -24,6 +28,7 @@ export interface TaskDialogData {
   priority: TaskPriority;
   dueAt: string | null;
   isRepeating: boolean;
+  repeatDays: number[];
   itineraryListId: number | null;
   showStatus: boolean;
   itineraryLists: TaskDialogItineraryList[];
@@ -36,6 +41,7 @@ export interface TaskDialogResult {
   priority: TaskPriority;
   dueAt: string | null;
   isRepeating: boolean;
+  repeatDays: number[];
   itineraryListId: number | null;
 }
 
@@ -55,9 +61,19 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
 
   readonly isDone = signal<boolean>(false);
   readonly isRepeating = signal<boolean>(false);
+  readonly repeatDays = signal<number[]>([]);
 
   readonly priorityOrder = TASK_PRIORITY_ORDER;
   readonly priorityLabels = TASK_PRIORITY_LABELS;
+  readonly weekdays = WEEKDAYS;
+  readonly repeatPresets = REPEAT_PRESETS;
+
+  readonly daySelected = computed(() => {
+    const selected = new Set(this.repeatDays());
+    return Object.fromEntries(WEEKDAYS.map(d => [d.value, selected.has(d.value)]));
+  });
+  readonly repeatSummary = computed(() => formatRepeatDays(this.repeatDays()));
+  readonly repeatScheduleText = computed(() => describeRepeatSchedule(this.repeatDays()));
 
   private readonly nameValue = toSignal(this.nameCtrl.valueChanges, {initialValue: ''});
   readonly canSave = computed(() => !!this.nameValue()?.trim());
@@ -72,6 +88,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
     this.descriptionCtrl.setValue(this.data.description);
     this.isDone.set(this.data.status === 'done');
     this.isRepeating.set(this.data.isRepeating);
+    this.repeatDays.set([...this.data.repeatDays]);
     this.priorityCtrl.setValue(this.data.priority);
     this.itineraryListCtrl.setValue(this.data.itineraryListId);
     if (this.data.dueAt) {
@@ -85,6 +102,17 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
 
   toggleRepeating(): void {
     this.isRepeating.update(v => !v);
+  }
+
+  toggleDay(value: number): void {
+    this.repeatDays.update(days =>
+      days.includes(value)
+        ? days.filter(d => d !== value)
+        : [...days, value].sort((a, b) => a - b));
+  }
+
+  applyPreset(days: number[]): void {
+    this.repeatDays.set([...days]);
   }
 
   onSave(): void {
@@ -101,6 +129,7 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
       priority: this.priorityCtrl.value,
       dueAt: local ? new Date(local).toISOString() : null,
       isRepeating: this.isRepeating(),
+      repeatDays: this.isRepeating() ? this.repeatDays() : [],
       itineraryListId: this.itineraryListCtrl.value ?? null,
     });
   }

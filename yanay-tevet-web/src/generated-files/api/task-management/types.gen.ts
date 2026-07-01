@@ -335,6 +335,10 @@ export type TaskSchema = {
      */
     is_repeating: boolean;
     /**
+     * Repeat Days
+     */
+    repeat_days: Array<number>;
+    /**
      * Itinerary List Id
      */
     itinerary_list_id: number | null;
@@ -392,6 +396,10 @@ export type CreateTaskSchema = {
      */
     is_repeating?: boolean | null;
     /**
+     * Repeat Days
+     */
+    repeat_days?: Array<number> | null;
+    /**
      * Parent Id
      */
     parent_id?: number | null;
@@ -431,6 +439,10 @@ export type TaskWritableSchema = {
      * Is Repeating
      */
     is_repeating?: boolean | null;
+    /**
+     * Repeat Days
+     */
+    repeat_days?: Array<number> | null;
     /**
      * Parent Id
      */

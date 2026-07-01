@@ -30,12 +30,25 @@ class TaskManager:
                 pass
         return ZoneInfo('UTC')
 
-    def _last_reset_boundary(self, tzinfo: ZoneInfo) -> datetime:
+    def _last_reset_boundary(self, tzinfo: ZoneInfo, repeat_days: list[int]) -> datetime:
         now = timezone.now().astimezone(tzinfo)
         today_boundary = now.replace(hour=self.DAILY_RESET_HOUR, minute=0, second=0, microsecond=0)
-        if now >= today_boundary:
-            return today_boundary
-        return today_boundary - timedelta(days=1)
+        candidate = today_boundary if now >= today_boundary else today_boundary - timedelta(days=1)
+        allowed = self._sanitized_repeat_days(repeat_days)
+        if not allowed:
+            return candidate
+        # Walk back to the most recent 4 AM that falls on one of the task's weekdays.
+        for _ in range(7):
+            # isoweekday() is 1=Mon..7=Sun; %7 maps it to 0=Sun..6=Sat (JS Date.getDay()).
+            if candidate.isoweekday() % 7 in allowed:
+                return candidate
+            candidate -= timedelta(days=1)
+        return candidate
+
+    def _sanitized_repeat_days(self, repeat_days: list[int] | None) -> list[int]:
+        if not repeat_days:
+            return []
+        return sorted({day for day in repeat_days if isinstance(day, int) and 0 <= day <= 6})
 
     async def reset_due_repeating_tasks(self, project_id: int) -> None:
         project = await TaskProject.objects.select_related('owner').filter(id=project_id).afirst()
@@ -55,12 +68,18 @@ class TaskManager:
     async def _reset_for_projects(self, projects: list[TaskProject]) -> None:
         now = timezone.now()
         for project in projects:
-            boundary = self._last_reset_boundary(self._tzinfo_from_name(project.owner.timezone))
-            due_tasks = Task.objects.filter(
-                project_id=project.id,
-                is_repeating=True,
-                last_reset_at__lt=boundary,
-            )
+            tzinfo = self._tzinfo_from_name(project.owner.timezone)
+            # Each task may reset on a different set of weekdays, so its due boundary is
+            # computed individually rather than with a single project-wide query.
+            due_ids = [
+                task.id
+                async for task in Task.objects.filter(project_id=project.id, is_repeating=True)
+                if task.last_reset_at is None
+                or task.last_reset_at < self._last_reset_boundary(tzinfo, task.repeat_days)
+            ]
+            if not due_ids:
+                continue
+            due_tasks = Task.objects.filter(id__in=due_ids)
             # Reset tasks that were started/completed in a previous cycle back to TODO.
             await due_tasks.exclude(status=TaskStatus.TODO).aupdate(
                 status=TaskStatus.TODO,
@@ -100,9 +119,11 @@ class TaskManager:
 
     def _sync_repeating(self, task: Task) -> None:
         if task.is_repeating:
+            task.repeat_days = self._sanitized_repeat_days(task.repeat_days)
             if task.last_reset_at is None:
                 task.last_reset_at = timezone.now()
         else:
+            task.repeat_days = []
             task.last_reset_at = None
 
     def _sync_completed_at(self, task: Task) -> None:

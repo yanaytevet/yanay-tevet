@@ -49,6 +49,7 @@ import {
   TaskDialogResult,
 } from '../dialogs/task-dialog/task-dialog.component';
 import {
+  formatRepeatDays,
   TASK_PRIORITY_CHIP_CLASS,
   TASK_PRIORITY_LABELS,
 } from '../task-management.constants';
@@ -123,6 +124,8 @@ export class ProjectDetailComponent {
     Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_LABELS[t.priority]])));
   readonly priorityChipById = computed(() =>
     Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_CHIP_CLASS[t.priority]])));
+  readonly repeatLabelById = computed(() =>
+    Object.fromEntries(this.tasks().map(t => [t.id, formatRepeatDays(t.repeat_days)])));
 
   readonly progress = computed(() => {
     const top = this.topLevel();
@@ -278,6 +281,7 @@ export class ProjectDetailComponent {
         priority: task.priority,
         dueAt: task.due_at,
         isRepeating: task.is_repeating,
+        repeatDays: task.repeat_days,
         itineraryListId: task.itinerary_list_id,
         showStatus: true,
         itineraryLists: this.itineraryLists(),
@@ -294,6 +298,7 @@ export class ProjectDetailComponent {
       priority: result.priority,
       due_at: result.dueAt,
       is_repeating: result.isRepeating,
+      repeat_days: result.repeatDays,
       itinerary_list_id: result.itineraryListId,
     });
   }
