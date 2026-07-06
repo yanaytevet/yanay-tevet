@@ -1,10 +1,10 @@
 <div class="max-w-4xl mx-auto w-full p-6">
 
     @if (showBack()) {
-        <button type="button" class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-writing mb-4" (click)="back()">
+        <a [routerLink]="allPropertiesUrl" class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-writing mb-4">
             <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
             All properties
-        </button>
+        </a>
     }
 
     @if (isLoading()) {

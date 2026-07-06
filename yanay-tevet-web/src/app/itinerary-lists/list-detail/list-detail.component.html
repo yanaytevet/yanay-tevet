@@ -1,18 +1,17 @@
 <div class="max-w-3xl mx-auto w-full p-6">
 
-    <button type="button"
-            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
-            (click)="back()">
+    <a [routerLink]="allListsUrl"
+       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         All lists
-    </button>
+    </a>
 
     @if (isLoading()) {
         <div class="text-center text-writing-minor text-[14px] py-12">Loading list...</div>
     } @else if (loadError()) {
         <div class="card p-10 text-center">
             <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
-            <button type="button" class="btn btn-secondary" (click)="back()">Back to lists</button>
+            <a [routerLink]="allListsUrl" class="btn btn-secondary no-underline">Back to lists</a>
         </div>
     } @else if (list(); as list) {
 

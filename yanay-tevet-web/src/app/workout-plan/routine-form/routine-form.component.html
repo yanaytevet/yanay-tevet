@@ -1,10 +1,10 @@
 <div class="max-w-xl mx-auto w-full p-6">
 
-    <button type="button" class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-writing mb-5"
-            (click)="onCancel()">
+    <a [routerLink]="backUrl()"
+       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-writing mb-5">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         Back
-    </button>
+    </a>
 
     <h1 class="text-[22px] font-bold text-primary-500 mb-6">
         {{ isEditMode() ? 'Edit routine' : 'New routine' }}

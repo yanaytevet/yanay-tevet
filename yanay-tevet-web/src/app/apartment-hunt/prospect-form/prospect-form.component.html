@@ -1,11 +1,10 @@
 <div class="max-w-3xl mx-auto w-full p-6">
 
-    <button type="button"
-            class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-primary-500 transition-colors mb-4"
-            (click)="onCancel()">
+    <a [routerLink]="backUrl()"
+       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         Back to project
-    </button>
+    </a>
 
     <div class="card p-6">
         <div class="mb-6">

@@ -1,6 +1,6 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {NgClass} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
@@ -70,7 +70,7 @@ function cellClasses(inMonth: boolean, isPast: boolean, booking: UnitBookingSche
 @Component({
   selector: 'app-villa-calendar',
   standalone: true,
-  imports: [NgIcon, NgClass],
+  imports: [NgIcon, NgClass, RouterLink],
   providers: [provideIcons({featherArrowLeft, featherChevronLeft, featherChevronRight, featherUserPlus})],
   templateUrl: './villa-calendar.component.html',
 })
@@ -79,6 +79,8 @@ export class VillaCalendarComponent {
   private readonly authService = inject(AuthenticationService);
   private readonly dialogService = inject(DialogService);
   private readonly routingService = inject(RoutingService);
+
+  readonly allPropertiesUrl = this.routingService.getVillaVillekullaUrl();
 
   readonly isLoading = signal<boolean>(true);
   readonly loadError = signal<string | null>(null);
@@ -203,10 +205,6 @@ export class VillaCalendarComponent {
   nextMonth(): void {
     const month = this.viewMonth();
     this.viewMonth.set(new Date(month.getFullYear(), month.getMonth() + 1, 1));
-  }
-
-  async back(): Promise<void> {
-    await this.routingService.navigateToVillaVillekulla();
   }
 
   async onDayClick(cell: DayCell): Promise<void> {

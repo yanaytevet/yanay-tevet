@@ -1,10 +1,10 @@
 <div class="max-w-3xl mx-auto w-full p-6">
 
-    <button type="button" class="flex items-center gap-1.5 text-[13px] text-writing-minor hover:text-writing mb-5"
-            (click)="back()">
+    <a [routerLink]="allRoutinesUrl"
+       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-writing mb-5">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         All routines
-    </button>
+    </a>
 
     @if (isLoading()) {
         <div class="text-center text-writing-minor text-[14px] py-12">Loading routine...</div>

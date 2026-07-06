@@ -1,6 +1,6 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
@@ -43,7 +43,7 @@ import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-
 @Component({
   selector: 'app-apartment-hunt-project-detail',
   standalone: true,
-  imports: [NgIcon, DatePipe, ProspectDetailsPanelComponent],
+  imports: [NgIcon, DatePipe, ProspectDetailsPanelComponent, RouterLink],
   providers: [provideIcons({
     featherArrowLeft, featherChevronRight, featherCheckCircle, featherEdit, featherPlus,
     featherRotateCcw, featherShare2, featherTrash2,
@@ -53,6 +53,8 @@ import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-
 export class ProjectDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
+
+  readonly allProjectsUrl = this.routingService.getApartmentHuntUrl();
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
 
@@ -152,10 +154,6 @@ export class ProjectDetailComponent {
     } finally {
       this.savingFieldId.set(null);
     }
-  }
-
-  async back(): Promise<void> {
-    await this.routingService.navigateToApartmentHunt();
   }
 
   async editProject(): Promise<void> {

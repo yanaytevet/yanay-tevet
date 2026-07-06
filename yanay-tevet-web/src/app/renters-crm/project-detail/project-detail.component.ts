@@ -1,6 +1,6 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {DatePipe} from '@angular/common';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
@@ -43,7 +43,7 @@ import {RenterDetailsPanelComponent} from '../renter-details-panel/renter-detail
 @Component({
   selector: 'app-renters-project-detail',
   standalone: true,
-  imports: [NgIcon, DatePipe, RenterDetailsPanelComponent],
+  imports: [NgIcon, DatePipe, RenterDetailsPanelComponent, RouterLink],
   providers: [provideIcons({
     featherArrowLeft, featherChevronRight, featherCheckCircle, featherEdit, featherPlus,
     featherRotateCcw, featherShare2, featherTrash2,
@@ -53,6 +53,8 @@ import {RenterDetailsPanelComponent} from '../renter-details-panel/renter-detail
 export class RentersProjectDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
+
+  readonly allProjectsUrl = this.routingService.getRentersCrmUrl();
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
 
@@ -141,10 +143,6 @@ export class RentersProjectDetailComponent {
     } finally {
       this.savingFieldId.set(null);
     }
-  }
-
-  async back(): Promise<void> {
-    await this.routingService.navigateToRentersCrm();
   }
 
   async editProject(): Promise<void> {

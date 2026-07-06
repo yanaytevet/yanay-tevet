@@ -1,6 +1,6 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
@@ -55,7 +55,7 @@ import {
 @Component({
   selector: 'app-itinerary-list-detail',
   standalone: true,
-  imports: [NgIcon, ReactiveFormsModule],
+  imports: [NgIcon, ReactiveFormsModule, RouterLink],
   providers: [provideIcons({
     featherArrowLeft, featherCheckCircle, featherCheckSquare, featherEdit, featherHome, featherPackage,
     featherPlay, featherPlus, featherShare2, featherShoppingCart, featherSquare, featherTrash2, featherTruck,
@@ -67,6 +67,8 @@ export class ListDetailComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+
+  readonly allListsUrl = this.routingService.getItineraryListsUrl();
 
   readonly listId = signal<number | null>(null);
   readonly list = signal<ItineraryListSchema | null>(null);
@@ -415,7 +417,4 @@ export class ListDetailComponent {
     }
   }
 
-  async back(): Promise<void> {
-    await this.routingService.navigateToItineraryLists();
-  }
 }

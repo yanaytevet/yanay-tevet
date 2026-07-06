@@ -1,5 +1,5 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
@@ -28,7 +28,7 @@ import {
 @Component({
   selector: 'app-workout-routine-detail',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, RouterLink],
   providers: [provideIcons({featherArrowLeft, featherEdit, featherPlus, featherTrash2})],
   templateUrl: './routine-detail.component.html',
 })
@@ -36,6 +36,8 @@ export class RoutineDetailComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
+
+  readonly allRoutinesUrl = this.routingService.getWorkoutPlanUrl();
 
   readonly routineId = signal<number | null>(null);
   readonly routine = signal<WorkoutRoutineSchema | null>(null);
@@ -193,9 +195,6 @@ export class RoutineDetailComponent {
     }
   }
 
-  async back(): Promise<void> {
-    await this.routingService.navigateToWorkoutPlan();
-  }
 
   private openExerciseDialog(data: ExerciseDialogData): Promise<ExerciseDialogResult | null> {
     return this.dialogService.open<ExerciseDialogData, ExerciseDialogResult>(ExerciseDialogComponent, data, 45);

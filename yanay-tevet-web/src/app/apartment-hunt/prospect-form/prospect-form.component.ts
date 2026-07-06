@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherArrowLeft, featherPlus, featherTrash2, featherUpload, featherX} from '@ng-icons/feather-icons';
 import {
@@ -34,7 +34,7 @@ type ContactGroup = FormGroup<{
 @Component({
   selector: 'app-apartment-hunt-prospect-form',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [ReactiveFormsModule, NgIcon, RouterLink],
   providers: [provideIcons({featherArrowLeft, featherPlus, featherTrash2, featherUpload, featherX})],
   templateUrl: './prospect-form.component.html',
 })
@@ -46,6 +46,7 @@ export class ProspectFormComponent {
 
   readonly projectId = signal<number>(0);
   readonly prospectId = signal<number | null>(null);
+  readonly backUrl = computed(() => this.routingService.getApartmentHuntProjectUrl(this.projectId()));
   readonly isEditMode = computed(() => this.prospectId() !== null);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);

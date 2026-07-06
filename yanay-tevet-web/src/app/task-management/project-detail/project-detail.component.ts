@@ -1,7 +1,7 @@
 import {NgTemplateOutlet} from '@angular/common';
 import {Component, computed, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArchive,
@@ -57,7 +57,7 @@ import {
 @Component({
   selector: 'app-task-project-detail',
   standalone: true,
-  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent],
+  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink],
   providers: [provideIcons({
     featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
     featherClock, featherCornerDownRight, featherEdit, featherLink, featherMoreHorizontal,
@@ -71,6 +71,8 @@ export class ProjectDetailComponent {
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
   private readonly celebrationService = inject(CelebrationService);
+
+  readonly allProjectsUrl = this.routingService.getTaskManagementUrl();
 
   readonly projectId = signal<number | null>(null);
   readonly project = signal<TaskProjectSchema | null>(null);
@@ -426,10 +428,6 @@ export class ProjectDetailComponent {
 
   toggleShowDone(): void {
     this.showDone.update(v => !v);
-  }
-
-  async back(): Promise<void> {
-    await this.routingService.navigateToTaskManagement();
   }
 
   private formatDue(iso: string): string {

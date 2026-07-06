@@ -16,7 +16,7 @@ class DjangoAuth:
     JWT_SECRET_KEY: str = settings.JWT_SECRET_KEY
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     REFRESH_TOKEN_KEY = 'refresh_token'
     REFRESH_URL = '/auth/'
 

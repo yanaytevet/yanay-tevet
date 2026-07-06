@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherArrowLeft} from '@ng-icons/feather-icons';
 import {
@@ -15,13 +15,15 @@ import {RoutingService} from '../../shared/services/routing.service';
 @Component({
   selector: 'app-dream-diary-entry-form',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [ReactiveFormsModule, NgIcon, RouterLink],
   providers: [provideIcons({featherArrowLeft})],
   templateUrl: './dream-diary-entry-form.component.html',
 })
 export class DreamDiaryEntryFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
+
+  readonly backUrl = this.routingService.getDreamDiaryUrl();
   private readonly dialogService = inject(DialogService);
 
   readonly entryId = signal<number | null>(null);

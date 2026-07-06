@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherArrowLeft} from '@ng-icons/feather-icons';
 import {
@@ -15,7 +15,7 @@ import {RoutingService} from '../../shared/services/routing.service';
 @Component({
   selector: 'app-task-project-form',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [ReactiveFormsModule, NgIcon, RouterLink],
   providers: [provideIcons({featherArrowLeft})],
   templateUrl: './project-form.component.html',
 })
@@ -25,6 +25,10 @@ export class ProjectFormComponent {
   private readonly dialogService = inject(DialogService);
 
   readonly projectId = signal<number | null>(null);
+  readonly backUrl = computed(() => {
+    const id = this.projectId();
+    return id !== null ? this.routingService.getTaskProjectUrl(id) : this.routingService.getTaskManagementUrl();
+  });
   readonly isEditMode = computed(() => this.projectId() !== null);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
