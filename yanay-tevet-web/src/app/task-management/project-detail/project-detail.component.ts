@@ -1,7 +1,9 @@
 import {NgTemplateOutlet} from '@angular/common';
+import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
 import {Component, computed, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {ActivatedRoute, RouterLink} from '@angular/router';
+import {bootstrapGripVertical} from '@ng-icons/bootstrap-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArchive,
@@ -27,6 +29,7 @@ import {
   getTaskProjectView,
   listTaskProjectMembersView,
   paginateTasksView,
+  reorderTasksView,
   shareTaskProjectView,
   TaskPriority,
   TaskProjectSchema,
@@ -57,7 +60,7 @@ import {
 @Component({
   selector: 'app-task-project-detail',
   standalone: true,
-  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink],
+  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink, DragDropModule],
   providers: [provideIcons({
     featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
     featherClock, featherCornerDownRight, featherEdit, featherLink, featherMoreHorizontal,
@@ -179,6 +182,7 @@ export class ProjectDetailComponent {
   protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherShare2 = featherShare2;
   protected readonly featherTrash2 = featherTrash2;
+  protected readonly bootstrapGripVertical = bootstrapGripVertical;
 
   constructor() {
     this.route.paramMap.subscribe(params => {
@@ -428,6 +432,48 @@ export class ProjectDetailComponent {
 
   toggleShowDone(): void {
     this.showDone.update(v => !v);
+  }
+
+  onDropTopLevel(event: CdkDragDrop<TaskSchema[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+    const ids = this.openTasks().map(t => t.id);
+    moveItemInArray(ids, event.previousIndex, event.currentIndex);
+    void this.reorder(null, ids);
+  }
+
+  onDropSubtask(parentId: number, event: CdkDragDrop<TaskSchema[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+    const ids = (this.subtasksByParent()[parentId] ?? []).map(t => t.id);
+    moveItemInArray(ids, event.previousIndex, event.currentIndex);
+    void this.reorder(parentId, ids);
+  }
+
+  private async reorder(parentId: number | null, orderedIds: number[]): Promise<void> {
+    const projectId = this.projectId();
+    if (projectId === null) {
+      return;
+    }
+    const previous = this.tasks();
+    this.tasks.set(this.applyOrder(previous, parentId, orderedIds));
+    try {
+      await reorderTasksView({path: {project_id: projectId}, body: {parent_id: parentId, ordered_ids: orderedIds}});
+    } catch (err) {
+      this.tasks.set(previous);
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    }
+  }
+
+  private applyOrder(tasks: TaskSchema[], parentId: number | null, orderedIds: number[]): TaskSchema[] {
+    const pos = new Map(orderedIds.map((id, i) => [id, i]));
+    const reordered = tasks
+      .filter(t => t.parent_id === parentId && pos.has(t.id))
+      .sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0));
+    let i = 0;
+    return tasks.map(t => (t.parent_id === parentId && pos.has(t.id) ? reordered[i++] : t));
   }
 
   private formatDue(iso: string): string {

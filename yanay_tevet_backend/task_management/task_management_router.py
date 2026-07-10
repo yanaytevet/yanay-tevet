@@ -15,6 +15,7 @@ from task_management.views.task_views.create_task_view import CreateTaskView
 from task_management.views.task_views.delete_task_view import DeleteTaskView
 from task_management.views.task_views.get_task_view import GetTaskView
 from task_management.views.task_views.paginate_tasks_view import PaginateTasksView
+from task_management.views.task_views.reorder_tasks_view import ReorderTasksView
 from task_management.views.task_views.update_task_view import UpdateTaskView
 from common.django_utils.api_router_creator import ApiRouterCreator
 
@@ -34,6 +35,7 @@ UnarchiveTaskProjectView.register_post(router, 'projects/{int:object_id}/unarchi
 
 # --- Tasks ---
 PaginateTasksView.register_get(router, 'projects/{int:project_id}/tasks/')
+ReorderTasksView.register_post(router, 'projects/{int:project_id}/tasks/reorder/')
 CreateTaskView.register_post(router, 'tasks/')
 GetTaskView.register_get(router, 'tasks/{int:object_id}/')
 UpdateTaskView.register_patch_by_id(router, prefix='tasks')

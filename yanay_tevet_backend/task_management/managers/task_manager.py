@@ -176,6 +176,30 @@ class TaskManager:
                 error_code='itinerary_list_not_accessible',
             )
 
+    async def reorder_tasks(self, project_id: int, parent_id: int | None, ordered_ids: list[int]) -> None:
+        siblings = [
+            task
+            async for task in Task.objects.filter(project_id=project_id, parent_id=parent_id)
+        ]
+        by_id = {task.id: task for task in siblings}
+        for task_id in ordered_ids:
+            if task_id not in by_id:
+                raise RestAPIException(
+                    status_code=StatusCode.HTTP_400_BAD_REQUEST,
+                    message='All tasks must belong to the same project and group.',
+                    error_code='invalid_task_group',
+                )
+        ordered_id_set = set(ordered_ids)
+        remaining = sorted(
+            (task for task in siblings if task.id not in ordered_id_set),
+            key=lambda task: (task.order, task.id),
+        )
+        full_order = [by_id[task_id] for task_id in ordered_ids] + remaining
+        for index, task in enumerate(full_order):
+            task.order = index
+        if full_order:
+            await Task.objects.abulk_update(full_order, ['order'])
+
     async def _next_order(self, project_id: int, parent_id: int | None) -> int:
         aggregate = await Task.objects.filter(
             project_id=project_id, parent_id=parent_id

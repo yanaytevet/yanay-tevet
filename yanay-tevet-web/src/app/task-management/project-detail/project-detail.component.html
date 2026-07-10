@@ -93,9 +93,12 @@
                 No open tasks. Add one above or check the completed section below.
             </div>
         } @else {
-            <div class="flex flex-col gap-2 mb-5">
+            <div class="flex flex-col gap-2 mb-5" cdkDropList (cdkDropListDropped)="onDropTopLevel($event)">
                 @for (task of openTasks(); track task.id) {
-                    <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task}"></ng-container>
+                    <div cdkDrag>
+                        <div *cdkDragPlaceholder class="h-14 rounded-xl border border-dashed border-writing-least bg-layer-3"></div>
+                        <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task, draggable: true}"></ng-container>
+                    </div>
                 }
             </div>
         }
@@ -110,7 +113,7 @@
             @if (showDone()) {
                 <div class="flex flex-col gap-2 opacity-75">
                     @for (task of doneTasks(); track task.id) {
-                        <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task}"></ng-container>
+                        <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task, draggable: false}"></ng-container>
                     }
                 </div>
             }
@@ -119,16 +122,20 @@
 </div>
 
 <!-- A top-level task with its subtasks and inline subtask adder -->
-<ng-template #taskGroup let-task>
+<ng-template #taskGroup let-task let-draggable="draggable">
     <div class="card p-3 transition-shadow duration-200 hover:shadow-2">
         <ng-container [ngTemplateOutlet]="taskRow"
-                      [ngTemplateOutletContext]="{$implicit: task, isSubtask: false}"></ng-container>
+                      [ngTemplateOutletContext]="{$implicit: task, isSubtask: false, draggable: draggable}"></ng-container>
 
         @if (subtasksByParent()[task.id]?.length || addingSubtaskFor() === task.id) {
-            <div class="mt-2 ml-3 pl-3 border-l border-[rgba(0,0,0,0.08)] flex flex-col gap-1.5">
+            <div class="mt-2 ml-3 pl-3 border-l border-[rgba(0,0,0,0.08)] flex flex-col gap-1.5"
+                 cdkDropList (cdkDropListDropped)="onDropSubtask(task.id, $event)">
                 @for (subtask of subtasksByParent()[task.id]; track subtask.id) {
-                    <ng-container [ngTemplateOutlet]="taskRow"
-                                  [ngTemplateOutletContext]="{$implicit: subtask, isSubtask: true}"></ng-container>
+                    <div cdkDrag [cdkDragDisabled]="!draggable">
+                        <div *cdkDragPlaceholder class="h-7 rounded border border-dashed border-writing-least bg-layer-3"></div>
+                        <ng-container [ngTemplateOutlet]="taskRow"
+                                      [ngTemplateOutletContext]="{$implicit: subtask, isSubtask: true, draggable: draggable}"></ng-container>
+                    </div>
                 }
                 @if (addingSubtaskFor() === task.id) {
                     <div class="flex items-center gap-2 py-1">
@@ -144,8 +151,15 @@
 </ng-template>
 
 <!-- A single task row (used for top-level and subtasks) -->
-<ng-template #taskRow let-task let-isSubtask="isSubtask">
+<ng-template #taskRow let-task let-isSubtask="isSubtask" let-draggable="draggable">
     <div class="flex items-center gap-2.5 py-1">
+        @if (draggable) {
+            <button type="button" cdkDragHandle
+                    class="icon-btn touch-none cursor-grab active:cursor-grabbing text-writing-least hover:text-writing-minor shrink-0 -ml-1"
+                    title="Drag to reorder">
+                <ng-icon [svg]="bootstrapGripVertical" class="h-4 w-4"></ng-icon>
+            </button>
+        }
         <button type="button"
                 class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 {{ task.status === 'done' ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 hover:border-notion-blue' }}"
                 [disabled]="savingTaskId() === task.id"
