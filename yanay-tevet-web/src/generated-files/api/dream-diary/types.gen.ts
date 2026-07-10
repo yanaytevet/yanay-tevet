@@ -57,10 +57,6 @@ export type DreamDiaryEntrySchema = {
      */
     text: string;
     /**
-     * Interpretation
-     */
-    interpretation: string;
-    /**
      * Time
      */
     time: string;

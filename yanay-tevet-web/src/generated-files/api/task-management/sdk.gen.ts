@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ArchiveTaskProjectViewData, ArchiveTaskProjectViewResponses, CreateTaskProjectViewData, CreateTaskProjectViewResponses, CreateTaskViewData, CreateTaskViewResponses, DeleteTaskProjectViewData, DeleteTaskProjectViewResponses, DeleteTaskViewData, DeleteTaskViewResponses, GetTaskProjectViewData, GetTaskProjectViewResponses, GetTaskViewData, GetTaskViewResponses, ListTaskProjectMembersViewData, ListTaskProjectMembersViewResponses, PaginateTaskProjectsViewData, PaginateTaskProjectsViewResponses, PaginateTasksViewData, PaginateTasksViewResponses, ShareTaskProjectViewData, ShareTaskProjectViewResponses, UnarchiveTaskProjectViewData, UnarchiveTaskProjectViewResponses, UnshareTaskProjectViewData, UnshareTaskProjectViewResponses, UpdateTaskProjectViewData, UpdateTaskProjectViewResponses, UpdateTaskViewData, UpdateTaskViewResponses } from './types.gen';
+import type { ArchiveTaskProjectViewData, ArchiveTaskProjectViewResponses, CreateTaskProjectViewData, CreateTaskProjectViewResponses, CreateTaskViewData, CreateTaskViewResponses, DeleteTaskProjectViewData, DeleteTaskProjectViewResponses, DeleteTaskViewData, DeleteTaskViewResponses, GetTaskProjectViewData, GetTaskProjectViewResponses, GetTaskViewData, GetTaskViewResponses, ListTaskProjectMembersViewData, ListTaskProjectMembersViewResponses, PaginateTaskProjectsViewData, PaginateTaskProjectsViewResponses, PaginateTasksViewData, PaginateTasksViewResponses, ReorderTasksViewData, ReorderTasksViewResponses, ShareTaskProjectViewData, ShareTaskProjectViewResponses, UnarchiveTaskProjectViewData, UnarchiveTaskProjectViewResponses, UnshareTaskProjectViewData, UnshareTaskProjectViewResponses, UpdateTaskProjectViewData, UpdateTaskProjectViewResponses, UpdateTaskViewData, UpdateTaskViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -142,6 +142,19 @@ export const paginateTasksView = <ThrowOnError extends boolean = false>(options:
     responseType: 'json',
     url: '/api/task-management/projects/{project_id}/tasks/',
     ...options
+});
+
+/**
+ * Post
+ */
+export const reorderTasksView = <ThrowOnError extends boolean = false>(options: Options<ReorderTasksViewData, ThrowOnError>) => (options.client ?? client).post<ReorderTasksViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/task-management/projects/{project_id}/tasks/reorder/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

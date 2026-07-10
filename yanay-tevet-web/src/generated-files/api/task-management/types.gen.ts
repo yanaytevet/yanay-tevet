@@ -370,6 +370,40 @@ export type TaskSchema = {
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 
 /**
+ * ReorderTasksPath
+ */
+export type ReorderTasksPath = {
+    /**
+     * Project Id
+     */
+    project_id: number;
+};
+
+/**
+ * ReorderTasksOutput
+ */
+export type ReorderTasksOutput = {
+    /**
+     * Success
+     */
+    success: boolean;
+};
+
+/**
+ * ReorderTasksSchema
+ */
+export type ReorderTasksSchema = {
+    /**
+     * Parent Id
+     */
+    parent_id?: number | null;
+    /**
+     * Ordered Ids
+     */
+    ordered_ids: Array<number>;
+};
+
+/**
  * CreateTaskSchema
  */
 export type CreateTaskSchema = {
@@ -713,6 +747,27 @@ export type PaginateTasksViewResponses = {
 };
 
 export type PaginateTasksViewResponse = PaginateTasksViewResponses[keyof PaginateTasksViewResponses];
+
+export type ReorderTasksViewData = {
+    body: ReorderTasksSchema;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: number;
+    };
+    query?: never;
+    url: '/api/task-management/projects/{project_id}/tasks/reorder/';
+};
+
+export type ReorderTasksViewResponses = {
+    /**
+     * OK
+     */
+    200: ReorderTasksOutput;
+};
+
+export type ReorderTasksViewResponse = ReorderTasksViewResponses[keyof ReorderTasksViewResponses];
 
 export type CreateTaskViewData = {
     body: CreateTaskSchema;
