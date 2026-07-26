@@ -14,9 +14,12 @@ RUN apt-get update -y \
 RUN python -m venv /venv
 RUN /venv/bin/pip install --upgrade pip setuptools wheel
 
-COPY . /app/
 WORKDIR /app
 
+# Install deps first (own layer) so code edits don't bust the pip cache.
+COPY requirements.txt /app/
 RUN /venv/bin/pip install -r requirements.txt
+
+COPY . /app/
 
 ENTRYPOINT ["/bin/bash", "-c", "/venv/bin/python manage.py migrate && /venv/bin/python manage.py collectstatic --noinput && /venv/bin/uvicorn --host 0.0.0.0 yanay_tevet_backend.asgi:application"]

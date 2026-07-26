@@ -3,6 +3,7 @@ version: '3.8'
 name: yanay_tevet
 services:
   yanay_tevet_db:
+    container_name: yanay_tevet_db
     restart: always
     shm_size: 6G
     image: postgres:17-alpine
@@ -20,6 +21,7 @@ services:
       - common-network
 
   redis:
+    container_name: yanay_tevet_redis
     image: 'bitnami/redis:latest'
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
