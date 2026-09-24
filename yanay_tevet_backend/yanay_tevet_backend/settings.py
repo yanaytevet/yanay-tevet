@@ -116,6 +116,7 @@ INSTALLED_APPS = [
     'shopping_lists',
     'task_management',
     'workout_plan',
+    'mcp_server',
 ]
 
 MIDDLEWARE = [

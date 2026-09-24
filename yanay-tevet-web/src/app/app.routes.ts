@@ -14,6 +14,12 @@ export const routes: Routes = [
             import('./login/login.component').then(m => m.LoginComponent),
         canActivate: [notLoggedInGuard],
     },
+    // OAuth consent for the Claude MCP connector (redirects to login itself when needed)
+    {
+        path: 'connect-claude',
+        loadComponent: () =>
+            import('./connect-claude/connect-claude.component').then(m => m.ConnectClaudeComponent),
+    },
     // All pages under single layout
     {
         path: '',

@@ -149,6 +149,47 @@
     </div>
   </div>
 
+  <!-- Connect to Claude -->
+  <div class="card p-6 flex flex-col gap-4">
+    <div class="flex flex-col gap-1">
+      <h2 class="text-[16px] font-semibold text-primary-500">Connect to Claude</h2>
+      <p class="text-[13px] text-writing-minor leading-relaxed">
+        Add this site as a connector in Claude to manage your tasks and shopping lists from a chat. Click
+        <span class="font-medium text-primary-500">Add to Claude</span>, then confirm in Claude —
+        you'll sign in with your account here. You don't need to fill in any OAuth fields; if the URL
+        isn't already filled in, paste the one below.
+      </p>
+    </div>
+    @if (isLoadingMcp()) {
+      <span class="text-[13px] text-secondary-400">Loading…</span>
+    } @else if (mcpInfo(); as mcp) {
+      @if (!mcp.is_publicly_reachable) {
+        <div class="px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
+          <span class="text-[13px] text-writing-minor">
+            The server isn't publicly reachable yet. Start a tunnel (e.g. ngrok) and restart the
+            backend, then reopen this page to get a usable link.
+          </span>
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <span class="text-[13px] font-medium text-secondary-400">Connector URL</span>
+        <div class="flex items-center gap-2">
+          <input class="main-input flex-1" type="text" [value]="mcp.mcp_url" readonly>
+          <button type="button" class="btn btn-secondary" (click)="copyMcpUrl()">
+            {{ mcpUrlCopied() ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+      </div>
+      <div class="flex justify-end">
+        <a class="btn btn-primary" [href]="mcp.add_connector_url" target="_blank" rel="noopener">
+          Add to Claude
+        </a>
+      </div>
+    } @else {
+      <span class="text-[13px] text-secondary-400">Connection info unavailable.</span>
+    }
+  </div>
+
   <!-- Change Password / Set Password -->
   <div class="card p-6 flex flex-col gap-4">
     <h2 class="text-[16px] font-semibold text-primary-500">

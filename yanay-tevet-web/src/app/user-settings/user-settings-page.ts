@@ -9,6 +9,7 @@ import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
 import {updateMyTimezoneView, updateMyUserView, uploadUserProfileImageView} from '../../generated-files/api/users';
 import {changePasswordView} from '../../generated-files/auth';
+import {getMcpConnectionInfoView, McpConnectionInfo} from '../../generated-files/api/mcp';
 import {interval} from 'rxjs';
 
 interface TimezoneOption {
@@ -46,6 +47,10 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
   readonly isRegisteringPasskey = signal(false);
 
   readonly passwordChangedSuccess = signal(false);
+
+  readonly mcpInfo = signal<McpConnectionInfo | null>(null);
+  readonly isLoadingMcp = signal(true);
+  readonly mcpUrlCopied = signal(false);
 
   readonly browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   readonly tzSearch = signal('');
@@ -140,6 +145,26 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
     this.subscriptions.push(
       interval(20000).subscribe(() => this.now.set(new Date())),
     );
+    this.loadMcpInfo();
+  }
+
+  private async loadMcpInfo(): Promise<void> {
+    try {
+      const {data} = await getMcpConnectionInfoView();
+      this.mcpInfo.set(data ?? null);
+    } finally {
+      this.isLoadingMcp.set(false);
+    }
+  }
+
+  async copyMcpUrl(): Promise<void> {
+    const url = this.mcpInfo()?.mcp_url;
+    if (!url) {
+      return;
+    }
+    await navigator.clipboard.writeText(url);
+    this.mcpUrlCopied.set(true);
+    setTimeout(() => this.mcpUrlCopied.set(false), 2000);
   }
 
   toggleTzPanel(): void {

@@ -10,6 +10,10 @@ services:
       DEBUG: ${DEBUG}
 
       FRONTEND_URL: ${FRONTEND_URL}
+      # The backend's own public URL that Claude reaches the MCP server at. Leave UNSET in dev —
+      # the backend auto-detects the ngrok tunnel. In prod set MCP_PUBLIC_BASE_URL to the backend
+      # origin (https://api.yanaytevet.com).
+      MCP_PUBLIC_BASE_URL: ${MCP_PUBLIC_BASE_URL:-}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
 
       SECRET_KEY: ${SECRET_KEY}

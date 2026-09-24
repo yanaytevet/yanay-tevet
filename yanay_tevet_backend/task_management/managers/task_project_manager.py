@@ -18,6 +18,19 @@ class TaskProjectManager:
             defaults={'role': ProjectRole.OWNER},
         )
 
+    async def create_project(self, name: str, description: str = '') -> TaskProject:
+        project = await TaskProject.objects.acreate(owner_id=self.user.id, name=name, description=description)
+        await self.ensure_owner_membership(project)
+        return project
+
+    async def update_project(self, project: TaskProject, name: str | None = None,
+                             description: str | None = None) -> None:
+        if name is not None:
+            project.name = name
+        if description is not None:
+            project.description = description
+        await project.asave()
+
     async def set_status(self, project: TaskProject, status: ProjectStatus) -> None:
         project.status = status
         await project.asave()

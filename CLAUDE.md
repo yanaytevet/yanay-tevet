@@ -71,6 +71,23 @@ After changing backend models or endpoints:
 
 ---
 
+## MCP Server (Claude Connector)
+
+The `mcp_server` app exposes the platform to Claude as a remote MCP connector (claude.ai, Desktop, mobile, Claude Code), secured by a self-hosted **OAuth 2.1** authorization server. Ported from the-dark-forge, with security fixes.
+
+- **Auth server** (plain async Django views, `mcp_server/oauth/`): `/.well-known/oauth-authorization-server`, `/oauth/authorize|token|register|revoke`. Tokens/codes are stored **hashed**. **PKCE S256 is mandatory**, codes and refresh tokens are single-use (atomic claim), scope is always `MCP_SCOPE`. **Dynamic registration only accepts redirect URIs on `claude.ai`/`claude.com` (https) or loopback** (`config.is_allowed_redirect_uri`) — this blocks phishing via attacker-registered clients; extend the allowlist deliberately if another client must connect.
+- **Consent happens in the web app**: `/oauth/authorize` redirects to the frontend `/connect-claude` page (login via `/login?redirect=`), which shows the client name + redirect host (`GET /api/mcp/oauth/client-info/`) and posts to `POST /api/mcp/oauth/approve/` (JWT-authed). Logic lives in `OAuthManager`.
+- **Resource server** (FastMCP, `mcp_server/mcp/`): mounted in `asgi.py` (path dispatch for `/mcp` + `/.well-known/oauth-protected-resource/mcp`); session manager started lazily (Daphne dev server emits no ASGI lifespan). **`stateless_http=True`** so autoreloads/restarts don't strand clients on dead sessions.
+- **Tools are typed, one per verb** (`mcp/tools/task_tools.py`, `mcp/tools/shopping_list_tools.py`; inputs in `mcp/schemas/`), not a generic `entity_type`+`data: dict` registry — the typed schema is what Claude reads. Keep the server `INSTRUCTIONS` in `mcp/server.py` in sync with the real tool names.
+- **Every tool MUST apply the same checks as the web API**: the app-level checker the router applies (`TaskManagementPermissionChecker`, `ShoppingListsPermissionChecker` — MCP bypasses routers, so call it explicitly) plus the object checker (`ProjectMemberPermissionChecker`, `ShoppingListMemberPermissionChecker`). Writes go through the app's managers; outputs use the app's serializers. Annotate tools `READ_ONLY` / `WRITE` / `DESTRUCTIVE`. Batch tools validate every id/permission before the first write. Tools return pydantic schemas (not bare `dict`, which yields no structured output).
+- Deliberately **not exposed**: deleting projects/lists and sharing/unsharing (irreversible or visible to other people) — do those in the app.
+- **Config**: `mcp_server/config.py` → `get_public_base_url()` = the **backend's** public URL. `MCP_PUBLIC_BASE_URL` env in prod (`https://api.yanaytevet.com`); in dev it auto-discovers the ngrok tunnel (`ngrok http 8001`); cached per process, restart the backend after (re)starting ngrok.
+- **Frontend**: Account Settings "Connect to Claude" card (`GET /api/mcp/connection-info/`) with the connector URL + "Add to Claude" deep link.
+- Adding another app to MCP: new `mcp/tools/<app>_tools.py` with a `register(mcp)`, call it from `build_mcp_server()`, update `INSTRUCTIONS` and the consent-page copy.
+- The `mcp` package is in `requirements.txt`; after changing it the backend **image must be rebuilt**.
+
+---
+
 ## Design System
 
 **Always read `DESIGN.md` before writing any UI code.** It is the authoritative reference.

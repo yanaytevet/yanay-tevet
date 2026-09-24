@@ -1,0 +1,60 @@
+<div class="min-h-screen bg-layer-1 flex items-center justify-center px-6 py-10">
+  <div class="card p-8 w-full max-w-md flex flex-col gap-6">
+
+    @if (!hasValidRequest()) {
+      <div class="flex flex-col gap-2">
+        <h1 class="text-[18px] font-semibold text-primary-500">Invalid request</h1>
+        <p class="text-[14px] text-writing-minor leading-relaxed">
+          This authorization link is invalid or has expired. Please start again from Claude's
+          Connectors settings.
+        </p>
+      </div>
+    } @else if (clientInfo(); as client) {
+      <div class="flex flex-col gap-2">
+        <h1 class="text-[18px] font-semibold text-primary-500">Connect to Claude</h1>
+        <p class="text-[14px] text-writing-minor leading-relaxed">
+          <span class="font-semibold text-primary-500">{{ client.client_name || 'An app' }}</span> wants to
+          connect to your account. This will let Claude view and change your tasks and shopping lists on
+          your behalf — including projects and lists shared with you.
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        @if (userLabel()) {
+          <div class="px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
+            <span class="text-[13px] text-secondary-400">Signed in as </span>
+            <span class="text-[13px] font-medium text-primary-500">{{ userLabel() }}</span>
+          </div>
+        }
+        <div class="px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
+          <span class="text-[13px] text-secondary-400">Access will be granted to </span>
+          <span class="text-[13px] font-medium text-primary-500">{{ client.redirect_host }}</span>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-3">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="isSubmitting()"
+          (click)="deny()">
+          Deny
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isSubmitting()"
+          (click)="allow()">
+          @if (isSubmitting()) {
+            Redirecting…
+          } @else {
+            Allow
+          }
+        </button>
+      </div>
+    } @else {
+      <span class="text-[13px] text-secondary-400">Loading…</span>
+    }
+
+  </div>
+</div>

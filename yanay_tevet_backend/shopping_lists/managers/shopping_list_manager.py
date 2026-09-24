@@ -21,6 +21,15 @@ class ShoppingListManager:
             defaults={'role': ShoppingListRole.OWNER},
         )
 
+    async def create_list(self, name: str) -> ShoppingList:
+        shopping_list = await ShoppingList.objects.acreate(owner_id=self.user.id, name=name)
+        await self.ensure_owner_membership(shopping_list)
+        return shopping_list
+
+    async def rename(self, shopping_list: ShoppingList, name: str) -> None:
+        shopping_list.name = name
+        await shopping_list.asave()
+
     async def _find_user(self, identifier: str) -> User | None:
         target = await User.objects.filter(username__iexact=identifier).afirst()
         if target is None:

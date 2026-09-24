@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
 
+from mcp_server import oauth_urls
+
 from users.auth_router import api as auth_api
 from users.users_router import api as users_api
 from configurations.configurations_router import api as configurations_api
@@ -16,11 +18,15 @@ from itinerary_lists.itinerary_lists_router import api as itinerary_lists_api
 from shopping_lists.shopping_lists_router import api as shopping_lists_api
 from task_management.task_management_router import api as task_management_api
 from workout_plan.workout_plan_router import api as workout_plan_api
+from mcp_server.mcp_router import api as mcp_api
 
 
 urlpatterns = [
     path(r'admin/log_viewer/', include('log_viewer.urls')),
     path(r'admin/', admin.site.urls),
+
+    # MCP OAuth 2.1 authorization server + well-known metadata (mounted at site root).
+    path('', include(oauth_urls)),
 
     path(r'auth/', auth_api.urls),
     path(r'api/users/', users_api.urls),
@@ -37,4 +43,5 @@ urlpatterns = [
     path(r'api/shopping-lists/', shopping_lists_api.urls),
     path(r'api/task-management/', task_management_api.urls),
     path(r'api/workout-plan/', workout_plan_api.urls),
+    path(r'api/mcp/', mcp_api.urls),
 ]
