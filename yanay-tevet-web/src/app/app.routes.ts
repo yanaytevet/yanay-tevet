@@ -168,6 +168,18 @@ export const routes: Routes = [
                 canActivate: [hasPermissionGuard('itinerary_lists')],
             },
             {
+                path: 'shopping-lists',
+                loadComponent: () =>
+                    import('./shopping-lists/shopping-lists/shopping-lists.component').then(m => m.ShoppingListsComponent),
+                canActivate: [hasPermissionGuard('shopping_lists')],
+            },
+            {
+                path: 'shopping-lists/lists/:id',
+                loadComponent: () =>
+                    import('./shopping-lists/shopping-list-detail/shopping-list-detail.component').then(m => m.ShoppingListDetailComponent),
+                canActivate: [hasPermissionGuard('shopping_lists')],
+            },
+            {
                 path: 'task-management',
                 loadComponent: () =>
                     import('./task-management/projects-list/projects-list.component').then(m => m.ProjectsListComponent),

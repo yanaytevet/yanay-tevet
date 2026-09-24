@@ -11,3 +11,4 @@ class InvitationMembershipType(BaseEnum):
     RENTAL_PROJECT = 'rental_project'
     TASK_PROJECT = 'task_project'
     ITINERARY_LIST = 'itinerary_list'
+    SHOPPING_LIST = 'shopping_list'

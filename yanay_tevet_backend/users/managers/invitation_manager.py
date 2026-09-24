@@ -4,6 +4,7 @@ from apartment_hunt.models.project_membership import ProjectMembership
 from common.time_utils import TimeUtils
 from emails.email_templates.invitation_email import InvitationEmail, InvitationEmailContext
 from itinerary_lists.models.itinerary_list_membership import ItineraryListMembership
+from shopping_lists.models.shopping_list_membership import ShoppingListMembership
 from task_management.models.task_project_membership import TaskProjectMembership
 from users.enums.invitation_membership_type import InvitationMembershipType
 from users.enums.invitation_status import InvitationStatus
@@ -147,6 +148,12 @@ class InvitationManager:
             case InvitationMembershipType.ITINERARY_LIST:
                 await ItineraryListMembership.objects.aupdate_or_create(
                     itinerary_list_id=membership.object_id,
+                    user_id=user.id,
+                    defaults={'role': membership.role},
+                )
+            case InvitationMembershipType.SHOPPING_LIST:
+                await ShoppingListMembership.objects.aupdate_or_create(
+                    shopping_list_id=membership.object_id,
                     user_id=user.id,
                     defaults={'role': membership.role},
                 )

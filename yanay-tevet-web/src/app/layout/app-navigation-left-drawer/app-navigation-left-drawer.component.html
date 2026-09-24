@@ -114,6 +114,17 @@
                 </a>
             }
 
+            <!-- Shopping Lists -->
+            @if (hasShoppingLists()) {
+                <a
+                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
+                    [routerLink]="routingService.getShoppingListsUrl()"
+                    routerLinkActive="bg-layer-overlay"
+                    (click)="layoutService.closeBothDrawers()">
+                    Shopping Lists
+                </a>
+            }
+
             <!-- Task Management -->
             @if (hasTaskManagement()) {
                 <a

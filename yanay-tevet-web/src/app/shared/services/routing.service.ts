@@ -351,6 +351,23 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getItineraryListEditUrl(listId));
   }
 
+  // Shopping Lists
+  getShoppingListsUrl(): UrlTree {
+    return this.router.createUrlTree(['/shopping-lists']);
+  }
+
+  navigateToShoppingLists(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getShoppingListsUrl());
+  }
+
+  getShoppingListUrl(listId: number): UrlTree {
+    return this.router.createUrlTree(['/shopping-lists/lists', listId]);
+  }
+
+  navigateToShoppingList(listId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getShoppingListUrl(listId));
+  }
+
   // Task Management
   getTaskManagementUrl(): UrlTree {
     return this.router.createUrlTree(['/task-management']);

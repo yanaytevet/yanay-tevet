@@ -13,6 +13,7 @@ from apartment_hunt.apartment_hunt_router import api as apartment_hunt_api
 from apartment_hunt.villa_villekulla_router import api as villa_villekulla_api
 from apartment_hunt.renters_crm_router import api as renters_crm_api
 from itinerary_lists.itinerary_lists_router import api as itinerary_lists_api
+from shopping_lists.shopping_lists_router import api as shopping_lists_api
 from task_management.task_management_router import api as task_management_api
 from workout_plan.workout_plan_router import api as workout_plan_api
 
@@ -33,6 +34,7 @@ urlpatterns = [
     path(r'api/villa-villekulla/', villa_villekulla_api.urls),
     path(r'api/renters-crm/', renters_crm_api.urls),
     path(r'api/itinerary-lists/', itinerary_lists_api.urls),
+    path(r'api/shopping-lists/', shopping_lists_api.urls),
     path(r'api/task-management/', task_management_api.urls),
     path(r'api/workout-plan/', workout_plan_api.urls),
 ]

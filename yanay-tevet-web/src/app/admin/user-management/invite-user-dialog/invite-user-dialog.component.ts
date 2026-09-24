@@ -29,6 +29,7 @@ export class InviteUserDialogComponent extends BaseDialogComponent<void, boolean
     {value: PermissionsEnum.RENTERS_CRM, label: 'Renters CRM'},
     {value: PermissionsEnum.VILLA_VILLEKULLA, label: 'Villa Villekulla'},
     {value: PermissionsEnum.ITINERARY_LISTS, label: 'Itinerary Lists'},
+    {value: PermissionsEnum.SHOPPING_LISTS, label: 'Shopping Lists'},
     {value: PermissionsEnum.TASK_MANAGEMENT, label: 'Task Management'},
     {value: PermissionsEnum.WORKOUT_PLAN, label: 'Workout Plan'},
   ];

@@ -9,5 +9,6 @@ class Permissions(BaseEnum):
     RENTERS_CRM = 'renters_crm'
     VILLA_VILLEKULLA = 'villa_villekulla'
     ITINERARY_LISTS = 'itinerary_lists'
+    SHOPPING_LISTS = 'shopping_lists'
     TASK_MANAGEMENT = 'task_management'
     WORKOUT_PLAN = 'workout_plan'

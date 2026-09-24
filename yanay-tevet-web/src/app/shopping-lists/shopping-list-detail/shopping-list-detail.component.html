@@ -1,0 +1,133 @@
+<div class="max-w-2xl mx-auto w-full p-6">
+
+    <a [routerLink]="allListsUrl"
+       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+        All lists
+    </a>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-12">Loading list...</div>
+    } @else if (loadError()) {
+        <div class="card p-10 text-center">
+            <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+            <a [routerLink]="allListsUrl" class="btn btn-secondary no-underline">Back to lists</a>
+        </div>
+    } @else if (list(); as list) {
+
+        <div class="card p-4">
+            <div class="flex items-start justify-between gap-3 mb-4">
+                <div class="min-w-0">
+                    <h1 class="text-[22px] font-bold text-primary-500 break-words" dir="auto">{{ list.name }}</h1>
+                    @if (!isOwner()) {
+                        <p class="text-[12px] text-writing-minor">Shared by {{ list.owner_username }}</p>
+                    } @else if (list.member_count > 1) {
+                        <p class="text-[12px] text-writing-minor">Shared with {{ list.member_count - 1 }} {{ list.member_count === 2 ? 'person' : 'people' }}</p>
+                    }
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Share" (click)="openShareDialog()">
+                        <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
+                    </button>
+                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Rename" (click)="renameList()">
+                        <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                    </button>
+                    @if (isOwner()) {
+                        <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Delete list" (click)="deleteList()">
+                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="relative mb-2">
+                <div class="flex items-center gap-2">
+                    <ng-icon [svg]="featherPlus" class="h-5 w-5 shrink-0 text-writing-minor"></ng-icon>
+                    <input type="text" dir="auto" class="main-input w-full" placeholder="Add item"
+                           autocomplete="off" maxlength="255"
+                           [formControl]="newItemCtrl"
+                           (keydown)="onNewItemKeydown($event)"
+                           (focus)="suggestionsOpen.set(true)"
+                           (blur)="onNewItemBlur()" />
+                </div>
+                @if (showSuggestions()) {
+                    <div class="absolute left-7 right-0 top-full mt-1 z-10 card bg-layer-2 shadow-2 py-1 overflow-hidden">
+                        @for (suggestion of suggestions(); track suggestion.id) {
+                            <button type="button" dir="auto"
+                                    class="w-full flex items-center gap-2 px-3 py-2 text-start text-[14px] text-writing hover:bg-layer-overlay"
+                                    [class.bg-layer-overlay]="suggestionHighlighted()[suggestion.id]"
+                                    (mousedown)="onSuggestionMouseDown($event, suggestion)">
+                                <ng-icon [svg]="featherClock" class="h-3.5 w-3.5 shrink-0 text-writing-least"></ng-icon>
+                                <span class="truncate">{{ suggestion.name }}</span>
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            @if (uncheckedItems().length === 0) {
+                <div class="text-center text-writing-minor text-[13px] py-6">
+                    @if (checkedItems().length === 0) {
+                        Nothing here yet. Add your first item above.
+                    } @else {
+                        All done! Everything is checked off.
+                    }
+                </div>
+            } @else {
+                <div class="flex flex-col">
+                    @for (item of uncheckedItems(); track item.id) {
+                        <div class="group flex items-center gap-2 py-1.5" dir="auto">
+                            <button type="button" class="icon-btn shrink-0 text-writing-minor hover:text-writing" title="Check off"
+                                    (click)="toggleItem(item)">
+                                <ng-icon [svg]="featherSquare" class="h-5 w-5"></ng-icon>
+                            </button>
+                            <button type="button" class="min-w-0 flex-1 text-start text-[15px] text-writing truncate cursor-text"
+                                    title="Edit" (click)="renameItem(item)">{{ item.name }}</button>
+                            <button type="button"
+                                    class="icon-btn shrink-0 text-writing-least hover:text-writing sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                                    title="Remove" (click)="deleteItem(item)">
+                                <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (checkedItems().length > 0) {
+                <div class="mt-3 pt-3 border-t border-[rgba(0,0,0,0.1)]">
+                    <button type="button"
+                            class="flex items-center gap-1.5 text-[13px] font-semibold text-writing-minor hover:text-writing mb-1"
+                            (click)="toggleCheckedExpanded()">
+                        <ng-icon [svg]="checkedExpanded() ? featherChevronDown : featherChevronRight" class="h-4 w-4"></ng-icon>
+                        {{ checkedItems().length }} checked item{{ checkedItems().length === 1 ? '' : 's' }}
+                    </button>
+
+                    @if (checkedExpanded()) {
+                        <div class="flex flex-col">
+                            @for (item of visibleCheckedItems(); track item.id) {
+                                <div class="group flex items-center gap-2 py-1.5 opacity-60" dir="auto">
+                                    <button type="button" class="icon-btn shrink-0 text-writing-minor hover:text-writing" title="Uncheck"
+                                            (click)="toggleItem(item)">
+                                        <ng-icon [svg]="featherCheckSquare" class="h-5 w-5"></ng-icon>
+                                    </button>
+                                    <span class="min-w-0 flex-1 text-[15px] text-writing-minor line-through truncate">{{ item.name }}</span>
+                                    <button type="button"
+                                            class="icon-btn shrink-0 text-writing-least hover:text-writing sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                                            title="Remove from history" (click)="deleteItem(item)">
+                                        <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                        @if (hiddenCheckedCount() > 0) {
+                            <button type="button" class="text-[13px] text-notion-blue hover:underline mt-1"
+                                    (click)="toggleShowAllChecked()">
+                                {{ showAllChecked() ? 'Show less' : 'Show all ' + checkedItems().length }}
+                            </button>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

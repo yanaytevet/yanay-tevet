@@ -45,6 +45,7 @@ export class AppNavigationLeftDrawer implements OnInit {
     return this.routingService.getRentersCrmUrl();
   });
   public readonly hasItineraryLists = computed(() => this.authService.hasPermission('itinerary_lists'));
+  public readonly hasShoppingLists = computed(() => this.authService.hasPermission('shopping_lists'));
   public readonly hasTaskManagement = computed(() => this.authService.hasPermission('task_management'));
   public readonly hasWorkoutPlan = computed(() => this.authService.hasPermission('workout_plan'));
 
