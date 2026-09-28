@@ -1,5 +1,5 @@
-import {ApplicationConfig, inject, provideAppInitializer, provideZoneChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
+import {ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection} from '@angular/core';
+import {provideRouter, withNavigationErrorHandler} from '@angular/router';
 import {provideLottieOptions} from 'ngx-lottie';
 import player from 'lottie-web';
 
@@ -9,13 +9,16 @@ import {GlobalConfigurationsService} from './shared/services/global-configuratio
 import {provideHttpClient} from '@angular/common/http';
 import {AuthenticationService} from './common/authentication/authentication.service';
 import {DarkModeService} from './common/services/dark-mode.service';
+import {VersionCheckService} from './common/services/version-check.service';
+import {ChunkLoadErrorHandler, handleChunkLoadNavigationError} from './common/errors/chunk-load-error-handler';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZoneChangeDetection({eventCoalescing: true}),
         provideLottieOptions({player: () => player}),
         provideHttpClient(),
-        provideRouter(routes),
+        provideRouter(routes, withNavigationErrorHandler(handleChunkLoadNavigationError)),
+        {provide: ErrorHandler, useClass: ChunkLoadErrorHandler},
         provideAppInitializer(() => {
             const apiConfigService = inject(ApiConfigService);
             return apiConfigService.initialize();
@@ -30,6 +33,9 @@ export const appConfig: ApplicationConfig = {
         }),
         provideAppInitializer(() => {
             inject(DarkModeService);
+        }),
+        provideAppInitializer(() => {
+            inject(VersionCheckService);
         })
     ]
 };

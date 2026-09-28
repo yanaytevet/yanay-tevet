@@ -1,0 +1,20 @@
+@if (showBanner()) {
+    <div class="fixed bottom-4 start-4 z-50 flex max-w-[calc(100vw-2rem)] items-center gap-3 rounded-xl border border-outline-border-1 bg-layer-2 px-4 py-3 shadow-2">
+        <span class="text-sm text-writing">A new version is available</span>
+
+        <button type="button"
+                class="btn btn-primary flex items-center gap-1.5 cursor-pointer"
+                (click)="onReload()">
+            <ng-icon [svg]="bootstrapArrowClockwise" class="h-3.5 w-3.5"></ng-icon>
+            <span>Refresh</span>
+        </button>
+
+        <button type="button"
+                class="icon-btn text-writing-minor hover:text-writing cursor-pointer"
+                title="Dismiss"
+                aria-label="Dismiss"
+                (click)="onDismiss()">
+            <ng-icon [svg]="bootstrapXLg" class="h-3.5 w-3.5"></ng-icon>
+        </button>
+    </div>
+}
