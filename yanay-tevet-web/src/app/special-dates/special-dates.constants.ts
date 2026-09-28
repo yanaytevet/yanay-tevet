@@ -1,41 +1,44 @@
-import {CalendarType, SpecialDateCategory, SpecialDateRecurrence} from '../../generated-files/api/special-dates';
+import {CalendarType, SpecialDateCategory} from '../../generated-files/api/special-dates';
 
 export interface SpecialDateCategoryOption {
   value: SpecialDateCategory;
   label: string;
   emoji: string;
+  nameLabel: string;
+  namePlaceholder: string;
+  namePrefix: string;
 }
 
 export const SPECIAL_DATE_CATEGORIES: SpecialDateCategoryOption[] = [
-  {value: 'birthday', label: 'יום הולדת', emoji: '🎂'},
-  {value: 'anniversary', label: 'יום נישואין', emoji: '💍'},
-  {value: 'memorial', label: 'אזכרה', emoji: '🕯️'},
-  {value: 'other', label: 'אחר', emoji: '📅'},
+  {
+    value: 'birthday', label: 'יום הולדת', emoji: '🎂',
+    nameLabel: 'של מי יום ההולדת?', namePlaceholder: 'סבתא חלי', namePrefix: 'יום ההולדת של',
+  },
+  {
+    value: 'anniversary', label: 'יום נישואין', emoji: '💍',
+    nameLabel: 'של מי יום הנישואין?', namePlaceholder: 'דני ורותי', namePrefix: 'יום הנישואין של',
+  },
+  {
+    value: 'memorial', label: 'אזכרה', emoji: '🕯️',
+    nameLabel: 'לזכר מי?', namePlaceholder: 'סבא משה', namePrefix: 'האזכרה של',
+  },
+  {
+    value: 'other', label: 'אחר', emoji: '📅',
+    nameLabel: 'שם האירוע', namePlaceholder: 'יום העלייה של המשפחה', namePrefix: '',
+  },
 ];
 
 export const SPECIAL_DATE_CATEGORY_BY_VALUE: Record<SpecialDateCategory, SpecialDateCategoryOption> =
   Object.fromEntries(SPECIAL_DATE_CATEGORIES.map(c => [c.value, c])) as Record<SpecialDateCategory, SpecialDateCategoryOption>;
 
-export const SPECIAL_DATE_RECURRENCES: {value: SpecialDateRecurrence; label: string}[] = [
-  {value: 'both', label: 'לפי שני הלוחות'},
-  {value: 'hebrew', label: 'לפי התאריך העברי בלבד'},
-  {value: 'gregorian', label: 'לפי התאריך הלועזי בלבד'},
-];
-
-export const DEFAULT_RECURRENCE_BY_CATEGORY: Record<SpecialDateCategory, SpecialDateRecurrence> = {
-  birthday: 'both',
-  anniversary: 'both',
-  memorial: 'hebrew',
-  other: 'both',
-};
-
-export const CALENDAR_LABELS: Record<CalendarType, string> = {
-  gregorian: 'לפי הלוח הלועזי',
-  hebrew: 'לפי הלוח העברי',
+export const CALENDAR_CHIPS: Record<CalendarType, {label: string; cssClass: string}> = {
+  hebrew: {label: 'לפי הלוח העברי', cssClass: 'calendar-chip-hebrew'},
+  gregorian: {label: 'לפי הלוח הלועזי', cssClass: 'calendar-chip-gregorian'},
 };
 
 const LONG_DATE_FORMAT = new Intl.DateTimeFormat('he-IL', {weekday: 'long', day: 'numeric', month: 'long'});
 const FULL_DATE_FORMAT = new Intl.DateTimeFormat('he-IL', {day: 'numeric', month: 'long', year: 'numeric'});
+const FULL_DATE_WITH_WEEKDAY_FORMAT = new Intl.DateTimeFormat('he-IL', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
 
 function parseIsoDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number);
@@ -48,6 +51,10 @@ export function formatLongDate(iso: string): string {
 
 export function formatFullDate(iso: string): string {
   return FULL_DATE_FORMAT.format(parseIsoDate(iso));
+}
+
+export function formatFullDateWithWeekday(iso: string): string {
+  return FULL_DATE_WITH_WEEKDAY_FORMAT.format(parseIsoDate(iso));
 }
 
 export function formatDaysUntil(days: number): string {
@@ -78,13 +85,6 @@ export function formatYears(category: SpecialDateCategory, years: number): strin
     default:
       return yearsText;
   }
-}
-
-export function formatCalendars(calendars: CalendarType[]): string {
-  if (calendars.length > 1) {
-    return 'חל באותו יום בשני הלוחות';
-  }
-  return CALENDAR_LABELS[calendars[0]];
 }
 
 export function todayIso(): string {

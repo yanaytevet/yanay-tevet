@@ -50,6 +50,11 @@ export type EmptySchema = {
 };
 
 /**
+ * CalendarType
+ */
+export type CalendarType = 'gregorian' | 'hebrew';
+
+/**
  * PaginationOutput[SpecialDateSchema]
  */
 export type PaginationOutputSpecialDateSchema = {
@@ -76,11 +81,6 @@ export type PaginationOutputSpecialDateSchema = {
 };
 
 /**
- * SpecialDateRecurrence
- */
-export type SpecialDateRecurrence = 'both' | 'gregorian' | 'hebrew';
-
-/**
  * SpecialDateSchema
  */
 export type SpecialDateSchema = {
@@ -89,6 +89,11 @@ export type SpecialDateSchema = {
      */
     id: number;
     /**
+     * Name
+     */
+    name: string;
+    category: SpecialDateCategory;
+    /**
      * Date
      */
     date: string;
@@ -96,24 +101,39 @@ export type SpecialDateSchema = {
      * After Sunset
      */
     after_sunset: boolean;
-    category: SpecialDateCategory;
-    recurrence: SpecialDateRecurrence;
+    input_calendar: CalendarType;
     /**
-     * Description
+     * Hebrew Year
      */
-    description: string;
+    hebrew_year: number;
+    /**
+     * Hebrew Month
+     */
+    hebrew_month: number;
+    /**
+     * Hebrew Day
+     */
+    hebrew_day: number;
     /**
      * Hebrew Date
      */
     hebrew_date: string;
     /**
+     * Remind Hebrew
+     */
+    remind_hebrew: boolean;
+    /**
+     * Remind Gregorian
+     */
+    remind_gregorian: boolean;
+    /**
      * Next Gregorian Date
      */
-    next_gregorian_date: string;
+    next_gregorian_date: string | null;
     /**
      * Next Hebrew Date
      */
-    next_hebrew_date: string;
+    next_hebrew_date: string | null;
     /**
      * Created At
      */
@@ -129,6 +149,11 @@ export type SpecialDateSchema = {
  */
 export type CreateSpecialDateSchema = {
     /**
+     * Name
+     */
+    name: string;
+    category: SpecialDateCategory;
+    /**
      * Date
      */
     date: string;
@@ -136,12 +161,15 @@ export type CreateSpecialDateSchema = {
      * After Sunset
      */
     after_sunset?: boolean;
-    category: SpecialDateCategory;
-    recurrence?: SpecialDateRecurrence;
+    input_calendar?: CalendarType;
     /**
-     * Description
+     * Remind Hebrew
      */
-    description: string;
+    remind_hebrew?: boolean;
+    /**
+     * Remind Gregorian
+     */
+    remind_gregorian?: boolean;
 };
 
 /**
@@ -159,6 +187,11 @@ export type ItemByIdPath = {
  */
 export type UpdateSpecialDateSchema = {
     /**
+     * Name
+     */
+    name?: string | null;
+    category?: SpecialDateCategory | null;
+    /**
      * Date
      */
     date?: string | null;
@@ -166,18 +199,16 @@ export type UpdateSpecialDateSchema = {
      * After Sunset
      */
     after_sunset?: boolean | null;
-    category?: SpecialDateCategory | null;
-    recurrence?: SpecialDateRecurrence | null;
+    input_calendar?: CalendarType | null;
     /**
-     * Description
+     * Remind Hebrew
      */
-    description?: string | null;
+    remind_hebrew?: boolean | null;
+    /**
+     * Remind Gregorian
+     */
+    remind_gregorian?: boolean | null;
 };
-
-/**
- * CalendarType
- */
-export type CalendarType = 'gregorian' | 'hebrew';
 
 /**
  * SpecialDateOccurrenceSchema
@@ -237,23 +268,36 @@ export type UpcomingSpecialDatesSchema = {
 };
 
 /**
- * HebrewDateQuerySchema
+ * ConvertSpecialDateQuerySchema
  */
-export type HebrewDateQuerySchema = {
-    /**
-     * Date
-     */
-    date: string;
+export type ConvertSpecialDateQuerySchema = {
+    calendar: CalendarType;
     /**
      * After Sunset
      */
     after_sunset?: boolean;
+    /**
+     * Date
+     */
+    date?: string | null;
+    /**
+     * Hebrew Year
+     */
+    hebrew_year?: number | null;
+    /**
+     * Hebrew Month
+     */
+    hebrew_month?: number | null;
+    /**
+     * Hebrew Day
+     */
+    hebrew_day?: number | null;
 };
 
 /**
- * HebrewDateSchema
+ * ConvertedDateSchema
  */
-export type HebrewDateSchema = {
+export type ConvertedDateSchema = {
     /**
      * Date
      */
@@ -263,9 +307,89 @@ export type HebrewDateSchema = {
      */
     after_sunset: boolean;
     /**
+     * Hebrew Year
+     */
+    hebrew_year: number;
+    /**
+     * Hebrew Month
+     */
+    hebrew_month: number;
+    /**
+     * Hebrew Day
+     */
+    hebrew_day: number;
+    /**
      * Hebrew Date
      */
     hebrew_date: string;
+};
+
+/**
+ * HebrewYearQuerySchema
+ */
+export type HebrewYearQuerySchema = {
+    /**
+     * Year
+     */
+    year: number;
+};
+
+/**
+ * HebrewMonthOptionSchema
+ */
+export type HebrewMonthOptionSchema = {
+    /**
+     * Value
+     */
+    value: number;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Days
+     */
+    days: number;
+};
+
+/**
+ * HebrewOptionSchema
+ */
+export type HebrewOptionSchema = {
+    /**
+     * Value
+     */
+    value: number;
+    /**
+     * Label
+     */
+    label: string;
+};
+
+/**
+ * HebrewYearSchema
+ */
+export type HebrewYearSchema = {
+    /**
+     * Year
+     */
+    year: number;
+    /**
+     * Is Leap
+     */
+    is_leap: boolean;
+    /**
+     * Months
+     */
+    months: Array<HebrewMonthOptionSchema>;
+    /**
+     * Days
+     */
+    days: Array<HebrewOptionSchema>;
+    /**
+     * Years
+     */
+    years: Array<HebrewOptionSchema>;
 };
 
 export type PaginateSpecialDatesViewData = {
@@ -378,27 +502,64 @@ export type GetUpcomingSpecialDatesViewResponses = {
 
 export type GetUpcomingSpecialDatesViewResponse = GetUpcomingSpecialDatesViewResponses[keyof GetUpcomingSpecialDatesViewResponses];
 
-export type GetHebrewDateViewData = {
+export type ConvertSpecialDateViewData = {
     body?: never;
     path?: never;
     query: {
         /**
-         * Date
+         * CalendarType
          */
-        date: string;
+        calendar: 'gregorian' | 'hebrew';
         /**
          * After Sunset
          */
         after_sunset?: boolean;
+        /**
+         * Date
+         */
+        date?: string | null;
+        /**
+         * Hebrew Year
+         */
+        hebrew_year?: number | null;
+        /**
+         * Hebrew Month
+         */
+        hebrew_month?: number | null;
+        /**
+         * Hebrew Day
+         */
+        hebrew_day?: number | null;
     };
-    url: '/api/special-dates/hebrew-date/';
+    url: '/api/special-dates/convert/';
 };
 
-export type GetHebrewDateViewResponses = {
+export type ConvertSpecialDateViewResponses = {
     /**
      * OK
      */
-    200: HebrewDateSchema;
+    200: ConvertedDateSchema;
 };
 
-export type GetHebrewDateViewResponse = GetHebrewDateViewResponses[keyof GetHebrewDateViewResponses];
+export type ConvertSpecialDateViewResponse = ConvertSpecialDateViewResponses[keyof ConvertSpecialDateViewResponses];
+
+export type GetHebrewYearViewData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Year
+         */
+        year: number;
+    };
+    url: '/api/special-dates/hebrew-year/';
+};
+
+export type GetHebrewYearViewResponses = {
+    /**
+     * OK
+     */
+    200: HebrewYearSchema;
+};
+
+export type GetHebrewYearViewResponse = GetHebrewYearViewResponses[keyof GetHebrewYearViewResponses];

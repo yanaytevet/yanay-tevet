@@ -268,3 +268,20 @@ html, body {
 .dark .status-in-house { background: rgba(163,158,152,0.18); color: #c4bfb8; }
 .dark .status-ready    { background: rgba(42,157,153,0.22); color: #5fc9c5; }
 .dark .status-in-car   { background: rgba(26,174,57,0.22); color: #5fd178; }
+
+/* Special dates — calendar chips and the "today" highlight */
+.calendar-chip-hebrew    { background: rgba(42,157,153,0.14); color: #1f7f7c; }
+.calendar-chip-gregorian { background: rgba(0,117,222,0.12); color: #005bab; }
+.no-reminder-chip        { background: rgba(221,91,0,0.12); color: #c95300; }
+.today-card {
+  background: rgba(0,117,222,0.06);
+  border: 2px solid #0075de;
+}
+
+.dark .calendar-chip-hebrew    { background: rgba(42,157,153,0.22); color: #5fc9c5; }
+.dark .calendar-chip-gregorian { background: rgba(98,174,240,0.18); color: #62aef0; }
+.dark .no-reminder-chip        { background: rgba(221,91,0,0.22); color: #ff9a5a; }
+.dark .today-card {
+  background: rgba(98,174,240,0.1);
+  border-color: #62aef0;
+}

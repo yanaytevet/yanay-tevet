@@ -9,8 +9,8 @@ from common.simple_api.api_request import APIRequest
 from common.simple_api.schemas.schema_config import hidden_fields_config
 from common.simple_api.serializers.serializer import Serializer
 from common.simple_api.views.create_views.create_item_api_view import CreateItemAPIView
+from special_dates.enums.calendar_type import CalendarType
 from special_dates.enums.special_date_category import SpecialDateCategory
-from special_dates.enums.special_date_recurrence import SpecialDateRecurrence
 from special_dates.managers.special_date_manager import SpecialDateManager
 from special_dates.models.special_date import SpecialDate
 from special_dates.serializers.special_date_serializers.special_date_serializer import SpecialDateSerializer
@@ -19,11 +19,13 @@ from special_dates.serializers.special_date_serializers.special_date_serializer 
 class CreateSpecialDateSchema(Schema):
     model_config = hidden_fields_config('owner_id')
     owner_id: Optional[int] = None
+    name: str = Field(min_length=1, max_length=255)
+    category: SpecialDateCategory
     date: date
     after_sunset: bool = False
-    category: SpecialDateCategory
-    recurrence: SpecialDateRecurrence = SpecialDateRecurrence.BOTH
-    description: str = Field(min_length=1, max_length=255)
+    input_calendar: CalendarType = CalendarType.GREGORIAN
+    remind_hebrew: bool = True
+    remind_gregorian: bool = True
 
 
 class CreateSpecialDateView(CreateItemAPIView):

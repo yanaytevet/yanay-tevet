@@ -1,4 +1,4 @@
-<div class="card bg-layer-2 p-5 sm:p-6 w-full" dir="rtl" lang="he">
+<div class="card bg-layer-2 p-5 sm:p-6 w-full max-h-[90vh] overflow-y-auto" dir="rtl" lang="he">
 
     <div class="flex items-start justify-between mb-5">
         <h2 class="text-[18px] font-bold text-primary-500">{{ title }}</h2>
@@ -8,14 +8,7 @@
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">של מי האירוע? <span class="text-writing-least">*</span></span>
-        <input type="text" dir="auto" class="main-input w-full" maxlength="255"
-               placeholder="למשל: יום ההולדת של סבתא רחל"
-               [formControl]="descriptionCtrl" (keyup.enter)="onSave()" />
-    </div>
-
-    <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">סוג</span>
+        <span class="input-label">סוג האירוע</span>
         <div class="flex flex-wrap gap-2">
             @for (option of categories; track option.value) {
                 <button type="button"
@@ -28,11 +21,72 @@
         </div>
     </div>
 
-    <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">תאריך לועזי <span class="text-writing-least">*</span></span>
-        <input type="date" class="main-input w-full" [formControl]="dateCtrl" />
+    <div class="mb-5 flex flex-col gap-1.5">
+        <span class="input-label">{{ categoryOption().nameLabel }} <span class="text-writing-least">*</span></span>
+        <input type="text" dir="auto" class="main-input w-full" maxlength="255"
+               [placeholder]="categoryOption().namePlaceholder"
+               [formControl]="nameCtrl" (keyup.enter)="onSave()" />
+        @if (namePreview()) {
+            <span class="text-[12px] text-writing-minor">יופיע כך: <span class="font-semibold text-writing">{{ namePreview() }}</span></span>
+        } @else {
+            <span class="text-[12px] text-writing-least">רק השם — סוג האירוע כבר נבחר למעלה.</span>
+        }
+    </div>
+
+    <div class="mb-5 flex flex-col gap-2">
+        <span class="input-label">תאריך האירוע</span>
+        <div class="grid grid-cols-2 gap-2">
+            <button type="button"
+                    class="rounded-[10px] border-2 px-3 py-3 flex flex-col items-center gap-0.5 transition-colors cursor-pointer {{ isHebrewInput() ? 'border-notion-blue bg-layer-1' : 'border-layer-4 bg-layer-2 hover:border-notion-blue' }}"
+                    [attr.aria-pressed]="isHebrewInput()"
+                    (click)="selectInputCalendar('hebrew')">
+                <span class="text-xl">📜</span>
+                <span class="text-[14px] font-semibold {{ isHebrewInput() ? 'text-notion-blue' : 'text-writing' }}">תאריך עברי</span>
+                <span class="text-[11px] text-writing-least">למשל כ״ו בתשרי</span>
+            </button>
+            <button type="button"
+                    class="rounded-[10px] border-2 px-3 py-3 flex flex-col items-center gap-0.5 transition-colors cursor-pointer {{ !isHebrewInput() ? 'border-notion-blue bg-layer-1' : 'border-layer-4 bg-layer-2 hover:border-notion-blue' }}"
+                    [attr.aria-pressed]="!isHebrewInput()"
+                    (click)="selectInputCalendar('gregorian')">
+                <span class="text-xl">📅</span>
+                <span class="text-[14px] font-semibold {{ !isHebrewInput() ? 'text-notion-blue' : 'text-writing' }}">תאריך לועזי</span>
+                <span class="text-[11px] text-writing-least">למשל 11 באוקטובר</span>
+            </button>
+        </div>
+
+        @if (isHebrewInput()) {
+            <div class="grid grid-cols-[1fr_1.4fr_1.6fr] gap-2 mt-1">
+                <div class="flex flex-col gap-1">
+                    <span class="text-[12px] text-writing-minor">יום</span>
+                    <select class="main-input w-full" [formControl]="hebrewDayCtrl">
+                        @for (day of hebrewDayOptions(); track day.value) {
+                            <option [ngValue]="day.value">{{ day.label }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-[12px] text-writing-minor">חודש</span>
+                    <select class="main-input w-full" [formControl]="hebrewMonthCtrl">
+                        @for (month of hebrewYear()?.months ?? []; track month.value) {
+                            <option [ngValue]="month.value">{{ month.label }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="text-[12px] text-writing-minor">שנה</span>
+                    <select class="main-input w-full" [formControl]="hebrewYearCtrl">
+                        @for (year of hebrewYear()?.years ?? []; track year.value) {
+                            <option [ngValue]="year.value">{{ year.label }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        } @else {
+            <input type="date" class="main-input w-full mt-1" [formControl]="gregorianDateCtrl" />
+        }
+
         <button type="button"
-                class="mt-1 flex items-center gap-2 cursor-pointer text-start bg-transparent border-none p-0"
+                class="flex items-center gap-2 cursor-pointer text-start bg-transparent border-none p-0 mt-1"
                 [attr.aria-pressed]="afterSunset()"
                 (click)="toggleAfterSunset()">
             <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ afterSunset() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
@@ -40,26 +94,66 @@
                     <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
                 }
             </span>
-            <span class="text-[13px] text-writing">אחרי השקיעה</span>
-            <span class="text-[12px] text-writing-least">(היום העברי מתחיל בשקיעה)</span>
-        </button>
-        <div class="mt-2 rounded-[8px] border border-layer-4 bg-layer-1 px-3 py-2 text-[14px]">
-            <span class="text-writing-minor">תאריך עברי: </span>
-            @if (hebrewPreview()) {
-                <span class="font-semibold text-writing">{{ hebrewPreview() }}</span>
+            @if (isHebrewInput()) {
+                <span class="text-[13px] text-writing">בין השקיעה לחצות</span>
+                <span class="text-[12px] text-writing-least">(בלוח הלועזי זה עדיין היה היום הקודם)</span>
             } @else {
-                <span class="text-writing-least">בחרו תאריך</span>
+                <span class="text-[13px] text-writing">אחרי השקיעה</span>
+                <span class="text-[12px] text-writing-least">(היום העברי מתחיל בשקיעה)</span>
+            }
+        </button>
+
+        <div class="rounded-[8px] border border-layer-4 bg-layer-1 px-3 py-2 text-[14px]">
+            @if (conversionError()) {
+                <span class="text-red-500">{{ conversionError() }}</span>
+            } @else if (isHebrewInput()) {
+                <span class="text-writing-minor">בלוח הלועזי: </span>
+                @if (convertedGregorianLabel()) {
+                    <span class="font-semibold text-writing">{{ convertedGregorianLabel() }}</span>
+                } @else {
+                    <span class="text-writing-least">בחרו תאריך</span>
+                }
+            } @else {
+                <span class="text-writing-minor">בלוח העברי: </span>
+                @if (convertedHebrewLabel()) {
+                    <span class="font-semibold text-writing">{{ convertedHebrewLabel() }}</span>
+                } @else {
+                    <span class="text-writing-least">בחרו תאריך</span>
+                }
             }
         </div>
     </div>
 
-    <div class="mb-2 flex flex-col gap-1.5">
-        <span class="input-label">להזכיר</span>
-        <select class="main-input w-full" [formControl]="recurrenceCtrl">
-            @for (option of recurrences; track option.value) {
-                <option [value]="option.value">{{ option.label }}</option>
-            }
-        </select>
+    <div class="mb-2 flex flex-col gap-2">
+        <span class="input-label">תזכורות</span>
+        <button type="button"
+                class="flex items-center gap-2 cursor-pointer text-start bg-transparent border-none p-0"
+                [attr.aria-pressed]="remindHebrew()"
+                (click)="toggleRemindHebrew()">
+            <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ remindHebrew() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                @if (remindHebrew()) {
+                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                }
+            </span>
+            <span class="text-[13px] text-writing">להזכיר לפי התאריך העברי</span>
+        </button>
+        <button type="button"
+                class="flex items-center gap-2 cursor-pointer text-start bg-transparent border-none p-0"
+                [attr.aria-pressed]="remindGregorian()"
+                (click)="toggleRemindGregorian()">
+            <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ remindGregorian() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                @if (remindGregorian()) {
+                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                }
+            </span>
+            <span class="text-[13px] text-writing">להזכיר לפי התאריך הלועזי</span>
+        </button>
+        @if (noReminders()) {
+            <div class="no-reminder-chip rounded-[8px] px-3 py-2 text-[13px] flex items-start gap-2">
+                <ng-icon [svg]="featherAlertTriangle" class="h-4 w-4 shrink-0 mt-0.5"></ng-icon>
+                <span>בלי תזכורת, האירוע יישמר ברשימה אבל לא יופיע באירועים הקרובים.</span>
+            </div>
+        }
     </div>
 
     @if (errorMessage()) {

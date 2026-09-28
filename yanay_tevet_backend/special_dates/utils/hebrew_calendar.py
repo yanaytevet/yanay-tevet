@@ -145,6 +145,17 @@ class HebrewCalendar:
         return HebrewDate(year, month, day)
 
     @staticmethod
+    def months_in_year_order(year: int) -> list[int]:
+        """Months in the order they occur in the year: Tishrei ... Adar (I, II) ... Elul."""
+        return list(range(TISHREI, HebrewCalendar.last_month_of_year(year) + 1)) + list(range(NISAN, TISHREI))
+
+    @staticmethod
+    def is_valid(hebrew_date: HebrewDate) -> bool:
+        if hebrew_date.month < NISAN or hebrew_date.month > HebrewCalendar.last_month_of_year(hebrew_date.year):
+            return False
+        return 1 <= hebrew_date.day <= HebrewCalendar.days_in_month(hebrew_date.year, hebrew_date.month)
+
+    @staticmethod
     def month_name(year: int, month: int) -> str:
         if month == ADAR and HebrewCalendar.is_leap_year(year):
             return ADAR_I_NAME

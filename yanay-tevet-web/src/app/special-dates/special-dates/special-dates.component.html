@@ -50,33 +50,68 @@
                 }
             </div>
         } @else {
-            <div class="flex flex-col gap-2">
-                @for (row of upcomingRows(); track row.key) {
-                    <div class="card p-3 sm:p-4 flex items-center gap-3 {{ row.isToday ? 'border-notion-blue' : '' }}">
-                        <div class="w-[72px] shrink-0 text-center">
-                            <div class="text-[13px] font-bold {{ row.isToday ? 'text-notion-blue' : 'text-writing' }}">{{ row.daysLabel }}</div>
-                        </div>
-                        <div class="text-2xl shrink-0">{{ row.emoji }}</div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-[15px] font-semibold text-writing truncate" dir="auto">{{ row.description }}</div>
-                            <div class="text-[13px] text-writing-minor">
-                                {{ row.gregorianDate }} · {{ row.hebrewDate }}
+            @if (todayRows().length > 0) {
+                <div class="mb-6">
+                    <div class="text-[13px] font-bold text-notion-blue mb-2">🎉 היום</div>
+                    <div class="flex flex-col gap-3">
+                        @for (row of todayRows(); track row.key) {
+                            <div class="today-card rounded-xl p-4 sm:p-5 flex items-center gap-4 shadow-1">
+                                <div class="text-4xl shrink-0">{{ row.emoji }}</div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[20px] font-bold text-writing truncate" dir="auto">{{ row.name }}</div>
+                                    <div class="text-[14px] font-semibold text-writing mt-0.5">
+                                        {{ row.categoryLabel }}@if (row.yearsLabel) { · {{ row.yearsLabel }}}
+                                    </div>
+                                    <div class="text-[13px] text-writing-minor mt-0.5">{{ row.hebrewDate }} · {{ row.gregorianDate }}</div>
+                                    <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                        @for (chip of row.calendarChips; track chip.label) {
+                                            <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ chip.cssClass }}">{{ chip.label }}</span>
+                                        }
+                                    </div>
+                                </div>
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing shrink-0" title="עריכה"
+                                        (click)="editSpecialDate(row.specialDate)">
+                                    <ng-icon [svg]="featherEdit2" class="h-4 w-4"></ng-icon>
+                                </button>
                             </div>
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1">
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">{{ row.categoryLabel }}</span>
-                                @if (row.yearsLabel) {
-                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">{{ row.yearsLabel }}</span>
-                                }
-                                <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-least">{{ row.calendarsLabel }}</span>
-                            </div>
-                        </div>
-                        <button type="button" class="icon-btn text-writing-minor hover:text-writing shrink-0" title="עריכה"
-                                (click)="editSpecialDate(row.specialDate)">
-                            <ng-icon [svg]="featherEdit2" class="h-4 w-4"></ng-icon>
-                        </button>
+                        }
                     </div>
+                </div>
+            }
+            @if (laterRows().length > 0) {
+                @if (todayRows().length > 0) {
+                    <div class="text-[13px] font-bold text-writing-minor mb-2">בהמשך</div>
                 }
-            </div>
+                <div class="flex flex-col gap-2">
+                    @for (row of laterRows(); track row.key) {
+                        <div class="card p-3 sm:p-4 flex items-center gap-3">
+                            <div class="w-[72px] shrink-0 text-center">
+                                <div class="text-[13px] font-bold text-writing">{{ row.daysLabel }}</div>
+                            </div>
+                            <div class="text-2xl shrink-0">{{ row.emoji }}</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[15px] font-semibold text-writing truncate" dir="auto">{{ row.name }}</div>
+                                <div class="text-[13px] text-writing-minor">
+                                    {{ row.gregorianDate }} · {{ row.hebrewDate }}
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">{{ row.categoryLabel }}</span>
+                                    @if (row.yearsLabel) {
+                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">{{ row.yearsLabel }}</span>
+                                    }
+                                    @for (chip of row.calendarChips; track chip.label) {
+                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ chip.cssClass }}">{{ chip.label }}</span>
+                                    }
+                                </div>
+                            </div>
+                            <button type="button" class="icon-btn text-writing-minor hover:text-writing shrink-0" title="עריכה"
+                                    (click)="editSpecialDate(row.specialDate)">
+                                <ng-icon [svg]="featherEdit2" class="h-4 w-4"></ng-icon>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
         }
     } @else {
         <div class="relative mb-3">
@@ -110,19 +145,26 @@
             <div class="card divide-y divide-layer-3 {{ isLoadingAll() ? 'opacity-60' : '' }}">
                 @for (row of allRows(); track row.specialDate.id) {
                     <div class="p-3 sm:p-4 flex items-center gap-3">
-                        <div class="text-2xl shrink-0">{{ row.emoji }}</div>
+                        <div class="text-2xl shrink-0 {{ row.hasReminders ? '' : 'opacity-50' }}">{{ row.emoji }}</div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-[15px] font-semibold text-writing truncate" dir="auto">{{ row.description }}</span>
+                                <span class="text-[15px] font-semibold truncate {{ row.hasReminders ? 'text-writing' : 'text-writing-minor' }}" dir="auto">{{ row.name }}</span>
                                 <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor shrink-0">{{ row.categoryLabel }}</span>
                             </div>
                             <div class="text-[13px] text-writing-minor">
-                                {{ row.gregorianDate }} · {{ row.hebrewDate }}
-                                @if (row.afterSunset) {
-                                    <span class="text-writing-least">(אחרי השקיעה)</span>
+                                {{ row.primaryDate }} · {{ row.secondaryDate }}
+                                @if (row.afterSunsetLabel) {
+                                    <span class="text-writing-least">({{ row.afterSunsetLabel }})</span>
                                 }
                             </div>
-                            <div class="text-[12px] text-writing-least mt-0.5">הבא — {{ row.nextLabel }}</div>
+                            @if (row.hasReminders) {
+                                <div class="text-[12px] text-writing-least mt-0.5">הבא — {{ row.nextLabel }}</div>
+                            } @else {
+                                <span class="no-reminder-chip inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold mt-1">
+                                    <ng-icon [svg]="featherBellOff" class="h-3 w-3"></ng-icon>
+                                    ללא תזכורת
+                                </span>
+                            }
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="עריכה"

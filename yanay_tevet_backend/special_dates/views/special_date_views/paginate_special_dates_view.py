@@ -13,7 +13,7 @@ from special_dates.serializers.special_date_serializers.special_date_serializer 
 
 
 class PaginateSpecialDatesFilterSchema(FilterSchema):
-    search: Optional[str] = Field(None, q=['description__icontains'])
+    search: Optional[str] = Field(None, q=['name__icontains'])
     category: Optional[SpecialDateCategory] = None
 
 
@@ -28,7 +28,7 @@ class PaginateSpecialDatesView(PaginateItemsAPIView):
 
     @classmethod
     def get_allowed_order_by(cls) -> set[str]:
-        return {'id', 'date', 'description', 'category', 'created_at'}
+        return {'id', 'date', 'name', 'category', 'created_at'}
 
     @classmethod
     def get_filter_schema(cls) -> Type[FilterSchema]:
@@ -42,4 +42,4 @@ class PaginateSpecialDatesView(PaginateItemsAPIView):
     async def apply_initial_filter_and_order(cls, queryset: QuerySet, request: APIRequest,
                                              query: Query, path: Path) -> QuerySet:
         user = await request.future_user
-        return queryset.filter(owner_id=user.id).order_by('description', 'id')
+        return queryset.filter(owner_id=user.id).order_by('name', 'id')

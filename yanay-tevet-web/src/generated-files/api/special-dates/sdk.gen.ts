@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateSpecialDateViewData, CreateSpecialDateViewResponses, DeleteSpecialDateViewData, DeleteSpecialDateViewResponses, GetHebrewDateViewData, GetHebrewDateViewResponses, GetUpcomingSpecialDatesViewData, GetUpcomingSpecialDatesViewResponses, PaginateSpecialDatesViewData, PaginateSpecialDatesViewResponses, UpdateSpecialDateViewData, UpdateSpecialDateViewResponses } from './types.gen';
+import type { ConvertSpecialDateViewData, ConvertSpecialDateViewResponses, CreateSpecialDateViewData, CreateSpecialDateViewResponses, DeleteSpecialDateViewData, DeleteSpecialDateViewResponses, GetHebrewYearViewData, GetHebrewYearViewResponses, GetUpcomingSpecialDatesViewData, GetUpcomingSpecialDatesViewResponses, PaginateSpecialDatesViewData, PaginateSpecialDatesViewResponses, UpdateSpecialDateViewData, UpdateSpecialDateViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -77,8 +77,17 @@ export const getUpcomingSpecialDatesView = <ThrowOnError extends boolean = false
 /**
  * Get
  */
-export const getHebrewDateView = <ThrowOnError extends boolean = false>(options: Options<GetHebrewDateViewData, ThrowOnError>) => (options.client ?? client).get<GetHebrewDateViewResponses, unknown, ThrowOnError>({
+export const convertSpecialDateView = <ThrowOnError extends boolean = false>(options: Options<ConvertSpecialDateViewData, ThrowOnError>) => (options.client ?? client).get<ConvertSpecialDateViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/special-dates/hebrew-date/',
+    url: '/api/special-dates/convert/',
+    ...options
+});
+
+/**
+ * Get
+ */
+export const getHebrewYearView = <ThrowOnError extends boolean = false>(options: Options<GetHebrewYearViewData, ThrowOnError>) => (options.client ?? client).get<GetHebrewYearViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/hebrew-year/',
     ...options
 });

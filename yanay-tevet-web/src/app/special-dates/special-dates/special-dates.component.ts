@@ -1,6 +1,6 @@
 import {Component, computed, DestroyRef, inject, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
-import {featherEdit2, featherPlus, featherSearch, featherTrash2} from '@ng-icons/feather-icons';
+import {featherBellOff, featherEdit2, featherPlus, featherSearch, featherTrash2} from '@ng-icons/feather-icons';
 import {
   deleteSpecialDateView,
   getUpcomingSpecialDatesView,
@@ -12,7 +12,7 @@ import {
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {SpecialDateDialogComponent, SpecialDateDialogData} from '../special-date-dialog/special-date-dialog.component';
 import {
-  formatCalendars,
+  CALENDAR_CHIPS,
   formatDaysUntil,
   formatFullDate,
   formatLongDate,
@@ -63,33 +63,38 @@ export class SpecialDatesComponent {
       specialDate: o.special_date,
       emoji: category.emoji,
       categoryLabel: category.label,
-      description: o.special_date.description,
+      name: o.special_date.name,
       daysLabel: formatDaysUntil(o.days_until),
       isToday: o.days_until === 0,
       gregorianDate: formatLongDate(o.date),
       hebrewDate: o.hebrew_date,
       yearsLabel: formatYears(o.special_date.category, o.years),
-      calendarsLabel: formatCalendars(o.calendars),
+      calendarChips: o.calendars.map(c => CALENDAR_CHIPS[c]),
     };
   }));
+  readonly todayRows = computed(() => this.upcomingRows().filter(r => r.isToday));
+  readonly laterRows = computed(() => this.upcomingRows().filter(r => !r.isToday));
 
   readonly allRows = computed(() => this.allDates().map(d => {
     const category = SPECIAL_DATE_CATEGORY_BY_VALUE[d.category];
+    const gregorianDate = formatFullDate(d.date);
     const next: string[] = [];
-    if (d.recurrence !== 'hebrew') {
-      next.push(`לועזי: ${formatFullDate(d.next_gregorian_date)}`);
-    }
-    if (d.recurrence !== 'gregorian') {
+    if (d.next_hebrew_date) {
       next.push(`עברי: ${formatFullDate(d.next_hebrew_date)}`);
     }
+    if (d.next_gregorian_date) {
+      next.push(`לועזי: ${formatFullDate(d.next_gregorian_date)}`);
+    }
+    const isHebrewInput = d.input_calendar === 'hebrew';
     return {
       specialDate: d,
       emoji: category.emoji,
       categoryLabel: category.label,
-      description: d.description,
-      gregorianDate: formatFullDate(d.date),
-      hebrewDate: d.hebrew_date,
-      afterSunset: d.after_sunset,
+      name: d.name,
+      primaryDate: isHebrewInput ? d.hebrew_date : gregorianDate,
+      secondaryDate: isHebrewInput ? gregorianDate : d.hebrew_date,
+      afterSunsetLabel: d.after_sunset ? (isHebrewInput ? 'בין השקיעה לחצות' : 'אחרי השקיעה') : '',
+      hasReminders: d.remind_hebrew || d.remind_gregorian,
       nextLabel: next.join(' · '),
     };
   }));
@@ -100,6 +105,7 @@ export class SpecialDatesComponent {
   });
   readonly isFiltering = computed(() => !!this.searchText().trim() || this.categoryFilter() !== null);
 
+  protected readonly featherBellOff = featherBellOff;
   protected readonly featherEdit2 = featherEdit2;
   protected readonly featherPlus = featherPlus;
   protected readonly featherSearch = featherSearch;
@@ -149,7 +155,7 @@ export class SpecialDatesComponent {
   async deleteSpecialDate(specialDate: SpecialDateSchema): Promise<void> {
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: 'מחיקת אירוע',
-      text: `למחוק את "${specialDate.description}"?`,
+      text: `למחוק את "${specialDate.name}"?`,
       confirmActionName: 'מחיקה',
       cancelActionName: 'ביטול',
     });

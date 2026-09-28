@@ -5,7 +5,6 @@ from zoneinfo import ZoneInfo
 from common.simple_api.enums.status_code import StatusCode
 from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from special_dates.enums.calendar_type import CalendarType
-from special_dates.enums.special_date_recurrence import SpecialDateRecurrence
 from special_dates.models.special_date import SpecialDate
 from special_dates.utils.hebrew_calendar import HebrewCalendar, HebrewDate
 from users.models import User
@@ -13,6 +12,8 @@ from users.models import User
 MAX_SPECIAL_DATES_PER_USER = 500
 UPCOMING_DAYS = 14
 LOCAL_TIMEZONE = ZoneInfo('Asia/Jerusalem')
+FIRST_SELECTABLE_HEBREW_YEAR = 5600
+SELECTABLE_HEBREW_YEARS_AHEAD = 10
 
 
 @dataclass
@@ -22,6 +23,13 @@ class SpecialDateOccurrence:
     calendars: list[CalendarType]
     years: int
     days_until: int
+
+
+@dataclass
+class ConvertedDate:
+    date: date
+    after_sunset: bool
+    hebrew: HebrewDate
 
 
 class SpecialDateManager:
@@ -41,6 +49,27 @@ class SpecialDateManager:
     @staticmethod
     def format_hebrew_date(gregorian: date, after_sunset: bool) -> str:
         return HebrewCalendar.format(SpecialDateManager.hebrew_date_of(gregorian, after_sunset))
+
+    @staticmethod
+    def from_gregorian(gregorian: date, after_sunset: bool) -> ConvertedDate:
+        return ConvertedDate(gregorian, after_sunset, SpecialDateManager.hebrew_date_of(gregorian, after_sunset))
+
+    @staticmethod
+    def from_hebrew(hebrew: HebrewDate, after_sunset: bool) -> ConvertedDate:
+        """`after_sunset` here means between sunset and midnight, i.e. still the previous Gregorian day."""
+        if not HebrewCalendar.is_valid(hebrew):
+            raise RestAPIException(
+                status_code=StatusCode.HTTP_400_BAD_REQUEST,
+                message='התאריך הזה לא קיים בשנה שנבחרה.',
+                error_code='invalid_hebrew_date',
+            )
+        ordinal = HebrewCalendar.to_ordinal(hebrew) - (1 if after_sunset else 0)
+        return ConvertedDate(date.fromordinal(ordinal), after_sunset, hebrew)
+
+    @staticmethod
+    def selectable_hebrew_years() -> list[int]:
+        current = HebrewCalendar.from_gregorian(SpecialDateManager.today()).year
+        return list(range(current + SELECTABLE_HEBREW_YEARS_AHEAD, FIRST_SELECTABLE_HEBREW_YEAR - 1, -1))
 
     @staticmethod
     def _gregorian_in_year(original: date, year: int) -> date:
@@ -72,12 +101,12 @@ class SpecialDateManager:
 
     def occurrences_between(self, special_date: SpecialDate, from_date: date, to_date: date) -> list[SpecialDateOccurrence]:
         candidates: list[tuple[date, int, CalendarType]] = []
-        if special_date.recurrence != SpecialDateRecurrence.HEBREW:
-            occurrence, years = self.next_gregorian_occurrence(special_date, from_date)
-            candidates.append((occurrence, years, CalendarType.GREGORIAN))
-        if special_date.recurrence != SpecialDateRecurrence.GREGORIAN:
+        if special_date.remind_hebrew:
             occurrence, years = self.next_hebrew_occurrence(special_date, from_date)
             candidates.append((occurrence, years, CalendarType.HEBREW))
+        if special_date.remind_gregorian:
+            occurrence, years = self.next_gregorian_occurrence(special_date, from_date)
+            candidates.append((occurrence, years, CalendarType.GREGORIAN))
 
         by_date: dict[date, SpecialDateOccurrence] = {}
         for occurrence, years, calendar in candidates:
@@ -102,7 +131,7 @@ class SpecialDateManager:
         occurrences: list[SpecialDateOccurrence] = []
         async for special_date in SpecialDate.objects.filter(owner_id=self.user.id):
             occurrences.extend(self.occurrences_between(special_date, from_date, to_date))
-        occurrences.sort(key=lambda o: (o.date, o.special_date.description))
+        occurrences.sort(key=lambda o: (o.date, o.special_date.name))
         return occurrences
 
     async def count(self) -> int:
