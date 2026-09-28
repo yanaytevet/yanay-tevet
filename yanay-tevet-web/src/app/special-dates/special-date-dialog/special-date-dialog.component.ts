@@ -2,7 +2,7 @@ import {Component, computed, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon} from '@ng-icons/core';
-import {featherAlertTriangle, featherCheck, featherX} from '@ng-icons/feather-icons';
+import {featherAlertTriangle, featherCheck, featherUsers, featherX} from '@ng-icons/feather-icons';
 import {
   CalendarType,
   ConvertedDateSchema,
@@ -17,6 +17,7 @@ import {
 } from '../../../generated-files/api/special-dates';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {
+  calendarColorClass,
   formatFullDateWithWeekday,
   SPECIAL_DATE_CATEGORIES,
   storeLastCalendarId,
@@ -52,8 +53,18 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
   readonly hebrewMonthCtrl = new FormControl<number | null>(this.data.specialDate?.hebrew_month ?? null);
   readonly hebrewDayCtrl = new FormControl<number | null>(this.data.specialDate?.hebrew_day ?? null);
 
-  readonly calendarCtrl = new FormControl<number>(this.data.specialDate?.calendar_id ?? this.data.defaultCalendarId, {nonNullable: true});
+  readonly calendarId = signal<number>(this.data.specialDate?.calendar_id ?? this.data.defaultCalendarId);
   readonly showCalendarPicker = this.data.calendars.length > 1;
+  readonly calendarOptions = computed(() => {
+    const selected = this.calendarId();
+    return this.data.calendars.map(c => ({
+      id: c.id,
+      name: c.name,
+      isShared: c.member_count > 1,
+      colorClass: calendarColorClass(c.id),
+      isSelected: c.id === selected,
+    }));
+  });
 
   readonly category = signal<SpecialDateCategory>(this.data.specialDate?.category ?? 'birthday');
   readonly inputCalendar = signal<CalendarType>(this.data.specialDate?.input_calendar ?? 'gregorian');
@@ -107,6 +118,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
 
   protected readonly featherAlertTriangle = featherAlertTriangle;
   protected readonly featherCheck = featherCheck;
+  protected readonly featherUsers = featherUsers;
   protected readonly featherX = featherX;
 
   constructor() {
@@ -134,6 +146,10 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
     }
     await this.loadHebrewYear(this.hebrewYearCtrl.value);
     await this.refreshConversion();
+  }
+
+  selectCalendar(calendarId: number): void {
+    this.calendarId.set(calendarId);
   }
 
   selectCategory(category: SpecialDateCategory): void {
@@ -251,7 +267,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
     this.isSaving.set(true);
     this.errorMessage.set('');
     const body = {
-      calendar_id: this.calendarCtrl.value,
+      calendar_id: this.calendarId(),
       name: this.nameCtrl.value.trim(),
       category: this.category(),
       date: converted.date,
@@ -270,7 +286,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
         this.errorMessage.set(err?.detail || 'השמירה נכשלה, נסו שוב.');
         return;
       }
-      storeLastCalendarId(this.calendarCtrl.value);
+      storeLastCalendarId(this.calendarId());
       this.emitClose(res.data);
     } finally {
       this.isSaving.set(false);

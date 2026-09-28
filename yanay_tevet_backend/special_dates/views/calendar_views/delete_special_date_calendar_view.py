@@ -5,6 +5,7 @@ from ninja import Path, Schema
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.delete_views.delete_item_by_id_api_view import DeleteItemByIdAPIView
+from special_dates.managers.special_date_calendar_manager import SpecialDateCalendarManager
 from special_dates.models.special_date_calendar import SpecialDateCalendar
 from special_dates.permissions_checkers.special_date_calendar_member_permission_checker import (
     SpecialDateCalendarMemberPermissionChecker,
@@ -25,3 +26,7 @@ class DeleteSpecialDateCalendarView(DeleteItemByIdAPIView):
         await SpecialDateCalendarMemberPermissionChecker(obj, require_owner=True).async_raise_exception_if_not_valid(
             await request.future_user
         )
+
+    @classmethod
+    async def run_before_deletion(cls, request: APIRequest, obj: SpecialDateCalendar, data: Schema, path: Path) -> None:
+        await SpecialDateCalendarManager(await request.future_user).raise_if_last_owned(obj)

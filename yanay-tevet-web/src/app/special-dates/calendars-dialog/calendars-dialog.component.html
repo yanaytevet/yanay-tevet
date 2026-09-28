@@ -49,9 +49,11 @@
                             <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="שינוי שם" (click)="rename(row.calendar)">
                                 <ng-icon [svg]="featherEdit2" class="h-4 w-4"></ng-icon>
                             </button>
-                            <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="מחיקת הלוח" (click)="deleteCalendar(row.calendar)">
-                                <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                            </button>
+                            @if (row.canDelete) {
+                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="מחיקת הלוח" (click)="deleteCalendar(row.calendar)">
+                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                </button>
+                            }
                         } @else {
                             <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="יציאה מהלוח" (click)="leave(row.calendar)">
                                 <ng-icon [svg]="featherLogOut" class="h-4 w-4"></ng-icon>

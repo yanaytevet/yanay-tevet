@@ -2,7 +2,6 @@ import {Component, computed, inject, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {featherCheck, featherEdit2, featherLogOut, featherPlus, featherTrash2, featherUserPlus, featherX} from '@ng-icons/feather-icons';
 import {
-  createSpecialDateCalendarView,
   deleteSpecialDateCalendarView,
   leaveSpecialDateCalendarView,
   listSpecialDateCalendarsView,
@@ -14,6 +13,7 @@ import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
+import {SpecialDateCalendarsService} from '../special-date-calendars.service';
 import {calendarColorClass} from '../special-dates.constants';
 
 const CALENDAR_NAME_MAX_LENGTH = 100;
@@ -26,19 +26,24 @@ const CALENDAR_NAME_MAX_LENGTH = 100;
 })
 export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean> {
   private readonly dialogService = inject(DialogService);
+  private readonly calendarsService = inject(SpecialDateCalendarsService);
 
   readonly calendars = signal<SpecialDateCalendarSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
 
-  readonly rows = computed(() => this.calendars().map(c => ({
-    calendar: c,
-    colorClass: calendarColorClass(c.id),
-    subtitle: [
-      `${c.event_count} אירועים`,
-      c.member_count > 1 ? `${c.member_count} חברים` : 'רק את/ה',
-      c.is_owner ? '' : `של ${c.owner_name}`,
-    ].filter(Boolean).join(' · '),
-  })));
+  readonly rows = computed(() => {
+    const ownedCount = this.calendars().filter(c => c.is_owner).length;
+    return this.calendars().map(c => ({
+      calendar: c,
+      canDelete: c.is_owner && ownedCount > 1,
+      colorClass: calendarColorClass(c.id),
+      subtitle: [
+        `${c.event_count} אירועים`,
+        c.member_count > 1 ? `${c.member_count} חברים` : 'רק את/ה',
+        c.is_owner ? '' : `של ${c.owner_name}`,
+      ].filter(Boolean).join(' · '),
+    }));
+  });
 
   private changed = false;
 
@@ -77,24 +82,9 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
   }
 
   async createCalendar(): Promise<void> {
-    const name = (await this.dialogService.getTextFromInputDialog({
-      title: 'לוח חדש',
-      text: 'למשל "משפחה" או "חברים מהעבודה". אחרי היצירה אפשר לשתף אותו.',
-      label: 'שם הלוח',
-      defaultValue: '',
-      confirmActionName: 'יצירה',
-      cancelActionName: 'ביטול',
-      maxLength: CALENDAR_NAME_MAX_LENGTH,
-    }, 40))?.trim();
-    if (!name) {
-      return;
+    if (await this.calendarsService.promptCreateCalendar()) {
+      await this.reloadAfterChange();
     }
-    const res = await createSpecialDateCalendarView({body: {name}});
-    if (res.error) {
-      await this.showError(res.error, 'יצירת הלוח נכשלה.');
-      return;
-    }
-    await this.reloadAfterChange();
   }
 
   async share(calendar: SpecialDateCalendarSchema): Promise<void> {

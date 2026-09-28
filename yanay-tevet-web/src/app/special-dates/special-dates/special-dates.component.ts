@@ -5,6 +5,7 @@ import {
   featherBellOff,
   featherEdit2,
   featherPlus,
+  featherSettings,
   featherSearch,
   featherTrash2,
   featherUsers,
@@ -23,6 +24,7 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {CalendarsDialogComponent} from '../calendars-dialog/calendars-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
+import {SpecialDateCalendarsService} from '../special-date-calendars.service';
 import {SpecialDateDialogComponent, SpecialDateDialogData} from '../special-date-dialog/special-date-dialog.component';
 import {
   CALENDAR_CHIPS,
@@ -49,6 +51,7 @@ const MAX_PAGE_SIZE = 1000;
 })
 export class SpecialDatesComponent {
   private readonly dialogService = inject(DialogService);
+  private readonly calendarsService = inject(SpecialDateCalendarsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -77,7 +80,6 @@ export class SpecialDatesComponent {
       colorClass: calendarColorClass(c.id),
       isSelected: c.id === selected,
       isShared: c.member_count > 1,
-      isHidden: c.hide_from_upcoming,
     }));
   });
 
@@ -88,12 +90,13 @@ export class SpecialDatesComponent {
   readonly todayHebrew = computed(() => this.upcoming()?.today_hebrew_date ?? '');
   readonly upcomingDays = computed(() => this.upcoming()?.days ?? 14);
 
+  readonly hiddenFromUpcomingLabel = computed(() =>
+    this.calendars().filter(c => c.hide_from_upcoming).map(c => c.name).join(', '));
+
   readonly upcomingRows = computed(() => {
-    const selected = this.selectedCalendarId();
     const calendarsById = this.calendarsById();
     const showCalendar = this.hasMultipleCalendars();
     return (this.upcoming()?.occurrences ?? [])
-      .filter(o => selected === null || o.special_date.calendar_id === selected)
       .map(o => {
         const category = SPECIAL_DATE_CATEGORY_BY_VALUE[o.special_date.category];
         const calendarId = o.special_date.calendar_id ?? 0;
@@ -158,6 +161,7 @@ export class SpecialDatesComponent {
   protected readonly featherBellOff = featherBellOff;
   protected readonly featherEdit2 = featherEdit2;
   protected readonly featherPlus = featherPlus;
+  protected readonly featherSettings = featherSettings;
   protected readonly featherSearch = featherSearch;
   protected readonly featherTrash2 = featherTrash2;
   protected readonly featherUsers = featherUsers;
@@ -204,15 +208,29 @@ export class SpecialDatesComponent {
     void this.loadAll();
   }
 
+  async createCalendar(): Promise<void> {
+    const calendar = await this.calendarsService.promptCreateCalendar();
+    if (!calendar) {
+      return;
+    }
+    await this.loadCalendars();
+  }
+
+  async manageCalendars(): Promise<void> {
+    const changed = await this.dialogService.open<void, boolean>(CalendarsDialogComponent, undefined, 40);
+    if (changed) {
+      await this.reload();
+    }
+  }
+
   async openSharing(): Promise<void> {
     const calendars = this.calendars();
-    let changed: boolean | null;
-    if (calendars.length === 1) {
-      changed = await this.dialogService.open<CalendarShareDialogData, boolean>(
-        CalendarShareDialogComponent, {calendarId: calendars[0].id}, 40);
-    } else {
-      changed = await this.dialogService.open<void, boolean>(CalendarsDialogComponent, undefined, 40);
+    if (calendars.length !== 1) {
+      await this.manageCalendars();
+      return;
     }
+    const changed = await this.dialogService.open<CalendarShareDialogData, boolean>(
+      CalendarShareDialogComponent, {calendarId: calendars[0].id}, 40);
     if (changed) {
       await this.reload();
     }

@@ -30,16 +30,12 @@ class SpecialDateCalendarManager:
         self.user = user
 
     async def ensure_personal_calendar(self) -> None:
-        """Every user always has at least one calendar, and events from before calendars existed get attached to it."""
-        has_orphans = await SpecialDate.objects.filter(created_by_id=self.user.id, calendar__isnull=True).aexists()
-        has_membership = await SpecialDateCalendarMembership.objects.filter(user_id=self.user.id).aexists()
-        if has_membership and not has_orphans:
-            return
+        """Every user always owns at least one calendar (so they can keep private dates even after joining shared ones),
+        and events from before calendars existed get attached to it."""
         calendar = await SpecialDateCalendar.objects.filter(owner_id=self.user.id).order_by('created_at', 'id').afirst()
         if calendar is None:
             calendar = await self._create(PERSONAL_CALENDAR_NAME)
-        if has_orphans:
-            await SpecialDate.objects.filter(created_by_id=self.user.id, calendar__isnull=True).aupdate(calendar=calendar)
+        await SpecialDate.objects.filter(created_by_id=self.user.id, calendar__isnull=True).aupdate(calendar=calendar)
 
     async def _create(self, name: str) -> SpecialDateCalendar:
         calendar = await SpecialDateCalendar.objects.acreate(owner_id=self.user.id, name=name)
@@ -80,6 +76,15 @@ class SpecialDateCalendarManager:
 
     async def get_membership(self, calendar: SpecialDateCalendar) -> SpecialDateCalendarMembership | None:
         return await SpecialDateCalendarMembership.objects.filter(calendar_id=calendar.id, user_id=self.user.id).afirst()
+
+    async def raise_if_last_owned(self, calendar: SpecialDateCalendar) -> None:
+        if await SpecialDateCalendar.objects.filter(owner_id=self.user.id).exclude(id=calendar.id).aexists():
+            return
+        raise RestAPIException(
+            status_code=StatusCode.HTTP_400_BAD_REQUEST,
+            message='זה הלוח האחרון שלך ולכן אי אפשר למחוק אותו. אפשר לשנות לו את השם.',
+            error_code='cannot_delete_last_calendar',
+        )
 
     async def rename(self, calendar: SpecialDateCalendar, name: str) -> None:
         calendar.name = name.strip()
