@@ -186,6 +186,12 @@ export const routes: Routes = [
                 canActivate: [hasPermissionGuard('shopping_lists')],
             },
             {
+                path: 'special-dates',
+                loadComponent: () =>
+                    import('./special-dates/special-dates/special-dates.component').then(m => m.SpecialDatesComponent),
+                canActivate: [loggedInGuard],
+            },
+            {
                 path: 'task-management',
                 loadComponent: () =>
                     import('./task-management/projects-list/projects-list.component').then(m => m.ProjectsListComponent),

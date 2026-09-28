@@ -351,6 +351,15 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getItineraryListEditUrl(listId));
   }
 
+  // Special Dates
+  getSpecialDatesUrl(): UrlTree {
+    return this.router.createUrlTree(['/special-dates']);
+  }
+
+  navigateToSpecialDates(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getSpecialDatesUrl());
+  }
+
   // Shopping Lists
   getShoppingListsUrl(): UrlTree {
     return this.router.createUrlTree(['/shopping-lists']);

@@ -166,8 +166,8 @@
       @if (!mcp.is_publicly_reachable) {
         <div class="px-4 py-3 rounded-lg bg-layer-3 border border-outline-border-1">
           <span class="text-[13px] text-writing-minor">
-            The server isn't publicly reachable yet. Start a tunnel (e.g. ngrok) and restart the
-            backend, then reopen this page to get a usable link.
+            The server isn't publicly reachable: MCP_PUBLIC_BASE_URL isn't configured on the backend.
+            In development, start a tunnel (ngrok) and restart the backend instead.
           </span>
         </div>
       }

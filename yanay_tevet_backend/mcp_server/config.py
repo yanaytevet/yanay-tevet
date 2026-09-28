@@ -1,10 +1,13 @@
 import functools
 import json
+import logging
 import os
 import urllib.request
 from urllib.parse import urlparse
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 # The MCP streamable-HTTP endpoint path (mounted inside the Django ASGI app).
 MCP_PATH: str = '/mcp'
@@ -68,7 +71,8 @@ def get_public_base_url() -> str:
     1. ``MCP_PUBLIC_BASE_URL`` env — set this in production, e.g. ``https://api.yanaytevet.com``.
     2. In dev (``DEBUG``) with it unset, auto-discover the current ngrok tunnel from the ngrok
        agent's local API, so restarting ngrok "just works" without editing any config.
-    3. ``http://localhost:8000`` as a last resort.
+    3. ``http://localhost:8000`` as a last resort — never valid in production, so that case is
+       logged as an error.
 
     Claude uses this to discover the OAuth authorization server and the MCP resource, so it MUST
     match the host Claude connects to. Cached for the process lifetime; restart the backend after
@@ -81,6 +85,9 @@ def get_public_base_url() -> str:
         discovered = _discover_ngrok_base_url()
         if discovered:
             return discovered
+    else:
+        logger.error('MCP_PUBLIC_BASE_URL is not set; the MCP connector will advertise localhost and '
+                     'Claude will not be able to connect. Set it to the backend\'s public URL.')
     return 'http://localhost:8000'
 
 

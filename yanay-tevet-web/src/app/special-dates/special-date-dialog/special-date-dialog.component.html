@@ -1,0 +1,75 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full" dir="rtl" lang="he">
+
+    <div class="flex items-start justify-between mb-5">
+        <h2 class="text-[18px] font-bold text-primary-500">{{ title }}</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">של מי האירוע? <span class="text-writing-least">*</span></span>
+        <input type="text" dir="auto" class="main-input w-full" maxlength="255"
+               placeholder="למשל: יום ההולדת של סבתא רחל"
+               [formControl]="descriptionCtrl" (keyup.enter)="onSave()" />
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">סוג</span>
+        <div class="flex flex-wrap gap-2">
+            @for (option of categories; track option.value) {
+                <button type="button"
+                        class="px-3 py-1.5 rounded-full text-[13px] font-semibold border transition-colors {{ categorySelected()[option.value] ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 text-writing-minor hover:border-notion-blue' }}"
+                        [attr.aria-pressed]="categorySelected()[option.value]"
+                        (click)="selectCategory(option.value)">
+                    {{ option.emoji }} {{ option.label }}
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="mb-4 flex flex-col gap-1.5">
+        <span class="input-label">תאריך לועזי <span class="text-writing-least">*</span></span>
+        <input type="date" class="main-input w-full" [formControl]="dateCtrl" />
+        <button type="button"
+                class="mt-1 flex items-center gap-2 cursor-pointer text-start bg-transparent border-none p-0"
+                [attr.aria-pressed]="afterSunset()"
+                (click)="toggleAfterSunset()">
+            <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ afterSunset() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                @if (afterSunset()) {
+                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                }
+            </span>
+            <span class="text-[13px] text-writing">אחרי השקיעה</span>
+            <span class="text-[12px] text-writing-least">(היום העברי מתחיל בשקיעה)</span>
+        </button>
+        <div class="mt-2 rounded-[8px] border border-layer-4 bg-layer-1 px-3 py-2 text-[14px]">
+            <span class="text-writing-minor">תאריך עברי: </span>
+            @if (hebrewPreview()) {
+                <span class="font-semibold text-writing">{{ hebrewPreview() }}</span>
+            } @else {
+                <span class="text-writing-least">בחרו תאריך</span>
+            }
+        </div>
+    </div>
+
+    <div class="mb-2 flex flex-col gap-1.5">
+        <span class="input-label">להזכיר</span>
+        <select class="main-input w-full" [formControl]="recurrenceCtrl">
+            @for (option of recurrences; track option.value) {
+                <option [value]="option.value">{{ option.label }}</option>
+            }
+        </select>
+    </div>
+
+    @if (errorMessage()) {
+        <p class="text-[13px] text-red-500 mt-3">{{ errorMessage() }}</p>
+    }
+
+    <div class="flex items-center justify-end gap-2 mt-6">
+        <button type="button" class="btn cancel-btn" (click)="onClose()">ביטול</button>
+        <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
+            {{ confirmActionName }}
+        </button>
+    </div>
+</div>
