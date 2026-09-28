@@ -11,11 +11,14 @@ from common.simple_api.views.update_views.update_item_by_id_api_view import Upda
 from special_dates.enums.calendar_type import CalendarType
 from special_dates.enums.special_date_category import SpecialDateCategory
 from special_dates.models.special_date import SpecialDate
-from special_dates.permissions_checkers.own_special_date_permission_checker import OwnSpecialDatePermissionChecker
+from special_dates.managers.special_date_calendar_manager import SpecialDateCalendarManager
+from special_dates.managers.special_date_manager import SpecialDateManager
+from special_dates.permissions_checkers.special_date_member_permission_checker import SpecialDateMemberPermissionChecker
 from special_dates.serializers.special_date_serializers.special_date_serializer import SpecialDateSerializer
 
 
 class UpdateSpecialDateSchema(Schema):
+    calendar_id: Optional[int] = None
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     category: Optional[SpecialDateCategory] = None
     date: Optional[datetime.date] = None
@@ -43,5 +46,14 @@ class UpdateSpecialDateView(UpdateItemByIdAPIView):
         pass
 
     @classmethod
-    async def check_permitted_after_object(cls, request: APIRequest, obj: SpecialDate, data: Schema, path: Path) -> None:
-        await OwnSpecialDatePermissionChecker(obj).async_raise_exception_if_not_valid(await request.future_user)
+    async def check_permitted_after_object(cls, request: APIRequest, obj: SpecialDate, data: UpdateSpecialDateSchema, path: Path) -> None:
+        user = await request.future_user
+        await SpecialDateMemberPermissionChecker(obj).async_raise_exception_if_not_valid(user)
+        if data.calendar_id is not None and data.calendar_id != obj.calendar_id:
+            await SpecialDateCalendarManager(user).get_member_calendar(data.calendar_id)
+
+    @classmethod
+    async def run_before_update(cls, request: APIRequest, obj: SpecialDate, data: UpdateSpecialDateSchema, path: Path) -> None:
+        if data.calendar_id is not None and data.calendar_id != obj.calendar_id:
+            target = await SpecialDateCalendarManager(await request.future_user).get_member_calendar(data.calendar_id)
+            await SpecialDateManager.raise_if_calendar_full(target)

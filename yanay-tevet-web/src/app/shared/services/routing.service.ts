@@ -352,12 +352,13 @@ export class RoutingService {
   }
 
   // Special Dates
-  getSpecialDatesUrl(): UrlTree {
-    return this.router.createUrlTree(['/special-dates']);
+  getSpecialDatesUrl(joinedCalendarId?: number): UrlTree {
+    const queryParams = joinedCalendarId === undefined ? {} : {joined: joinedCalendarId};
+    return this.router.createUrlTree(['/special-dates'], {queryParams});
   }
 
-  navigateToSpecialDates(): Promise<boolean> {
-    return this.router.navigateByUrl(this.getSpecialDatesUrl());
+  navigateToSpecialDates(joinedCalendarId?: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getSpecialDatesUrl(joinedCalendarId));
   }
 
   // Shopping Lists

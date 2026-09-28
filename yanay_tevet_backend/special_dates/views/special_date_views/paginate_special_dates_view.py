@@ -8,6 +8,7 @@ from common.simple_api.api_request import APIRequest
 from common.simple_api.serializers.serializer import Serializer
 from common.simple_api.views.pagination.paginate_items_api_view import PaginateItemsAPIView
 from special_dates.enums.special_date_category import SpecialDateCategory
+from special_dates.managers.special_date_calendar_manager import SpecialDateCalendarManager
 from special_dates.models.special_date import SpecialDate
 from special_dates.serializers.special_date_serializers.special_date_serializer import SpecialDateSerializer
 
@@ -15,6 +16,7 @@ from special_dates.serializers.special_date_serializers.special_date_serializer 
 class PaginateSpecialDatesFilterSchema(FilterSchema):
     search: Optional[str] = Field(None, q=['name__icontains'])
     category: Optional[SpecialDateCategory] = None
+    calendar_id: Optional[int] = None
 
 
 class PaginateSpecialDatesView(PaginateItemsAPIView):
@@ -41,5 +43,7 @@ class PaginateSpecialDatesView(PaginateItemsAPIView):
     @classmethod
     async def apply_initial_filter_and_order(cls, queryset: QuerySet, request: APIRequest,
                                              query: Query, path: Path) -> QuerySet:
-        user = await request.future_user
-        return queryset.filter(owner_id=user.id).order_by('name', 'id')
+        manager = SpecialDateCalendarManager(await request.future_user)
+        await manager.ensure_personal_calendar()
+        calendar_ids = await manager.calendar_ids()
+        return queryset.filter(calendar_id__in=calendar_ids).select_related('created_by').order_by('name', 'id')

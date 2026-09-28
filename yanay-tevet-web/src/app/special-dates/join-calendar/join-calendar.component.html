@@ -1,0 +1,33 @@
+<div class="max-w-md mx-auto w-full p-6 pt-12" dir="rtl" lang="he">
+    <div class="card p-8 text-center">
+        @if (isLoading()) {
+            <div class="text-writing-minor text-[14px] py-6">טוען...</div>
+        } @else if (isInvalid()) {
+            <div class="text-4xl mb-3">🔗</div>
+            <p class="text-[17px] font-bold text-primary-500 mb-2">הקישור לא תקף</p>
+            <p class="text-[14px] text-writing-minor">ייתכן שבעלי הלוח איפסו אותו. בקשו מהם קישור חדש.</p>
+        } @else if (preview()) {
+            <div class="text-5xl mb-4">🗓️</div>
+            <p class="text-[14px] text-writing-minor mb-1">{{ preview()!.owner_name }} מזמין/ה אותך ללוח</p>
+            <p class="text-[24px] font-bold text-primary-500 mb-2" dir="auto">{{ preview()!.calendar_name }}</p>
+            <p class="text-[13px] text-writing-minor mb-6">{{ summary() }}</p>
+            <p class="text-[13px] text-writing-minor mb-6">ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי, עם תזכורות לשבועיים הקרובים.</p>
+
+            @if (!isAuthKnown()) {
+                <div class="text-writing-minor text-[14px]">טוען...</div>
+            } @else if (isLoggedIn()) {
+                <button type="button" class="btn btn-primary w-full !py-3 text-[15px]" [disabled]="isJoining()" (click)="join()">
+                    הצטרפות ללוח
+                </button>
+            } @else {
+                <button type="button" class="btn btn-primary w-full !py-3 text-[15px]" (click)="loginAndJoin()">
+                    כניסה או הרשמה והצטרפות
+                </button>
+                <p class="text-[12px] text-writing-least mt-3">אחרי הכניסה נחזיר אותך לכאן.</p>
+            }
+            @if (errorMessage()) {
+                <p class="text-[13px] text-red-500 mt-3">{{ errorMessage() }}</p>
+            }
+        }
+    </div>
+</div>

@@ -5,11 +5,13 @@ from zoneinfo import ZoneInfo
 from common.simple_api.enums.status_code import StatusCode
 from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from special_dates.enums.calendar_type import CalendarType
+from special_dates.managers.special_date_calendar_manager import SpecialDateCalendarManager
 from special_dates.models.special_date import SpecialDate
+from special_dates.models.special_date_calendar import SpecialDateCalendar
 from special_dates.utils.hebrew_calendar import HebrewCalendar, HebrewDate
 from users.models import User
 
-MAX_SPECIAL_DATES_PER_USER = 500
+MAX_SPECIAL_DATES_PER_CALENDAR = 500
 UPCOMING_DAYS = 14
 LOCAL_TIMEZONE = ZoneInfo('Asia/Jerusalem')
 FIRST_SELECTABLE_HEBREW_YEAR = 5600
@@ -35,6 +37,12 @@ class ConvertedDate:
 class SpecialDateManager:
     def __init__(self, user: User | None = None) -> None:
         self.user = user
+
+    @staticmethod
+    def display_name(user: User | None) -> str:
+        if user is None:
+            return ''
+        return user.get_full_name() or user.username
 
     @staticmethod
     def today() -> date:
@@ -128,19 +136,28 @@ class SpecialDateManager:
     async def upcoming(self, days: int = UPCOMING_DAYS) -> list[SpecialDateOccurrence]:
         from_date = self.today()
         to_date = from_date + timedelta(days=days)
+        calendar_ids = await SpecialDateCalendarManager(self.user).calendar_ids(include_hidden=False)
         occurrences: list[SpecialDateOccurrence] = []
-        async for special_date in SpecialDate.objects.filter(owner_id=self.user.id):
+        async for special_date in SpecialDate.objects.filter(calendar_id__in=calendar_ids).select_related('created_by'):
             occurrences.extend(self.occurrences_between(special_date, from_date, to_date))
         occurrences.sort(key=lambda o: (o.date, o.special_date.name))
         return occurrences
 
-    async def count(self) -> int:
-        return await SpecialDate.objects.filter(owner_id=self.user.id).acount()
+    @staticmethod
+    async def count_in_calendar(calendar: SpecialDateCalendar) -> int:
+        return await SpecialDate.objects.filter(calendar_id=calendar.id).acount()
 
-    async def raise_if_limit_reached(self) -> None:
-        if await self.count() >= MAX_SPECIAL_DATES_PER_USER:
+    @staticmethod
+    async def raise_if_calendar_full(calendar: SpecialDateCalendar, adding: int = 1) -> None:
+        if await SpecialDateManager.count_in_calendar(calendar) + adding > MAX_SPECIAL_DATES_PER_CALENDAR:
             raise RestAPIException(
                 status_code=StatusCode.HTTP_400_BAD_REQUEST,
-                message=f'הגעת למגבלה של {MAX_SPECIAL_DATES_PER_USER} אירועים.',
+                message=f'בלוח "{calendar.name}" יש כבר {MAX_SPECIAL_DATES_PER_CALENDAR} אירועים — זו המגבלה.',
                 error_code='special_dates_limit_reached',
             )
+
+    async def move(self, special_dates: list[SpecialDate], target: SpecialDateCalendar) -> None:
+        """Callers must have checked access to every event and to the target calendar."""
+        moving = [d for d in special_dates if d.calendar_id != target.id]
+        await self.raise_if_calendar_full(target, adding=len(moving))
+        await SpecialDate.objects.filter(id__in=[d.id for d in moving]).aupdate(calendar=target)

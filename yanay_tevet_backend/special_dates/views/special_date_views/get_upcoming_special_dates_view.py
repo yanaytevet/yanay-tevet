@@ -5,11 +5,8 @@ from ninja import Path, Query, Schema
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
-from special_dates.managers.special_date_manager import (
-    MAX_SPECIAL_DATES_PER_USER,
-    UPCOMING_DAYS,
-    SpecialDateManager,
-)
+from special_dates.managers.special_date_calendar_manager import SpecialDateCalendarManager
+from special_dates.managers.special_date_manager import UPCOMING_DAYS, SpecialDateManager
 from special_dates.serializers.special_date_serializers.special_date_occurrence_serializer import (
     SpecialDateOccurrenceSchema,
     SpecialDateOccurrenceSerializer,
@@ -21,8 +18,6 @@ class UpcomingSpecialDatesSchema(Schema):
     today_hebrew_date: str
     days: int
     occurrences: list[SpecialDateOccurrenceSchema]
-    total_count: int
-    max_count: int
 
 
 class GetUpcomingSpecialDatesView(SimpleGetAPIView):
@@ -36,7 +31,9 @@ class GetUpcomingSpecialDatesView(SimpleGetAPIView):
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: Path = None) -> UpcomingSpecialDatesSchema:
-        manager = SpecialDateManager(await api_request.future_user)
+        user = await api_request.future_user
+        await SpecialDateCalendarManager(user).ensure_personal_calendar()
+        manager = SpecialDateManager(user)
         today = manager.today()
         serializer = SpecialDateOccurrenceSerializer()
         occurrences = [await serializer.serialize(o) for o in await manager.upcoming(UPCOMING_DAYS)]
@@ -45,6 +42,4 @@ class GetUpcomingSpecialDatesView(SimpleGetAPIView):
             today_hebrew_date=manager.format_hebrew_date(today, False),
             days=UPCOMING_DAYS,
             occurrences=occurrences,
-            total_count=await manager.count(),
-            max_count=MAX_SPECIAL_DATES_PER_USER,
         )

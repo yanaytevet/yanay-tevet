@@ -1,0 +1,69 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full max-h-[90vh] flex flex-col" dir="rtl" lang="he">
+
+    <div class="flex items-start justify-between mb-3">
+        <h2 class="text-[18px] font-bold text-primary-500">{{ title }}</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-8">טוען...</div>
+    } @else if (rows().length === 0) {
+        <p class="text-[14px] text-writing-minor mb-4">
+            @if (data.isAfterJoin) {
+                האירועים של "{{ target()?.name }}" מופיעים עכשיו אצלך.
+            } @else {
+                אין אירועים בלוחות שלך שאפשר להעביר ללוח הזה.
+            }
+        </p>
+        <div class="flex justify-end">
+            <button type="button" class="btn btn-primary" (click)="onClose()">מעולה</button>
+        </div>
+    } @else {
+        <p class="text-[14px] text-writing-minor mb-3">
+            רוצה להעביר אירועים מהלוחות שלך אל "{{ target()?.name }}"? כך כל החברים בלוח יראו אותם.
+            אירועים שנראה שכבר קיימים בלוח לא מסומנים.
+        </p>
+
+        <button type="button" class="self-start text-[13px] font-semibold text-notion-blue bg-transparent border-none p-0 mb-2 cursor-pointer" (click)="toggleAll()">
+            {{ allSelected() ? 'ביטול הסימון' : 'סימון הכל' }}
+        </button>
+
+        <div class="flex-1 min-h-0 overflow-y-auto rounded-[8px] border border-layer-4 divide-y divide-layer-3">
+            @for (row of rows(); track row.specialDate.id) {
+                <button type="button"
+                        class="w-full flex items-center gap-3 px-3 py-2 text-start bg-transparent border-none cursor-pointer hover:bg-layer-overlay"
+                        [attr.aria-pressed]="row.isSelected"
+                        (click)="toggle(row.specialDate.id)">
+                    <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ row.isSelected ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                        @if (row.isSelected) {
+                            <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                        }
+                    </span>
+                    <span class="text-lg shrink-0">{{ row.emoji }}</span>
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-[14px] text-writing truncate" dir="auto">{{ row.specialDate.name }}</span>
+                        <span class="block text-[12px] text-writing-least truncate">{{ row.specialDate.hebrew_date }}</span>
+                    </span>
+                    @if (row.isDuplicate) {
+                        <span class="no-reminder-chip px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0">כבר קיים בלוח</span>
+                    } @else {
+                        <span class="calendar-chip {{ row.calendarColor }} px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 max-w-[40%] truncate">{{ row.calendarName }}</span>
+                    }
+                </button>
+            }
+        </div>
+
+        @if (errorMessage()) {
+            <p class="text-[13px] text-red-500 mt-3">{{ errorMessage() }}</p>
+        }
+
+        <div class="flex items-center justify-end gap-2 mt-4">
+            <button type="button" class="btn cancel-btn" (click)="onClose()">לא עכשיו</button>
+            <button type="button" class="btn btn-primary" [disabled]="selectedCount() === 0 || isMoving()" (click)="onMove()">
+                העברת {{ selectedCount() }} אירועים
+            </button>
+        </div>
+    }
+</div>

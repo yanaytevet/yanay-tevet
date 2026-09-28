@@ -1,0 +1,86 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full max-h-[90vh] overflow-y-auto" dir="rtl" lang="he">
+
+    <div class="flex items-start justify-between mb-5">
+        <div class="min-w-0">
+            <h2 class="text-[18px] font-bold text-primary-500">שיתוף הלוח</h2>
+            @if (calendar()) {
+                <p class="text-[13px] text-writing-minor truncate">{{ calendar()!.name }}</p>
+            }
+        </div>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    @if (!calendar()) {
+        <div class="text-center text-writing-minor text-[14px] py-8">טוען...</div>
+    } @else {
+        @if (isOwner()) {
+            <div class="mb-6">
+                <span class="input-label">קישור הצטרפות</span>
+                <p class="text-[12px] text-writing-minor mt-1 mb-2">כל מי שיקבל את הקישור יוכל לראות ולערוך את האירועים בלוח.</p>
+                <div class="rounded-[8px] border border-layer-4 bg-layer-1 px-3 py-2 text-[12px] text-writing-minor truncate mb-2" dir="ltr">{{ joinUrl() }}</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" class="btn btn-primary flex items-center justify-center gap-1.5" (click)="copyLink()">
+                        <ng-icon [svg]="copied() ? featherCheck : featherCopy" class="h-4 w-4"></ng-icon>
+                        {{ copied() ? 'הועתק!' : 'העתקת קישור' }}
+                    </button>
+                    <a class="btn btn-secondary flex items-center justify-center gap-1.5 no-underline" [href]="whatsappUrl()" target="_blank" rel="noopener">
+                        💬 שליחה בוואטסאפ
+                    </a>
+                </div>
+                <button type="button" class="mt-2 inline-flex items-center gap-1 text-[12px] text-writing-least hover:text-writing bg-transparent border-none p-0 cursor-pointer" (click)="resetLink()">
+                    <ng-icon [svg]="featherRefreshCw" class="h-3 w-3"></ng-icon>
+                    איפוס הקישור
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <span class="input-label">הזמנה לפי מייל או שם משתמש</span>
+                <div class="flex gap-2 mt-1.5">
+                    <input type="text" dir="auto" class="main-input flex-1 min-w-0" placeholder="name@example.com"
+                           [formControl]="identifierCtrl" (keyup.enter)="invite()" />
+                    <button type="button" class="btn btn-secondary shrink-0" [disabled]="!canInvite()" (click)="invite()">הזמנה</button>
+                </div>
+                @if (inviteError()) {
+                    <p class="text-[12px] text-red-500 mt-1.5">{{ inviteError() }}</p>
+                } @else if (inviteMessage()) {
+                    <p class="text-[12px] text-writing-minor mt-1.5">{{ inviteMessage() }}</p>
+                }
+            </div>
+        } @else {
+            <p class="text-[13px] text-writing-minor mb-5">רק הבעלים של הלוח ({{ calendar()!.owner_name }}) יכול/ה להזמין אנשים נוספים.</p>
+        }
+
+        <span class="input-label">חברים בלוח</span>
+        <div class="flex flex-col mt-1.5 divide-y divide-layer-3">
+            @for (member of members()?.members ?? []; track member.user_id) {
+                <div class="flex items-center gap-2 py-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-[14px] text-writing truncate" dir="auto">
+                            {{ member.name }}
+                            @if (member.is_me) {
+                                <span class="text-writing-least">(את/ה)</span>
+                            }
+                        </div>
+                        <div class="text-[12px] text-writing-least truncate" dir="ltr">{{ member.email }}</div>
+                    </div>
+                    @if (member.role === 'owner') {
+                        <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">בעלים</span>
+                    } @else if (isOwner()) {
+                        <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="הסרה מהלוח"
+                                (click)="removeMember(member.user_id, member.name)">
+                            <ng-icon [svg]="featherUserMinus" class="h-4 w-4"></ng-icon>
+                        </button>
+                    }
+                </div>
+            }
+            @for (invitation of members()?.pending_invitations ?? []; track invitation.id) {
+                <div class="flex items-center gap-2 py-2">
+                    <div class="flex-1 min-w-0 text-[13px] text-writing-minor truncate" dir="ltr">{{ invitation.email }}</div>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-least">ממתין/ה להרשמה</span>
+                </div>
+            }
+        </div>
+    }
+</div>

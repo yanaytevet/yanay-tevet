@@ -13,6 +13,10 @@ export type PaginateSpecialDatesFilterSchema = {
      */
     search?: string | null;
     category?: SpecialDateCategory | null;
+    /**
+     * Calendar Id
+     */
+    calendar_id?: number | null;
 };
 
 /**
@@ -89,6 +93,14 @@ export type SpecialDateSchema = {
      */
     id: number;
     /**
+     * Calendar Id
+     */
+    calendar_id: number | null;
+    /**
+     * Created By Name
+     */
+    created_by_name: string;
+    /**
      * Name
      */
     name: string;
@@ -149,6 +161,10 @@ export type SpecialDateSchema = {
  */
 export type CreateSpecialDateSchema = {
     /**
+     * Calendar Id
+     */
+    calendar_id: number;
+    /**
      * Name
      */
     name: string;
@@ -173,6 +189,20 @@ export type CreateSpecialDateSchema = {
 };
 
 /**
+ * MoveSpecialDatesSchema
+ */
+export type MoveSpecialDatesSchema = {
+    /**
+     * Special Date Ids
+     */
+    special_date_ids: Array<number>;
+    /**
+     * Calendar Id
+     */
+    calendar_id: number;
+};
+
+/**
  * ItemByIdPath
  */
 export type ItemByIdPath = {
@@ -186,6 +216,10 @@ export type ItemByIdPath = {
  * UpdateSpecialDateSchema
  */
 export type UpdateSpecialDateSchema = {
+    /**
+     * Calendar Id
+     */
+    calendar_id?: number | null;
     /**
      * Name
      */
@@ -257,14 +291,6 @@ export type UpcomingSpecialDatesSchema = {
      * Occurrences
      */
     occurrences: Array<SpecialDateOccurrenceSchema>;
-    /**
-     * Total Count
-     */
-    total_count: number;
-    /**
-     * Max Count
-     */
-    max_count: number;
 };
 
 /**
@@ -392,6 +418,178 @@ export type HebrewYearSchema = {
     years: Array<HebrewOptionSchema>;
 };
 
+/**
+ * SpecialDateCalendarSchema
+ */
+export type SpecialDateCalendarSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Owner Name
+     */
+    owner_name: string;
+    /**
+     * Is Owner
+     */
+    is_owner: boolean;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    /**
+     * Event Count
+     */
+    event_count: number;
+    /**
+     * Max Event Count
+     */
+    max_event_count: number;
+    /**
+     * Hide From Upcoming
+     */
+    hide_from_upcoming: boolean;
+    /**
+     * Join Token
+     */
+    join_token: string | null;
+};
+
+/**
+ * SpecialDateCalendarsSchema
+ */
+export type SpecialDateCalendarsSchema = {
+    /**
+     * Calendars
+     */
+    calendars: Array<SpecialDateCalendarSchema>;
+};
+
+/**
+ * CreateSpecialDateCalendarSchema
+ */
+export type CreateSpecialDateCalendarSchema = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * JoinSpecialDateCalendarSchema
+ */
+export type JoinSpecialDateCalendarSchema = {
+    /**
+     * Token
+     */
+    token: string;
+};
+
+/**
+ * RenameSpecialDateCalendarSchema
+ */
+export type RenameSpecialDateCalendarSchema = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
+ * ShareSpecialDateCalendarSchema
+ */
+export type ShareSpecialDateCalendarSchema = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+};
+
+/**
+ * RemoveSpecialDateCalendarMemberSchema
+ */
+export type RemoveSpecialDateCalendarMemberSchema = {
+    /**
+     * User Id
+     */
+    user_id: number;
+};
+
+/**
+ * SpecialDateCalendarPreferencesSchema
+ */
+export type SpecialDateCalendarPreferencesSchema = {
+    /**
+     * Hide From Upcoming
+     */
+    hide_from_upcoming: boolean;
+};
+
+/**
+ * PendingInvitationSchema
+ */
+export type PendingInvitationSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * SpecialDateCalendarMemberSchema
+ */
+export type SpecialDateCalendarMemberSchema = {
+    /**
+     * User Id
+     */
+    user_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Email
+     */
+    email: string;
+    role: SpecialDateCalendarRole;
+    /**
+     * Is Me
+     */
+    is_me: boolean;
+};
+
+/**
+ * SpecialDateCalendarMembersSchema
+ */
+export type SpecialDateCalendarMembersSchema = {
+    /**
+     * Members
+     */
+    members: Array<SpecialDateCalendarMemberSchema>;
+    /**
+     * Pending Invitations
+     */
+    pending_invitations: Array<PendingInvitationSchema>;
+};
+
+/**
+ * SpecialDateCalendarRole
+ */
+export type SpecialDateCalendarRole = 'owner' | 'editor';
+
 export type PaginateSpecialDatesViewData = {
     body?: never;
     path?: never;
@@ -417,6 +615,10 @@ export type PaginateSpecialDatesViewData = {
          */
         search?: string | null;
         category?: SpecialDateCategory | null;
+        /**
+         * Calendar Id
+         */
+        calendar_id?: number | null;
     };
     url: '/api/special-dates/dates/';
 };
@@ -445,6 +647,22 @@ export type CreateSpecialDateViewResponses = {
 };
 
 export type CreateSpecialDateViewResponse = CreateSpecialDateViewResponses[keyof CreateSpecialDateViewResponses];
+
+export type MoveSpecialDatesViewData = {
+    body: MoveSpecialDatesSchema;
+    path?: never;
+    query?: never;
+    url: '/api/special-dates/dates/move/';
+};
+
+export type MoveSpecialDatesViewResponses = {
+    /**
+     * OK
+     */
+    200: EmptySchema;
+};
+
+export type MoveSpecialDatesViewResponse = MoveSpecialDatesViewResponses[keyof MoveSpecialDatesViewResponses];
 
 export type DeleteSpecialDateViewData = {
     body?: EmptySchema | null;
@@ -563,3 +781,217 @@ export type GetHebrewYearViewResponses = {
 };
 
 export type GetHebrewYearViewResponse = GetHebrewYearViewResponses[keyof GetHebrewYearViewResponses];
+
+export type ListSpecialDateCalendarsViewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/special-dates/calendars/';
+};
+
+export type ListSpecialDateCalendarsViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarsSchema;
+};
+
+export type ListSpecialDateCalendarsViewResponse = ListSpecialDateCalendarsViewResponses[keyof ListSpecialDateCalendarsViewResponses];
+
+export type CreateSpecialDateCalendarViewData = {
+    body: CreateSpecialDateCalendarSchema;
+    path?: never;
+    query?: never;
+    url: '/api/special-dates/calendars/';
+};
+
+export type CreateSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type CreateSpecialDateCalendarViewResponse = CreateSpecialDateCalendarViewResponses[keyof CreateSpecialDateCalendarViewResponses];
+
+export type JoinSpecialDateCalendarViewData = {
+    body: JoinSpecialDateCalendarSchema;
+    path?: never;
+    query?: never;
+    url: '/api/special-dates/calendars/join/';
+};
+
+export type JoinSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type JoinSpecialDateCalendarViewResponse = JoinSpecialDateCalendarViewResponses[keyof JoinSpecialDateCalendarViewResponses];
+
+export type DeleteSpecialDateCalendarViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/';
+};
+
+export type DeleteSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type RenameSpecialDateCalendarViewData = {
+    body: RenameSpecialDateCalendarSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/rename/';
+};
+
+export type RenameSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type RenameSpecialDateCalendarViewResponse = RenameSpecialDateCalendarViewResponses[keyof RenameSpecialDateCalendarViewResponses];
+
+export type ShareSpecialDateCalendarViewData = {
+    body: ShareSpecialDateCalendarSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/share/';
+};
+
+export type ShareSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type ShareSpecialDateCalendarViewResponse = ShareSpecialDateCalendarViewResponses[keyof ShareSpecialDateCalendarViewResponses];
+
+export type RemoveSpecialDateCalendarMemberViewData = {
+    body: RemoveSpecialDateCalendarMemberSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/remove-member/';
+};
+
+export type RemoveSpecialDateCalendarMemberViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type RemoveSpecialDateCalendarMemberViewResponse = RemoveSpecialDateCalendarMemberViewResponses[keyof RemoveSpecialDateCalendarMemberViewResponses];
+
+export type LeaveSpecialDateCalendarViewData = {
+    body: EmptySchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/leave/';
+};
+
+export type LeaveSpecialDateCalendarViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type LeaveSpecialDateCalendarViewResponse = LeaveSpecialDateCalendarViewResponses[keyof LeaveSpecialDateCalendarViewResponses];
+
+export type ResetSpecialDateCalendarLinkViewData = {
+    body: EmptySchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/reset-link/';
+};
+
+export type ResetSpecialDateCalendarLinkViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type ResetSpecialDateCalendarLinkViewResponse = ResetSpecialDateCalendarLinkViewResponses[keyof ResetSpecialDateCalendarLinkViewResponses];
+
+export type UpdateSpecialDateCalendarPreferencesViewData = {
+    body: SpecialDateCalendarPreferencesSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/preferences/';
+};
+
+export type UpdateSpecialDateCalendarPreferencesViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarSchema;
+};
+
+export type UpdateSpecialDateCalendarPreferencesViewResponse = UpdateSpecialDateCalendarPreferencesViewResponses[keyof UpdateSpecialDateCalendarPreferencesViewResponses];
+
+export type ListSpecialDateCalendarMembersViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/special-dates/calendars/{object_id}/members/';
+};
+
+export type ListSpecialDateCalendarMembersViewResponses = {
+    /**
+     * OK
+     */
+    200: SpecialDateCalendarMembersSchema;
+};
+
+export type ListSpecialDateCalendarMembersViewResponse = ListSpecialDateCalendarMembersViewResponses[keyof ListSpecialDateCalendarMembersViewResponses];

@@ -186,6 +186,12 @@ export const routes: Routes = [
                 canActivate: [hasPermissionGuard('shopping_lists')],
             },
             {
+                // Public: a join link must be viewable before signing in / registering.
+                path: 'special-dates/join/:token',
+                loadComponent: () =>
+                    import('./special-dates/join-calendar/join-calendar.component').then(m => m.JoinCalendarComponent),
+            },
+            {
                 path: 'special-dates',
                 loadComponent: () =>
                     import('./special-dates/special-dates/special-dates.component').then(m => m.SpecialDatesComponent),

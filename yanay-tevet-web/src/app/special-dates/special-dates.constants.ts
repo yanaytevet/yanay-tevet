@@ -93,3 +93,31 @@ export function todayIso(): string {
   const day = String(now.getDate()).padStart(2, '0');
   return `${now.getFullYear()}-${month}-${day}`;
 }
+
+const CALENDAR_COLOR_COUNT = 6;
+const LAST_CALENDAR_STORAGE_KEY = 'special-dates:last-calendar';
+
+export function calendarColorClass(calendarId: number): string {
+  return `calendar-color-${calendarId % CALENDAR_COLOR_COUNT}`;
+}
+
+export function buildJoinUrl(joinToken: string): string {
+  return `${window.location.origin}/special-dates/join/${joinToken}`;
+}
+
+export function readLastCalendarId(): number | null {
+  try {
+    const value = localStorage.getItem(LAST_CALENDAR_STORAGE_KEY);
+    return value ? Number(value) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeLastCalendarId(calendarId: number): void {
+  try {
+    localStorage.setItem(LAST_CALENDAR_STORAGE_KEY, String(calendarId));
+  } catch {
+    // Storage can be unavailable (private mode); remembering the last calendar is only a convenience.
+  }
+}

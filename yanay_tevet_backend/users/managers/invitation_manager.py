@@ -5,6 +5,7 @@ from common.time_utils import TimeUtils
 from emails.email_templates.invitation_email import InvitationEmail, InvitationEmailContext
 from itinerary_lists.models.itinerary_list_membership import ItineraryListMembership
 from shopping_lists.models.shopping_list_membership import ShoppingListMembership
+from special_dates.models.special_date_calendar_membership import SpecialDateCalendarMembership
 from task_management.models.task_project_membership import TaskProjectMembership
 from users.enums.invitation_membership_type import InvitationMembershipType
 from users.enums.invitation_status import InvitationStatus
@@ -154,6 +155,13 @@ class InvitationManager:
             case InvitationMembershipType.SHOPPING_LIST:
                 await ShoppingListMembership.objects.aupdate_or_create(
                     shopping_list_id=membership.object_id,
+                    user_id=user.id,
+                    defaults={'role': membership.role},
+                )
+            case InvitationMembershipType.SPECIAL_DATE_CALENDAR:
+                # get_or_create, not update_or_create: never demote someone who is already a member (e.g. the owner).
+                await SpecialDateCalendarMembership.objects.aget_or_create(
+                    calendar_id=membership.object_id,
                     user_id=user.id,
                     defaults={'role': membership.role},
                 )

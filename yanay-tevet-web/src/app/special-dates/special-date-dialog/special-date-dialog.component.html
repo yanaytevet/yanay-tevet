@@ -7,6 +7,17 @@
         </button>
     </div>
 
+    @if (showCalendarPicker) {
+        <div class="mb-4 flex flex-col gap-1.5">
+            <span class="input-label">לוח</span>
+            <select class="main-input w-full" [formControl]="calendarCtrl">
+                @for (calendar of data.calendars; track calendar.id) {
+                    <option [ngValue]="calendar.id">{{ calendar.name }}{{ calendar.member_count > 1 ? ' (משותף)' : '' }}</option>
+                }
+            </select>
+        </div>
+    }
+
     <div class="mb-4 flex flex-col gap-1.5">
         <span class="input-label">סוג האירוע</span>
         <div class="flex flex-wrap gap-2">

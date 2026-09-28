@@ -19,6 +19,7 @@ from shopping_lists.shopping_lists_router import api as shopping_lists_api
 from task_management.task_management_router import api as task_management_api
 from workout_plan.workout_plan_router import api as workout_plan_api
 from special_dates.special_dates_router import api as special_dates_api
+from special_dates.special_dates_public_router import api as special_dates_public_api
 from mcp_server.mcp_router import api as mcp_api
 
 
@@ -45,5 +46,6 @@ urlpatterns = [
     path(r'api/task-management/', task_management_api.urls),
     path(r'api/workout-plan/', workout_plan_api.urls),
     path(r'api/special-dates/', special_dates_api.urls),
+    path(r'api/special-dates-public/', special_dates_public_api.urls),
     path(r'api/mcp/', mcp_api.urls),
 ]

@@ -285,3 +285,20 @@ html, body {
   background: rgba(98,174,240,0.1);
   border-color: #62aef0;
 }
+
+/* Special dates — one color per calendar (by calendar id), used for dots and calendar chips */
+.calendar-color-0 { --calendar-color: #0075de; }
+.calendar-color-1 { --calendar-color: #2a9d99; }
+.calendar-color-2 { --calendar-color: #dd5b00; }
+.calendar-color-3 { --calendar-color: #d63d9e; }
+.calendar-color-4 { --calendar-color: #7a4fc9; }
+.calendar-color-5 { --calendar-color: #1aae39; }
+.calendar-dot { background: var(--calendar-color); }
+.calendar-chip {
+  background: color-mix(in srgb, var(--calendar-color) 12%, transparent);
+  color: var(--calendar-color);
+}
+.calendar-chip-selected {
+  background: var(--calendar-color);
+  color: #ffffff;
+}

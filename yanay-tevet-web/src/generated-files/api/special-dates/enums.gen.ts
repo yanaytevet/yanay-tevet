@@ -9,3 +9,8 @@ export enum CalendarTypeEnum {
   GREGORIAN = 'gregorian',
   HEBREW = 'hebrew',
 }
+
+export enum SpecialDateCalendarRoleEnum {
+  OWNER = 'owner',
+  EDITOR = 'editor',
+}

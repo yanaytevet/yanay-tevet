@@ -13,6 +13,8 @@ from special_dates.utils.hebrew_calendar import HebrewCalendar
 
 class SpecialDateSchema(Schema):
     id: int
+    calendar_id: Optional[int]
+    created_by_name: str
     name: str
     category: SpecialDateCategory
     date: date
@@ -42,6 +44,8 @@ class SpecialDateSerializer(Serializer[SpecialDateSchema]):
             next_hebrew_date, _ = SpecialDateManager.next_hebrew_occurrence(obj, today)
         return SpecialDateSchema(
             id=obj.id,
+            calendar_id=obj.calendar_id,
+            created_by_name=SpecialDateManager.display_name(await obj.get_created_by()),
             name=obj.name,
             category=SpecialDateCategory(obj.category),
             date=obj.date,

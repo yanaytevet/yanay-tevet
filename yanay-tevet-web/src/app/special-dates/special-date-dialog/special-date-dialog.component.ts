@@ -10,6 +10,7 @@ import {
   createSpecialDateView,
   getHebrewYearView,
   HebrewYearSchema,
+  SpecialDateCalendarSchema,
   SpecialDateCategory,
   SpecialDateSchema,
   updateSpecialDateView,
@@ -18,12 +19,15 @@ import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {
   formatFullDateWithWeekday,
   SPECIAL_DATE_CATEGORIES,
+  storeLastCalendarId,
   SPECIAL_DATE_CATEGORY_BY_VALUE,
   todayIso,
 } from '../special-dates.constants';
 
 export interface SpecialDateDialogData {
   specialDate: SpecialDateSchema | null;
+  calendars: SpecialDateCalendarSchema[];
+  defaultCalendarId: number;
 }
 
 const ADAR = 12;
@@ -47,6 +51,9 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
   readonly hebrewYearCtrl = new FormControl<number | null>(this.data.specialDate?.hebrew_year ?? null);
   readonly hebrewMonthCtrl = new FormControl<number | null>(this.data.specialDate?.hebrew_month ?? null);
   readonly hebrewDayCtrl = new FormControl<number | null>(this.data.specialDate?.hebrew_day ?? null);
+
+  readonly calendarCtrl = new FormControl<number>(this.data.specialDate?.calendar_id ?? this.data.defaultCalendarId, {nonNullable: true});
+  readonly showCalendarPicker = this.data.calendars.length > 1;
 
   readonly category = signal<SpecialDateCategory>(this.data.specialDate?.category ?? 'birthday');
   readonly inputCalendar = signal<CalendarType>(this.data.specialDate?.input_calendar ?? 'gregorian');
@@ -244,6 +251,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
     this.isSaving.set(true);
     this.errorMessage.set('');
     const body = {
+      calendar_id: this.calendarCtrl.value,
       name: this.nameCtrl.value.trim(),
       category: this.category(),
       date: converted.date,
@@ -262,6 +270,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
         this.errorMessage.set(err?.detail || 'השמירה נכשלה, נסו שוב.');
         return;
       }
+      storeLastCalendarId(this.calendarCtrl.value);
       this.emitClose(res.data);
     } finally {
       this.isSaving.set(false);

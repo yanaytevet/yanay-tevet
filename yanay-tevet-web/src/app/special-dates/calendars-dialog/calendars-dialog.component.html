@@ -1,0 +1,70 @@
+<div class="card bg-layer-2 p-5 sm:p-6 w-full max-h-[90vh] overflow-y-auto" dir="rtl" lang="he">
+
+    <div class="flex items-start justify-between mb-5">
+        <h2 class="text-[18px] font-bold text-primary-500">הלוחות שלי</h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        </button>
+    </div>
+
+    @if (isLoading()) {
+        <div class="text-center text-writing-minor text-[14px] py-8">טוען...</div>
+    } @else {
+        <div class="flex flex-col gap-3">
+            @for (row of rows(); track row.calendar.id) {
+                <div class="rounded-[10px] border border-layer-4 p-3 {{ row.colorClass }}">
+                    <div class="flex items-center gap-2">
+                        <span class="calendar-dot h-3 w-3 rounded-full shrink-0"></span>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-[15px] font-semibold text-writing truncate" dir="auto">{{ row.calendar.name }}</div>
+                            <div class="text-[12px] text-writing-minor truncate">{{ row.subtitle }}</div>
+                        </div>
+                        @if (row.calendar.is_owner) {
+                            <button type="button" class="btn btn-primary flex items-center gap-1 !px-3 !py-1.5 text-[13px] shrink-0" (click)="share(row.calendar)">
+                                <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
+                                שיתוף
+                            </button>
+                        } @else {
+                            <button type="button" class="btn btn-secondary !px-3 !py-1.5 text-[13px] shrink-0" (click)="share(row.calendar)">חברים</button>
+                        }
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-3 ps-5">
+                        <button type="button"
+                                class="flex items-center gap-1.5 text-[12px] text-writing-minor bg-transparent border-none p-0 cursor-pointer"
+                                [attr.aria-pressed]="!row.calendar.hide_from_upcoming"
+                                (click)="toggleShowInUpcoming(row.calendar)">
+                            <span class="h-[16px] w-[16px] rounded-[4px] border flex items-center justify-center shrink-0 {{ row.calendar.hide_from_upcoming ? 'bg-layer-2 border-layer-4' : 'bg-notion-blue border-notion-blue text-layer-2' }}">
+                                @if (!row.calendar.hide_from_upcoming) {
+                                    <ng-icon [svg]="featherCheck" class="h-2.5 w-2.5"></ng-icon>
+                                }
+                            </span>
+                            הצגה באירועים הקרובים
+                        </button>
+                        <button type="button" class="text-[12px] text-writing-minor hover:text-writing bg-transparent border-none p-0 cursor-pointer" (click)="moveInto(row.calendar)">
+                            העברת אירועים לכאן
+                        </button>
+                        <span class="flex-1"></span>
+                        @if (row.calendar.is_owner) {
+                            <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="שינוי שם" (click)="rename(row.calendar)">
+                                <ng-icon [svg]="featherEdit2" class="h-4 w-4"></ng-icon>
+                            </button>
+                            <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="מחיקת הלוח" (click)="deleteCalendar(row.calendar)">
+                                <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                            </button>
+                        } @else {
+                            <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="יציאה מהלוח" (click)="leave(row.calendar)">
+                                <ng-icon [svg]="featherLogOut" class="h-4 w-4"></ng-icon>
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <button type="button" class="btn btn-secondary w-full mt-4 flex items-center justify-center gap-1.5" (click)="createCalendar()">
+            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+            לוח חדש
+        </button>
+    }
+</div>

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { ConvertSpecialDateViewData, ConvertSpecialDateViewResponses, CreateSpecialDateViewData, CreateSpecialDateViewResponses, DeleteSpecialDateViewData, DeleteSpecialDateViewResponses, GetHebrewYearViewData, GetHebrewYearViewResponses, GetUpcomingSpecialDatesViewData, GetUpcomingSpecialDatesViewResponses, PaginateSpecialDatesViewData, PaginateSpecialDatesViewResponses, UpdateSpecialDateViewData, UpdateSpecialDateViewResponses } from './types.gen';
+import type { ConvertSpecialDateViewData, ConvertSpecialDateViewResponses, CreateSpecialDateCalendarViewData, CreateSpecialDateCalendarViewResponses, CreateSpecialDateViewData, CreateSpecialDateViewResponses, DeleteSpecialDateCalendarViewData, DeleteSpecialDateCalendarViewResponses, DeleteSpecialDateViewData, DeleteSpecialDateViewResponses, GetHebrewYearViewData, GetHebrewYearViewResponses, GetUpcomingSpecialDatesViewData, GetUpcomingSpecialDatesViewResponses, JoinSpecialDateCalendarViewData, JoinSpecialDateCalendarViewResponses, LeaveSpecialDateCalendarViewData, LeaveSpecialDateCalendarViewResponses, ListSpecialDateCalendarMembersViewData, ListSpecialDateCalendarMembersViewResponses, ListSpecialDateCalendarsViewData, ListSpecialDateCalendarsViewResponses, MoveSpecialDatesViewData, MoveSpecialDatesViewResponses, PaginateSpecialDatesViewData, PaginateSpecialDatesViewResponses, RemoveSpecialDateCalendarMemberViewData, RemoveSpecialDateCalendarMemberViewResponses, RenameSpecialDateCalendarViewData, RenameSpecialDateCalendarViewResponses, ResetSpecialDateCalendarLinkViewData, ResetSpecialDateCalendarLinkViewResponses, ShareSpecialDateCalendarViewData, ShareSpecialDateCalendarViewResponses, UpdateSpecialDateCalendarPreferencesViewData, UpdateSpecialDateCalendarPreferencesViewResponses, UpdateSpecialDateViewData, UpdateSpecialDateViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -33,6 +33,19 @@ export const paginateSpecialDatesView = <ThrowOnError extends boolean = false>(o
 export const createSpecialDateView = <ThrowOnError extends boolean = false>(options: Options<CreateSpecialDateViewData, ThrowOnError>) => (options.client ?? client).post<CreateSpecialDateViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/special-dates/dates/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const moveSpecialDatesView = <ThrowOnError extends boolean = false>(options: Options<MoveSpecialDatesViewData, ThrowOnError>) => (options.client ?? client).post<MoveSpecialDatesViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/dates/move/',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -89,5 +102,139 @@ export const convertSpecialDateView = <ThrowOnError extends boolean = false>(opt
 export const getHebrewYearView = <ThrowOnError extends boolean = false>(options: Options<GetHebrewYearViewData, ThrowOnError>) => (options.client ?? client).get<GetHebrewYearViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/special-dates/hebrew-year/',
+    ...options
+});
+
+/**
+ * Get
+ */
+export const listSpecialDateCalendarsView = <ThrowOnError extends boolean = false>(options?: Options<ListSpecialDateCalendarsViewData, ThrowOnError>) => (options?.client ?? client).get<ListSpecialDateCalendarsViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const createSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<CreateSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).post<CreateSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const joinSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<JoinSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).post<JoinSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/join/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deleteSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<DeleteSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    url: '/api/special-dates/calendars/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const renameSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<RenameSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).post<RenameSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/rename/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const shareSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<ShareSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).post<ShareSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/share/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const removeSpecialDateCalendarMemberView = <ThrowOnError extends boolean = false>(options: Options<RemoveSpecialDateCalendarMemberViewData, ThrowOnError>) => (options.client ?? client).post<RemoveSpecialDateCalendarMemberViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/remove-member/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const leaveSpecialDateCalendarView = <ThrowOnError extends boolean = false>(options: Options<LeaveSpecialDateCalendarViewData, ThrowOnError>) => (options.client ?? client).post<LeaveSpecialDateCalendarViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/leave/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const resetSpecialDateCalendarLinkView = <ThrowOnError extends boolean = false>(options: Options<ResetSpecialDateCalendarLinkViewData, ThrowOnError>) => (options.client ?? client).post<ResetSpecialDateCalendarLinkViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/reset-link/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const updateSpecialDateCalendarPreferencesView = <ThrowOnError extends boolean = false>(options: Options<UpdateSpecialDateCalendarPreferencesViewData, ThrowOnError>) => (options.client ?? client).post<UpdateSpecialDateCalendarPreferencesViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/preferences/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get
+ */
+export const listSpecialDateCalendarMembersView = <ThrowOnError extends boolean = false>(options: Options<ListSpecialDateCalendarMembersViewData, ThrowOnError>) => (options.client ?? client).get<ListSpecialDateCalendarMembersViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/special-dates/calendars/{object_id}/members/',
     ...options
 });

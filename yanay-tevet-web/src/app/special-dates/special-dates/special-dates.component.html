@@ -11,11 +11,41 @@
                 <p class="text-[13px] text-writing-minor">ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי.</p>
             }
         </div>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="addSpecialDate()">
-            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-            אירוע חדש
-        </button>
+        <div class="flex items-center gap-2 shrink-0">
+            <button type="button" class="btn btn-secondary flex items-center gap-1.5" [disabled]="calendars().length === 0" (click)="openSharing()">
+                <ng-icon [svg]="featherUsers" class="h-4 w-4"></ng-icon>
+                <span class="hidden sm:inline">{{ shareButtonLabel() }}</span>
+            </button>
+            <button type="button" class="btn btn-primary flex items-center gap-1.5" [disabled]="calendars().length === 0" (click)="addSpecialDate()">
+                <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                אירוע חדש
+            </button>
+        </div>
     </div>
+
+    @if (hasMultipleCalendars()) {
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+            <button type="button"
+                    class="px-3 py-1 rounded-full text-[12px] font-semibold border transition-colors {{ selectedCalendarId() === null ? 'bg-writing border-writing text-layer-2' : 'bg-layer-2 border-layer-4 text-writing-minor hover:border-writing-minor' }}"
+                    (click)="selectCalendar(null)">
+                כל הלוחות
+            </button>
+            @for (chip of calendarChips(); track chip.id) {
+                <button type="button"
+                        class="{{ chip.colorClass }} {{ chip.isSelected ? 'calendar-chip-selected' : 'calendar-chip' }} inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold border-none transition-colors {{ chip.isHidden ? 'opacity-60' : '' }}"
+                        [attr.aria-pressed]="chip.isSelected"
+                        (click)="selectCalendar(chip.id)">
+                    @if (!chip.isSelected) {
+                        <span class="calendar-dot h-2 w-2 rounded-full"></span>
+                    }
+                    <span dir="auto">{{ chip.name }}</span>
+                    @if (chip.isShared) {
+                        <ng-icon [svg]="featherUsers" class="h-3 w-3"></ng-icon>
+                    }
+                </button>
+            }
+        </div>
+    }
 
     <div class="flex items-center gap-1 mb-5 border-b border-layer-4">
         <button type="button"
@@ -28,10 +58,6 @@
                 (click)="selectTab('all')">
             כל האירועים
         </button>
-        <span class="flex-1"></span>
-        @if (upcoming()) {
-            <span class="text-[12px] text-writing-least" dir="ltr">{{ totalCount() }} / {{ maxCount() }}</span>
-        }
     </div>
 
     @if (tab() === 'upcoming') {
@@ -40,7 +66,7 @@
         } @else if (upcomingRows().length === 0) {
             <div class="card p-10 text-center">
                 <div class="text-4xl mb-3">🗓️</div>
-                @if (totalCount() === 0) {
+                @if (totalEventCount() === 0) {
                     <p class="text-[15px] font-semibold text-primary-500 mb-1">עוד אין אירועים</p>
                     <p class="text-[13px] text-writing-minor mb-5">הוסיפו ימי הולדת, ימי נישואין ואזכרות, ונזכיר לכם בזמן — לפי התאריך העברי והלועזי.</p>
                     <button type="button" class="btn btn-primary" (click)="addSpecialDate()">הוספת אירוע ראשון</button>
@@ -66,6 +92,9 @@
                                     <div class="flex flex-wrap items-center gap-1.5 mt-2">
                                         @for (chip of row.calendarChips; track chip.label) {
                                             <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ chip.cssClass }}">{{ chip.label }}</span>
+                                        }
+                                        @if (row.calendarName) {
+                                            <span class="calendar-chip {{ row.calendarColor }} px-2 py-0.5 rounded-full text-[11px] font-semibold">{{ row.calendarName }}</span>
                                         }
                                     </div>
                                 </div>
@@ -101,6 +130,9 @@
                                     }
                                     @for (chip of row.calendarChips; track chip.label) {
                                         <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold {{ chip.cssClass }}">{{ chip.label }}</span>
+                                    }
+                                    @if (row.calendarName) {
+                                        <span class="calendar-chip {{ row.calendarColor }} px-2 py-0.5 rounded-full text-[11px] font-semibold">{{ row.calendarName }}</span>
                                     }
                                 </div>
                             </div>
@@ -150,6 +182,9 @@
                             <div class="flex items-center gap-2 min-w-0">
                                 <span class="text-[15px] font-semibold truncate {{ row.hasReminders ? 'text-writing' : 'text-writing-minor' }}" dir="auto">{{ row.name }}</span>
                                 <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor shrink-0">{{ row.categoryLabel }}</span>
+                                @if (row.calendarName) {
+                                    <span class="calendar-chip {{ row.calendarColor }} px-2 py-0.5 rounded-full text-[11px] font-semibold shrink-0 max-w-[35%] truncate">{{ row.calendarName }}</span>
+                                }
                             </div>
                             <div class="text-[13px] text-writing-minor">
                                 {{ row.primaryDate }} · {{ row.secondaryDate }}
@@ -158,7 +193,12 @@
                                 }
                             </div>
                             @if (row.hasReminders) {
-                                <div class="text-[12px] text-writing-least mt-0.5">הבא — {{ row.nextLabel }}</div>
+                                <div class="text-[12px] text-writing-least mt-0.5">
+                                    הבא — {{ row.nextLabel }}
+                                    @if (row.addedByLabel) {
+                                        <span> · {{ row.addedByLabel }}</span>
+                                    }
+                                </div>
                             } @else {
                                 <span class="no-reminder-chip inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold mt-1">
                                     <ng-icon [svg]="featherBellOff" class="h-3 w-3"></ng-icon>
