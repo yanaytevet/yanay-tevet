@@ -60,19 +60,17 @@ backends could cut it further — see *Sleep* below. Check the real number on Ra
 3. ✅ Booted and smoke-tested (admin, static, OpenAPI, OAuth metadata, websocket, channel layer, cacheops).
    ✅ Trial copy from the VM: 48 tables / 1,669 rows matched, 344 KB dump, 12 s.
    Postgres has a temporary public TCP proxy (`autorack.proxy.rlwy.net:57408`) for the copy.
-4. **Cutover (~15 min of downtime):**
-   1. On the VM: `docker compose stop yanay_tevet_backend` (freezes writes).
-   2. On the VM (it's inside the DB firewall): `docker run --rm postgres:18 pg_dump -Fc "<DO yanay_db URL>"`
-      piped into `pg_restore --clean --no-owner` against Railway's `DATABASE_PUBLIC_URL`.
-   3. Spot-check row counts on both sides.
-   4. Railway: add custom domain `api.yanaytevet.com`.
-   5. Cloudflare DNS: replace the `api` A record (→ 164.92.130.67) with the CNAME + TXT Railway gives.
-      Either grey-cloud it (simplest, Railway's cert) or keep orange and set SSL mode **Full, not
-      Full (strict)** for that host via a Configuration Rule (strict breaks Railway's cert issuance).
-   6. Delete the DO deploy workflow; push.
-5. **Verify** in the live app: Google sign-in, passkey sign-in, a websocket screen, an image upload
-   (Cloudinary), an invitation email (Brevo), and the Claude connector (MCP OAuth + one tool call).
-6. Delete Postgres's public TCP proxy: `railway tcp-proxy delete <id> --service Postgres --yes`.
+4. ✅ **Cutover done 2026-10-10** (~20 min of 502s, all of it waiting on DNS):
+   stopped `yanay_tevet_backend` on the VM → final copy (48 tables / 1,669 rows matched) →
+   custom domain `api.yanaytevet.com` → Cloudflare: `api` CNAME `9d6jcjvh.up.railway.app` (DNS only)
+   + TXT `_railway-verify.api` → cert valid → pushed `0e17316` (drops the DO deploy workflow) →
+   service connected to GitHub (root `/yanay_tevet_backend`, watch `/yanay_tevet_backend/**`,
+   healthcheck `/admin/login/`). First GitHub deploy built from the Dockerfile and went live.
+5. ✅ Verified on the live domain: admin, static, OpenAPI, CORS from yanaytevet.com, websocket,
+   Claude connector (existing OAuth token, real data). ⏳ You: Google sign-in and passkey sign-in.
+6. ✅ Postgres TCP proxy deleted.
+
+The old VM still runs nginx + redis with the backend container stopped — that's the rollback.
 
 **Rollback:** point the DNS record back at the droplet IP and start the container. Anything written on
 Railway after cutover is lost, so decide within a day or two.
