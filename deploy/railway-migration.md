@@ -75,10 +75,16 @@ The old VM still runs nginx + redis with the backend container stopped — that'
 **Rollback:** point the DNS record back at the droplet IP and start the container. Anything written on
 Railway after cutover is lost, so decide within a day or two.
 
-## Phase 2 — the-dark-forge
+## Phase 2 — the-dark-forge ✅ (2026-10-10)
 
-Same as Phase 1 with `the_dark_forge_db`, `/etc/the-dark-forge/env/prod.env` (has `ANTHROPIC_API_KEY`)
-and `api.thedarkforge.io`. `stage-api.thedarkforge.io` in `environment.stage.ts` has no DNS record — ignore.
+Same steps; ~3 min of downtime. Railway project `the-dark-forge` (ams), test URL
+https://backend-production-d129.up.railway.app. Final copy: 55 tables / 1,070 rows matched.
+`api` CNAME `4xyh1u6y.up.railway.app` (DNS only) + TXT `_railway-verify.api`. Pushed `9c6e714`
+(drops the DO deploy workflow); the repo moved to `yanaytevet/the-dark-forge` and the local remote
+now points there. GitHub deploy live; Dark Forge connector verified with real data.
+Prod env has no OpenAI/Anthropic keys — Railway matches.
+
+## Now: both app droplets are powered off (still billed), the shared DB is idle
 
 ## Out of scope (for now): Foundry VTT
 
