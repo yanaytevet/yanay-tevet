@@ -136,7 +136,11 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [(os.environ.get("REDIS_HOST"), int(os.environ.get("REDIS_PORT", '6379')))],
+            'hosts': [{
+                'host': os.environ.get("REDIS_HOST"),
+                'port': int(os.environ.get("REDIS_PORT", '6379')),
+                'password': os.environ.get("REDIS_PASSWORD"),
+            }],
         },
     },
 }
@@ -224,6 +228,7 @@ CACHEOPS_REDIS = {
     'host': os.environ.get('REDIS_HOST'),
     'port': int(os.environ.get('REDIS_PORT', '6379')),
     'db': int(os.environ.get('REDIS_CACHEOPS_DB', '1')),
+    'password': os.environ.get('REDIS_PASSWORD'),
 }
 CACHEOPS = {
     # 'configurations.calls_configurations': {'ops': 'all', 'timeout': 60*60},

@@ -22,4 +22,7 @@ RUN /venv/bin/pip install -r requirements.txt
 
 COPY . /app/
 
-ENTRYPOINT ["/bin/bash", "-c", "/venv/bin/python manage.py migrate && /venv/bin/python manage.py collectstatic --noinput && /venv/bin/uvicorn --host 0.0.0.0 yanay_tevet_backend.asgi:application"]
+# The file log handler in settings.LOGGING writes here; nothing else creates it.
+RUN mkdir -p /var/log/yanay_tevet
+
+ENTRYPOINT ["/bin/bash", "-c", "/venv/bin/python manage.py migrate && /venv/bin/python manage.py collectstatic --noinput && /venv/bin/uvicorn --host 0.0.0.0 --port ${PORT:-8000} yanay_tevet_backend.asgi:application"]
