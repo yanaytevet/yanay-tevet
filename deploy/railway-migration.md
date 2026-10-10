@@ -84,19 +84,21 @@ https://backend-production-d129.up.railway.app. Final copy: 55 tables / 1,070 ro
 now points there. GitHub deploy live; Dark Forge connector verified with real data.
 Prod env has no OpenAI/Anthropic keys — Railway matches.
 
-## Now: both app droplets are powered off (still billed), the shared DB is idle
-
 ## Out of scope (for now): Foundry VTT
 
 `foundry-vtt` stays on DO. If it moves later: `felddy/foundryvtt` image with a volume on `/data`;
 Hobby volumes cap at **5 GB**.
 
-## Phase 3 — Decommission DO (after a week of quiet)
+## Phase 3 — Decommission DO ✅ (2026-10-10)
 
-1. Snapshot the two app droplets (cheap insurance), then destroy them — **powered-off droplets still
-   bill**. Leave `foundry-vtt` alone.
-2. Destroy the managed DB cluster **last**: it is shared, so only after both apps are moved.
-3. Delete the `VM_HOST` / `VM_USER` / `VM_SSH_KEY` repo secrets and the Cloudflare origin certs.
+- Snapshots kept: `yanay-tevet-vm-final-2026-10-10` (16.7 GiB), `the-dark-forge-vm-final-2026-10-10`
+  (14.3 GiB) — ~$1.90/mo together. Delete them once you no longer want a rollback.
+- Final `pg_dump`s of the managed cluster (`yanay_db`, `the_dark_forge_db`, `defaultdb`) are in
+  `~/dev/do-final-backups-2026-10-10/` — the managed cluster's own backups went with it.
+- Deleted: both app droplets and the `the-dark-forge-db` cluster. `foundry-vtt` is the only thing left on DO.
+- Leftovers, harmless: `VM_HOST` / `VM_USER` / `VM_SSH_KEY` repo secrets, Cloudflare origin certs,
+  the droplet SSH keys in `~/.ssh`, and the now-unused `deploy/{scripts,nginx}` and
+  `docker-compose-prod.yml` in both repos.
 
 ## Sleep (serverless) — test, don't assume
 
