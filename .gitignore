@@ -16,7 +16,9 @@ eggs/
 .eggs/
 lib/
 lib64/
-parts/
+# Anchored to the repo root: this is buildout's artifact directory, and unanchored it matches a
+# directory named `parts` at any depth, silently ignoring any source package of that name.
+/parts/
 sdist/
 var/
 wheels/

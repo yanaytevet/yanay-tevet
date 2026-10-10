@@ -8,5 +8,19 @@
       "Bash(bash run_manage.sh migrate)",
       "Bash(bash run_manage.sh makemigrations --check)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/deploy/dev_scripts/dev_status.sh\" 2>/dev/null || true",
+            "timeout": 15,
+            "statusMessage": "Checking the dev stack"
+          }
+        ]
+      }
+    ]
   }
 }

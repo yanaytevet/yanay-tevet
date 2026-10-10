@@ -50,8 +50,39 @@ services:
     networks:
       - common-network
 
+  # The Angular dev server runs here rather than in somebody's terminal so that it belongs to no session:
+  # whoever needs its output reads `docker logs yanay_tevet_web`, and it restarts the same way the backend does.
+  yanay_tevet_web:
+    # Tracks .node-version.
+    image: node:24.19.0-slim
+    container_name: yanay_tevet_web
+    working_dir: /app
+    # The server has to listen on every interface inside the container for the mapping to reach it, so the
+    # mapping is what keeps it off the network: published on loopback only, as a host `ng serve` would be.
+    # The port is angular.json's serve port.
+    ports:
+      - "127.0.0.1:4201:4201"
+    volumes:
+      - ../../yanay-tevet-web:/app
+      # node_modules holds platform binaries (esbuild, the file watcher), so the container keeps a Linux
+      # copy of its own instead of reading the host's macOS one. The build cache is kept apart likewise.
+      - web_node_modules:/app/node_modules
+      - web_angular_cache:/app/.angular
+    # Reinstalls only when package-lock.json differs from the one last installed, so a restart after a
+    # dependency change picks it up and every other restart skips the minute npm ci takes.
+    command: >
+      sh -c "set -e;
+             cmp -s package-lock.json node_modules/.installed-lock || (npm ci && cp package-lock.json node_modules/.installed-lock);
+             exec npx ng serve --host 0.0.0.0"
+    # node does not act on SIGTERM as PID 1, which would make every stop wait out the ten-second timeout.
+    init: true
+    networks:
+      - common-network
+
 volumes:
   logs:
+  web_node_modules:
+  web_angular_cache:
 
 networks:
   common-network:

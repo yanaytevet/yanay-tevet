@@ -1,8 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-**Keep this file up to date.** When you discover new patterns, conventions, or rules, add them here.
+**This file is an index, not a knowledge base.** It carries what applies to *every* task; everything
+else lives in `docs/` and is read only when the task reaches it. Keep it that way. Something learned
+about one app or area belongs in that area's file under `docs/` — a line is added *here* only when it
+would change how an unrelated task is done, and then only as a line. Every paragraph in this file is
+paid for on every task, including the ones that never touch the area it describes.
 
 ---
 
@@ -18,13 +20,24 @@ yanay-tevet/
 └── package.json              # Root monorepo scripts
 ```
 
+**Ports are deliberately non-default** so this app runs alongside the other projects on this machine: backend `8001`, frontend `4201`, postgres `5433`, redis `6380`. The Docker Compose project is `yanay_tevet` and the network is `yanay_tevet-network` (the compose files declare it as `common-network` and override its name). Inside the network, services still talk on default ports; only host mappings are offset.
+
+Underneath the apps lives the framework: auth, the `simple_api` view/serializer layer, routing, websockets, email, the design system, and a `blocks` app that is a worked example of the view types. Build features on top of these — don't reinvent them.
+
 ---
 
-## Skills
+## Where the details live
 
-Before starting any significant task, load the relevant skill:
-- `/frontend` — Angular conventions, syntax rules, styling, dialogs, patterns
-- `/backend` — Django conventions, simple_api framework, models, serializers, patterns
+Each file below is the authoritative account of its area. Read the one that covers the task **before**
+starting it.
+
+| Working on | Read first |
+|---|---|
+| Angular — components, templates, styling, dialogs, icons, navigation | `docs/frontend.md` |
+| Django — app layout, views, permissions, serializers, models, background work | `docs/backend.md` |
+| Any UI at all | `DESIGN.md` (see **Design System** below) |
+| The Claude connector — OAuth server, MCP tools, ngrok in dev | `docs/mcp-server.md` |
+| The new-version banner and the reload after a missing lazy chunk | `docs/frontend.md`, *New-version refresh* |
 
 ---
 
@@ -41,8 +54,9 @@ npm run check              # Full check: prod build + backend compile
 ### Frontend
 ```bash
 cd yanay-tevet-web
-npm run start              # Dev server
+npm run start              # Dev server on :4201 (stop yanay_tevet_web first — see below)
 npm run build:prod         # Production build
+npm run lint               # eslint
 npm run create-api         # Regenerate API clients from backend OpenAPI spec
 ```
 
@@ -50,10 +64,36 @@ npm run create-api         # Regenerate API clients from backend OpenAPI spec
 ```bash
 # Scripts must be run from deploy/dev_scripts/ (they use relative paths)
 cd deploy/dev_scripts
-bash run_backend.sh
+bash start_dev.sh          # postgres + redis (detached)
+bash create_backend.sh     # Rebuild the backend image — after a requirements.txt change
 bash run_manage.sh migrate
 bash run_manage.sh makemigrations
+bash run_backend_worker.sh # Celery worker by hand; the stack runs none (docs/backend.md, Background work)
 ```
+
+### The running app
+
+`docker-compose -f ../dockers/docker-compose-dev-backend.yml up -d` (from `deploy/dev_scripts/`) is the normal
+way to run the app: the backend (`yanay_tevet_backend`, :8001) and the Angular dev server (`yanay_tevet_web`,
+:4201) run in the background, owned by no terminal or session. Every session starts with a status line from
+`deploy/dev_scripts/dev_status.sh` (a SessionStart hook); run it again before checking a change in the running
+app, and start or repair the stack with the command it prints rather than asking. Read output with
+`docker logs <container>` — build errors from `ng serve` land in `docker logs yanay_tevet_web`.
+
+- The web container keeps its own Linux `node_modules` in a Docker volume and reinstalls when it starts with a
+  changed `package-lock.json` — after a dependency change, `docker restart yanay_tevet_web`. The host's
+  `node_modules` is still the one `lint`, `build` and `create-api` use.
+- `npm run start` needs `yanay_tevet_web` stopped first (`docker stop yanay_tevet_web`) — they share :4201.
+- The backend reloads on code changes, but not on a `requirements.txt` change: rebuild with `create_backend.sh`,
+  then run the `up -d` command again.
+- The infra and app compose files share the project name `yanay_tevet`, so each warns about the other's
+  containers as "orphans". **Never pass `--remove-orphans`** — it would remove the database container.
+- Don't stop the stack when a task is done; leave it running.
+
+**A UI change is not done until you have looked at it.** Open the page at http://localhost:4201 in the
+built-in browser (its sign-in persists between sessions), check what changed in both themes (the dark-mode
+switch is in the left drawer) and the console for errors. A clean build says nothing about layout, dark mode
+or what a page actually shows.
 
 ---
 
@@ -62,47 +102,24 @@ bash run_manage.sh makemigrations
 After changing backend models or endpoints:
 
 1. Run migrations: `bash run_manage.sh makemigrations && bash run_manage.sh migrate`
-2. Start the backend server
+2. Make sure the backend is up (`dev_status.sh`)
 3. Regenerate frontend clients: `cd yanay-tevet-web && npm run create-api`
 
-`create-api` fetches live OpenAPI specs from `http://localhost:8000` — if the backend is not running it will fail and delete existing generated files.
+`create-api` reads the router list out of `yanay_tevet_backend/yanay_tevet_backend/urls.py` (the `path(r'…')` entries, `admin/` excluded) and fetches live OpenAPI specs from `http://localhost:8001`. It deletes the generated directories *before* checking that the backend answers, so with the backend down it fails having deleted them. A new router in `urls.py` automatically becomes a new generated client and is wired into `ApiConfigService`.
 
 **NEVER write frontend API call functions by hand.** All API functions in `src/generated-files/` are auto-generated. Import them directly.
 
 ---
 
-## MCP Server (Claude Connector)
-
-The `mcp_server` app exposes the platform to Claude as a remote MCP connector (claude.ai, Desktop, mobile, Claude Code), secured by a self-hosted **OAuth 2.1** authorization server. Ported from the-dark-forge, with security fixes.
-
-- **Auth server** (plain async Django views, `mcp_server/oauth/`): `/.well-known/oauth-authorization-server`, `/oauth/authorize|token|register|revoke`. Tokens/codes are stored **hashed**. **PKCE S256 is mandatory**, codes and refresh tokens are single-use (atomic claim), scope is always `MCP_SCOPE`. **Dynamic registration only accepts redirect URIs on `claude.ai`/`claude.com` (https) or loopback** (`config.is_allowed_redirect_uri`) — this blocks phishing via attacker-registered clients; extend the allowlist deliberately if another client must connect.
-- **Consent happens in the web app**: `/oauth/authorize` redirects to the frontend `/connect-claude` page (login via `/login?redirect=`), which shows the client name + redirect host (`GET /api/mcp/oauth/client-info/`) and posts to `POST /api/mcp/oauth/approve/` (JWT-authed). Logic lives in `OAuthManager`.
-- **Resource server** (FastMCP, `mcp_server/mcp/`): mounted in `asgi.py` (path dispatch for `/mcp` + `/.well-known/oauth-protected-resource/mcp`); session manager started lazily (Daphne dev server emits no ASGI lifespan). **`stateless_http=True`** so autoreloads/restarts don't strand clients on dead sessions.
-- **Tools are typed, one per verb** (`mcp/tools/task_tools.py`, `mcp/tools/shopping_list_tools.py`; inputs in `mcp/schemas/`), not a generic `entity_type`+`data: dict` registry — the typed schema is what Claude reads. Keep the server `INSTRUCTIONS` in `mcp/server.py` in sync with the real tool names.
-- **Every tool MUST apply the same checks as the web API**: the app-level checker the router applies (`TaskManagementPermissionChecker`, `ShoppingListsPermissionChecker` — MCP bypasses routers, so call it explicitly) plus the object checker (`ProjectMemberPermissionChecker`, `ShoppingListMemberPermissionChecker`). Writes go through the app's managers; outputs use the app's serializers. Annotate tools `READ_ONLY` / `WRITE` / `DESTRUCTIVE`. Batch tools validate every id/permission before the first write. Tools return pydantic schemas (not bare `dict`, which yields no structured output).
-- Deliberately **not exposed**: deleting projects/lists and sharing/unsharing (irreversible or visible to other people) — do those in the app.
-- **Config**: `mcp_server/config.py` → `get_public_base_url()` = the **backend's** public URL. `MCP_PUBLIC_BASE_URL` env in prod (`https://api.yanaytevet.com`); in dev it auto-discovers the ngrok tunnel (`ngrok http 8001`); cached per process, restart the backend after (re)starting ngrok.
-- **Frontend**: Account Settings "Connect to Claude" card (`GET /api/mcp/connection-info/`) with the connector URL + "Add to Claude" deep link.
-- Adding another app to MCP: new `mcp/tools/<app>_tools.py` with a `register(mcp)`, call it from `build_mcp_server()`, update `INSTRUCTIONS` and the consent-page copy.
-- The `mcp` package is in `requirements.txt`; after changing it the backend **image must be rebuilt**.
-
----
-
-## New-Version Refresh
-
-`VersionCheckService` spots a new deploy by comparing the hashed `main-*.js` / `styles-*.css` names this tab booted from with those in a freshly fetched `/index.html`. It checks on navigation, when the tab becomes visible again, and every 5 minutes, and is off under `ng serve` because those names have no hash. `VersionUpdateBannerComponent` offers a refresh and never forces one. `ChunkLoadErrorHandler` reloads automatically when a lazy chunk 404s, at most once a minute. No build step or `version.json` is involved.
-
----
-
 ## Design System
 
-**Always read `DESIGN.md` before writing any UI code.** It is the authoritative reference.
+**Always read `DESIGN.md` before writing any UI code.** It is the authoritative reference. Its palette is implemented as theme tokens in `yanay-tevet-web/src/styles.css` (light, and `.dark` overrides) plus the shared classes in `src/assets/styles/{buttons,forms,surfaces}.css`.
 
 ---
 
 ## Hard Rules (Always Active)
 
-- **No custom SVG icons** — always use `@ng-icons` with the `[svg]="iconVar"` pattern (see frontend skill for details).
+- **No custom SVG icons** — always use `@ng-icons` with the `[svg]="iconVar"` pattern (see `docs/frontend.md`, *Layout and icons*).
 - **No getters or value-computing methods called from templates** — use `readonly` properties or `computed()` signals. For parameterised lookups, use a computed record: `computed(() => Object.fromEntries(items().map(i => [i.id, i.id === active()])))` then index in the template.
 - **No `getattr`/`setattr` in Python** — use explicit `if`/`elif` or `match`/`case`.
 - **Always import at the top of Python files** — no string type annotations, no lazy imports inside methods.
@@ -112,4 +129,3 @@ The `mcp_server` app exposes the platform to Claude as a remote MCP connector (c
 - **Business logic belongs in managers, not in views.** Views are thin: parse input → call permission checker → call a manager → return the output schema. Network calls, DB writes, multi-step computation, third-party API calls — all go in `<app>/managers/<name>_manager.py`. See `dream_diary/managers/dream_diary_entry_manager.py` for the pattern.
 - **When adding a new app, link to it from the home page** (`src/app/home/home.component.html`) and from the left nav drawer (`src/app/layout/app-navigation-left-drawer/app-navigation-left-drawer.component.html`). Both the logged-in and logged-out home variants need a card if the app is public. The home page is the front door — apps without a tile there are invisible to users.
 - **Never name a Schema field after a type it uses** (e.g. `date: Optional[date] = None`). Python 3.14 evaluates annotations lazily, so the annotation resolves to the field's own default and the OpenAPI type becomes `null`. Use `import datetime` + `datetime.date`.
-- **The user runs the backend and frontend servers themselves.** Assume the backend (`localhost:8000`) and frontend dev server are already running — do not start, restart, or offer to start them. Verify changes with build/compile checks (`npm run build:prod`, `npm run check`) instead. When a step genuinely needs a running server (e.g. `npm run create-api` after endpoint changes), state that the user must run it rather than starting the server yourself.

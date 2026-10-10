@@ -1,3 +1,15 @@
-docker run -v $(pwd)/../../yanay_tevet_backend:/usr/src/app -v logs:/var/log/yanay_tevet/ --rm -t \
-    --network=yanay_tevet_network --name=yanay_tevet_backend_worker_$1 --env DJANGO_SETTINGS_MODULE=yanay_tevet_backend.dev_docker_settings \
-    yanay_tevet_backend celery -A yanay_tevet_backend worker --concurrency=1 -Q $1
+#!/usr/bin/env bash
+# Runs a celery worker. With no argument it consumes every queue in yanay_tevet_backend/celery.py; pass a
+# comma-separated list to narrow it, e.g. ./run_backend_worker.sh emails
+#
+# There is no always-on worker in the compose file because nothing in the app enqueues a task today: the only
+# task, daily_cleaning, is sent by beat, and settings.py has no CELERY_BROKER_URL yet (it is commented out).
+# Set a broker before relying on this.
+set -e
+
+QUEUES="${1:-main,emails}"
+
+docker-compose -f ../dockers/docker-compose-dev-backend.yml run --rm \
+  --entrypoint /venv/bin/celery \
+  yanay_tevet_backend \
+  -A yanay_tevet_backend worker -Q "$QUEUES" --concurrency=1 -l INFO

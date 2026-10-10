@@ -5,7 +5,7 @@
     "prepare": "husky",
     "build:web": "cd yanay-tevet-web && npm run build",
     "build:web:prod": "cd yanay-tevet-web && npm run build:prod",
-    "check:backend": "cd yanay_tevet_backend && python -m compileall .",
+    "check:backend": "cd yanay_tevet_backend && python3 -m compileall -q -x '\\.venv' .",
     "check": "npm run build:web:prod && npm run check:backend"
   },
   "devDependencies": {
