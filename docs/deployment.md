@@ -26,6 +26,5 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
 - **DNS**: `api.yanaytevet.com` is a **DNS-only** (grey cloud) CNAME in Cloudflare to Railway's target, plus a
   `_railway-verify.api` TXT record. Railway issues the certificate; proxying it through Cloudflare with SSL
   *Full (strict)* breaks issuance.
-- **Rollback material from the move** (delete when no longer wanted): DigitalOcean snapshot
-  `yanay-tevet-vm-final-2026-10-10`, and the final `pg_dump` in `~/dev/do-final-backups-2026-10-10/` on the
-  owner's Mac.
+- **Backup from the move**: the final DigitalOcean `pg_dump` (data as of the 2026-10-10 cutover) is in
+  `~/dev/do-final-backups-2026-10-10/` on the owner's Mac. The droplet and its snapshot are deleted.
