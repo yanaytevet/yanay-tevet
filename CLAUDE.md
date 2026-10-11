@@ -16,9 +16,12 @@ Full-stack monorepo: **Angular 21** frontend + **Django 5** backend, real-time v
 yanay-tevet/
 ├── yanay-tevet-web/          # Angular 21 frontend
 ├── yanay_tevet_backend/      # Django backend
-├── deploy/                   # Docker, nginx, scripts
+├── deploy/                   # Local dev stack: Docker Compose files + dev_scripts
 └── package.json              # Root monorepo scripts
 ```
+
+**Pushing to `main` deploys the backend to production** (Railway) whenever `yanay_tevet_backend/` changed —
+migrations included. See `docs/deployment.md`.
 
 **Ports are deliberately non-default** so this app runs alongside the other projects on this machine: backend `8001`, frontend `4201`, postgres `5433`, redis `6380`. The Docker Compose project is `yanay_tevet` and the network is `yanay_tevet-network` (the compose files declare it as `common-network` and override its name). Inside the network, services still talk on default ports; only host mappings are offset.
 
@@ -38,6 +41,7 @@ starting it.
 | Any UI at all | `DESIGN.md` (see **Design System** below) |
 | The Claude connector — OAuth server, MCP tools, ngrok in dev | `docs/mcp-server.md` |
 | The new-version banner and the reload after a missing lazy chunk | `docs/frontend.md`, *New-version refresh* |
+| Production — Railway hosting, deploys, env vars, prod shell, DNS | `docs/deployment.md` |
 
 ---
 
