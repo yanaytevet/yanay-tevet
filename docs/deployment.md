@@ -7,8 +7,11 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
 - **Deploys**: every push to `main` that touches `yanay_tevet_backend/` rebuilds the backend from
   `yanay_tevet_backend/Dockerfile` (service root dir `/yanay_tevet_backend`, watch path
   `/yanay_tevet_backend/**`; other pushes are skipped). A new deployment takes traffic only once `/admin/login/`
-  answers (healthcheck), so a crash on boot leaves the previous one serving. The entrypoint runs `migrate` and
-  `collectstatic` before uvicorn, so **migrations reach prod on push** and must be safe against live data.
+  answers (healthcheck), so a crash on boot leaves the previous one serving. Railway's pre-deploy command
+  (`/venv/bin/python manage.py migrate`, service setting `deploy.preDeployCommand`) runs on the new image
+  before it takes traffic, and a failure stops the deploy, so **migrations reach prod on push** and must be safe
+  against live data. Static files are collected into the image at build time; the container's `CMD` starts
+  uvicorn and nothing else.
 - **CI**: `.github/workflows/ci.yml` runs on every push to `main` and every pull request. Job `web` lints and
   builds the frontend for production; job `backend` fails on a missing migration, runs `manage.py check` and
   the tests against Postgres 17 and Redis 8. Railway's "Wait for CI" (backend service settings, Deploy) holds
