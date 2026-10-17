@@ -32,7 +32,7 @@ class APIRequest:
         self.original_request.session[key] = value
 
     async def async_set_in_session(self, key: str, value: any) -> None:
-        sync_to_async(self.set_in_session)(key, value)
+        await sync_to_async(self.set_in_session)(key, value)
 
     async def async_set_as_other(self, is_as_other: bool) -> None:
         await self.async_set_in_session('as_other', is_as_other)

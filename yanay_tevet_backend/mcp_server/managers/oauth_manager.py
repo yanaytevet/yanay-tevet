@@ -78,7 +78,7 @@ class OAuthManager:
     @classmethod
     async def consume_authorization_code(cls, raw_code: str) -> OAuthAuthorizationCode | None:
         code = await OAuthAuthorizationCode.objects.filter(
-            code_hash=cls.hash_secret(raw_code), used=False, expires_at__gt=timezone.now(),
+            code_hash=cls.hash_secret(raw_code), used=False, expires_at__gt=timezone.now(), user__is_active=True,
         ).select_related('client', 'user').afirst()
         if code is None:
             return None
@@ -121,7 +121,7 @@ class OAuthManager:
     async def consume_refresh_token(cls, raw_token: str) -> OAuthRefreshToken | None:
         """Refresh tokens are single-use (rotated on every refresh)."""
         token = await OAuthRefreshToken.objects.filter(
-            token_hash=cls.hash_secret(raw_token), revoked=False, expires_at__gt=timezone.now(),
+            token_hash=cls.hash_secret(raw_token), revoked=False, expires_at__gt=timezone.now(), user__is_active=True,
         ).select_related('client', 'user').afirst()
         if token is None:
             return None
@@ -130,8 +130,10 @@ class OAuthManager:
 
     @classmethod
     async def resolve_access_token(cls, raw_token: str) -> OAuthAccessToken | None:
+        # Filtering on is_active makes deactivating a user cut off the connector at once, not when its
+        # tokens expire.
         token = await OAuthAccessToken.objects.filter(
-            token_hash=cls.hash_secret(raw_token), revoked=False, expires_at__gt=timezone.now(),
+            token_hash=cls.hash_secret(raw_token), revoked=False, expires_at__gt=timezone.now(), user__is_active=True,
         ).select_related('user', 'client').afirst()
         if token is None:
             return None

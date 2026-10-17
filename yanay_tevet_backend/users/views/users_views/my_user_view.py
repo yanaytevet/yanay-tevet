@@ -1,4 +1,4 @@
-from ninja import Query, Path
+from ninja import Query, Path, Schema
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.permissions_checkers.login_permission_checker import LoginPermissionChecker
@@ -20,7 +20,7 @@ class MyUserItemView(ReadItemAPIView):
         await LoginPermissionChecker().async_raise_exception_if_not_valid(user_obj)
 
     @classmethod
-    async def get_object(cls, request: APIRequest, query: Query, path: Path) -> User:
+    async def get_object(cls, request: APIRequest, query: Query, data: Schema, path: Path) -> User:
         return await request.future_user
 
     @classmethod

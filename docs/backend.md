@@ -166,6 +166,17 @@ Each app keeps its enums in its own `enums/`, as subclasses of `common/base_enum
 `StrEnum`). A model field takes `MyEnum.choices()` — a classmethod — and `MyEnum.get_list()` gives the
 values. A parameter that always holds an enum value is typed as the enum, never as `str`.
 
+## Tests
+
+Django's own runner, against the dev Postgres and Redis (`start_dev.sh` first): from `deploy/dev_scripts/`,
+`bash run_manage.sh test`, or `bash run_manage.sh test users` for one app. Tests live in each app's
+`tests/` package and use `SimpleTestCase` when they need no database, `TestCase` otherwise, with `async def`
+test methods. `common/testing/authenticated_client.py` calls the API as a given user.
+
+- A websocket consumer test needs `TransactionTestCase`: channels closes the database connection around
+  each frame, which would close a `TestCase`'s wrapping transaction with it.
+- Override `CHANNEL_LAYERS` with `InMemoryChannelLayer` in a test that sends on the channel layer.
+
 ## Background work
 
 Work that outlives a request runs in-process: `run_in_background(coro)` in

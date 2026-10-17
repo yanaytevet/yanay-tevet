@@ -171,6 +171,15 @@ class WebAuthnManager:
                 message='No registered passkey found for this device',
             )
 
+        # A passkey outlives the account it was registered against, so deactivating a user closes this
+        # door too.
+        if not stored_credential.user.is_active:
+            raise RestAPIException(
+                status_code=StatusCode.HTTP_401_UNAUTHORIZED,
+                error_code='user_is_inactive',
+                message='This account is not active',
+            )
+
         try:
             credential = AuthenticationCredential(
                 id=data.id,

@@ -14,6 +14,7 @@ import cloudinary
 import logging.config
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,14 +31,14 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", 'dev')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", 'true').lower() == 'true'
-FRONTEND_URL = os.environ.get("FRONTEND_URL", 'http://localhost:4200')
+FRONTEND_URL = os.environ.get("FRONTEND_URL", 'http://localhost:4201').rstrip('/')
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 CHATGPT_API_KEY = os.environ.get("CHATGPT_API_KEY")
 OPENAI_ADMIN_API_KEY = os.environ.get("OPENAI_ADMIN_API_KEY")
 WEBAUTHN_RP_NAME = os.environ.get("WEBAUTHN_RP_NAME", "Yanay Tevet")
 WEBAUTHN_ORIGIN = FRONTEND_URL
-WEBAUTHN_RP_ID = FRONTEND_URL.replace('https://', '').replace('http://', '').replace(':4201', '')
+WEBAUTHN_RP_ID = urlparse(FRONTEND_URL).hostname
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
@@ -136,10 +137,15 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
+            # The socket timeout must outlast the layer's own blocking read: an idle consumer waits for
+            # its next message with a 5 s BZPOPMIN, and redis-py 8 defaults socket_timeout to 5 s too.
+            # The read then timed out just before Redis answered, the consumer died, and every websocket
+            # dropped five seconds after it subscribed.
             'hosts': [{
                 'host': os.environ.get("REDIS_HOST"),
                 'port': int(os.environ.get("REDIS_PORT", '6379')),
                 'password': os.environ.get("REDIS_PASSWORD"),
+                'socket_timeout': 30,
             }],
         },
     },

@@ -1,12 +1,15 @@
-import random
 import re
+import secrets
 import string
 
 
 class StringUtils:
     @classmethod
     def create_random_hash(cls, hash_length: int) -> str:
-        return ''.join(random.choices(string.ascii_uppercase + string.digits, k=hash_length))
+        # These become password-reset ids and invitation tokens. `random` is predictable from a few of
+        # its outputs; `secrets` draws from the system CSPRNG.
+        alphabet = string.ascii_uppercase + string.digits
+        return ''.join(secrets.choice(alphabet) for _ in range(hash_length))
 
     @classmethod
     def lower_case_to_camel_case(cls, str1: str) -> str:

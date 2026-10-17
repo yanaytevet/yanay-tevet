@@ -196,9 +196,9 @@ export type UploadFilesSumSizeResponse = {
  */
 export type PostSampleWebsocketViewSchema = {
     /**
-     * Room Id
+     * Message
      */
-    room_id: number;
+    message?: string;
 };
 
 export type PaginationBlockViewData = {

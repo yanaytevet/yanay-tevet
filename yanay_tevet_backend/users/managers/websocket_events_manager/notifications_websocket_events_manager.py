@@ -1,5 +1,7 @@
 from typing import Self
 
+from common.simple_api.enums.status_code import StatusCode
+from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from common.simple_api.permissions_checkers.login_permission_checker import LoginPermissionChecker
 from common.type_hints import JSONType
 from users.managers.websocket_events_manager.base_websocket_events_manager import BaseWebsocketEventsManager
@@ -23,3 +25,10 @@ class NotificationsWebsocketEventManager(BaseWebsocketEventsManager):
 
     async def check_permitted(self, user: User) -> None:
         await LoginPermissionChecker().async_raise_exception_if_not_valid(user)
+        # The group is named after a user id the subscriber chose, so being logged in isn't enough.
+        if user.id != self.user_id:
+            raise RestAPIException(
+                status_code=StatusCode.HTTP_403_FORBIDDEN,
+                message="User cannot subscribe to another user's notifications.",
+                error_code='cannot_subscribe_to_other_user_notifications',
+            )

@@ -24,7 +24,7 @@ class AuthView(SimpleGetAPIView):
         data = AuthSchema(is_authenticated=False, user=None)
         payload = DjangoAuth.verify_refresh_token_from_request(request.original_request)
         if payload and 'user_id' in payload:
-            user_obj = await User.objects.filter(id=payload['user_id']).afirst()
+            user_obj = await DjangoAuth.async_get_active_user_by_id(payload['user_id'])
             if cls.is_active_user(user_obj):
                 data.is_authenticated = True
                 data.user = await UserSerializer().serialize(user_obj)
@@ -32,5 +32,5 @@ class AuthView(SimpleGetAPIView):
         return data
 
     @classmethod
-    def is_active_user(cls, user_obj: User) -> bool:
-        return user_obj and not user_obj.is_anonymous
+    def is_active_user(cls, user_obj: User | None) -> bool:
+        return bool(user_obj) and not user_obj.is_anonymous

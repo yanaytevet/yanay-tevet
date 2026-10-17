@@ -99,15 +99,22 @@ class DjangoAuth:
         return cls.verify_token(token_arr[1], JwtTokenType.ACCESS)
 
     @classmethod
+    async def async_get_active_user_by_id(cls, user_id: int) -> User | None:
+        # A token stays valid for its whole lifetime whatever happens to the account behind it. Every
+        # path that turns a token into a user goes through here, which is what makes deactivating an
+        # account in the admin take effect on the next request rather than when the token expires.
+        return await User.objects.filter(id=user_id, is_active=True).afirst()
+
+    @classmethod
     async def get_user_from_request(cls, request: HttpRequest) -> User | None:
         payload = cls.verify_access_token_from_request(request)
         if payload:
-            return await User.objects.filter(id=payload['user_id']).afirst()
+            return await cls.async_get_active_user_by_id(payload['user_id'])
         return None
 
     @classmethod
     async def get_user_from_access_token(cls, access_token: str) -> User | None:
         payload = cls.verify_token(access_token, JwtTokenType.ACCESS)
         if payload:
-            return await User.objects.filter(id=payload['user_id']).afirst()
+            return await cls.async_get_active_user_by_id(payload['user_id'])
         return None

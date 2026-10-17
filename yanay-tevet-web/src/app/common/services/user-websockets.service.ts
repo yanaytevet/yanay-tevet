@@ -104,7 +104,8 @@ export class UserWebsocketsService {
       }));
     });
     return this.websocketListener$.subscribe((data: WebsocketEvent) => {
-      if (data && data.group_name === groupInfo.group_name) {
+      // groupInfo stays null when the server refused the subscription and never answered it.
+      if (data && groupInfo && data.group_name === groupInfo.group_name) {
         callback(data);
       }
     });

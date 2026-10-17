@@ -34,10 +34,12 @@ class SchemaField(models.JSONField, Generic[T]):
         return self.schema.model_validate(value)
 
     def _serialize(self, value: Any) -> Any:
+        # mode='json' turns a date, Decimal or UUID into something JSON can store; a plain dump keeps
+        # the Python object and the save crashes.
         if isinstance(value, list):
-            return [i.model_dump() if isinstance(i, Schema) else i for i in value]
+            return [i.model_dump(mode='json') if isinstance(i, Schema) else i for i in value]
         if isinstance(value, Schema):
-            return value.model_dump()
+            return value.model_dump(mode='json')
         return value
 
     def _is_already_deserialized(self, value: Any) -> bool:

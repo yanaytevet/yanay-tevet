@@ -104,11 +104,23 @@ class GoogleLoginView(SimplePostAPIView):
         if not email:
             raise invalid_token_exception
 
+        # An existing account is matched by address below, so an address Google didn't verify would be
+        # a way to sign in as someone else.
+        if not id_info.get('email_verified'):
+            app_logger.logger.warning('Google login refused: the address is not verified.')
+            raise invalid_token_exception
+
         first_name = id_info.get('given_name', '')
         last_name = id_info.get('family_name', '')
         pic_url = id_info.get('picture', '')
 
         user = await cls._get_or_create_user(email, first_name, last_name, pic_url)
+        if not user.is_active:
+            raise RestAPIException(
+                status_code=StatusCode.HTTP_401_UNAUTHORIZED,
+                error_code='user_is_inactive',
+                message='This account is not active',
+            )
         await DjangoAuth.async_login(api_request.response, user)
         return AuthSchema(
             is_authenticated=True,

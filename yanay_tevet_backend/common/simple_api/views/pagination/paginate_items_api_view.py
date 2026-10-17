@@ -7,6 +7,8 @@ from django.http import HttpRequest
 from ninja import Router, Schema, Path, FilterSchema, Query
 
 from common.simple_api.api_request import APIRequest
+from common.simple_api.enums.status_code import StatusCode
+from common.simple_api.exceptions.rest_api_exception import RestAPIException
 from common.simple_api.schemas.empty_schema import EmptySchema
 from common.simple_api.views.pagination.pagination_input_schemas import PaginationQueryParams
 from common.simple_api.views.pagination.pagination_output import PaginationOutput
@@ -58,7 +60,14 @@ class PaginateItemsAPIView(SerializeItemMixin, ABC):
             query_set = filters.filter(query_set)
         query_set = self.apply_order_by(query_set, query, path)
         if query and query.dict_filter:
-            dict_filter_obj = json.loads(query.dict_filter)
+            try:
+                dict_filter_obj = json.loads(query.dict_filter)
+            except json.JSONDecodeError:
+                raise RestAPIException(
+                    status_code=StatusCode.HTTP_400_BAD_REQUEST,
+                    message='dict_filter is not valid JSON.',
+                    error_code='invalid_dict_filter',
+                )
             query_set = self.apply_dict_filter(query_set, query, path, dict_filter_obj)
         return self.apply_final_filter(query_set, query, path)
 
@@ -79,7 +88,11 @@ class PaginateItemsAPIView(SerializeItemMixin, ABC):
         for order_by_item in query.order_by:
             clear_order_by_item = order_by_item.lstrip('-')
             if clear_order_by_item not in allowed_order_by_set:
-                raise ValueError(f'order_by item {order_by_item} is not allowed')
+                raise RestAPIException(
+                    status_code=StatusCode.HTTP_400_BAD_REQUEST,
+                    message=f'Cannot order by {clear_order_by_item}.',
+                    error_code='order_by_is_not_allowed',
+                )
         return query_set.order_by(*query.order_by)
 
     @classmethod
