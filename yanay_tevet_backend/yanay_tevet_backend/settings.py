@@ -27,10 +27,14 @@ FRONT_DIR_NAME = 'yanay-tevet-web'
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
-ENVIRONMENT = os.environ.get("ENVIRONMENT", 'dev')
+# Defaults to production, so a deploy missing the variable is locked down rather than in debug mode.
+# Dev sets ENVIRONMENT=dev in deploy/dockers/.env. Compose passes a variable missing from .env as an
+# empty string, so empty counts as missing.
+ENVIRONMENT = os.environ.get("ENVIRONMENT") or 'prod'
+IS_PRODUCTION = ENVIRONMENT == 'prod'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", 'true').lower() == 'true'
+DEBUG = not IS_PRODUCTION
 FRONTEND_URL = os.environ.get("FRONTEND_URL", 'http://localhost:4201').rstrip('/')
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
@@ -42,7 +46,6 @@ WEBAUTHN_RP_ID = urlparse(FRONTEND_URL).hostname
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
-ALLOWED_HOSTS = ['*']
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_HEADERS = [
     'Content-Type',
@@ -55,17 +58,51 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", 'http://localhost:8000').split(',')
+
+
+def split_env_list(name: str, default: str = '') -> list[str]:
+    # ''.split(',') is [''], not []; an empty entry in CORS_ALLOWED_ORIGINS fails Django's system check.
+    return [item.strip() for item in os.environ.get(name, default).split(',') if item.strip()]
+
+
+# The frontend origins. CORS and the websocket origin check (asgi.py) both read this list. An origin
+# has no path, so a trailing slash pasted from an address bar is dropped.
+ALLOWED_ORIGINS = [origin.rstrip('/') for origin in split_env_list("ALLOWED_ORIGINS", 'http://localhost:4201')]
+
+# The backend's own hostnames. Production gets them from Railway: RAILWAY_PUBLIC_DOMAIN is the API's
+# domain, and healthcheck.railway.app is the Host header of Railway's health checker. Without it every
+# check answers 400 and no deploy goes live.
+ALLOWED_HOSTS = split_env_list("ALLOWED_HOSTS")
+RAILWAY_PUBLIC_DOMAIN = os.environ.get('RAILWAY_PUBLIC_DOMAIN')
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, 'healthcheck.railway.app']
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS = [*ALLOWED_HOSTS, RAILWAY_PUBLIC_DOMAIN]
+    ALLOWED_ORIGINS = [*ALLOWED_ORIGINS, f'https://{RAILWAY_PUBLIC_DOMAIN}']
+
+ALLOWED_HOSTS = list(dict.fromkeys(ALLOWED_HOSTS))
+ALLOWED_ORIGINS = list(dict.fromkeys(ALLOWED_ORIGINS))
 CORS_ALLOWED_ORIGINS = ALLOWED_ORIGINS
 
 if DEBUG:
     SESSION_COOKIE_SECURE = False
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ['*']
 else:
     CSRF_TRUSTED_ORIGINS = ALLOWED_ORIGINS
     USE_X_FORWARDED_HOST = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     CSRF_COOKIE_HTTPONLY = True
+    # Railway terminates TLS and sets X-Forwarded-Proto itself. Without this Django sees every request
+    # as plain HTTP and never sends the HSTS header.
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 60 * 60 * 24 * 365
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    if not ALLOWED_HOSTS:
+        # Never a wildcard in production: fall back to the hosts of the configured origins.
+        ALLOWED_HOSTS = [urlparse(origin).hostname for origin in ALLOWED_ORIGINS]
 
 # Email
 EMAIL_BACKEND = 'anymail.backends.brevo.EmailBackend'

@@ -7,7 +7,6 @@ services:
     container_name: yanay_tevet_backend
     environment:
       ENVIRONMENT: ${ENVIRONMENT}
-      DEBUG: ${DEBUG}
 
       FRONTEND_URL: ${FRONTEND_URL}
       # The backend's own public URL that Claude reaches the MCP server at. Leave UNSET in dev —

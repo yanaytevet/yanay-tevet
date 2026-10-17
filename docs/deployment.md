@@ -17,6 +17,11 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
   (`DATABASE_HOST=${{Postgres.PGHOST}}`, `REDIS_PASSWORD=${{Redis.REDISPASSWORD}}`, …). A new env var read in
   `settings.py` needs its Railway variable before the push that uses it. Set secrets without echoing them:
   `printf %s "$VALUE" | railway variable set KEY --stdin --service backend`.
+- **Environment and hosts**: `ENVIRONMENT=prod` is what makes it production; `DEBUG` follows from it (a
+  missing `ENVIRONMENT` also means production). `ALLOWED_HOSTS` comes from Railway's own variables:
+  `RAILWAY_PUBLIC_DOMAIN` (`api.yanaytevet.com`) plus `healthcheck.railway.app`, the health checker's Host.
+  Without that one every healthcheck answers 400 and no deploy goes live. `ALLOWED_ORIGINS` lists the frontend
+  origins; CORS and the websocket Origin check both read it, so a new frontend domain goes there.
 - **Prod shell**: from the repo root (already linked to the project):
   `railway ssh --service backend -- /venv/bin/python manage.py <command>`.
 - **Database**: private only. For a one-off external connection, `railway tcp-proxy create --port 5432

@@ -12,7 +12,8 @@ import os
 import django
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.security.websocket import AllowedHostsOriginValidator
+from channels.security.websocket import OriginValidator
+from django.conf import settings
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'yanay_tevet_backend.settings')
@@ -57,8 +58,13 @@ async def lifespan_app(scope, receive, send) -> None:
 application = ProtocolTypeRouter(
     {
         'http': http_router,
-        'websocket': AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(yanay_tevet_backend.routing.websocket_urlpatterns))
+        # A websocket is opened by the frontend, so its Origin is the frontend's address, checked against
+        # the origins CORS already trusts. AllowedHostsOriginValidator would check it against
+        # ALLOWED_HOSTS, the backend's own hostnames, and refuse every socket in production, where
+        # yanaytevet.com and api.yanaytevet.com differ.
+        'websocket': OriginValidator(
+            AuthMiddlewareStack(URLRouter(yanay_tevet_backend.routing.websocket_urlpatterns)),
+            settings.ALLOWED_ORIGINS,
         ),
         'lifespan': lifespan_app,
     }
