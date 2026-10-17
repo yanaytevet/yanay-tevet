@@ -44,14 +44,18 @@ export class SelectInputComponent implements ControlValueAccessor {
   }
 
   // Register a function to propagate changes
-  onChange: (value: any) => void = () => {};
+  onChange: (value: any) => void = () => {
+    // A no-op until the form calls registerOnChange.
+  };
 
   registerOnChange(fn: (value: any) => void): void {
     this.onChange = fn;
   }
 
   // Register a function to mark control as touched
-  onTouched: () => void = () => {};
+  onTouched: () => void = () => {
+    // A no-op until the form calls registerOnTouched.
+  };
 
   registerOnTouched(fn: () => void): void {
     this.onTouched = fn;

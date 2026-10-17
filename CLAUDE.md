@@ -21,7 +21,7 @@ yanay-tevet/
 ```
 
 **Pushing to `main` deploys the backend to production** (Railway) whenever `yanay_tevet_backend/` changed —
-migrations included. See `docs/deployment.md`.
+migrations included — once CI (`.github/workflows/ci.yml`) passes. See `docs/deployment.md`.
 
 **Ports are deliberately non-default** so this app runs alongside the other projects on this machine: backend `8001`, frontend `4201`, postgres `5433`, redis `6380`. The Docker Compose project is `yanay_tevet` and the network is `yanay_tevet-network` (the compose files declare it as `common-network` and override its name). Inside the network, services still talk on default ports; only host mappings are offset.
 

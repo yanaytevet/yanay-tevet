@@ -9,6 +9,10 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
   `/yanay_tevet_backend/**`; other pushes are skipped). A new deployment takes traffic only once `/admin/login/`
   answers (healthcheck), so a crash on boot leaves the previous one serving. The entrypoint runs `migrate` and
   `collectstatic` before uvicorn, so **migrations reach prod on push** and must be safe against live data.
+- **CI**: `.github/workflows/ci.yml` runs on every push to `main` and every pull request. Job `web` lints and
+  builds the frontend for production; job `backend` fails on a missing migration, runs `manage.py check` and
+  the tests against Postgres 17 and Redis 8. Railway's "Wait for CI" (backend service settings, Deploy) holds
+  a deploy until the checks pass. The Cloudflare frontend doesn't wait: it builds on every push.
 - **Serving**: uvicorn on `$PORT` (pinned to `8000` by a service variable); Railway terminates TLS. Static files
   are served by whitenoise and media lives on Cloudinary, so the container keeps nothing on disk. The
   `/var/log/yanay_tevet/` file log (and the admin log viewer) reset on every deploy;

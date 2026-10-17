@@ -40,16 +40,16 @@ export class RangeDialogComponent extends BaseDialogComponent<
     this.form = this.fb.group({
       minValue: [
         this.data.defaultMinValue ?? null,
-        this.buildValidators('min')
+        this.buildValidators()
       ],
       maxValue: [
         this.data.defaultMaxValue ?? null,
-        this.buildValidators('max')
+        this.buildValidators()
       ]
     }, { validators: this.rangeValidator });
   }
 
-  private buildValidators(type: 'min' | 'max') {
+  private buildValidators() {
     const validators = [];
 
     if (this.data.allowEmpty !== true) {

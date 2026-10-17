@@ -1,0 +1,96 @@
+# Checks every push to main and every pull request: one job per package, in parallel.
+# The job names (web, backend) are the check names GitHub and Railway see: keep them stable.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch or pull request cancels the run still going.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: yanay-tevet-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: yanay-tevet-web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build:prod
+
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The dev stack's Postgres (deploy/dockers/docker-compose-dev-infra.yml); Redis there is bitnami/redis, 8.x.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: yanay_tevet_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d yanay_tevet_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    # What settings.py reads. CI-only values, not secrets. ENVIRONMENT is required: without it settings
+    # default to production (DEBUG off, real host checks). ALLOWED_ORIGINS and FRONTEND_URL stay unset;
+    # the websocket origins test expects their defaults.
+    env:
+      ENVIRONMENT: dev
+      SECRET_KEY: ci-only-secret-key
+      JWT_SECRET_KEY: ci-only-jwt-secret-key
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_NAME: yanay_tevet_db
+      DATABASE_USER: admin
+      DATABASE_PASSWORD: ci
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+    defaults:
+      run:
+        working-directory: yanay_tevet_backend
+    steps:
+      - uses: actions/checkout@v4
+      # The Dockerfile's Python.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: yanay_tevet_backend/requirements.txt
+      - run: pip install -r requirements.txt
+      # settings.LOGGING writes a log file here; the Dockerfile creates it, the runner doesn't have it.
+      - run: sudo mkdir -p /var/log/yanay_tevet && sudo chown "$USER" /var/log/yanay_tevet
+      - name: No missing migrations
+        run: python manage.py makemigrations --check --dry-run
+      - run: python manage.py check
+      - run: python manage.py test --noinput

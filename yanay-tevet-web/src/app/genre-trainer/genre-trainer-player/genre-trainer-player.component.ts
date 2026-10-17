@@ -72,7 +72,7 @@ export class GenreTrainerPlayerComponent {
   private masterLimiter: Tone.Limiter | null = null;
   private kickBus: Tone.Gain | null = null;
   private kickMeter: Tone.Meter | null = null;
-  private sidechainBuses: Map<Exclude<SidechainDepth, 'none'>, Tone.Gain> = new Map();
+  private sidechainBuses = new Map<Exclude<SidechainDepth, 'none'>, Tone.Gain>();
   private sidechainLfos: Tone.LFO[] = [];
   private analyser: Tone.Analyser | null = null;
   private sequences: Tone.Sequence[] = [];
