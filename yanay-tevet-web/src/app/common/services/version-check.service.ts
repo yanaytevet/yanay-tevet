@@ -38,12 +38,16 @@ export class VersionCheckService {
         if (!this.runningFingerprint) {
             return;
         }
-        this.pollTimer = setInterval(() => this.checkNow(), this.POLL_MS);
         this.document.addEventListener('visibilitychange', this.onVisibilityChange);
+        window.addEventListener('pageshow', this.onPageShow);
+        window.addEventListener('online', this.onOnline);
         this.router.events
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(() => this.checkNow());
         this.destroyRef.onDestroy(() => this.stop());
+        if (this.document.visibilityState === 'visible') {
+            this.startPolling();
+        }
     }
 
     reloadToLatest(): void {
@@ -53,15 +57,44 @@ export class VersionCheckService {
     private readonly onVisibilityChange = (): void => {
         if (this.document.visibilityState === 'visible') {
             this.checkNow();
+            this.startPolling();
+        } else {
+            // Phones keep tabs open for days; a hidden one doesn't poll, and showing it checks at once.
+            this.stopPolling();
         }
     };
 
-    private stop(): void {
-        if (this.pollTimer) {
+    // iPhone Safari restores a page from its back-forward cache without always firing visibilitychange.
+    private readonly onPageShow = (event: PageTransitionEvent): void => {
+        if (event.persisted) {
+            this.checkNow();
+            this.startPolling();
+        }
+    };
+
+    // A phone back from no signal checks at once rather than at the next poll.
+    private readonly onOnline = (): void => {
+        this.checkNow();
+    };
+
+    private startPolling(): void {
+        if (this.pollTimer === null) {
+            this.pollTimer = setInterval(() => this.checkNow(), this.POLL_MS);
+        }
+    }
+
+    private stopPolling(): void {
+        if (this.pollTimer !== null) {
             clearInterval(this.pollTimer);
             this.pollTimer = null;
         }
+    }
+
+    private stop(): void {
+        this.stopPolling();
         this.document.removeEventListener('visibilitychange', this.onVisibilityChange);
+        window.removeEventListener('pageshow', this.onPageShow);
+        window.removeEventListener('online', this.onOnline);
     }
 
     private async checkNow(): Promise<void> {
