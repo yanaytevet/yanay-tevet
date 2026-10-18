@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -9,35 +8,12 @@ from users.managers.websocket_events_manager.websocket_events_manager_generator 
 from yanay_tevet_backend.logger import app_logger
 
 
-# Cloudflare (which proxies wss:// in production) closes a WebSocket once ~100s
-# pass with no frames in either direction. Long-running work like Japanese content
-# generation leaves the socket idle well past that, so the final broadcast lands on
-# a connection Cloudflare has already dropped and the client never sees the result.
-# A periodic application-level heartbeat keeps the connection alive. We send a real
-# data frame on purpose: Cloudflare does not reliably treat protocol-level ping/pong
-# control frames as activity for its idle timer.
-HEARTBEAT_INTERVAL_SECONDS = 30
-
-
 class MainWebsocketConsumer(AsyncWebsocketConsumer):
-    _heartbeat_task: asyncio.Task | None = None
-
     async def connect(self):
         await self.accept()
-        self._heartbeat_task = asyncio.create_task(self._heartbeat_loop())
 
     async def disconnect(self, close_code):
-        if self._heartbeat_task is not None:
-            self._heartbeat_task.cancel()
-            self._heartbeat_task = None
-
-    async def _heartbeat_loop(self) -> None:
-        try:
-            while True:
-                await asyncio.sleep(HEARTBEAT_INTERVAL_SECONDS)
-                await self.send(text_data=json.dumps({'is_heartbeat': True}))
-        except asyncio.CancelledError:
-            pass
+        pass
 
     async def receive(self, text_data=None, bytes_data=None):
         # Every field of a frame is untrusted input, and the socket is shared by every subscription

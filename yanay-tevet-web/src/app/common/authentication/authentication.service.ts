@@ -28,6 +28,32 @@ export class AuthenticationService {
   private router = inject(Router);
   private webAuthnService = inject(WebAuthnAuthService);
 
+  private refreshInFlight: Promise<void> | null = null;
+
+  // The access token lives 15 minutes, and an API call renews it only after a 401. A websocket
+  // subscribe carries the token inside its frame and is refused silently once it has expired, so the
+  // socket asks for a token here, which is renewed first when it is about to run out.
+  async freshAccessToken(): Promise<string | null> {
+    const token = this.accessToken();
+    if (!token || !this.expiresWithinAMinute(token)) {
+      return token;
+    }
+    this.refreshInFlight ??= this.checkAuth().finally(() => {
+      this.refreshInFlight = null;
+    });
+    await this.refreshInFlight;
+    return this.accessToken();
+  }
+
+  private expiresWithinAMinute(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload.exp * 1000 - Date.now() < 60 * 1000;
+    } catch {
+      return true;
+    }
+  }
+
   async tryLogin(username: string, password: string) {
     const {data} = await loginView({body: {username, password}});
     this.auth.set(data);

@@ -110,3 +110,13 @@ minutes while the tab is visible; a hidden tab doesn't poll. Checks are at least
 `VersionUpdateBannerComponent` offers a refresh and never forces one; below `sm` it is a full-width bar with
 44 px touch targets. `ChunkLoadErrorHandler` reloads automatically when a lazy chunk 404s, at most once a
 minute. No build step or `version.json` is involved.
+
+## Live updates (websocket)
+
+`UserWebsocketsService` keeps one socket per tab to `/ws/socket/` and hands pages
+`websocketGroupSubscribe(eventType, additionalInfo, callback)`. A dropped socket reconnects with backoff from
+1 s to 30 s, at once when the device comes back `online` or the tab becomes visible, and replays every active
+subscription; only `disconnect()` keeps it down. A 30 s client ping keeps idle proxies from closing it. A
+subscribe frame carries the access token, so the service asks `AuthenticationService.freshAccessToken()` for
+one, which renews it first when it is within a minute of expiring. The server ignores a refused subscription
+without answering, so a page waiting on one sees nothing rather than an error.
