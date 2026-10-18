@@ -121,8 +121,9 @@ export class VersionCheckService {
 
     private async fetchDeployedFingerprint(): Promise<string | null> {
         try {
-            // The query param defeats intermediary caches; `no-store` only binds the browser's own.
-            const response = await fetch(`/index.html?t=${Date.now()}`, {cache: 'no-store'});
+            // The query param defeats intermediary caches; `no-store` only binds the browser's own. `/` rather
+            // than `/index.html`, which Cloudflare answers with a redirect to `/`.
+            const response = await fetch(`/?t=${Date.now()}`, {cache: 'no-store'});
             if (!response.ok) {
                 return null;
             }

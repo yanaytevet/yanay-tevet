@@ -102,7 +102,7 @@ Size comes from the text size: `text-sm` ≈ 14px, `text-base` ≈ 16px, `text-x
 ## New-version refresh
 
 `VersionCheckService` spots a new deploy by comparing the hashed `main-*.js` / `styles-*.css` names this
-tab booted from with those in a freshly fetched `/index.html`. It checks on navigation, when the tab
+tab booted from with those in a freshly fetched `/` (not `/index.html`, which Cloudflare redirects). It checks on navigation, when the tab
 becomes visible again, when the page comes back from the back-forward cache (`pageshow` with `persisted`,
 which iPhone Safari fires without a `visibilitychange`), when the device comes back `online`, and every 5
 minutes while the tab is visible; a hidden tab doesn't poll. Checks are at least 30 s apart. It is off under

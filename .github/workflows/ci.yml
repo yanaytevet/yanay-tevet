@@ -38,10 +38,10 @@ jobs:
     name: backend
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # The dev stack's Postgres (deploy/dockers/docker-compose-dev-infra.yml); Redis there is bitnami/redis, 8.x.
+    # Postgres as in production (18); local dev's compose still runs 17. Redis as in dev (bitnami/redis, 8.x).
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: ci

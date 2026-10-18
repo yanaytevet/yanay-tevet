@@ -14,7 +14,7 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
   uvicorn and nothing else.
 - **CI**: `.github/workflows/ci.yml` runs on every push to `main` and every pull request. Job `web` lints and
   builds the frontend for production; job `backend` fails on a missing migration, runs `manage.py check` and
-  the tests against Postgres 17 and Redis 8. Railway's "Wait for CI" (backend service settings, Deploy) holds
+  the tests against Postgres 18 and Redis 8. Railway's "Wait for CI" (backend service settings, Deploy) holds
   a deploy until the checks pass. The Cloudflare frontend doesn't wait: it builds on every push.
 - **Serving**: uvicorn on `$PORT` (pinned to `8000` by a service variable); Railway terminates TLS. Static files
   are served by whitenoise and media lives on Cloudinary, so the container keeps nothing on disk. The
@@ -38,5 +38,9 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
 - **DNS**: `api.yanaytevet.com` is a **DNS-only** (grey cloud) CNAME in Cloudflare to Railway's target, plus a
   `_railway-verify.api` TXT record. Railway issues the certificate; proxying it through Cloudflare with SSL
   *Full (strict)* breaks issuance.
+- **Cost**: about $2.91/month (backend $2.01, Postgres $0.64, Redis $0.26), from Railway's usage API for
+  2026-10-11 to 10-18 at list prices. The workspace bill (Hobby, about $37/month) is mostly Plotty's `landx`.
+  Letting the backend sleep (Railway Serverless) was considered and dropped on 2026-10-18: under $2/month saved,
+  in exchange for cold starts, dropping Redis and a wake-up screen.
 - **Backup from the move**: the final DigitalOcean `pg_dump` (data as of the 2026-10-10 cutover) is in
   `~/dev/do-final-backups-2026-10-10/` on the owner's Mac. The droplet and its snapshot are deleted.
