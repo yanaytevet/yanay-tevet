@@ -67,7 +67,7 @@
                             <button type="button"
                                     class="group/check flex items-center justify-center size-8 shrink-0 rounded-md"
                                     aria-label="Check off" title="Check off" (click)="toggleItem(item)">
-                                <span class="flex items-center justify-center size-5 rounded-md border-2 border-layer-4 group-hover/check:border-accent transition-colors"></span>
+                                <app-checkbox-mark [checked]="false"/>
                             </button>
                             <button type="button" class="min-w-0 flex-1 text-start text-ui text-writing truncate cursor-text"
                                     title="Edit" (click)="renameItem(item)">{{ item.name }}</button>
@@ -98,9 +98,7 @@
                                     <button type="button"
                                             class="flex items-center justify-center size-8 shrink-0 rounded-md"
                                             aria-label="Uncheck" title="Uncheck" (click)="toggleItem(item)">
-                                        <span class="flex items-center justify-center size-5 rounded-md border-2 bg-accent border-accent text-on-accent">
-                                            <ng-icon [svg]="featherCheck" class="text-caption"/>
-                                        </span>
+                                        <app-checkbox-mark [checked]="true"/>
                                     </button>
                                     <span class="min-w-0 flex-1 text-ui text-writing-minor line-through truncate">{{ item.name }}</span>
                                     <button type="button"

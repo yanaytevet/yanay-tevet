@@ -1,0 +1,15 @@
+<span class="flex items-center justify-center shrink-0 border-2 transition-colors group-hover/check:border-accent"
+      [class.size-5]="size() === 'md'"
+      [class.rounded-md]="size() === 'md'"
+      [class.size-4]="size() === 'sm'"
+      [class.rounded]="size() === 'sm'"
+      [class.bg-accent]="checked()"
+      [class.border-accent]="checked()"
+      [class.text-on-accent]="checked()"
+      [class.bg-layer-2]="!checked()"
+      [class.border-layer-4]="!checked()"
+      aria-hidden="true">
+  @if (checked()) {
+    <ng-icon [svg]="featherCheck" class="check-pop-in" [class.text-caption]="size() === 'md'" [class.text-label]="size() === 'sm'"/>
+  }
+</span>

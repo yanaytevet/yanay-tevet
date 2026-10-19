@@ -1,7 +1,7 @@
 # Design audit — October 2026
 
 A sweep of `yanay-tevet-web/src/app` against the design system, before the round-1 rewrite. Counts are from
-that sweep. **Status** is updated as rounds land: ✅ fixed, ◐ partly, ○ open. Statuses as of the end of round 2.
+that sweep. **Status** is updated as rounds land: ✅ fixed, ◐ partly, ○ open. Statuses as of the end of round 3.
 
 At the time, `DESIGN.md` was a verbatim copy of Notion's marketing-site spec ("Get Notion free", trust bars)
 inherited from the-dark-forge, so nothing in the repo described this app's own system.
@@ -49,10 +49,10 @@ inherited from the-dark-forge, so nothing in the repo described this app's own s
 | No shared page header; the same title + subtitle + primary-button block copied into 9 list pages, 4 detail-header variants — `<app-page-header>` exists, used by task management | ✅ |
 | Empty state `card p-10 text-center` + emoji copied 13×; Japanese uses a different one — `<app-empty-state>` exists, used by task management | ✅ |
 | Loading line copied 19× with 4 variants; error-with-back-button copied 13× — `<app-loading-state>`/`<app-error-state>` exist, used by task management | ✅ |
-| Unused shared components (`app-entity-card`, `app-gallery`, `app-main-image-card`, `app-collapsible-section`, `app-reorderable-list`) and classes (`.page`, `.card-layer-2/3`, `.mask-edges`) | ○ |
+| Unused shared components (`app-entity-card`, `app-gallery`, `app-main-image-card`, `app-collapsible-section`, `app-reorderable-list`) and classes (`.page`, `.card-layer-2/3`, `.mask-edges`) — deleted, with `app-loading`, `app-mobile-image-hero`, `app-cloudinary-image` and the image-viewer dialog; `.page` stays (the example table uses it) | ✅ |
 | Two dialog shells: `.dialog-container` vs `card bg-layer-2 p-5 sm:p-6` (12 dialogs) | ✅ |
-| Four tab implementations: `tabs-group`, identical `japanese-nav` and `home-sweet-home-nav`, hand-rolled special-dates tabs — the two navs share `<app-sub-nav>`; special dates keeps hand-rolled tabs styled like `tabs-group` because `tabs-group` has no change event, no keyboard access and LTR-only scroll arrows | ◐ |
-| Four checkbox implementations: native unstyled, hand-rolled 18px (7×), feather squares, unused `checkbox-input` — native ones take the accent via `accent-color` | ◐ |
+| Four tab implementations: `tabs-group`, identical `japanese-nav` and `home-sweet-home-nav`, hand-rolled special-dates tabs — `tabs-group` (real tab buttons, `tabChange`, RTL-aware arrows) and `sub-nav`; special dates uses `tabs-group` | ✅ |
+| Four checkbox implementations: native unstyled, hand-rolled 18px (7×), feather squares, unused `checkbox-input` — one `<app-checkbox-mark>`; native checkboxes take the accent; `checkbox-input` remains only in the example form | ✅ |
 | Genre trainer and dashboard nest a `min-h-screen bg-layer-1` shell inside the `h-screen` layout (double scroll) | ✅ |
 | Dream diary has no header and full-contrast icon buttons | ✅ |
 
@@ -62,14 +62,14 @@ inherited from the-dark-forge, so nothing in the repo described this app's own s
 |---|---|
 | Page widths: `2xl`, `3xl`, `4xl`, `5xl`, `xl` across apps; sub-nav `5xl` over `4xl` content — every page is `page-narrow` or `page-wide`; Home Sweet Home and Japanese pages match their sub-navs | ✅ |
 | Radius: `rounded-full` 94, `rounded-lg` 31, `rounded` 17, `rounded-xl` 14, plus `[5px]` 7, `[8px]` 5, `[10px]` 3, `[4px]` 1; `rounded-pill` (undefined, renders square) 4 — no arbitrary radius left | ◐ |
-| Card padding `p-3/4/5/6/8/10`; chip sizes in 5 variants — chips are `chip` + variant across the apps; card padding still varies | ◐ |
+| Card padding `p-3/4/5/6/8/10`; chip sizes in 5 variants — three tiers in DESIGN.md §4 (`p-4`, `p-5 sm:p-6`, `p-6 sm:p-8`) | ✅ |
 | Clickable-card hover is `shadow-2 → shadow-3` in some apps, `→ shadow-2` in others — every clickable card is `card-interactive` | ✅ |
 
 ## 6. Other
 
 | Finding | Status |
 |---|---|
-| Icon sets: feather in 12 apps, bootstrap in layout/genre/japanese/dashboard, heroicons in tabs; edit is `featherEdit` ×17 vs `featherEdit2` ×4, delete `featherTrash2` ×20 vs `featherDelete` ×1 | ○ |
+| Icon sets: feather in 12 apps, bootstrap in layout/genre/japanese/dashboard, heroicons in tabs; edit is `featherEdit` ×17 vs `featherEdit2` ×4, delete `featherTrash2` ×20 vs `featherDelete` ×1 — one glyph per action (DESIGN.md §5, Icons); bootstrap remains for app icons and top-bar chrome | ✅ |
 | 8 clickable cards are `<div (click)>` with no role or tabindex — all are links or buttons now | ✅ |
 | `focus:shadow-outline` (no-op in Tailwind v4) and `focus:ring-primary` (colour doesn't exist) — the first removed | ✅ |
 | Bare `border` (takes the text colour in v4) on `selectable-box` and the selection-dialog inputs — `selectable-box` fixed | ✅ |

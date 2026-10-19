@@ -2,7 +2,7 @@ import {Component, computed, DestroyRef, inject, signal} from '@angular/core';
 import {takeUntilDestroyed, toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon} from '@ng-icons/core';
-import {featherAlertTriangle, featherCheck, featherUsers, featherX} from '@ng-icons/feather-icons';
+import {featherAlertTriangle, featherUsers, featherX} from '@ng-icons/feather-icons';
 import {
   CalendarType,
   ConvertedDateSchema,
@@ -24,6 +24,7 @@ import {
   SPECIAL_DATE_CATEGORY_BY_VALUE,
   todayIso,
 } from '../special-dates.constants';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 export interface SpecialDateDialogData {
   specialDate: SpecialDateSchema | null;
@@ -37,7 +38,7 @@ const ADAR_II = 13;
 @Component({
   selector: 'app-special-date-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [CheckboxMarkComponent, ReactiveFormsModule, NgIcon],
   templateUrl: './special-date-dialog.component.html',
 })
 export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateDialogData, SpecialDateSchema> {
@@ -117,7 +118,6 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
   private yearRequestId = 0;
 
   protected readonly featherAlertTriangle = featherAlertTriangle;
-  protected readonly featherCheck = featherCheck;
   protected readonly featherUsers = featherUsers;
   protected readonly featherX = featherX;
 

@@ -1,6 +1,6 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
-import {featherCheck, featherEdit2, featherLogOut, featherPlus, featherTrash2, featherUserPlus, featherX} from '@ng-icons/feather-icons';
+import {featherEdit, featherLogOut, featherPlus, featherTrash2, featherUserPlus, featherX} from '@ng-icons/feather-icons';
 import {
   deleteSpecialDateCalendarView,
   leaveSpecialDateCalendarView,
@@ -16,13 +16,14 @@ import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
 import {SpecialDateCalendarsService} from '../special-date-calendars.service';
 import {calendarColorClass} from '../special-dates.constants';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 const CALENDAR_NAME_MAX_LENGTH = 100;
 
 @Component({
   selector: 'app-calendars-dialog',
   standalone: true,
-  imports: [NgIcon, LoadingStateComponent],
+  imports: [CheckboxMarkComponent, NgIcon, LoadingStateComponent],
   templateUrl: './calendars-dialog.component.html',
 })
 export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean> {
@@ -48,8 +49,7 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
 
   private changed = false;
 
-  protected readonly featherCheck = featherCheck;
-  protected readonly featherEdit2 = featherEdit2;
+  protected readonly featherEdit = featherEdit;
   protected readonly featherLogOut = featherLogOut;
   protected readonly featherPlus = featherPlus;
   protected readonly featherTrash2 = featherTrash2;

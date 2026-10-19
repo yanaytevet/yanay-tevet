@@ -1,7 +1,7 @@
 import {Component, inject, OnInit, signal} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {bootstrapChevronDown} from '@ng-icons/bootstrap-icons';
+import {featherChevronDown} from '@ng-icons/feather-icons';
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
 import {SelectableBoxComponent} from '../../../components/selectable-box/selectable-box.component';
 import {SelectInputComponent} from '../../../components/inputs/select-input/select-input.component';
@@ -47,7 +47,7 @@ export class SingleSelectionDialogComponent extends BaseDialogComponent<
   filterText = '';
   filteredOptions: SingleSelectionOption[] = [];
   otherText = '';
-  protected readonly chevronDownIcon = bootstrapChevronDown;
+  protected readonly chevronDownIcon = featherChevronDown;
 
   readonly isOtherSelected = signal(false);
 

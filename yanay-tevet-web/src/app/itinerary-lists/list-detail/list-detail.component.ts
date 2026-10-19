@@ -4,7 +4,6 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
-  featherCheck,
   featherCheckCircle,
   featherCheckSquare,
   featherEdit,
@@ -57,19 +56,31 @@ import {
   ITEM_STATUS_ORDER,
   TASK_STATUS_LABELS,
 } from '../itinerary-lists.constants';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 @Component({
   selector: 'app-itinerary-list-detail',
   standalone: true,
-  imports: [
+  imports: [CheckboxMarkComponent, 
     NgIcon, ReactiveFormsModule, RouterLink, MenuButtonComponent,
     PageHeaderComponent, LoadingStateComponent, ErrorStateComponent,
   ],
   providers: [provideIcons({
-    featherArrowLeft, featherCheck, featherCheckCircle, featherCheckSquare, featherEdit, featherHome,
-    featherMoreHorizontal, featherPackage, featherPlay, featherPlus, featherShare2, featherShoppingCart,
-    featherSquare, featherTrash2, featherTruck,
-  })],
+  featherArrowLeft,
+  featherCheckCircle,
+  featherCheckSquare,
+  featherEdit,
+  featherHome,
+  featherMoreHorizontal,
+  featherPackage,
+  featherPlay,
+  featherPlus,
+  featherShare2,
+  featherShoppingCart,
+  featherSquare,
+  featherTrash2,
+  featherTruck,
+})],
   templateUrl: './list-detail.component.html',
 })
 export class ListDetailComponent {
@@ -150,7 +161,6 @@ export class ListDetailComponent {
   };
 
   protected readonly featherArrowLeft = featherArrowLeft;
-  protected readonly featherCheck = featherCheck;
   protected readonly featherCheckCircle = featherCheckCircle;
   protected readonly featherCheckSquare = featherCheckSquare;
   protected readonly featherEdit = featherEdit;

@@ -1,6 +1,6 @@
 import {Component, computed, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
-import {featherCheck, featherX} from '@ng-icons/feather-icons';
+import {featherX} from '@ng-icons/feather-icons';
 import {
   listSpecialDateCalendarsView,
   moveSpecialDatesView,
@@ -11,6 +11,7 @@ import {
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {calendarColorClass, SPECIAL_DATE_CATEGORY_BY_VALUE} from '../special-dates.constants';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 export interface MoveDatesDialogData {
   targetCalendarId: number;
@@ -26,7 +27,7 @@ function duplicateKey(specialDate: SpecialDateSchema): string {
 @Component({
   selector: 'app-move-dates-dialog',
   standalone: true,
-  imports: [NgIcon, LoadingStateComponent],
+  imports: [CheckboxMarkComponent, NgIcon, LoadingStateComponent],
   templateUrl: './move-dates-dialog.component.html',
 })
 export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialogData, boolean> {
@@ -57,7 +58,6 @@ export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialo
     && this.candidates().every(d => this.selectedIds().has(d.id) || this.duplicateIds().has(d.id)));
   readonly title = this.data.isAfterJoin ? 'הצטרפת ללוח! 🎉' : 'העברת אירועים';
 
-  protected readonly featherCheck = featherCheck;
   protected readonly featherX = featherX;
 
   constructor() {

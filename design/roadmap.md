@@ -36,15 +36,19 @@ Decisions behind the rounds, from the October 2026 planning session:
 | Trash icons `icon-btn icon-btn-danger` with `aria-label`; hairline `border-layer-4` → `border-line` | ✅ |
 | Genre trainer and dashboard: nested full-height shell and inline letter-spacing removed | ✅ |
 | Special dates: page structure, calendar palette with dark values | ✅ |
-| Special dates in-page tabs onto `app-tabs-group` | ○ — blocked by `tabs-group` (see round 3) |
+| Special dates in-page tabs onto `app-tabs-group` | ✅ (in round 3) |
 
 ## Round 3 — consistency details
 
-- `tabs-group`: tabs as real buttons (keyboard), a change output, RTL-aware scroll arrows, no inner padding — then
-  move special dates onto it.
+| Step | Status |
+|---|---|
+| `tabs-group`: real tab buttons, `tabChange`, RTL-aware scroll arrows measured after render, no inner padding; special dates moved onto it | ✅ |
+| One icon per action (edit, delete, add, more, close, chevrons) | ✅ |
+| One checkbox: `<app-checkbox-mark>` replaces the eleven hand-rolled boxes | ✅ |
+| Unused shared components and classes deleted | ✅ |
+| Card padding settled in three tiers | ✅ |
 
-- One icon per action (edit, delete, add, more) across the apps.
-- Clickable `<div>` cards become `<a>`/`<button class="card card-interactive">`.
-- One checkbox (`accent-color` native, or one shared component); remove the feather-square and 18px copies.
-- Delete the unused shared components and classes listed in the audit.
-- Radius and chip-size cleanup: no `rounded-[Npx]`; every chip is `chip` + variant.
+## Next
+
+- `checkbox-input` (a form control used only by the example form) could render `<app-checkbox-mark>` too.
+- The settings page shows its title twice (top-bar breadcrumb and page header).

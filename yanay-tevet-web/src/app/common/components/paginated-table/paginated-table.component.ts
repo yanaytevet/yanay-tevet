@@ -6,7 +6,7 @@ import {PaginatedData} from './paginated-data';
 import {MenuButtonComponent} from '../menu-button/menu-button.component';
 import {TableAction} from './table-action';
 import {Action} from '../../interfaces/util/action';
-import {bootstrapThreeDotsVertical} from '@ng-icons/bootstrap-icons';
+import {featherMoreHorizontal} from '@ng-icons/feather-icons';
 import {DarkModeService} from '../../services/dark-mode.service';
 import {PaginatedTableColumn, TableColumn} from './paginated-table-column';
 import {ColumnFilterComponent} from './filters/column-filter/column-filter.component';
@@ -109,5 +109,5 @@ export class PaginatedTableComponent<T, S extends PaginationInput> {
 
     protected readonly ColumnMode = ColumnMode;
     protected readonly SortType = SortType;
-    protected readonly bootstrapThreeDotsVertical = bootstrapThreeDotsVertical;
+    protected readonly featherMoreHorizontal = featherMoreHorizontal;
 }

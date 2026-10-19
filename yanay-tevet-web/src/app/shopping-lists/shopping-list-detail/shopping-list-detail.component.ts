@@ -5,7 +5,6 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
-  featherCheck,
   featherChevronDown,
   featherChevronRight,
   featherClock,
@@ -39,6 +38,7 @@ import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 const CHECKED_PREVIEW_COUNT = 10;
 const MAX_SUGGESTIONS = 6;
@@ -47,14 +47,22 @@ const SYNC_INTERVAL_MS = 15000;
 @Component({
   selector: 'app-shopping-list-detail',
   standalone: true,
-  imports: [
+  imports: [CheckboxMarkComponent, 
     NgIcon, ReactiveFormsModule, RouterLink, MenuButtonComponent,
     PageHeaderComponent, LoadingStateComponent, ErrorStateComponent,
   ],
   providers: [provideIcons({
-    featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight, featherClock, featherEdit,
-    featherMoreHorizontal, featherPlus, featherShare2, featherTrash2, featherX,
-  })],
+  featherArrowLeft,
+  featherChevronDown,
+  featherChevronRight,
+  featherClock,
+  featherEdit,
+  featherMoreHorizontal,
+  featherPlus,
+  featherShare2,
+  featherTrash2,
+  featherX,
+})],
   templateUrl: './shopping-list-detail.component.html',
 })
 export class ShoppingListDetailComponent {
@@ -161,7 +169,6 @@ export class ShoppingListDetailComponent {
   });
 
   protected readonly featherArrowLeft = featherArrowLeft;
-  protected readonly featherCheck = featherCheck;
   protected readonly featherChevronDown = featherChevronDown;
   protected readonly featherChevronRight = featherChevronRight;
   protected readonly featherClock = featherClock;

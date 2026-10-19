@@ -1,12 +1,8 @@
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {RoutingService} from '../../shared/services/routing.service';
-import {
-  bootstrapMoonFill,
-  bootstrapSunFill,
-  bootstrapChevronRight,
-  bootstrapPeople,
-} from '@ng-icons/bootstrap-icons';
+import {bootstrapMoonFill, bootstrapSunFill, bootstrapPeople} from '@ng-icons/bootstrap-icons';
+import {featherChevronRight} from '@ng-icons/feather-icons';
 import {NgIcon} from '@ng-icons/core';
 import {DarkModeService} from '../../common/services/dark-mode.service';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
@@ -95,6 +91,6 @@ export class AppNavigationLeftDrawer implements OnInit {
 
   protected readonly bootstrapMoonFill = bootstrapMoonFill;
   protected readonly bootstrapSunFill = bootstrapSunFill;
-  protected readonly bootstrapChevronRight = bootstrapChevronRight;
+  protected readonly featherChevronRight = featherChevronRight;
   protected readonly bootstrapPeople = bootstrapPeople;
 }

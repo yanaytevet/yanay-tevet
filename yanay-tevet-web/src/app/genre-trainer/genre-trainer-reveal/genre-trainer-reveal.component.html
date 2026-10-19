@@ -1,5 +1,5 @@
 @if (service.revealed()) {
-  <div class="mt-5 card p-5">
+  <div class="mt-5 card p-4">
     <p class="font-bold text-lead mb-1"
        [class]="service.isCorrect() ? 'text-success' : 'text-danger'">
       @if (service.isCorrect()) { Correct! } @else { Not quite. }

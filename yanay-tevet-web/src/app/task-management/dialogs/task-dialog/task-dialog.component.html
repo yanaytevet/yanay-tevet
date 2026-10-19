@@ -28,11 +28,7 @@
                         class="main-input flex items-center gap-2 cursor-pointer text-start"
                         [attr.aria-pressed]="isDone()"
                         (click)="toggleDone()">
-                    <span class="size-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors {{ isDone() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
-                        @if (isDone()) {
-                            <ng-icon [svg]="featherCheck" class="text-caption"></ng-icon>
-                        }
-                    </span>
+                    <app-checkbox-mark [checked]="isDone()"/>
                     <span class="text-body text-writing">{{ isDone() ? 'Done' : 'To do' }}</span>
                 </button>
             </div>
@@ -58,11 +54,7 @@
                 class="main-input flex items-center gap-2 cursor-pointer text-start"
                 [attr.aria-pressed]="isRepeating()"
                 (click)="toggleRepeating()">
-            <span class="size-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors {{ isRepeating() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
-                @if (isRepeating()) {
-                    <ng-icon [svg]="featherCheck" class="text-caption"></ng-icon>
-                }
-            </span>
+            <app-checkbox-mark [checked]="isRepeating()"/>
             <span class="flex items-center gap-1.5 text-body text-writing">
                 <ng-icon [svg]="featherRotateCcw" class="text-writing-minor"></ng-icon>
                 @if (isRepeating()) {

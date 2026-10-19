@@ -34,11 +34,7 @@
                                 class="flex items-center gap-1.5 rounded-sm text-caption text-writing-minor hover:text-writing transition-colors"
                                 [attr.aria-pressed]="!row.calendar.hide_from_upcoming"
                                 (click)="toggleShowInUpcoming(row.calendar)">
-                            <span class="size-4 rounded border flex items-center justify-center shrink-0 {{ row.calendar.hide_from_upcoming ? 'bg-layer-2 border-layer-4' : 'bg-accent border-accent text-on-accent' }}">
-                                @if (!row.calendar.hide_from_upcoming) {
-                                    <ng-icon [svg]="featherCheck" class="h-2.5 w-2.5"></ng-icon>
-                                }
-                            </span>
+                            <app-checkbox-mark [checked]="!row.calendar.hide_from_upcoming" size="sm"/>
                             הצגה באירועים הקרובים
                         </button>
                         <button type="button" class="rounded-sm text-caption text-writing-minor hover:text-writing transition-colors" (click)="moveInto(row.calendar)">
@@ -47,7 +43,7 @@
                         <span class="flex-1"></span>
                         @if (row.calendar.is_owner) {
                             <button type="button" class="icon-btn" aria-label="שינוי שם" title="שינוי שם" (click)="rename(row.calendar)">
-                                <ng-icon [svg]="featherEdit2"/>
+                                <ng-icon [svg]="featherEdit"/>
                             </button>
                             @if (row.canDelete) {
                                 <button type="button" class="icon-btn icon-btn-danger" aria-label="מחיקת הלוח" title="מחיקת הלוח" (click)="deleteCalendar(row.calendar)">

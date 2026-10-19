@@ -135,11 +135,7 @@
                 [attr.aria-pressed]="task.status === 'done'"
                 [attr.aria-label]="task.status === 'done' ? 'Mark as not done' : 'Mark as done'"
                 (click)="toggleDone(task)">
-            <span class="flex items-center justify-center rounded-md border-2 transition-colors {{ isSubtask ? 'size-4' : 'size-5' }} {{ task.status === 'done' ? 'bg-accent border-accent text-on-accent' : 'border-layer-4 group-hover/check:border-accent' }}">
-                @if (task.status === 'done') {
-                    <ng-icon [svg]="featherCheck" class="text-caption check-pop-in"/>
-                }
-            </span>
+            <app-checkbox-mark [checked]="task.status === 'done'" [size]="isSubtask ? 'sm' : 'md'"/>
         </button>
 
         <div class="min-w-0 flex-1 py-1.5" dir="auto">

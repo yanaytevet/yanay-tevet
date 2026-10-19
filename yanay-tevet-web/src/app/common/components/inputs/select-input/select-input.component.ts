@@ -1,7 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { bootstrapChevronDown } from '@ng-icons/bootstrap-icons';
+import {featherChevronDown} from '@ng-icons/feather-icons';
 import {NgClass} from '@angular/common';
 
 export interface SelectOption {
@@ -36,7 +36,7 @@ export class SelectInputComponent implements ControlValueAccessor {
   value = signal<any>(null);
   disabled = signal<boolean>(false);
 
-  protected readonly chevronDownIcon = bootstrapChevronDown;
+  protected readonly chevronDownIcon = featherChevronDown;
 
   // Called by Angular to write a value from the form model into the view
   writeValue(val: any): void {

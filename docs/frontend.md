@@ -38,7 +38,8 @@ The accent follows the app: `AppAccentService` (`shared/apps/`) writes the curre
 `<html data-app>` on navigation, from the registry in `shared/apps/hub-apps.ts` (key, name, icon, first URL
 segment). A new app adds an entry there and its colour pair in `styles.css`. Pages are built from the shared
 pieces in `common/components/page/` — `app-page-header`, `app-empty-state`, `app-loading-state`,
-`app-error-state`, `app-sub-nav`; task management is the reference.
+`app-error-state`, `app-sub-nav` — plus `app-tabs-group` (`common/components/tabs/`) for in-page tabs and
+`app-checkbox-mark` (`common/components/inputs/`) for every checkbox; task management is the reference.
 
 `can-hover:` is a custom variant for devices with a mouse; use it for hover-only reveals (row actions), so
 touch screens keep them visible.

@@ -123,8 +123,11 @@ tracking — use the role, never `text-[13px]`:
 
 ## 4. Space, shape, depth
 
-- **Spacing** follows Tailwind's 4px scale. Inside a card: `p-4` (dense) or `p-5` (a header card); between
-  stacked cards `gap-3`; between page sections `mb-6`.
+- **Spacing** follows Tailwind's 4px scale; between stacked cards `gap-3`, between page sections `mb-6`. Card
+  padding has three tiers: `p-4` for content cards (list items, tiles, panels, the rows of a list);
+  `p-5 sm:p-6` for cards that hold a form or a settings section, and for the focal content block of a detail page;
+  `p-6 sm:p-8` for a single card centred on an otherwise empty page (join a calendar, connect Claude, contact).
+  A card that only frames a list of rows has no padding and lets the rows pad themselves.
 - **Page width** — two containers, both with `px-4 py-6 sm:px-6`:
   - `.page-narrow` (`max-w-3xl`): lists, details, forms, settings, dialogs-as-pages.
   - `.page-wide` (`max-w-5xl`): tables and grids (apartment hunt, renters CRM, Japanese, dashboard).
@@ -185,9 +188,23 @@ focus), `input-label` above it (`text-meta` 500 `writing-minor`), helper or erro
 `<div (click)>`. Rows inside a card are separated with `divide-y divide-line-subtle`.
 
 ### Tabs
-`<app-tabs-group>` for in-page tabs; `<app-sub-nav>` for an app's section links (Japanese, Home Sweet
-Home). Both mark the active item with a 2px `accent` underline and `text-writing`; idle items are
-`text-writing-minor`.
+`<app-tabs-group>` with `<app-tab name label>` children for in-page tabs: real buttons with `role="tab"`, the
+current tab in a query param (so it survives a reload and can be linked), and `(tabChange)` for a page that
+loads a tab's data on first view. Its scroll arrows work in both directions. `<app-sub-nav>` is for an app's
+section links (Japanese, Home Sweet Home). Both mark the active item with a 2px `accent` underline and
+`text-writing`; idle items are `text-writing-minor`.
+
+### Checkboxes
+`<app-checkbox-mark [checked] [size]>` is the one checkbox look — a 20px box (16px with `size="sm"`) that fills
+with the accent and shows a tick. It is only the visual: wrap it in a `<button type="button">` that carries
+`aria-pressed` (or `role="checkbox"` + `aria-checked`), a hit area of at least 32px, and `group/check` so the
+box outline turns accent on hover. Native checkboxes take the accent through `accent-color` and are fine in
+dense forms.
+
+### Icons
+`@ng-icons` only, and one glyph per action everywhere: edit `featherEdit`, delete `featherTrash2`, add
+`featherPlus`, more `featherMoreHorizontal`, close and clear `featherX`, disclosure and paging
+`featherChevronRight` / `Down` / `Left` / `Up`. App icons come from `hub-apps.ts`.
 
 ### Dialogs
 Every dialog's root is `.dialog-container` (`bg-layer-2`, `line` border, `rounded-xl`, `shadow-3`, `p-5

@@ -17,14 +17,7 @@ import {
   generateRandomString,
   getRandomFromEnum
 } from '../../common/util-functions/random-utils';
-import {
-  featherActivity,
-  featherBookOpen,
-  featherDelete,
-  featherDownload,
-  featherEdit,
-  featherUpload
-} from '@ng-icons/feather-icons';
+import {featherActivity, featherBookOpen, featherTrash2, featherDownload, featherEdit, featherUpload} from '@ng-icons/feather-icons';
 import {ReactiveFormsModule} from '@angular/forms';
 import {BasePageComponent} from '../../common/components/base-page-component';
 import {StringUtilsService} from '../../common/services/string-utils.service';
@@ -74,7 +67,7 @@ export class ExampleTableComponent extends BasePageComponent {
       }
     },
     {
-      display: 'Delete', icon: featherDelete, callback: async (block: BlockSchema) => {
+      display: 'Delete', icon: featherTrash2, callback: async (block: BlockSchema) => {
         await deleteBlockItemView({
           path: {object_id: block.id}
         });

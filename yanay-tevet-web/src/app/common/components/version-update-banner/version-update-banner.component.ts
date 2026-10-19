@@ -1,6 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {bootstrapArrowClockwise, bootstrapXLg} from '@ng-icons/bootstrap-icons';
+import {bootstrapArrowClockwise} from '@ng-icons/bootstrap-icons';
+import {featherX} from '@ng-icons/feather-icons';
 import {VersionCheckService} from '../../services/version-check.service';
 
 /**
@@ -10,7 +11,7 @@ import {VersionCheckService} from '../../services/version-check.service';
 @Component({
     selector: 'app-version-update-banner',
     imports: [NgIcon],
-    viewProviders: [provideIcons({bootstrapArrowClockwise, bootstrapXLg})],
+    viewProviders: [provideIcons({bootstrapArrowClockwise, featherX})],
     templateUrl: './version-update-banner.component.html',
 })
 export class VersionUpdateBannerComponent {
@@ -24,7 +25,7 @@ export class VersionUpdateBannerComponent {
     });
 
     protected readonly bootstrapArrowClockwise = bootstrapArrowClockwise;
-    protected readonly bootstrapXLg = bootstrapXLg;
+    protected readonly featherX = featherX;
 
     onReload(): void {
         this.versionCheckService.reloadToLatest();

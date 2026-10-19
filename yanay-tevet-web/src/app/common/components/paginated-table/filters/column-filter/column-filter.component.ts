@@ -4,7 +4,8 @@ import {PaginatedTableHandler} from '../../paginated-table-handler';
 import {DialogService} from '../../../../dialogs/dialogs.service';
 
 import {NgIcon} from '@ng-icons/core';
-import {bootstrapFunnel, bootstrapX} from '@ng-icons/bootstrap-icons';
+import {bootstrapFunnel} from '@ng-icons/bootstrap-icons';
+import {featherX} from '@ng-icons/feather-icons';
 
 @Component({
     selector: 'app-column-filter',
@@ -18,7 +19,7 @@ export class ColumnFilterComponent {
     private dialogService = inject(DialogService);
 
     protected readonly bootstrapFunnel = bootstrapFunnel;
-    protected readonly bootstrapX = bootstrapX;
+    protected readonly featherX = featherX;
 
     isActive = computed<boolean>(() => {
         const handler = this.paginatedDataHandler();

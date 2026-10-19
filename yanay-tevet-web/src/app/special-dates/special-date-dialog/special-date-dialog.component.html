@@ -112,11 +112,7 @@
                 class="flex items-center gap-2 rounded-sm text-start mt-1"
                 [attr.aria-pressed]="afterSunset()"
                 (click)="toggleAfterSunset()">
-            <span class="size-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors {{ afterSunset() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
-                @if (afterSunset()) {
-                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
-                }
-            </span>
+            <app-checkbox-mark [checked]="afterSunset()"/>
             @if (isHebrewInput()) {
                 <span class="text-meta text-writing">בין השקיעה לחצות</span>
                 <span class="text-caption text-writing-least">(בלוח הלועזי זה עדיין היה היום הקודם)</span>
@@ -153,22 +149,14 @@
                 class="flex items-center gap-2 rounded-sm text-start"
                 [attr.aria-pressed]="remindHebrew()"
                 (click)="toggleRemindHebrew()">
-            <span class="size-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors {{ remindHebrew() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
-                @if (remindHebrew()) {
-                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
-                }
-            </span>
+            <app-checkbox-mark [checked]="remindHebrew()"/>
             <span class="text-meta text-writing">להזכיר לפי התאריך העברי</span>
         </button>
         <button type="button"
                 class="flex items-center gap-2 rounded-sm text-start"
                 [attr.aria-pressed]="remindGregorian()"
                 (click)="toggleRemindGregorian()">
-            <span class="size-4.5 rounded-md border flex items-center justify-center shrink-0 transition-colors {{ remindGregorian() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
-                @if (remindGregorian()) {
-                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
-                }
-            </span>
+            <app-checkbox-mark [checked]="remindGregorian()"/>
             <span class="text-meta text-writing">להזכיר לפי התאריך הלועזי</span>
         </button>
         @if (noReminders()) {

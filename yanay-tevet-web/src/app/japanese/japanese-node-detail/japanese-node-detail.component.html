@@ -36,7 +36,7 @@
       }
     </app-page-header>
 
-    <div class="card p-5 mb-6">
+    <div class="card p-5 sm:p-6 mb-6">
       @if (n.passage_data; as data) {
         <div class="text-title font-bold mb-1">{{ data.title }}</div>
         @if (data.source) {
@@ -95,9 +95,9 @@
     </div>
 
     @if (n.content_html) {
-      <div class="card p-6 mb-8 japanese-content" [innerHTML]="contentHtml()"></div>
+      <div class="card p-5 sm:p-6 mb-8 japanese-content" [innerHTML]="contentHtml()"></div>
     } @else {
-      <div class="card p-6 mb-8 text-writing-minor text-body">
+      <div class="card p-5 sm:p-6 mb-8 text-writing-minor text-body">
         No content yet. @if (authService.user()?.is_admin) { Click "Generate content" to create it. }
       </div>
     }

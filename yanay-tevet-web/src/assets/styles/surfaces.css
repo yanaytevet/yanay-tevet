@@ -15,11 +15,6 @@
     @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6;
   }
 
-  .mask-edges {
-    @apply
-    [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
-    [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
-  }
 
   .page {
     @apply flex flex-col h-full overflow-y-auto p-2
@@ -45,13 +40,7 @@
     @apply shadow-2;
   }
 
-  .card-layer-2 {
-    @apply bg-layer-2 text-writing rounded-xl p-4 border border-line shadow-1;
-  }
 
-  .card-layer-3 {
-    @apply bg-layer-3 text-writing rounded-xl p-4 border border-line-subtle;
-  }
 
   /* The app's icon on a tint of its accent: page headers, home tiles, the drawer, empty states. */
   .app-chip {

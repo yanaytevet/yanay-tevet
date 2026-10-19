@@ -8,7 +8,6 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArchive,
   featherArrowLeft,
-  featherCheck,
   featherChevronDown,
   featherChevronRight,
   featherClock,
@@ -60,19 +59,30 @@ import {
   TASK_PRIORITY_CHIP_CLASS,
   TASK_PRIORITY_LABELS,
 } from '../task-management.constants';
+import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 @Component({
   selector: 'app-task-project-detail',
   standalone: true,
-  imports: [
+  imports: [CheckboxMarkComponent, 
     NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink, DragDropModule,
     PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
   ],
   providers: [provideIcons({
-    featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
-    featherClock, featherCornerDownRight, featherEdit, featherLink, featherMoreHorizontal,
-    featherPlus, featherRotateCcw, featherShare2, featherTrash2,
-  })],
+  featherArchive,
+  featherArrowLeft,
+  featherChevronDown,
+  featherChevronRight,
+  featherClock,
+  featherCornerDownRight,
+  featherEdit,
+  featherLink,
+  featherMoreHorizontal,
+  featherPlus,
+  featherRotateCcw,
+  featherShare2,
+  featherTrash2,
+})],
   templateUrl: './project-detail.component.html',
 })
 export class ProjectDetailComponent {
@@ -185,7 +195,6 @@ export class ProjectDetailComponent {
 
   protected readonly featherArchive = featherArchive;
   protected readonly featherArrowLeft = featherArrowLeft;
-  protected readonly featherCheck = featherCheck;
   protected readonly featherChevronDown = featherChevronDown;
   protected readonly featherChevronRight = featherChevronRight;
   protected readonly featherClock = featherClock;

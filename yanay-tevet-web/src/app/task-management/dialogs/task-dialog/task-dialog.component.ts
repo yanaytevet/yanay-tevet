@@ -2,7 +2,7 @@ import {Component, computed, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
-import {featherCheck, featherRotateCcw, featherX} from '@ng-icons/feather-icons';
+import {featherRotateCcw, featherX} from '@ng-icons/feather-icons';
 import {TaskPriority, TaskStatus} from '../../../../generated-files/api/task-management';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {
@@ -13,6 +13,7 @@ import {
   TASK_PRIORITY_ORDER,
   WEEKDAYS,
 } from '../../task-management.constants';
+import {CheckboxMarkComponent} from '../../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 export interface TaskDialogItineraryList {
   id: number;
@@ -48,8 +49,8 @@ export interface TaskDialogResult {
 @Component({
   selector: 'app-task-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
-  providers: [provideIcons({featherCheck, featherRotateCcw, featherX})],
+  imports: [CheckboxMarkComponent, ReactiveFormsModule, NgIcon],
+  providers: [provideIcons({featherRotateCcw, featherX})],
   templateUrl: './task-dialog.component.html',
 })
 export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, TaskDialogResult> {
@@ -78,7 +79,6 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
   private readonly nameValue = toSignal(this.nameCtrl.valueChanges, {initialValue: ''});
   readonly canSave = computed(() => !!this.nameValue()?.trim());
 
-  protected readonly featherCheck = featherCheck;
   protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherX = featherX;
 

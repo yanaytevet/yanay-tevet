@@ -1,15 +1,7 @@
 import {Component, computed, DestroyRef, inject, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {NgIcon} from '@ng-icons/core';
-import {
-  featherBellOff,
-  featherEdit2,
-  featherPlus,
-  featherSettings,
-  featherSearch,
-  featherTrash2,
-  featherUsers,
-} from '@ng-icons/feather-icons';
+import {featherBellOff, featherEdit, featherPlus, featherSettings, featherSearch, featherTrash2, featherUsers} from '@ng-icons/feather-icons';
 import {
   deleteSpecialDateView,
   getUpcomingSpecialDatesView,
@@ -25,6 +17,8 @@ import {EmptyStateComponent} from '../../common/components/page/empty-state/empt
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {TabsGroup} from '../../common/components/tabs/tabs-group/tabs-group';
+import {Tab} from '../../common/components/tabs/tab/tab';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {CalendarsDialogComponent} from '../calendars-dialog/calendars-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
@@ -42,20 +36,13 @@ import {
   SPECIAL_DATE_CATEGORY_BY_VALUE,
 } from '../special-dates.constants';
 
-type SpecialDatesTab = 'upcoming' | 'all';
-
-interface SpecialDatesTabOption {
-  value: SpecialDatesTab;
-  label: string;
-}
-
 const SEARCH_DEBOUNCE_MS = 250;
 const MAX_PAGE_SIZE = 1000;
 
 @Component({
   selector: 'app-special-dates',
   standalone: true,
-  imports: [NgIcon, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent],
+  imports: [NgIcon, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent, TabsGroup, Tab],
   templateUrl: './special-dates.component.html',
 })
 export class SpecialDatesComponent {
@@ -64,7 +51,6 @@ export class SpecialDatesComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  readonly tab = signal<SpecialDatesTab>('upcoming');
   readonly calendars = signal<SpecialDateCalendarSchema[]>([]);
   readonly selectedCalendarId = signal<number | null>(null);
   readonly upcoming = signal<UpcomingSpecialDatesSchema | null>(null);
@@ -77,13 +63,6 @@ export class SpecialDatesComponent {
   readonly loadError = signal<boolean>(false);
 
   readonly categories = SPECIAL_DATE_CATEGORIES;
-  // Hand-rolled rather than <app-tabs-group>: that one keeps the tab in a query param with no change event
-  // (the "all" list loads on first open), renders tabs as non-focusable divs, and its scroll arrows are
-  // LTR-only. The look is the same: a 2px accent underline on the active tab.
-  readonly tabs: SpecialDatesTabOption[] = [
-    {value: 'upcoming', label: 'בשבועיים הקרובים'},
-    {value: 'all', label: 'כל האירועים'},
-  ];
   readonly emptyIntroText = 'הוסיפו ימי הולדת, ימי נישואין ואזכרות, ונזכיר לכם בזמן — לפי התאריך העברי והלועזי.';
   readonly upcomingEmptyText = 'אפשר לראות את כולם בלשונית "כל האירועים".';
 
@@ -117,10 +96,6 @@ export class SpecialDatesComponent {
     return 'ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי.';
   });
 
-  readonly tabSelected = computed<Record<SpecialDatesTab, boolean>>(() => ({
-    upcoming: this.tab() === 'upcoming',
-    all: this.tab() === 'all',
-  }));
 
   readonly hiddenFromUpcomingLabel = computed(() =>
     this.calendars().filter(c => c.hide_from_upcoming).map(c => c.name).join(', '));
@@ -191,7 +166,7 @@ export class SpecialDatesComponent {
   readonly isFiltering = computed(() => !!this.searchText().trim() || this.categoryFilter() !== null);
 
   protected readonly featherBellOff = featherBellOff;
-  protected readonly featherEdit2 = featherEdit2;
+  protected readonly featherEdit = featherEdit;
   protected readonly featherPlus = featherPlus;
   protected readonly featherSettings = featherSettings;
   protected readonly featherSearch = featherSearch;
@@ -216,9 +191,10 @@ export class SpecialDatesComponent {
     }
   }
 
-  selectTab(tab: SpecialDatesTab): void {
-    this.tab.set(tab);
-    if (tab === 'all' && !this.hasLoadedAll()) {
+  // Called by the tabs group for the tab the page opens on and on every switch; the full list loads the
+  // first time its tab shows.
+  selectTab(name: string): void {
+    if (name === 'all' && !this.hasLoadedAll()) {
       void this.loadAll();
     }
   }
