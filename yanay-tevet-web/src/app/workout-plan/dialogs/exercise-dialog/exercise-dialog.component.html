@@ -1,7 +1,7 @@
-<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+<div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-5">
-        <h2 class="text-[18px] font-bold text-primary-500">{{ data.title }}</h2>
+        <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
         <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
             <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
         </button>
@@ -25,7 +25,7 @@
     <div class="mb-4 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <span class="input-label">Sets</span>
-            <button type="button" class="flex items-center gap-1 text-[13px] text-notion-blue hover:underline"
+            <button type="button" class="flex items-center gap-1 text-meta text-accent hover:underline"
                     (click)="addSet()">
                 <ng-icon [svg]="featherPlus" class="h-3.5 w-3.5"></ng-icon>
                 Add set
@@ -33,21 +33,21 @@
         </div>
 
         @if (sets().length === 0) {
-            <p class="text-[13px] text-writing-minor py-2">No sets yet. Add one to record what you do.</p>
+            <p class="text-meta text-writing-minor py-2">No sets yet. Add one to record what you do.</p>
         } @else {
             <div class="flex flex-col gap-2">
                 @for (set of sets(); track $index) {
                     <div class="flex items-center gap-3">
-                        <span class="text-[12px] text-writing-minor w-12 shrink-0">Set {{ $index + 1 }}</span>
+                        <span class="text-caption text-writing-minor w-12 shrink-0">Set {{ $index + 1 }}</span>
                         @if (isReps()) {
                             <input type="number" min="0" inputmode="numeric" dir="auto" class="main-input flex-1"
                                    placeholder="Reps" [value]="set.reps" (input)="updateReps($index, $event)" />
-                            <span class="text-[12px] text-writing-minor w-10 shrink-0">reps</span>
+                            <span class="text-caption text-writing-minor w-10 shrink-0">reps</span>
                         } @else {
                             <input type="number" min="0" inputmode="numeric" dir="auto" class="main-input flex-1"
                                    placeholder="Seconds" [value]="set.durationSeconds"
                                    (input)="updateDuration($index, $event)" />
-                            <span class="text-[12px] text-writing-minor w-10 shrink-0">sec</span>
+                            <span class="text-caption text-writing-minor w-10 shrink-0">sec</span>
                         }
                         <button type="button" class="icon-btn text-writing-minor hover:text-writing shrink-0"
                                 (click)="removeSet($index)">
@@ -67,7 +67,7 @@
     </div>
 
     <div class="flex items-center justify-end gap-2 mt-6">
-        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
         <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
             {{ data.confirmActionName }}
         </button>

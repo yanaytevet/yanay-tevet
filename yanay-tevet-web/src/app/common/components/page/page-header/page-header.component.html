@@ -1,0 +1,18 @@
+<div class="flex flex-wrap items-center gap-x-4 gap-y-3 mb-6">
+  <div class="flex items-center gap-3 min-w-0 flex-1 basis-64">
+    @if (chipIcon(); as icon) {
+      <div class="app-chip size-10 text-xl" aria-hidden="true">
+        <ng-icon [svg]="icon"/>
+      </div>
+    }
+    <div class="min-w-0">
+      <h1 class="text-title font-bold text-writing truncate" dir="auto">{{ title() }}</h1>
+      @if (subtitle()) {
+        <p class="text-meta text-writing-minor mt-0.5" dir="auto">{{ subtitle() }}</p>
+      }
+    </div>
+  </div>
+  <div class="flex items-center gap-2 shrink-0 empty:hidden">
+    <ng-content/>
+  </div>
+</div>

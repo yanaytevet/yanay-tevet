@@ -1,0 +1,32 @@
+@reference "../../../styles.css";
+
+.nav-item {
+  @apply flex items-center gap-3 mx-2 px-3 py-2 rounded-md text-ui font-medium text-writing no-underline
+  hover:bg-layer-overlay transition-colors cursor-pointer bg-transparent border-none w-[calc(100%-1rem)] text-start;
+}
+
+.nav-item-active {
+  @apply bg-layer-overlay font-semibold;
+}
+
+/* A row with no app chip lines its text up with the chipped rows above it. */
+.nav-item-plain {
+  @apply ps-13;
+}
+
+.nav-subitems {
+  @apply flex flex-col ms-8 me-2 ps-2 my-0.5 border-s border-line;
+}
+
+.nav-subitem {
+  @apply block px-3 py-1.5 rounded-md text-meta text-writing-minor no-underline truncate
+  hover:text-writing hover:bg-layer-overlay transition-colors;
+}
+
+.nav-subitem-active {
+  @apply bg-layer-overlay text-writing font-medium;
+}
+
+.nav-group-label {
+  @apply eyebrow px-5 pt-4 pb-1;
+}

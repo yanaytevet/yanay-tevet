@@ -189,5 +189,4 @@ fabric.properties
 node_modules/
 
 # Claude
-design_handoff_tdf/
 _trial_marker

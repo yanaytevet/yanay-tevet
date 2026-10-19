@@ -251,6 +251,8 @@ export class SpecialDatesComponent {
       title: 'מחיקת אירוע',
       text: `למחוק את "${specialDate.name}"?${shared}`,
       confirmActionName: 'מחיקה',
+      danger: true,
+      dir: 'rtl',
       cancelActionName: 'ביטול',
     });
     if (!confirmed) {

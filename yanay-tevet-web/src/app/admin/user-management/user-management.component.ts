@@ -138,6 +138,7 @@ export class UserManagementComponent extends BasePageComponent {
           ? `Remove admin permission from ${user.full_name || user.username}? They will lose access to user management and all admin tools.`
           : `Grant admin permission to ${user.full_name || user.username}? They will be able to manage all users and access every admin tool.`,
         confirmActionName: isActive ? 'Revoke' : 'Grant',
+        danger: isActive,
         cancelActionName: 'Cancel',
       });
       if (!confirmed) {

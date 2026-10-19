@@ -2,17 +2,17 @@
   [routerLink]="nodeUrl()"
   class="flex flex-col h-full card p-4 hover:shadow-2 transition-shadow no-underline text-writing">
   <div class="flex items-center justify-between mb-2">
-    <span class="text-[11px] uppercase tracking-[0.08em] font-semibold text-writing-minor">
+    <span class="eyebrow">
       {{ typeLabel() }}
     </span>
     <div class="flex items-center gap-2">
       @if (node().jlpt_level) {
-        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-layer-3 text-writing-minor">
+        <span class="px-2 py-0.5 rounded-full text-label font-semibold bg-layer-3 text-writing-minor">
           {{ node().jlpt_level!.toUpperCase() }}
         </span>
       }
       @if (showStatus()) {
-        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold" [class]="statusClass()">
+        <span class="px-2 py-0.5 rounded-full text-label font-semibold" [class]="statusClass()">
           {{ statusLabel() }}
         </span>
       }
@@ -20,46 +20,46 @@
   </div>
 
   @if (node().passage_data; as data) {
-    <div class="text-[18px] font-semibold mb-1">{{ data.title }}</div>
+    <div class="text-section font-semibold mb-1">{{ data.title }}</div>
     @if (data.source) {
-      <div class="text-[13px] text-writing-minor">{{ data.source }}</div>
+      <div class="text-meta text-writing-minor">{{ data.source }}</div>
     }
   }
 
   @if (node().sentence_data; as data) {
     <div class="flex items-start gap-2 mb-2">
-      <div class="text-[18px] leading-relaxed">
+      <div class="text-section leading-relaxed">
         <app-furigana [text]="data.japanese"/>
       </div>
       <app-speak-button [text]="data.japanese"/>
     </div>
-    <div class="text-[14px] text-writing-minor">{{ data.english_translation }}</div>
+    <div class="text-body text-writing-minor">{{ data.english_translation }}</div>
   }
 
   @if (node().word_data; as data) {
-    <div class="flex items-center gap-2 text-[20px] font-semibold mb-1">
+    <div class="flex items-center gap-2 text-heading font-semibold mb-1">
       <span>
         <app-furigana [text]="data.base_form"/>
-        <span class="text-[14px] text-writing-minor ml-2 font-normal">{{ data.reading }}</span>
+        <span class="text-body text-writing-minor ml-2 font-normal">{{ data.reading }}</span>
       </span>
       <app-speak-button [text]="data.base_form"/>
     </div>
-    <div class="text-[12px] text-writing-minor mb-1">
+    <div class="text-caption text-writing-minor mb-1">
       {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }
     </div>
-    <div class="text-[14px] text-writing-minor">{{ data.meanings.join(', ') }}</div>
+    <div class="text-body text-writing-minor">{{ data.meanings.join(', ') }}</div>
   }
 
   @if (node().kanji_data; as data) {
     <div class="flex items-start gap-4 mb-1">
-      <div class="text-[36px] font-bold leading-none">{{ data.character }}</div>
+      <div class="text-4xl font-bold leading-none">{{ data.character }}</div>
       <div class="flex-1">
-        <div class="text-[14px] text-writing-minor">{{ data.meanings.join(', ') }}</div>
+        <div class="text-body text-writing-minor">{{ data.meanings.join(', ') }}</div>
         @if (data.readings_on.length) {
-          <div class="text-[12px] text-writing-minor">{{ data.readings_on.join('、') }}</div>
+          <div class="text-caption text-writing-minor">{{ data.readings_on.join('、') }}</div>
         }
         @if (data.readings_kun.length) {
-          <div class="text-[12px] text-writing-minor">{{ data.readings_kun.join('、') }}</div>
+          <div class="text-caption text-writing-minor">{{ data.readings_kun.join('、') }}</div>
         }
       </div>
     </div>
@@ -67,13 +67,13 @@
 
   @if (node().particle_data; as data) {
     <div class="flex items-baseline gap-4 mb-1">
-      <div class="text-[28px] font-bold leading-none">{{ data.particle }}</div>
-      <div class="text-[14px] text-writing-minor">{{ data.primary_function }}</div>
+      <div class="text-display font-bold leading-none">{{ data.particle }}</div>
+      <div class="text-body text-writing-minor">{{ data.primary_function }}</div>
     </div>
   }
 
   @if (node().rule_data; as data) {
-    <div class="text-[16px] font-semibold mb-1">{{ data.name }}</div>
-    <div class="text-[12px] text-writing-minor">{{ data.category }}</div>
+    <div class="text-lead font-semibold mb-1">{{ data.name }}</div>
+    <div class="text-caption text-writing-minor">{{ data.category }}</div>
   }
 </a>

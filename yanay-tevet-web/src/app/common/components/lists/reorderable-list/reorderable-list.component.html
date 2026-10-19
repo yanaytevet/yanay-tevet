@@ -26,20 +26,20 @@
           <div class="flex flex-col flex-1 min-w-0">
             <span class="text-writing-minor truncate">{{ item.text }}</span>
             @if (item.description) {
-              <span class="text-writing-least text-xs whitespace-pre-line">{{ item.description }}</span>
+              <span class="text-writing-least text-caption whitespace-pre-line">{{ item.description }}</span>
             }
           </div>
         } @else {
           <div class="flex flex-col flex-1 min-w-0">
             <span class="text-writing-minor truncate">{{ item.text }}</span>
             @if (item.description) {
-              <span class="text-writing-least text-xs whitespace-pre-line">{{ item.description }}</span>
+              <span class="text-writing-least text-caption whitespace-pre-line">{{ item.description }}</span>
             }
           </div>
         }
 
         @for (tag of item.tags ?? []; track tag.text) {
-          <span class="text-[10px] px-1.5 py-0.5 rounded-full shrink-0"
+          <span class="text-label px-1.5 py-0.5 rounded-full shrink-0"
                 [style.color]="tag.color ?? '#0075de'"
                 [style.background]="(tag.color ?? '#0075de') + '1a'">{{ tag.text }}</span>
         }
@@ -59,6 +59,6 @@
       }
     </div>
   } @empty {
-    <span class="text-writing-minor text-sm">{{ emptyMessage() }}</span>
+    <span class="text-writing-minor text-body">{{ emptyMessage() }}</span>
   }
 </div>

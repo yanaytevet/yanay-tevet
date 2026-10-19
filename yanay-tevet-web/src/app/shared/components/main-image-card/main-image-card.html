@@ -55,7 +55,7 @@
 
       @if (mainImage() && isEditing() && !isUploading()) {
         <button
-          class="absolute top-2 right-2 bg-[rgba(255,255,255,0.88)] rounded-full p-1.5 text-[#0075de] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+          class="absolute top-2 right-2 bg-[rgba(255,255,255,0.88)] rounded-full p-1.5 text-accent opacity-0 group-hover:opacity-100 transition-opacity z-10"
           title="Unset as main"
           (click)="$event.stopPropagation(); toggleMain.emit(mainImage().id)">
           <ng-icon [svg]="bootstrapStarFill" class="text-sm"></ng-icon>
@@ -65,7 +65,7 @@
       @if (showVisibility() && mainImage() && isEditing() && !isUploading()) {
         @if (mainImage().is_visible) {
           <button
-            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[rgba(255,255,255,0.88)] text-[#31302e] opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-caption font-medium bg-[rgba(255,255,255,0.88)] text-[#31302e] opacity-0 group-hover:opacity-100 transition-opacity z-10"
             title="Hide from players"
             (click)="$event.stopPropagation(); toggleVisibility.emit(mainImage().id)">
             <ng-icon [svg]="bootstrapEye" class="text-xs"></ng-icon>
@@ -73,7 +73,7 @@
           </button>
         } @else {
           <button
-            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[rgba(0,0,0,0.62)] text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            class="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-caption font-medium bg-[rgba(0,0,0,0.62)] text-white opacity-0 group-hover:opacity-100 transition-opacity z-10"
             title="Show to players"
             (click)="$event.stopPropagation(); toggleVisibility.emit(mainImage().id)">
             <ng-icon [svg]="bootstrapEyeSlash" class="text-xs"></ng-icon>

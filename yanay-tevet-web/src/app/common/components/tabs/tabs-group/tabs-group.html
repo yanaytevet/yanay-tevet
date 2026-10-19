@@ -16,12 +16,11 @@
     <div
       #scrollContainer
       (scroll)="checkScroll()"
-      class="flex gap-1 border-b border-outline-border-1 overflow-x-auto overflow-y-hidden no-scrollbar px-1">
+      class="flex gap-1 border-b border-line overflow-x-auto overflow-y-hidden no-scrollbar px-1">
       @for (tab of tabs(); track $index) {
 
         @if (tab.link()) {
-          <a [routerLink]="tab.link()" class="px-4 py-2 text-writing-minor hover:text-writing
-        transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent">
+          <a [routerLink]="tab.link()" class="px-4 py-2 text-writing-minor hover:text-writing transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent">
             @if (tab.icon()) {
               <ng-icon [svg]="tab.icon()"></ng-icon>
             }
@@ -29,11 +28,10 @@
           </a>
         } @else {
           <div
-            class="cursor-pointer px-4 py-2 text-writing-minor hover:text-writing
-        transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent"
+            class="cursor-pointer px-4 py-2 text-writing-minor hover:text-writing transition-colors relative flex items-center gap-2 shrink-0 whitespace-nowrap mb-[-1px] border-b-2 border-transparent"
             (click)="tabClicked(tab)"
             [class.text-writing]="currentTab()?.name() === tab.name()"
-            [class.!border-notion-blue]="currentTab()?.name() === tab.name()">
+            [class.!border-accent]="currentTab()?.name() === tab.name()">
             @if (tab.icon()) {
               <ng-icon [svg]="tab.icon()"></ng-icon>
             }

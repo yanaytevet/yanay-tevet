@@ -1,9 +1,9 @@
-<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+<div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-5">
-        <h2 class="text-[18px] font-bold text-primary-500">{{ data.title }}</h2>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
-            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="text-heading"></ng-icon>
         </button>
     </div>
 
@@ -25,15 +25,15 @@
             <div class="flex flex-col gap-1.5">
                 <span class="input-label">Status</span>
                 <button type="button"
-                        class="main-input w-full flex items-center gap-2 cursor-pointer text-left"
+                        class="main-input flex items-center gap-2 cursor-pointer text-start"
                         [attr.aria-pressed]="isDone()"
                         (click)="toggleDone()">
-                    <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ isDone() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+                    <span class="size-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors {{ isDone() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
                         @if (isDone()) {
-                            <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                            <ng-icon [svg]="featherCheck" class="text-caption"></ng-icon>
                         }
                     </span>
-                    <span class="text-[14px] text-writing">{{ isDone() ? 'Done' : 'To do' }}</span>
+                    <span class="text-body text-writing">{{ isDone() ? 'Done' : 'To do' }}</span>
                 </button>
             </div>
         }
@@ -55,16 +55,16 @@
     <div class="mb-4 flex flex-col gap-1.5">
         <span class="input-label">Repeat</span>
         <button type="button"
-                class="main-input w-full flex items-center gap-2 cursor-pointer text-left"
+                class="main-input flex items-center gap-2 cursor-pointer text-start"
                 [attr.aria-pressed]="isRepeating()"
                 (click)="toggleRepeating()">
-            <span class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors {{ isRepeating() ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4' }}">
+            <span class="size-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors {{ isRepeating() ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-layer-4' }}">
                 @if (isRepeating()) {
-                    <ng-icon [svg]="featherCheck" class="h-3 w-3"></ng-icon>
+                    <ng-icon [svg]="featherCheck" class="text-caption"></ng-icon>
                 }
             </span>
-            <span class="flex items-center gap-1.5 text-[14px] text-writing">
-                <ng-icon [svg]="featherRotateCcw" class="h-3.5 w-3.5 text-writing-minor"></ng-icon>
+            <span class="flex items-center gap-1.5 text-body text-writing">
+                <ng-icon [svg]="featherRotateCcw" class="text-writing-minor"></ng-icon>
                 @if (isRepeating()) {
                     Repeats · {{ repeatSummary() }}
                 } @else {
@@ -74,11 +74,11 @@
         </button>
 
         @if (isRepeating()) {
-            <div class="mt-1 rounded-[8px] border border-layer-4 bg-layer-1 p-3 flex flex-col gap-3">
+            <div class="mt-1 rounded-lg border border-line bg-layer-1 p-3 flex flex-col gap-3">
                 <div class="flex flex-wrap gap-1.5">
                     @for (day of weekdays; track day.value) {
                         <button type="button"
-                                class="h-8 w-9 rounded-full text-[12px] font-semibold border transition-colors {{ daySelected()[day.value] ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 text-writing-minor hover:border-notion-blue' }}"
+                                class="h-8 w-9 rounded-full text-caption font-semibold border transition-colors {{ daySelected()[day.value] ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-line text-writing-minor hover:border-accent' }}"
                                 [attr.aria-pressed]="daySelected()[day.value]"
                                 (click)="toggleDay(day.value)">
                             {{ day.short }}
@@ -88,13 +88,13 @@
                 <div class="flex flex-wrap gap-1.5">
                     @for (preset of repeatPresets; track preset.label) {
                         <button type="button"
-                                class="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-layer-4 text-writing-minor hover:border-notion-blue hover:text-writing transition-colors"
+                                class="chip"
                                 (click)="applyPreset(preset.days)">
                             {{ preset.label }}
                         </button>
                     }
                 </div>
-                <p class="text-[12px] text-writing-least">{{ repeatScheduleText() }}</p>
+                <p class="text-caption text-writing-least">{{ repeatScheduleText() }}</p>
             </div>
         }
     </div>
@@ -112,7 +112,7 @@
     }
 
     <div class="flex items-center justify-end gap-2 mt-6">
-        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
         <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
             {{ data.confirmActionName }}
         </button>

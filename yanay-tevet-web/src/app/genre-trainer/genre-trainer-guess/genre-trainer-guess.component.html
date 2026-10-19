@@ -1,7 +1,7 @@
 @if (!service.isLoading() && service.track()) {
   @if (service.easyMode()) {
     <div class="mt-6">
-      <h2 class="text-lg font-bold text-primary-500 mb-4 text-center" style="letter-spacing: -0.25px">
+      <h2 class="text-section font-bold text-writing mb-4 text-center">
         What family of genres is this?
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -10,14 +10,14 @@
             type="button"
             [disabled]="service.revealed()"
             (click)="service.selectFamily(family.name)"
-            class="py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-150 border"
+            class="py-3 px-3 rounded-xl text-body font-semibold transition-all duration-150 border"
             [class]="service.familyButtonState()[family.name].isCorrect
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              ? 'bg-success-soft border-success/30 text-success'
               : service.familyButtonState()[family.name].isWrong
-                ? 'bg-rose-50 border-rose-300 text-rose-700'
+                ? 'bg-danger-soft border-danger/30 text-danger'
                 : service.familyButtonState()[family.name].isSelected
-                  ? 'selected-btn border-transparent'
-                  : 'unselected-pill'">
+                  ? 'bg-accent text-on-accent border-transparent'
+                  : 'bg-layer-overlay text-writing border-line hover:bg-layer-3'">
             {{ family.name }}
           </button>
         }
@@ -25,7 +25,7 @@
     </div>
   } @else if (service.displayedGenres().length > 0) {
     <div class="mt-6">
-      <h2 class="text-lg font-bold text-primary-500 mb-4 text-center" style="letter-spacing: -0.25px">
+      <h2 class="text-section font-bold text-writing mb-4 text-center">
         What genre is this?
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -34,14 +34,14 @@
             type="button"
             [disabled]="service.revealed()"
             (click)="service.selectGenre(genre)"
-            class="py-3 px-3 rounded-xl text-sm font-semibold transition-all duration-150 border"
+            class="py-3 px-3 rounded-xl text-body font-semibold transition-all duration-150 border"
             [class]="service.genreButtonState()[genre].isCorrect
-              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              ? 'bg-success-soft border-success/30 text-success'
               : service.genreButtonState()[genre].isWrong
-                ? 'bg-rose-50 border-rose-300 text-rose-700'
+                ? 'bg-danger-soft border-danger/30 text-danger'
                 : service.genreButtonState()[genre].isSelected
-                  ? 'selected-btn border-transparent'
-                  : 'unselected-pill'">
+                  ? 'bg-accent text-on-accent border-transparent'
+                  : 'bg-layer-overlay text-writing border-line hover:bg-layer-3'">
             {{ service.genreLabelMap()[genre] }}
           </button>
         }

@@ -2,7 +2,7 @@
 
     <!-- Back link -->
     <a [routerLink]="backUrl"
-       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
+       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         Back to diary
     </a>
@@ -11,10 +11,10 @@
 
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+            <h1 class="text-title font-bold text-writing mb-1">
                 {{ isEditMode() ? 'Edit Dream' : 'New Dream' }}
             </h1>
-            <p class="text-[13px] text-writing-minor">
+            <p class="text-meta text-writing-minor">
                 {{ isEditMode()
                     ? 'Update the details of this dream.'
                     : 'Capture it before it fades.' }}
@@ -22,12 +22,12 @@
         </div>
 
         @if (isLoading()) {
-            <div class="text-center text-writing-minor text-[14px] py-12">
+            <div class="text-center text-writing-minor text-body py-12">
                 Loading dream...
             </div>
         } @else if (loadError()) {
             <div class="text-center py-12">
-                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
                 <button type="button" class="btn btn-secondary" (click)="onCancel()">
                     Back to diary
                 </button>
@@ -56,9 +56,9 @@
             </div>
 
             <!-- Action buttons -->
-            <div class="flex items-center justify-end gap-2 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+            <div class="flex items-center justify-end gap-2 pt-4 border-t border-line-subtle">
                 <button type="button"
-                        class="btn cancel-btn"
+                        class="btn btn-secondary"
                         [disabled]="isSaving()"
                         (click)="onCancel()">
                     Cancel

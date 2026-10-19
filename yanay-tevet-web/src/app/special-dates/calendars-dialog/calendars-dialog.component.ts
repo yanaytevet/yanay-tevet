@@ -140,6 +140,8 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
       title: 'מחיקת לוח',
       text: `למחוק את "${calendar.name}" ואת כל ${calendar.event_count} האירועים שבו?${others} אי אפשר לבטל את זה.`,
       confirmActionName: 'מחיקה',
+      danger: true,
+      dir: 'rtl',
       cancelActionName: 'ביטול',
     });
     if (!confirmed) {
@@ -158,6 +160,8 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
       title: 'יציאה מהלוח',
       text: `לצאת מ"${calendar.name}"? האירועים יישארו בלוח אצל שאר החברים. אפשר לחזור בעזרת קישור ההצטרפות.`,
       confirmActionName: 'יציאה',
+      danger: true,
+      dir: 'rtl',
       cancelActionName: 'ביטול',
     });
     if (!confirmed) {

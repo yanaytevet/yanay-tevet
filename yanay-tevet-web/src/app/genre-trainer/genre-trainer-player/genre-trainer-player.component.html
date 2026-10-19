@@ -8,32 +8,32 @@
     <canvas #vizCanvas class="w-full h-full block"></canvas>
     @if (service.isPlaying()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <p class="text-white/60 text-sm font-medium">Click to stop</p>
+        <p class="text-white/60 text-body font-medium">Click to stop</p>
       </div>
     }
     @if (!service.isPlaying() && !service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
         @if (service.playDisabled()) {
-          <p class="text-white/40 text-sm font-medium">{{ service.playDisabledMessage() }}</p>
+          <p class="text-white/40 text-body font-medium">{{ service.playDisabledMessage() }}</p>
         } @else {
-          <p class="text-white/30 text-sm font-medium">Press Play to start</p>
+          <p class="text-white/30 text-body font-medium">Press Play to start</p>
         }
       </div>
     }
     @if (service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center">
-        <p class="text-white/40 text-sm">Loading track...</p>
+        <p class="text-white/40 text-body">Loading track...</p>
       </div>
     }
   </div>
 
-  <div class="px-4 py-3 flex items-center gap-3 border-t border-outline-border-1">
+  <div class="px-4 py-3 flex items-center gap-3 border-t border-line">
 
     <!-- Auto-start toggle -->
     <button
       type="button"
       (click)="toggleAutoStart()"
-      class="flex items-center gap-1.5 text-xs font-medium text-secondary-400 hover:text-primary-500 transition-colors flex-shrink-0">
+      class="flex items-center gap-1.5 text-caption font-medium text-writing-minor hover:text-writing transition-colors flex-shrink-0">
       <div
         class="relative w-7 h-3.5 rounded-full transition-colors duration-200"
         [style.background]="service.autoStart() ? '#0075de' : 'rgba(0,0,0,0.12)'">
@@ -48,25 +48,25 @@
     <!-- Volume slider -->
     <div class="flex items-center gap-2 flex-1 min-w-0">
       <span class="hidden sm:flex flex-shrink-0">
-        <ng-icon [svg]="bootstrapVolumeDownFill" class="text-secondary-400 text-base" />
+        <ng-icon [svg]="bootstrapVolumeDownFill" class="text-writing-minor text-base" />
       </span>
       <input
         type="range"
         min="0"
         max="1"
         step="0.01"
-        class="flex-1 h-1 rounded-full accent-blue-500 cursor-pointer"
+        class="flex-1 h-1 rounded-full cursor-pointer"
         [value]="service.volume()"
         (input)="setVolume(+$any($event.target).value)">
       <span class="hidden sm:flex flex-shrink-0">
-        <ng-icon [svg]="bootstrapVolumeUpFill" class="text-secondary-400 text-base" />
+        <ng-icon [svg]="bootstrapVolumeUpFill" class="text-writing-minor text-base" />
       </span>
     </div>
 
     <!-- Play / Stop -->
     <button
       type="button"
-      class="btn btn-primary px-5 flex-shrink-0 text-sm"
+      class="btn btn-primary px-5 flex-shrink-0 text-body"
       [disabled]="service.isLoading() || service.playDisabled()"
       (click)="togglePlay()">
       @if (service.isPlaying()) { Stop } @else { Play }
@@ -76,7 +76,7 @@
     @if (isAdmin()) {
       <button
         type="button"
-        class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
         title="Download track JSON (admin)"
         [disabled]="!service.track() || isRecording()"
         (click)="downloadJson()">
@@ -86,12 +86,12 @@
       <!-- Admin: Download audio (renders 2 loops to WAV) -->
       <button
         type="button"
-        class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
         title="Download track audio as WAV (admin)"
         [disabled]="!service.track() || isRecording()"
         (click)="downloadAudio()">
         @if (isRecording()) {
-          <span class="inline-block w-4 h-4 align-middle rounded-full bg-red-500 animate-pulse"></span>
+          <span class="inline-block w-4 h-4 align-middle rounded-full bg-danger animate-pulse"></span>
         } @else {
           <ng-icon [svg]="bootstrapFileMusic" class="text-base" />
         }
@@ -101,7 +101,7 @@
     <!-- Settings -->
     <button
       type="button"
-      class="p-1.5 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-black/5 transition-all flex-shrink-0"
+      class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0"
       title="Training settings"
       (click)="openConfig()">
       <ng-icon [svg]="bootstrapGearFill" class="text-base" />

@@ -6,6 +6,9 @@ export interface ConfirmationDialogInput {
   text: string;
   cancelActionName?: string;
   confirmActionName?: string;
+  // Destructive: the confirm button turns red and Cancel takes the initial focus.
+  danger?: boolean;
+  dir?: 'ltr' | 'rtl';
 }
 
 @Component({

@@ -1,7 +1,6 @@
 import {Component, inject, OnInit} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
-import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
 
 export interface TextConfirmationDialogInput {
   title: string;
@@ -14,7 +13,7 @@ export interface TextConfirmationDialogInput {
 
 @Component({
   selector: 'app-text-confirmation-dialog',
-  imports: [ReactiveFormsModule, ConfirmationButtonComponent],
+  imports: [ReactiveFormsModule],
   templateUrl: './text-confirmation-dialog.component.html',
   standalone: true
 })

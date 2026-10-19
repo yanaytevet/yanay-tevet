@@ -1,24 +1,24 @@
 <div class="max-w-3xl mx-auto w-full p-6">
 
     <a [routerLink]="backUrl()"
-       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
+       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
         <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
         Back to project
     </a>
 
     <div class="card p-6">
         <div class="mb-6">
-            <h1 class="text-[22px] font-bold text-primary-500 mb-1">
+            <h1 class="text-title font-bold text-writing mb-1">
                 {{ isEditMode() ? 'Edit Apartment' : 'New Apartment' }}
             </h1>
-            <p class="text-[13px] text-writing-minor">Track the details and where this apartment stands.</p>
+            <p class="text-meta text-writing-minor">Track the details and where this apartment stands.</p>
         </div>
 
         @if (isLoading()) {
-            <div class="text-center text-writing-minor text-[14px] py-12">Loading apartment...</div>
+            <div class="text-center text-writing-minor text-body py-12">Loading apartment...</div>
         } @else if (loadError()) {
             <div class="text-center py-12">
-                <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
+                <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
                 <button type="button" class="btn btn-secondary" (click)="onCancel()">Back</button>
             </div>
         } @else {
@@ -62,7 +62,7 @@
             </div>
 
             <!-- Costs -->
-            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Costs (monthly unless noted)</div>
+            <div class="eyebrow mt-6 mb-3">Costs (monthly unless noted)</div>
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Monthly rent</span>
@@ -74,7 +74,7 @@
                 </div>
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" id="via_agency" class="h-4 w-4" [formControl]="form.controls.via_agency" />
-                    <span class="text-[14px] text-writing">Via agency</span>
+                    <span class="text-body text-writing">Via agency</span>
                 </div>
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Agency fee (one-off)</span>
@@ -83,7 +83,7 @@
             </div>
 
             <!-- Details -->
-            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mt-6 mb-3">Details</div>
+            <div class="eyebrow mt-6 mb-3">Details</div>
             <div class="grid grid-cols-1 @md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-1.5">
                     <span class="input-label">Rooms</span>
@@ -103,7 +103,7 @@
                 </div>
                 <div class="flex items-center gap-2 pt-6">
                     <input type="checkbox" id="mamad" class="h-4 w-4" [formControl]="form.controls.has_protected_room" />
-                    <span class="text-[14px] text-writing">Protected room (mamad)</span>
+                    <span class="text-body text-writing">Protected room (mamad)</span>
                 </div>
             </div>
 
@@ -120,18 +120,17 @@
 
             <!-- Contacts -->
             <div class="flex items-center mt-6 mb-3">
-                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">Contacts</span>
-                <button type="button" class="icon-btn ml-3 text-primary-500" (click)="addContact()">
+                <span class="eyebrow">Contacts</span>
+                <button type="button" class="icon-btn ml-3 text-writing" (click)="addContact()">
                     <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
                 </button>
             </div>
             @if (contacts().length === 0) {
-                <p class="text-[13px] text-writing-minor mb-2">No contacts added.</p>
+                <p class="text-meta text-writing-minor mb-2">No contacts added.</p>
             }
             <div class="flex flex-col gap-3 @md:gap-2">
                 @for (contact of contacts(); track contact) {
-                    <div class="rounded-lg border border-[rgba(0,0,0,0.1)] p-3 flex flex-col gap-2
-                                @md:grid @md:grid-cols-[150px_1fr_1fr_auto] @md:items-center @md:gap-2 @md:border-0 @md:rounded-none @md:p-0">
+                    <div class="rounded-lg border border-line p-3 flex flex-col gap-2 @md:grid @md:grid-cols-[150px_1fr_1fr_auto] @md:items-center @md:gap-2 @md:border-0 @md:rounded-none @md:p-0">
                         <select class="main-input w-full" [formControl]="contact.controls.method">
                             @for (method of contactMethodOptions; track method) {
                                 <option [value]="method">{{ contactMethodLabels[method] }}</option>
@@ -143,7 +142,7 @@
                                [formControl]="contact.controls.label" />
                         <div class="@md:hidden">
                             <button type="button"
-                                    class="btn cancel-btn w-full flex items-center justify-center gap-1.5"
+                                    class="btn btn-secondary w-full flex items-center justify-center gap-1.5"
                                     (click)="removeContact(contact)">
                                 <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
                                 Remove contact
@@ -151,7 +150,7 @@
                         </div>
                         <div class="hidden @md:block @md:shrink-0">
                             <button type="button"
-                                    class="flex items-center justify-center h-[38px] w-[38px] rounded border border-[rgba(0,0,0,0.1)] bg-layer-2 text-writing-minor hover:text-writing hover:border-[rgba(0,0,0,0.2)] cursor-pointer transition-colors"
+                                    class="flex items-center justify-center h-[38px] w-[38px] rounded border border-line bg-layer-2 text-writing-minor hover:text-writing hover:border-writing-least cursor-pointer transition-colors"
                                     (click)="removeContact(contact)"
                                     aria-label="Remove contact">
                                 <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
@@ -163,7 +162,7 @@
 
             <!-- Photos -->
             <div class="flex items-center justify-between mt-6 mb-3">
-                <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">Photos</span>
+                <span class="eyebrow">Photos</span>
                 @if (isEditMode()) {
                     <button type="button" class="btn btn-secondary flex items-center gap-1.5"
                             [disabled]="isUploading()" (click)="uploadImage()">
@@ -173,15 +172,15 @@
                 }
             </div>
             @if (!isEditMode()) {
-                <p class="text-[13px] text-writing-minor">Save the apartment first, then you can add photos.</p>
+                <p class="text-meta text-writing-minor">Save the apartment first, then you can add photos.</p>
             } @else if (images().length === 0) {
-                <p class="text-[13px] text-writing-minor">No photos yet.</p>
+                <p class="text-meta text-writing-minor">No photos yet.</p>
             } @else {
                 <div class="grid grid-cols-2 @md:grid-cols-3 gap-3">
                     @for (image of images(); track image.id) {
                         <div class="relative group">
                             <img [src]="image.image_url" alt="apartment photo"
-                                 class="w-full h-32 object-cover rounded-lg border border-[rgba(0,0,0,0.1)]" />
+                                 class="w-full h-32 object-cover rounded-lg border border-line" />
                             <button type="button"
                                     class="absolute top-1.5 right-1.5 h-7 w-7 flex items-center justify-center rounded-full bg-layer-2 shadow-1 text-writing-minor hover:text-writing"
                                     (click)="deleteImage(image)">
@@ -193,8 +192,8 @@
             }
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-[rgba(0,0,0,0.06)]">
-                <button type="button" class="btn cancel-btn" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+            <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-line-subtle">
+                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
                     {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Create Apartment') }}
                 </button>

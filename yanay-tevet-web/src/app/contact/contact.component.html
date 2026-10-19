@@ -1,22 +1,22 @@
 <div class="max-w-2xl mx-auto px-6 py-20">
 
-  <h1 class="text-[40px] font-bold text-primary-500 tracking-[-1px] leading-tight mb-3">
+  <h1 class="text-hero font-bold text-writing leading-tight mb-3">
     Contact Me
   </h1>
-  <p class="text-[16px] text-secondary-400 mb-12">
+  <p class="text-lead text-writing-minor mb-12">
     Questions, bug reports, or just saying hi — my inbox is open.
   </p>
 
   <div class="card p-8 flex flex-col gap-4">
     <div class="flex flex-col gap-1">
-      <span class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">Email</span>
+      <span class="eyebrow">Email</span>
       <a
         [href]="'mailto:' + supportEmail"
-        class="text-[20px] font-semibold text-[#0075de] hover:underline no-underline break-all">
+        class="text-heading font-semibold text-accent hover:underline no-underline break-all">
         {{ supportEmail }}
       </a>
     </div>
-    <p class="text-[14px] text-writing-minor leading-relaxed">
+    <p class="text-body text-writing-minor leading-relaxed">
       I'll get back to you when I can. For bugs, a quick description of what happened and how to reproduce it helps a lot.
     </p>
   </div>

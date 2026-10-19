@@ -1,25 +1,26 @@
-<button [cdkMenuTriggerFor]="menu" class="icon-btn">
+<button type="button" [cdkMenuTriggerFor]="menu" class="icon-btn gap-1.5" [attr.aria-label]="text() ? null : ariaLabel()">
   @if (icon()) {
     <ng-icon [svg]="icon()"></ng-icon>
   }
   @if (text()) {
-    <span class="font-medium text-sm">{{ text() }}</span>
+    <span class="font-medium text-body">{{ text() }}</span>
   }
 </button>
 
 <ng-template #menu>
-  <div cdkMenu class="min-w-[160px] py-1 bg-layer-1 rounded-lg border border-outline-border-1"
-       style="box-shadow: rgba(0,0,0,0.04) 0 4px 18px, rgba(0,0,0,0.027) 0 2.025px 7.84688px, rgba(0,0,0,0.02) 0 0.8px 2.925px, rgba(0,0,0,0.01) 0 0.175px 1.04062px; z-index: 9999;">
+  <div cdkMenu class="min-w-40 py-1 bg-layer-2 rounded-lg border border-line shadow-2">
     @for (action of actions(); track $index) {
       @if (action === SEPARATOR) {
-        <div class="h-px my-1 mx-3" style="background: rgba(0,0,0,0.1)"></div>
+        <div class="h-px my-1 mx-3 bg-line"></div>
       } @else {
         <button cdkMenuItem
                 (click)="action.callback()"
                 [disabled]="action.disabled"
-                class="w-full flex items-center gap-2 px-3 py-2 text-left text-sm text-writing hover:bg-layer-2 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                class="w-full flex items-center gap-2 px-3 py-2 text-start text-body hover:bg-layer-overlay transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                [class.text-writing]="!action.danger"
+                [class.text-danger]="action.danger">
           @if (action.icon) {
-            <ng-icon [svg]="action.icon" size="14" class="shrink-0 text-secondary-400"></ng-icon>
+            <ng-icon [svg]="action.icon" size="14" class="shrink-0" [class.text-writing-minor]="!action.danger"></ng-icon>
           }
           <span>{{ action.display }}</span>
         </button>

@@ -1,102 +1,67 @@
-<div class="max-w-3xl mx-auto w-full p-6">
+<div class="page-narrow">
 
     <a [routerLink]="allProjectsUrl"
-       class="inline-flex items-center gap-1.5 text-[13px] text-writing-minor no-underline hover:text-primary-500 transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         All projects
     </a>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-[14px] py-12">Loading project...</div>
+        <app-loading-state label="Loading project"/>
     } @else if (loadError()) {
-        <div class="card p-10 text-center">
-            <p class="text-[14px] text-writing-minor mb-4">{{ loadError() }}</p>
-            <a [routerLink]="allProjectsUrl" class="btn btn-secondary no-underline">Back to projects</a>
-        </div>
+        <app-error-state [text]="loadError()!" [backUrl]="allProjectsUrl" backLabel="Back to projects"/>
     } @else if (project(); as project) {
 
-        <div class="card p-5 mb-5">
-            <div class="flex items-start justify-between gap-3 mb-2">
-                <h1 class="text-[22px] font-bold text-primary-500 break-words min-w-0" dir="auto">{{ project.name }}</h1>
-                @if (isArchived()) {
-                    <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">Archived</span>
-                }
-            </div>
-            @if (project.description) {
-                <p class="text-[13px] text-writing-minor leading-relaxed mb-4 whitespace-pre-line" dir="auto">{{ project.description }}</p>
+        <app-page-header [title]="project.name" [subtitle]="headerSubtitle()">
+            @if (isArchived()) {
+                <span class="chip">Archived</span>
             }
+            <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
+                <ng-icon [svg]="featherShare2"/>
+                Share
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editProject()">
+                <ng-icon [svg]="featherEdit"/>
+                Edit
+            </button>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More project actions"/>
+        </app-page-header>
 
-            @if (progress().total > 0) {
-                <div class="mb-4">
-                    <div class="flex items-center justify-between text-[12px] mb-1.5">
-                        <span class="text-writing-minor">{{ progress().done }} of {{ progress().total }} done</span>
-                        <span class="font-semibold {{ progress().pct === 100 ? 'text-notion-green' : 'text-writing-minor' }}">{{ progress().pct }}%</span>
-                    </div>
-                    <div class="h-1.5 w-full rounded-full bg-layer-3 overflow-hidden">
-                        <div class="h-full rounded-full transition-all duration-500 ease-out {{ progress().pct === 100 ? 'bg-notion-green' : 'bg-notion-blue' }}"
+        @if (project.description || progress().total > 0) {
+            <div class="-mt-2 mb-6">
+                @if (project.description) {
+                    <p class="text-body text-writing-minor whitespace-pre-line mb-3" dir="auto">{{ project.description }}</p>
+                }
+                @if (progress().total > 0) {
+                    <div class="h-1.5 w-full rounded-full bg-layer-3 overflow-hidden" role="progressbar"
+                         [attr.aria-valuenow]="progress().pct" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks done">
+                        <div class="h-full rounded-full transition-all duration-500 ease-out {{ progress().pct === 100 ? 'bg-success' : 'bg-accent' }}"
                              [style.width.%]="progress().pct"></div>
                     </div>
-                </div>
-            }
-
-            <div class="hidden sm:flex flex-wrap items-center gap-2 pt-1">
-                <button type="button" class="btn cancel-btn flex items-center gap-1.5"
-                        [disabled]="isUpdatingStatus()" (click)="toggleArchive()">
-                    @if (isArchived()) {
-                        <ng-icon [svg]="featherRotateCcw" class="h-4 w-4"></ng-icon>
-                        Unarchive
-                    } @else {
-                        <ng-icon [svg]="featherArchive" class="h-4 w-4"></ng-icon>
-                        Archive
-                    }
-                </button>
-                <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="openShareDialog()">
-                    <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
-                    Share
-                </button>
-                <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="editProject()">
-                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                    Edit
-                </button>
-                @if (isOwner()) {
-                    <button type="button" class="btn cancel-btn flex items-center gap-1.5" (click)="deleteProject()">
-                        <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                        Delete
-                    </button>
                 }
             </div>
-            <div class="sm:hidden pt-1">
-                <app-menu-button [icon]="featherMoreHorizontal" text="Actions" [actions]="headerActions()"></app-menu-button>
-            </div>
-        </div>
+        }
 
-        <div class="card p-4 mb-5">
-            <div class="flex items-end gap-2">
-                <div class="flex-1 flex flex-col gap-1.5">
-                    <span class="input-label">Add a task</span>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book flights"
-                           [formControl]="newTaskCtrl" (keyup.enter)="addTask()" />
-                </div>
-                <button type="button" class="btn btn-primary flex items-center gap-1.5"
-                        [disabled]="isAdding()" (click)="addTask()">
-                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-                    Add
-                </button>
-            </div>
-            <p class="text-[12px] text-writing-least mt-2">
-                Tick a task's checkbox to mark it done · open the editor to set due date, priority and links.
-            </p>
+        <div class="card flex items-center gap-2 p-1.5 ps-3 mb-4 transition-shadow focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
+            <ng-icon [svg]="featherPlus" class="text-lead text-writing-least shrink-0" aria-hidden="true"/>
+            <input type="text" dir="auto" aria-label="New task"
+                   class="flex-1 min-w-0 bg-transparent text-lead text-writing placeholder:text-writing-least outline-none py-1"
+                   placeholder="Add a task"
+                   [formControl]="newTaskCtrl" (keyup.enter)="addTask()"/>
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="isAdding()" (click)="addTask()">Add</button>
         </div>
 
         @if (openTasks().length === 0) {
-            <div class="card p-8 text-center text-writing-minor text-[13px] mb-5">
-                No open tasks. Add one above or check the completed section below.
+            <div class="mb-6">
+                <app-empty-state [title]="doneTasks().length > 0 ? 'Everything is done' : 'No tasks yet'"
+                                 text="Add a task above. Tick its box when it's done; open it to set a due date, priority, subtasks or a linked list."/>
             </div>
         } @else {
-            <div class="flex flex-col gap-2 mb-5" cdkDropList (cdkDropListDropped)="onDropTopLevel($event)">
+            <div class="card overflow-hidden divide-y divide-line-subtle mb-6"
+                 cdkDropList (cdkDropListDropped)="onDropTopLevel($event)">
                 @for (task of openTasks(); track task.id) {
-                    <div cdkDrag>
-                        <div *cdkDragPlaceholder class="h-14 rounded-xl border border-dashed border-writing-least bg-layer-3"></div>
+                    <div cdkDrag class="bg-layer-2">
+                        <div *cdkDragPlaceholder class="h-12 bg-layer-3"></div>
                         <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task, draggable: true}"></ng-container>
                     </div>
                 }
@@ -105,13 +70,14 @@
 
         @if (doneTasks().length > 0) {
             <button type="button"
-                    class="flex items-center gap-1.5 text-[13px] font-semibold text-writing-minor hover:text-primary-500 transition-colors mb-3"
+                    class="flex items-center gap-1.5 rounded-md px-1 py-0.5 -ms-1 text-meta font-semibold text-writing-minor hover:text-writing transition-colors mb-3"
+                    [attr.aria-expanded]="showDone()"
                     (click)="toggleShowDone()">
-                <ng-icon [svg]="showDone() ? featherChevronDown : featherChevronRight" class="h-4 w-4"></ng-icon>
+                <ng-icon [svg]="showDone() ? featherChevronDown : featherChevronRight"/>
                 Completed ({{ doneTasks().length }})
             </button>
             @if (showDone()) {
-                <div class="flex flex-col gap-2 opacity-75">
+                <div class="card overflow-hidden divide-y divide-line-subtle">
                     @for (task of doneTasks(); track task.id) {
                         <ng-container [ngTemplateOutlet]="taskGroup" [ngTemplateOutletContext]="{$implicit: task, draggable: false}"></ng-container>
                     }
@@ -123,25 +89,26 @@
 
 <!-- A top-level task with its subtasks and inline subtask adder -->
 <ng-template #taskGroup let-task let-draggable="draggable">
-    <div class="card p-3 transition-shadow duration-200 hover:shadow-2">
+    <div class="px-2 sm:px-3 py-1">
         <ng-container [ngTemplateOutlet]="taskRow"
                       [ngTemplateOutletContext]="{$implicit: task, isSubtask: false, draggable: draggable}"></ng-container>
 
         @if (subtasksByParent()[task.id]?.length || addingSubtaskFor() === task.id) {
-            <div class="mt-2 ml-3 pl-3 border-l border-[rgba(0,0,0,0.08)] flex flex-col gap-1.5"
+            <div class="ms-10 ps-2 mb-1.5 border-s border-line flex flex-col"
                  cdkDropList (cdkDropListDropped)="onDropSubtask(task.id, $event)">
                 @for (subtask of subtasksByParent()[task.id]; track subtask.id) {
-                    <div cdkDrag [cdkDragDisabled]="!draggable">
-                        <div *cdkDragPlaceholder class="h-7 rounded border border-dashed border-writing-least bg-layer-3"></div>
+                    <div cdkDrag [cdkDragDisabled]="!draggable" class="bg-layer-2">
+                        <div *cdkDragPlaceholder class="h-9 rounded-md bg-layer-3"></div>
                         <ng-container [ngTemplateOutlet]="taskRow"
                                       [ngTemplateOutletContext]="{$implicit: subtask, isSubtask: true, draggable: draggable}"></ng-container>
                     </div>
                 }
                 @if (addingSubtaskFor() === task.id) {
-                    <div class="flex items-center gap-2 py-1">
-                        <input type="text" dir="auto" class="main-input flex-1" placeholder="Subtask name"
-                               [formControl]="newSubtaskCtrl" (keyup.enter)="addSubtask(task)" />
-                        <button type="button" class="btn btn-primary" [disabled]="isAddingSubtask()"
+                    <div class="flex items-center gap-2 py-1.5 ps-1">
+                        <input type="text" dir="auto" class="main-input flex-1 !py-1" placeholder="Subtask name"
+                               aria-label="New subtask"
+                               [formControl]="newSubtaskCtrl" (keyup.enter)="addSubtask(task)"/>
+                        <button type="button" class="btn btn-primary btn-sm" [disabled]="isAddingSubtask()"
                                 (click)="addSubtask(task)">Add</button>
                     </div>
                 }
@@ -152,82 +119,82 @@
 
 <!-- A single task row (used for top-level and subtasks) -->
 <ng-template #taskRow let-task let-isSubtask="isSubtask" let-draggable="draggable">
-    <div class="flex items-center gap-2.5 py-1">
+    <div class="group flex items-start gap-1 py-1">
         @if (draggable) {
-            <button type="button" cdkDragHandle
-                    class="icon-btn touch-none cursor-grab active:cursor-grabbing text-writing-least hover:text-writing-minor shrink-0 -ml-1"
-                    title="Drag to reorder">
-                <ng-icon [svg]="bootstrapGripVertical" class="h-4 w-4"></ng-icon>
+            <button type="button" cdkDragHandle aria-label="Drag to reorder"
+                    class="flex items-center justify-center w-5 h-8 shrink-0 -ms-1 rounded touch-none cursor-grab active:cursor-grabbing text-writing-least hover:text-writing-minor can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
+                <ng-icon [svg]="bootstrapGripVertical"/>
             </button>
+        } @else {
+            <!-- Keeps rows that can't be dragged (completed tasks) aligned with the ones that can. -->
+            <span class="w-5 shrink-0 -ms-1" aria-hidden="true"></span>
         }
         <button type="button"
-                class="h-[18px] w-[18px] rounded-[5px] border flex items-center justify-center shrink-0 transition-colors disabled:opacity-50 {{ task.status === 'done' ? 'bg-notion-blue border-notion-blue text-layer-2' : 'bg-layer-2 border-layer-4 hover:border-notion-blue' }}"
+                class="group/check flex items-center justify-center size-8 shrink-0 rounded-md disabled:opacity-50"
                 [disabled]="savingTaskId() === task.id"
                 [attr.aria-pressed]="task.status === 'done'"
-                title="Toggle done"
+                [attr.aria-label]="task.status === 'done' ? 'Mark as not done' : 'Mark as done'"
                 (click)="toggleDone(task)">
-            @if (task.status === 'done') {
-                <ng-icon [svg]="featherCheck" class="h-3 w-3 check-pop-in"></ng-icon>
-            }
+            <span class="flex items-center justify-center rounded-md border-2 transition-colors {{ isSubtask ? 'size-4' : 'size-5' }} {{ task.status === 'done' ? 'bg-accent border-accent text-on-accent' : 'border-layer-4 group-hover/check:border-accent' }}">
+                @if (task.status === 'done') {
+                    <ng-icon [svg]="featherCheck" class="text-caption check-pop-in"/>
+                }
+            </span>
         </button>
 
-        <div class="min-w-0 flex-1" dir="auto">
-            <div class="text-[14px] text-writing truncate {{ task.status === 'done' ? 'line-through text-writing-minor' : '' }}">{{ task.name }}</div>
-            <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
-                @if (task.priority !== 'none') {
-                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ priorityChipById()[task.id] }}">
-                        {{ priorityLabelById()[task.id] }}
-                    </span>
-                }
-                @if (task.due_at) {
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold {{ overdueById()[task.id] ? 'bg-notion-red-bg text-notion-red' : 'bg-layer-3 text-writing-minor' }}">
-                        <ng-icon [svg]="featherClock" class="h-3 w-3"></ng-icon>
-                        {{ dueLabelById()[task.id] }}{{ overdueById()[task.id] ? ' · overdue' : '' }}
-                    </span>
-                }
-                @if (task.is_repeating) {
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor"
-                          title="Resets to To do at 4 AM">
-                        <ng-icon [svg]="featherRotateCcw" class="h-3 w-3"></ng-icon>
-                        {{ repeatLabelById()[task.id] }}
-                    </span>
-                }
-                @if (!isSubtask && task.subtask_count > 0) {
-                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-writing-minor">
-                        <ng-icon [svg]="featherCornerDownRight" class="h-3 w-3"></ng-icon>
-                        {{ task.done_subtask_count }}/{{ task.subtask_count }}
-                    </span>
-                }
-                @if (task.itinerary_list_name) {
-                    <button type="button"
-                            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-layer-3 text-notion-blue hover:underline"
-                            (click)="openLinkedList(task)">
-                        <ng-icon [svg]="featherLink" class="h-3 w-3"></ng-icon>
-                        {{ task.itinerary_list_name }}
-                    </button>
-                }
-                @if (task.description) {
-                    <span class="text-[11px] text-writing-least truncate max-w-[200px]" dir="auto">{{ task.description }}</span>
-                }
-            </div>
+        <div class="min-w-0 flex-1 py-1.5" dir="auto">
+            <div class="{{ isSubtask ? 'text-meta' : 'text-body' }} text-writing break-words {{ task.status === 'done' ? 'line-through !text-writing-least' : '' }}">{{ task.name }}</div>
+            @if (task.priority !== 'none' || task.due_at || task.is_repeating || (!isSubtask && task.subtask_count > 0) || task.itinerary_list_name || task.description) {
+                <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                    @if (task.priority !== 'none') {
+                        <span class="chip {{ priorityChipById()[task.id] }}">{{ priorityLabelById()[task.id] }}</span>
+                    }
+                    @if (task.due_at) {
+                        <span class="chip {{ overdueById()[task.id] ? 'chip-danger' : '' }}">
+                            <ng-icon [svg]="featherClock" aria-hidden="true"/>
+                            {{ dueLabelById()[task.id] }}{{ overdueById()[task.id] ? ' · overdue' : '' }}
+                        </span>
+                    }
+                    @if (task.is_repeating) {
+                        <span class="chip" title="Resets to To do at 4 AM">
+                            <ng-icon [svg]="featherRotateCcw" aria-hidden="true"/>
+                            {{ repeatLabelById()[task.id] }}
+                        </span>
+                    }
+                    @if (!isSubtask && task.subtask_count > 0) {
+                        <span class="chip" [attr.aria-label]="task.done_subtask_count + ' of ' + task.subtask_count + ' subtasks done'">
+                            <ng-icon [svg]="featherCornerDownRight" aria-hidden="true"/>
+                            {{ task.done_subtask_count }}/{{ task.subtask_count }}
+                        </span>
+                    }
+                    @if (task.itinerary_list_name) {
+                        <button type="button" class="chip chip-accent hover:underline" (click)="openLinkedList(task)">
+                            <ng-icon [svg]="featherLink" aria-hidden="true"/>
+                            {{ task.itinerary_list_name }}
+                        </button>
+                    }
+                    @if (task.description) {
+                        <span class="text-caption text-writing-least truncate max-w-56" dir="auto">{{ task.description }}</span>
+                    }
+                </div>
+            }
         </div>
 
-        <div class="hidden sm:flex items-center gap-1 shrink-0">
+        <div class="hidden sm:flex items-center shrink-0 can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             @if (!isSubtask) {
-                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
-                        (click)="toggleAddSubtask(task)" title="Add subtask">
-                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                <button type="button" class="icon-btn" aria-label="Add subtask" title="Add subtask" (click)="toggleAddSubtask(task)">
+                    <ng-icon [svg]="featherPlus"/>
                 </button>
             }
-            <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editTask(task)">
-                <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+            <button type="button" class="icon-btn" aria-label="Edit task" title="Edit" (click)="editTask(task)">
+                <ng-icon [svg]="featherEdit"/>
             </button>
-            <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteTask(task)">
-                <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+            <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete task" title="Delete" (click)="deleteTask(task)">
+                <ng-icon [svg]="featherTrash2"/>
             </button>
         </div>
-        <div class="sm:hidden shrink-0 text-writing-minor">
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="taskMenuActionsById()[task.id]"></app-menu-button>
+        <div class="sm:hidden shrink-0">
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="taskMenuActionsById()[task.id]" ariaLabel="Task actions"/>
         </div>
     </div>
 </ng-template>

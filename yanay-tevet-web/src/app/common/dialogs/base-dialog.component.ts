@@ -27,14 +27,14 @@ export abstract class BaseDialogComponent<TInput = void, TOutput = void> impleme
         }
 
         // If no input element, try to focus the confirm button
-        const confirmButton = element.querySelector('.accept-btn, [class*="confirm"], app-confirmation-button button');
+        const confirmButton = element.querySelector('.btn-primary, [class*="confirm"], app-confirmation-button button');
         if (confirmButton) {
             confirmButton.focus();
             return;
         }
 
         // If no confirm button, focus the close/cancel button
-        const closeButton = element.querySelector('.cancel-btn, [class*="cancel"], [class*="close"]');
+        const closeButton = element.querySelector('.btn-secondary, [class*="cancel"], [class*="close"]');
         if (closeButton) {
             closeButton.focus();
         }

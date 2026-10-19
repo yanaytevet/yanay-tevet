@@ -9,10 +9,10 @@
                    dir="auto"
                    formControlName="minValue"
                    class="mt-2 main-input"
-                   [class.border-red-500]="getErrorMessage('min') && (minControl?.touched || minControl?.dirty)"
+                   [class.border-danger]="getErrorMessage('min') && (minControl?.touched || minControl?.dirty)"
             >
             @if (getErrorMessage('min') && (minControl?.touched || minControl?.dirty)) {
-                <p class="text-red-500 text-xs italic mt-2">{{ getErrorMessage('min') }}</p>
+                <p class="text-danger text-caption italic mt-2">{{ getErrorMessage('min') }}</p>
             }
         </div>
 
@@ -22,22 +22,22 @@
                    dir="auto"
                    formControlName="maxValue"
                    class="mt-2 main-input"
-                   [class.border-red-500]="getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)"
+                   [class.border-danger]="getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)"
             >
             @if (getErrorMessage('max') && (maxControl?.touched || maxControl?.dirty)) {
-                <p class="text-red-500 text-xs italic mt-2">{{ getErrorMessage('max') }}</p>
+                <p class="text-danger text-caption italic mt-2">{{ getErrorMessage('max') }}</p>
             }
         </div>
 
         @if (getFormErrorMessage() && form.touched) {
-            <p class="text-red-500 text-xs italic mt-2 mb-4">{{ getFormErrorMessage() }}</p>
+            <p class="text-danger text-caption italic mt-2 mb-4">{{ getFormErrorMessage() }}</p>
         }
     </form>
 
     <div class="dialog-buttons-container">
         <span class="flex-1"></span>
         <button
-                class="btn cancel-btn"
+                class="btn btn-secondary"
                 (click)="emitClose(null)">
             {{ data.cancelActionName ?? 'Cancel' }}
         </button>

@@ -4,12 +4,14 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {
   bootstrapMoonFill,
   bootstrapSunFill,
-  bootstrapChevronRight
+  bootstrapChevronRight,
+  bootstrapPeople,
 } from '@ng-icons/bootstrap-icons';
-import {NgIcon, provideIcons} from '@ng-icons/core';
+import {NgIcon} from '@ng-icons/core';
 import {DarkModeService} from '../../common/services/dark-mode.service';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {LayoutService} from '../layout-service';
+import {HUB_APPS} from '../../shared/apps/hub-apps';
 
 @Component({
   selector: 'app-navigation-left-drawer',
@@ -19,7 +21,6 @@ import {LayoutService} from '../layout-service';
     RouterLinkActive,
     NgIcon,
   ],
-  providers: [provideIcons({bootstrapMoonFill, bootstrapSunFill, bootstrapChevronRight})],
   templateUrl: './app-navigation-left-drawer.component.html',
   styleUrl: './app-navigation-left-drawer.component.css',
 })
@@ -28,6 +29,27 @@ export class AppNavigationLeftDrawer implements OnInit {
   public routingService = inject(RoutingService);
   public darkModeService = inject(DarkModeService);
   public layoutService = inject(LayoutService);
+
+  protected readonly apps = HUB_APPS;
+  protected readonly homeUrl = this.routingService.getHomeUrl();
+  protected readonly genreTrainerUrl = this.routingService.getGenreTrainerUrl();
+  protected readonly japaneseUrl = this.routingService.getJapaneseHomeUrl();
+  protected readonly japaneseIngestUrl = this.routingService.getJapaneseIngestUrl();
+  protected readonly japaneseReviewUrl = this.routingService.getJapaneseReviewUrl();
+  protected readonly specialDatesUrl = this.routingService.getSpecialDatesUrl();
+  protected readonly dreamDiaryUrl = this.routingService.getDreamDiaryUrl();
+  protected readonly apartmentHuntUrl = this.routingService.getApartmentHuntUrl();
+  protected readonly villaVillekullaUrl = this.routingService.getVillaVillekullaUrl();
+  protected readonly rentersCrmUrl = this.routingService.getRentersCrmUrl();
+  protected readonly itineraryListsUrl = this.routingService.getItineraryListsUrl();
+  protected readonly shoppingListsUrl = this.routingService.getShoppingListsUrl();
+  protected readonly taskManagementUrl = this.routingService.getTaskManagementUrl();
+  protected readonly workoutPlanUrl = this.routingService.getWorkoutPlanUrl();
+  protected readonly myDashboardUrl = this.routingService.getMyDashboardUrl();
+  protected readonly adminUsersUrl = this.routingService.getAdminUsersUrl();
+  protected readonly userSettingsUrl = this.routingService.getUserSettingsUrl();
+  protected readonly faqUrl = this.routingService.getFaqUrl();
+  protected readonly contactUrl = this.routingService.getContactUrl();
 
   public readonly hasApartmentHunt = computed(() => this.authService.hasPermission('apartment_hunt'));
   public readonly hasRentersCrm = computed(() => this.authService.hasPermission('renters_crm'));
@@ -74,4 +96,5 @@ export class AppNavigationLeftDrawer implements OnInit {
   protected readonly bootstrapMoonFill = bootstrapMoonFill;
   protected readonly bootstrapSunFill = bootstrapSunFill;
   protected readonly bootstrapChevronRight = bootstrapChevronRight;
+  protected readonly bootstrapPeople = bootstrapPeople;
 }

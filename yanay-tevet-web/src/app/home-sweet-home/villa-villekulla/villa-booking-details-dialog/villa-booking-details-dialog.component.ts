@@ -59,6 +59,7 @@ export class VillaBookingDetailsDialogComponent extends BaseDialogComponent<Vill
       title: 'Cancel booking',
       text: `Cancel the booking from ${this.booking.start_date} to ${this.booking.end_date}?`,
       confirmActionName: 'Cancel booking',
+      danger: true,
       cancelActionName: 'Keep',
     });
     if (!confirmed) {

@@ -1,9 +1,10 @@
-<div class="dialog-container">
+<div class="dialog-container" [attr.dir]="data.dir ?? null">
     <h2>{{ data.title }}</h2>
     <p>{{ data.text }}</p>
     <div class="dialog-buttons-container">
-        <span class="flex-1"></span>
-        <button class="btn cancel-btn" (click)="emitClose(false)">{{ data.cancelActionName ?? 'Cancel' }}</button>
-        <button class="btn accept-btn" (click)="emitClose(true)">{{ data.confirmActionName ?? 'Submit' }}</button>
+        <button class="btn btn-secondary" (click)="emitClose(false)">{{ data.cancelActionName ?? 'Cancel' }}</button>
+        <button class="btn" [class.btn-danger]="data.danger" [class.btn-primary]="!data.danger" (click)="emitClose(true)">
+            {{ data.confirmActionName ?? 'Submit' }}
+        </button>
     </div>
 </div>

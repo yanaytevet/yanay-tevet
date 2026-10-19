@@ -250,6 +250,7 @@ export class RentersProjectDetailComponent {
       title: 'Delete renter',
       text: `Delete "${renter.name || 'this renter'}"?`,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

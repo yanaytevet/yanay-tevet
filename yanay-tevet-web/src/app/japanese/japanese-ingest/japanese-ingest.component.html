@@ -2,8 +2,8 @@
 
 <div class="max-w-3xl mx-auto px-4 py-6">
   <div class="mb-6">
-    <h1 class="text-[28px] font-bold text-writing">Ingest</h1>
-    <p class="text-[14px] text-writing-minor mt-1">
+    <h1 class="text-display font-bold text-writing">Ingest</h1>
+    <p class="text-body text-writing-minor mt-1">
       Paste a word, kanji, particle, grammar rule, a single sentence, or a whole passage (a song,
       poem, or paragraph). The backend classifies it and creates a stub. Content + linked entities
       are generated in a separate step from the node page.
@@ -11,7 +11,7 @@
   </div>
 
   <div class="card p-5">
-    <span class="block text-[13px] font-semibold text-writing mb-2">Japanese text</span>
+    <span class="block text-meta font-semibold text-writing mb-2">Japanese text</span>
     <textarea
       dir="auto"
       class="main-input w-full"
@@ -22,7 +22,7 @@
       [disabled]="isWorking()"></textarea>
 
     <div class="flex items-center justify-between mt-4">
-      <span class="text-[12px] text-writing-minor">
+      <span class="text-caption text-writing-minor">
         Tip: include furigana inline as 漢字(かんじ).
       </span>
       <button

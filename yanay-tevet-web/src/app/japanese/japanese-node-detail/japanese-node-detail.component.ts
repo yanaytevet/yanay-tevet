@@ -74,13 +74,13 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
     }
     switch (node.status) {
       case 'published':
-        return 'bg-emerald-100 text-emerald-700';
+        return 'bg-success-soft text-success';
       case 'needs_review':
-        return 'bg-amber-100 text-amber-700';
+        return 'bg-warning-soft text-warning';
       case 'generating':
-        return 'bg-sky-100 text-sky-700';
+        return 'bg-info-soft text-info';
       default:
-        return 'bg-secondary-100 text-secondary-500';
+        return 'bg-secondary-100 text-writing-minor';
     }
   });
 

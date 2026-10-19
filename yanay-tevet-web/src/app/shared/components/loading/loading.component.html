@@ -15,14 +15,14 @@
         [class.opacity-0]="!iconVisible()"
         [class.scale-75]="!iconVisible()"
       >
-        <ng-icon [name]="currentIcon()" class="text-3xl text-notion-blue" />
+        <ng-icon [name]="currentIcon()" class="text-3xl text-accent" />
       </div>
     </div>
 
   </div>
 
   <!-- Wave text -->
-  <div class="flex items-end text-muted-300 text-xs font-medium tracking-widest uppercase">
+  <div class="flex items-end text-writing-least text-caption font-medium tracking-widest uppercase">
     @for (char of textChars; track $index) {
       @if (char === ' ') {
         <span class="inline-block w-1.5"></span>

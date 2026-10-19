@@ -2,12 +2,12 @@
 
     <!-- Calendar: last 4 weeks -->
     <div class="card mb-6 p-4">
-        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
+        <div class="eyebrow mb-3">
             Last 4 Weeks
         </div>
         <div class="grid grid-cols-7 gap-1 mb-1">
             @for (label of weekDayLabels; track label) {
-                <div class="text-center text-[11px] font-semibold text-writing-minor">{{ label }}</div>
+                <div class="text-center text-label font-semibold text-writing-minor">{{ label }}</div>
             }
         </div>
         <div class="grid grid-cols-7 gap-1">
@@ -16,14 +16,14 @@
                     <div class="aspect-square"></div>
                 } @else {
                     <div
-                        class="aspect-square flex items-center justify-center rounded-full text-[13px] font-medium transition-colors"
-                        [class.bg-notion-blue]="day.isLogged"
-                        [class.text-white]="day.isLogged"
+                        class="aspect-square flex items-center justify-center rounded-full text-meta font-medium transition-colors"
+                        [class.bg-accent]="day.isLogged"
+                        [class.text-on-accent]="day.isLogged"
                         [class.ring-2]="day.isToday"
-                        [class.ring-notion-blue]="day.isToday && !day.isLogged"
+                        [class.ring-accent]="day.isToday && !day.isLogged"
                         [class.ring-white]="day.isToday && day.isLogged"
                         [class.text-writing-minor]="!day.isLogged && !day.isCurrentMonth"
-                        [class.text-primary-500]="!day.isLogged && day.isCurrentMonth">
+                        [class.text-writing]="!day.isLogged && day.isCurrentMonth">
                         {{ day.dayOfMonth }}
                     </div>
                 }
@@ -33,7 +33,7 @@
 
     <!-- Entries header + new button -->
     <div class="flex items-center justify-between mb-4">
-        <span class="text-[15px] font-semibold text-primary-500">
+        <span class="text-ui font-semibold text-writing">
             {{ totalAmount() }} {{ totalAmount() === 1 ? 'entry' : 'entries' }}
         </span>
         <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
@@ -42,7 +42,7 @@
     </div>
 
     @if (isLoadingEntries()) {
-        <div class="text-center text-writing-minor text-[14px] py-8">Loading...</div>
+        <div class="text-center text-writing-minor text-body py-8">Loading...</div>
     }
 
     @if (!isLoadingEntries()) {
@@ -54,15 +54,15 @@
 
                     <!-- Title + time -->
                     @if (entry.title) {
-                        <div class="text-[16px] font-bold text-primary-500 truncate mb-0.5">{{ entry.title }}</div>
+                        <div class="text-lead font-bold text-writing truncate mb-0.5">{{ entry.title }}</div>
                     }
-                    <div class="text-[12px] text-writing-minor mb-3">{{ formatTime(entry.time) }}</div>
+                    <div class="text-caption text-writing-minor mb-3">{{ formatTime(entry.time) }}</div>
 
                     <!-- Dream text -->
-                    <p class="text-[15px] text-primary-500 leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
+                    <p class="text-ui text-writing leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
 
                     <!-- Action buttons -->
-                    <div class="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)]">
+                    <div class="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-line-subtle">
                         <button
                             type="button"
                             class="icon-btn"
@@ -70,7 +70,7 @@
                             [disabled]="generatingImageId() === entry.id"
                             (click)="generateImage(entry)">
                             @if (generatingImageId() === entry.id) {
-                                <span class="text-[11px] text-writing-minor font-medium">Generating...</span>
+                                <span class="text-label text-writing-minor font-medium">Generating...</span>
                             } @else {
                                 <ng-icon [svg]="featherZap" class="h-4 w-4"></ng-icon>
                             }
@@ -82,7 +82,7 @@
                             [disabled]="uploadingId() === entry.id"
                             (click)="uploadImage(entry)">
                             @if (uploadingId() === entry.id) {
-                                <span class="text-[11px] text-writing-minor font-medium">Uploading...</span>
+                                <span class="text-label text-writing-minor font-medium">Uploading...</span>
                             } @else {
                                 <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
                             }
@@ -107,7 +107,7 @@
                 <!-- Image below content, fading in from white, clickable -->
                 @if (entry.image_url) {
                     <div class="relative cursor-pointer" (click)="openImageDialog(entry.image_url)">
-                        <div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white to-transparent z-10 pointer-events-none"></div>
+                        <div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-layer-2 to-transparent z-10 pointer-events-none"></div>
                         <img
                             [src]="entry.image_url"
                             alt="Dream image"
@@ -118,7 +118,7 @@
         }
 
         @empty {
-            <div class="text-center text-writing-minor text-[14px] py-8">
+            <div class="text-center text-writing-minor text-body py-8">
                 No entries yet. Press <strong>+ New Dream</strong> to log your first one.
             </div>
         }

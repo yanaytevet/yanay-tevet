@@ -19,6 +19,8 @@ export class MenuButtonComponent {
   text = input<string>('');
   color = input<string>('writing');
   icon = input<string>(null);
+  // Read by screen readers when the button shows only an icon.
+  ariaLabel = input<string>('More actions');
   actions= input<MenuItem[]>();
 
   // Make SEPARATOR constant accessible in the template

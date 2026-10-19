@@ -1,262 +1,157 @@
 <div
-    class="absolute top-0 left-0 h-full w-64 bg-layer-2 z-50 -translate-x-full transform transition-transform duration-300 flex flex-col shadow-[0_4px_24px_rgba(0,0,0,0.15)]"
+    class="absolute top-0 start-0 h-full w-64 bg-layer-2 z-50 -translate-x-full transform transition-transform duration-300 flex flex-col border-e border-line shadow-3"
     [class.translate-x-0]="layoutService.isLeftDrawerOpen()">
 
     <div class="flex-1 py-2 overflow-y-auto">
 
-        <!-- Home Link -->
-        <a
-            class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-            [routerLink]="routingService.getHomeUrl()"
-            routerLinkActive="bg-layer-overlay"
-            [routerLinkActiveOptions]="{exact: true}"
-            (click)="layoutService.closeBothDrawers()">
+        <a class="nav-item nav-item-plain" [routerLink]="homeUrl" routerLinkActive="nav-item-active"
+           [routerLinkActiveOptions]="{exact: true}" (click)="layoutService.closeBothDrawers()">
             Home
         </a>
 
-        <!-- Genre Trainer (public) -->
-        <a
-            class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-            [routerLink]="routingService.getGenreTrainerUrl()"
-            routerLinkActive="bg-layer-overlay"
-            (click)="layoutService.closeBothDrawers()">
-            Genre Trainer
+        <a class="nav-item" [routerLink]="genreTrainerUrl" routerLinkActive="nav-item-active"
+           [attr.data-app]="apps.genre.key" (click)="layoutService.closeBothDrawers()">
+            <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.genre.icon"/></span>
+            {{ apps.genre.name }}
         </a>
 
-        <!-- Japanese (public) -->
-        <a
-            class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-            [routerLink]="routingService.getJapaneseHomeUrl()"
-            routerLinkActive="bg-layer-overlay"
-            (click)="layoutService.closeBothDrawers()">
-            Japanese
+        <a class="nav-item" [routerLink]="japaneseUrl" routerLinkActive="nav-item-active"
+           [routerLinkActiveOptions]="{exact: true}"
+           [attr.data-app]="apps.japanese.key" (click)="layoutService.closeBothDrawers()">
+            <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.japanese.icon"/></span>
+            {{ apps.japanese.name }}
         </a>
-
         @if (authService.user()?.is_admin) {
-            <div class="flex flex-col ml-4 border-l border-outline-border-1">
-                <a
-                    class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                    [routerLink]="routingService.getJapaneseIngestUrl()"
-                    routerLinkActive="bg-layer-overlay !text-writing"
-                    (click)="layoutService.closeBothDrawers()">
-                    Ingest
-                </a>
-                <a
-                    class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                    [routerLink]="routingService.getJapaneseReviewUrl()"
-                    routerLinkActive="bg-layer-overlay !text-writing"
-                    (click)="layoutService.closeBothDrawers()">
-                    Review Queue
-                </a>
+            <div class="nav-subitems">
+                <a class="nav-subitem" [routerLink]="japaneseIngestUrl" routerLinkActive="nav-subitem-active"
+                   (click)="layoutService.closeBothDrawers()">Ingest</a>
+                <a class="nav-subitem" [routerLink]="japaneseReviewUrl" routerLinkActive="nav-subitem-active"
+                   (click)="layoutService.closeBothDrawers()">Review Queue</a>
             </div>
         }
 
         @if (authService.isLoggedIn()) {
 
-            <!-- Special Dates (open to every logged-in user) -->
-            <a
-                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                [routerLink]="routingService.getSpecialDatesUrl()"
-                routerLinkActive="bg-layer-overlay"
-                (click)="layoutService.closeBothDrawers()">
-                תאריכים חשובים
+            <a class="nav-item" [routerLink]="specialDatesUrl" routerLinkActive="nav-item-active"
+               [attr.data-app]="apps.dates.key" (click)="layoutService.closeBothDrawers()">
+                <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.dates.icon"/></span>
+                {{ apps.dates.name }}
             </a>
 
-            <!-- Dream Diary -->
-            <a
-                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                [routerLink]="routingService.getDreamDiaryUrl()"
-                routerLinkActive="bg-layer-overlay"
-                (click)="layoutService.closeBothDrawers()">
-                Dream Diary
-            </a>
-
-            <!-- Home Sweet Home -->
-            @if (hasHomeSweetHome()) {
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="homeSweetHomeUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    [routerLinkActiveOptions]="{exact: true}"
-                    (click)="layoutService.closeBothDrawers()">
-                    Home Sweet Home
+            @if (hasTaskManagement()) {
+                <a class="nav-item" [routerLink]="taskManagementUrl" routerLinkActive="nav-item-active"
+                   [attr.data-app]="apps.tasks.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.tasks.icon"/></span>
+                    {{ apps.tasks.name }}
                 </a>
-                <div class="flex flex-col ml-4 border-l border-outline-border-1">
+            }
+
+            @if (hasShoppingLists()) {
+                <a class="nav-item" [routerLink]="shoppingListsUrl" routerLinkActive="nav-item-active"
+                   [attr.data-app]="apps.shopping.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.shopping.icon"/></span>
+                    {{ apps.shopping.name }}
+                </a>
+            }
+
+            @if (hasItineraryLists()) {
+                <a class="nav-item" [routerLink]="itineraryListsUrl" routerLinkActive="nav-item-active"
+                   [attr.data-app]="apps.itinerary.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.itinerary.icon"/></span>
+                    {{ apps.itinerary.name }}
+                </a>
+            }
+
+            @if (hasHomeSweetHome()) {
+                <a class="nav-item" [routerLink]="homeSweetHomeUrl()" routerLinkActive="nav-item-active"
+                   [routerLinkActiveOptions]="{exact: true}"
+                   [attr.data-app]="apps.home.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.home.icon"/></span>
+                    {{ apps.home.name }}
+                </a>
+                <div class="nav-subitems">
                     @if (hasApartmentHunt()) {
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            [routerLink]="routingService.getApartmentHuntUrl()"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            Apartment Hunt
-                        </a>
+                        <a class="nav-subitem" [routerLink]="apartmentHuntUrl" routerLinkActive="nav-subitem-active"
+                           (click)="layoutService.closeBothDrawers()">Apartment Hunt</a>
                     }
                     @if (hasVillaVillekulla()) {
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            [routerLink]="routingService.getVillaVillekullaUrl()"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            Villa Villekulla
-                        </a>
+                        <a class="nav-subitem" [routerLink]="villaVillekullaUrl" routerLinkActive="nav-subitem-active"
+                           (click)="layoutService.closeBothDrawers()">Villa Villekulla</a>
                     }
                     @if (hasRentersCrm()) {
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            [routerLink]="routingService.getRentersCrmUrl()"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            Renters CRM
-                        </a>
+                        <a class="nav-subitem" [routerLink]="rentersCrmUrl" routerLinkActive="nav-subitem-active"
+                           (click)="layoutService.closeBothDrawers()">Renters CRM</a>
                     }
                 </div>
             }
 
-            <!-- Itinerary Lists -->
-            @if (hasItineraryLists()) {
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getItineraryListsUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    (click)="layoutService.closeBothDrawers()">
-                    Itinerary Lists
-                </a>
-            }
-
-            <!-- Shopping Lists -->
-            @if (hasShoppingLists()) {
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getShoppingListsUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    (click)="layoutService.closeBothDrawers()">
-                    Shopping Lists
-                </a>
-            }
-
-            <!-- Task Management -->
-            @if (hasTaskManagement()) {
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getTaskManagementUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    (click)="layoutService.closeBothDrawers()">
-                    Task Management
-                </a>
-            }
-
-            <!-- Workout Plan -->
             @if (hasWorkoutPlan()) {
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getWorkoutPlanUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    (click)="layoutService.closeBothDrawers()">
-                    Workout Plan
+                <a class="nav-item" [routerLink]="workoutPlanUrl" routerLinkActive="nav-item-active"
+                   [attr.data-app]="apps.workout.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.workout.icon"/></span>
+                    {{ apps.workout.name }}
                 </a>
             }
 
-            <!-- About / Website Section -->
-            <div class="flex flex-col">
-                <div
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors cursor-pointer"
-                    (click)="toggleAboutFold()">
-                    <span class="flex-1">About</span>
-                    <ng-icon
-                        [svg]="bootstrapChevronRight"
-                        class="transition-transform duration-200"
-                        [class.rotate-90]="!isAboutFolded()">
-                    </ng-icon>
+            <a class="nav-item" [routerLink]="dreamDiaryUrl" routerLinkActive="nav-item-active"
+               [attr.data-app]="apps.dreams.key" (click)="layoutService.closeBothDrawers()">
+                <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.dreams.icon"/></span>
+                {{ apps.dreams.name }}
+            </a>
+
+            <button type="button" class="nav-item nav-item-plain" (click)="toggleAboutFold()">
+                <span class="flex-1">About</span>
+                <ng-icon [svg]="bootstrapChevronRight" class="text-writing-minor transition-transform duration-200"
+                         [class.rotate-90]="!isAboutFolded()"/>
+            </button>
+            @if (!isAboutFolded()) {
+                <div class="nav-subitems">
+                    <a class="nav-subitem" [routerLink]="faqUrl" routerLinkActive="nav-subitem-active"
+                       (click)="layoutService.closeBothDrawers()">FAQ</a>
+                    <a class="nav-subitem" [routerLink]="contactUrl" routerLinkActive="nav-subitem-active"
+                       (click)="layoutService.closeBothDrawers()">Contact</a>
                 </div>
+            }
 
-                @if (!isAboutFolded()) {
-                    <div class="flex flex-col ml-4 border-l border-outline-border-1">
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            routerLink="/faq"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            FAQ
-                        </a>
-                        <a
-                            class="px-6 py-[6px] text-[13px] text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors truncate no-underline"
-                            [routerLink]="routingService.getContactUrl()"
-                            routerLinkActive="bg-layer-overlay !text-writing"
-                            (click)="layoutService.closeBothDrawers()">
-                            Contact
-                        </a>
-                    </div>
-                }
-            </div>
-
-            <!-- Admin Section -->
             @if (authService.user()?.is_admin) {
-                <div class="mt-4 border-t border-outline-border-1 pt-4">
-                    <div class="px-6 py-1 text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">
-                        Admin
-                    </div>
-
-                    <a
-                        class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                        [routerLink]="routingService.getMyDashboardUrl()"
-                        routerLinkActive="bg-layer-overlay"
-                        (click)="layoutService.closeBothDrawers()">
-                        My Dashboard
+                <div class="mt-3 border-t border-line">
+                    <div class="nav-group-label">Admin</div>
+                    <a class="nav-item" [routerLink]="myDashboardUrl" routerLinkActive="nav-item-active"
+                       [attr.data-app]="apps.dashboard.key" (click)="layoutService.closeBothDrawers()">
+                        <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.dashboard.icon"/></span>
+                        {{ apps.dashboard.name }}
                     </a>
-
-                    <a
-                        class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                        [routerLink]="routingService.getAdminUsersUrl()"
-                        routerLinkActive="bg-layer-overlay"
-                        (click)="layoutService.closeBothDrawers()">
+                    <a class="nav-item" [routerLink]="adminUsersUrl" routerLinkActive="nav-item-active"
+                       (click)="layoutService.closeBothDrawers()">
+                        <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="bootstrapPeople"/></span>
                         User Management
                     </a>
                 </div>
             }
 
-            <!-- User Menu -->
-            <div class="mt-4 border-t border-outline-border-1 pt-4">
-                <div class="px-6 py-1 text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em]">
-                    User ({{ authService.userInitials() }})
-                </div>
-
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="routingService.getUserSettingsUrl()"
-                    routerLinkActive="bg-layer-overlay"
-                    (click)="layoutService.closeBothDrawers()">
+            <div class="mt-3 border-t border-line">
+                <div class="nav-group-label">User ({{ authService.userInitials() }})</div>
+                <a class="nav-item nav-item-plain" [routerLink]="userSettingsUrl" routerLinkActive="nav-item-active"
+                   [routerLinkActiveOptions]="{exact: true}" (click)="layoutService.closeBothDrawers()">
                     Account Settings
                 </a>
-
-                <a
-                    class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                    [routerLink]="['/user-settings']"
-                    fragment="passkeys"
-                    (click)="layoutService.closeBothDrawers()">
+                <a class="nav-item nav-item-plain" [routerLink]="['/user-settings']" fragment="passkeys"
+                   (click)="layoutService.closeBothDrawers()">
                     Manage Passkeys
                 </a>
-
-                <button
-                    class="w-full flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors bg-transparent border-none cursor-pointer font-[inherit]"
-                    (click)="logout()">
+                <button type="button" class="nav-item nav-item-plain" (click)="logout()">
                     Logout
                 </button>
             </div>
         } @else {
 
-            <!-- Logged-out navigation -->
-            <a
-                class="flex items-center px-6 py-[10px] text-[15px] font-medium text-writing hover:bg-layer-overlay transition-colors no-underline"
-                routerLink="/faq"
-                routerLinkActive="bg-layer-overlay"
-                (click)="layoutService.closeBothDrawers()">
+            <a class="nav-item nav-item-plain" [routerLink]="faqUrl" routerLinkActive="nav-item-active"
+               (click)="layoutService.closeBothDrawers()">
                 FAQ
             </a>
-            <div class="mt-4 border-t border-outline-border-1 pt-4 px-4">
-                <a
-                    routerLink="/login"
-                    class="w-full flex items-center justify-center px-4 py-[10px] text-[15px] font-semibold bg-notion-blue text-white rounded hover:bg-notion-blue-active transition-colors no-underline"
-                    (click)="layoutService.closeBothDrawers()">
+            <div class="mt-3 border-t border-line pt-4 px-4">
+                <a routerLink="/login" class="btn btn-primary w-full no-underline"
+                   (click)="layoutService.closeBothDrawers()">
                     Sign in
                 </a>
             </div>
@@ -264,16 +159,15 @@
         }
     </div>
 
-    <!-- Footer: Theme Toggle -->
-    <div class="p-3 border-t border-outline-border-1">
-        <button
-            class="w-full flex items-center justify-between px-3 py-[10px] rounded-lg bg-layer-3 hover:bg-layer-overlay transition-colors border-none cursor-pointer font-[inherit] text-[15px] font-medium text-writing"
+    <div class="p-3 border-t border-line">
+        <button type="button"
+            class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg bg-layer-3 hover:bg-layer-overlay transition-colors border-none cursor-pointer text-ui font-medium text-writing"
             (click)="darkModeService.toggleDarkMode()">
             <span>Theme</span>
             @if (darkModeService.darkMode()) {
-                <ng-icon [svg]="bootstrapSunFill" class="h-5 w-5 text-yellow-500"></ng-icon>
+                <ng-icon [svg]="bootstrapSunFill" class="h-5 w-5 text-warning"></ng-icon>
             } @else {
-                <ng-icon [svg]="bootstrapMoonFill" class="h-5 w-5 text-gray-700"></ng-icon>
+                <ng-icon [svg]="bootstrapMoonFill" class="h-5 w-5 text-writing-minor"></ng-icon>
             }
         </button>
     </div>

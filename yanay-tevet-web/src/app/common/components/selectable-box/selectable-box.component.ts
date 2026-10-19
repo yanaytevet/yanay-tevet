@@ -6,7 +6,6 @@ import {bootstrapCheck} from '@ng-icons/bootstrap-icons';
 @Component({
   selector: 'app-selectable-box',
   templateUrl: './selectable-box.component.html',
-  styleUrls: ['./selectable-box.component.css'],
   standalone: true,
   imports: [NgIcon]
 })

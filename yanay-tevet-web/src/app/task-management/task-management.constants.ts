@@ -10,13 +10,14 @@ export const TASK_PRIORITY_LABELS: Record<TaskPriority, string> = {
 
 export const TASK_PRIORITY_ORDER: TaskPriority[] = ['none', 'low', 'medium', 'high', 'urgent'];
 
-// Higher-priority tasks get a stronger accent. "none" renders without a badge.
+// The chip variant added to `chip` for each priority; higher priorities get a stronger colour.
+// "none" renders without a chip.
 export const TASK_PRIORITY_CHIP_CLASS: Record<TaskPriority, string> = {
   none: '',
-  low: 'bg-layer-3 text-writing-minor',
-  medium: 'bg-layer-3 text-notion-blue',
-  high: 'bg-layer-3 text-notion-orange',
-  urgent: 'bg-notion-red-bg text-notion-red',
+  low: '',
+  medium: 'chip-accent',
+  high: 'chip-warning',
+  urgent: 'chip-danger',
 };
 
 // Repeating-task weekdays use JS Date.getDay() numbering: 0=Sunday .. 6=Saturday.

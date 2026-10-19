@@ -2,8 +2,8 @@
 
     <div class="flex items-start justify-between gap-4 mb-6">
         <div>
-            <h1 class="text-[22px] font-bold text-primary-500 mb-1">User Management</h1>
-            <p class="text-[13px] text-writing-minor">View all users and grant or revoke their permissions.</p>
+            <h1 class="text-title font-bold text-writing mb-1">User Management</h1>
+            <p class="text-meta text-writing-minor">View all users and grant or revoke their permissions.</p>
         </div>
         <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="openInviteDialog()">
             <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
@@ -17,34 +17,34 @@
     </div>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-[14px] py-12">Loading users...</div>
+        <div class="text-center text-writing-minor text-body py-12">Loading users...</div>
     } @else if (users().length === 0) {
         <div class="card p-10 text-center">
             <div class="text-4xl mb-3">👥</div>
-            <p class="text-[15px] font-semibold text-primary-500 mb-1">No users found</p>
-            <p class="text-[13px] text-writing-minor">Try a different search.</p>
+            <p class="text-ui font-semibold text-writing mb-1">No users found</p>
+            <p class="text-meta text-writing-minor">Try a different search.</p>
         </div>
     } @else {
         <div class="flex flex-col gap-3">
             @for (user of users(); track user.id) {
                 <div class="card p-4" [class.opacity-60]="savingUserId() === user.id">
                     <div class="flex items-start gap-3 mb-3">
-                        <div class="shrink-0 h-10 w-10 rounded-full bg-layer-3 flex items-center justify-center text-[13px] font-semibold text-primary-500 uppercase">
+                        <div class="shrink-0 h-10 w-10 rounded-full bg-layer-3 flex items-center justify-center text-meta font-semibold text-writing uppercase">
                             {{ user.initials || '?' }}
                         </div>
                         <div class="min-w-0 flex-grow">
                             <div class="flex items-center gap-2">
-                                <span class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">
+                                <span class="text-ui font-semibold text-writing truncate" dir="auto">
                                     {{ user.full_name || user.username }}
                                 </span>
                                 @if (user.id === currentUserId()) {
-                                    <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">You</span>
+                                    <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3">You</span>
                                 }
                                 @if (user.is_admin) {
-                                    <span class="shrink-0 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-notion-blue text-white">Admin</span>
+                                    <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-accent text-on-accent">Admin</span>
                                 }
                             </div>
-                            <div class="text-[12px] text-writing-minor truncate">
+                            <div class="text-caption text-writing-minor truncate">
                                 {{ '@' + user.username }}@if (user.email) { · {{ user.email }} }
                             </div>
                         </div>
@@ -56,10 +56,10 @@
                                     [disabled]="savingUserId() !== null"
                                     [appTooltip]="option.description"
                                     (click)="togglePermission(user, option)"
-                                    class="text-[12px] font-medium px-3 py-1 rounded-full border transition-colors disabled:cursor-not-allowed"
+                                    class="text-caption font-medium px-3 py-1 rounded-full border transition-colors disabled:cursor-not-allowed"
                                     [class]="permissionState()[user.id + ':' + option.value]
-                                        ? 'bg-notion-blue text-white border-notion-blue hover:bg-notion-blue-active'
-                                        : 'bg-layer-2 text-writing-minor border-outline-border-1 hover:bg-layer-overlay'">
+                                        ? 'bg-accent text-on-accent border-accent hover:bg-accent-hover'
+                                        : 'bg-layer-2 text-writing-minor border-line hover:bg-layer-overlay'">
                                 {{ option.label }}
                             </button>
                         }
@@ -75,7 +75,7 @@
                     <ng-icon [svg]="featherChevronLeft" class="h-4 w-4"></ng-icon>
                     Prev
                 </button>
-                <span class="text-[13px] text-writing-minor">
+                <span class="text-meta text-writing-minor">
                     Page {{ page() + 1 }} of {{ pagesAmount() }} · {{ totalAmount() }} users
                 </span>
                 <button type="button" class="btn btn-secondary flex items-center gap-1"

@@ -1,77 +1,68 @@
-<div class="max-w-4xl mx-auto w-full p-6">
+<div class="page-narrow">
 
-    <div class="flex items-start justify-between gap-3 mb-6">
-        <div class="min-w-0">
-            <h1 class="text-[22px] font-bold text-primary-500 mb-1">Task Management</h1>
-            <p class="text-[13px] text-writing-minor">Organise your work into projects, tasks and subtasks.</p>
-        </div>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="createProject()">
-            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-            <span class="hidden sm:inline">New project</span>
+    <app-page-header title="Task Management" [subtitle]="subtitle()">
+        <button type="button" class="btn btn-primary" (click)="createProject()">
+            <ng-icon [svg]="featherPlus"/>
+            New project
         </button>
-    </div>
+    </app-page-header>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-[14px] py-12">Loading projects...</div>
+        <app-loading-state label="Loading projects"/>
     } @else if (projects().length === 0) {
-        <div class="card p-10 text-center">
-            <div class="text-4xl mb-3">✅</div>
-            <p class="text-[15px] font-semibold text-primary-500 mb-1">No projects yet</p>
-            <p class="text-[13px] text-writing-minor mb-5">Create a project to start tracking tasks and subtasks.</p>
-            <button type="button" class="btn btn-primary" (click)="createProject()">New project</button>
-        </div>
+        <app-empty-state title="Start your first project"
+                         text="A project holds tasks and subtasks, with due dates, priorities and the people you share it with.">
+            <button type="button" class="btn btn-primary" (click)="createProject()">
+                <ng-icon [svg]="featherPlus"/>
+                New project
+            </button>
+        </app-empty-state>
     } @else {
         @if (activeProjects().length > 0) {
-            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-8">
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-3 mb-8">
                 @for (project of activeProjects(); track project.id) {
-                    <div class="card p-4 cursor-pointer shadow-2 hover:shadow-3 transition-shadow"
-                         (click)="openProject(project)">
-                        <div class="flex items-start justify-between gap-3 mb-2">
-                            <div class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">{{ project.name }}</div>
+                    <a [routerLink]="projectUrls()[project.id]" class="card card-interactive p-4 flex flex-col">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ project.name }}</div>
                             @if (project.open_task_count > 0) {
-                                <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-notion-blue">
-                                    {{ project.open_task_count }} open
-                                </span>
-                            } @else {
-                                <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-notion-green">
-                                    All done
-                                </span>
+                                <span class="chip chip-accent shrink-0">{{ project.open_task_count }} open</span>
+                            } @else if (project.task_count > 0) {
+                                <span class="chip chip-success shrink-0">All done</span>
                             }
                         </div>
                         @if (project.description) {
-                            <p class="text-[13px] text-writing-minor line-clamp-2 mb-3" dir="auto">{{ project.description }}</p>
+                            <p class="text-meta text-writing-minor line-clamp-2 mt-1" dir="auto">{{ project.description }}</p>
                         }
-                        <div class="flex items-center gap-3 text-[12px] text-writing-minor">
-                            <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
-                            <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                        <div class="mt-auto pt-4">
+                            @if (project.task_count > 0) {
+                                <div class="h-1 rounded-full bg-layer-3 overflow-hidden mb-2" aria-hidden="true">
+                                    <div class="h-full rounded-full {{ donePercent()[project.id] === 100 ? 'bg-success' : 'bg-accent' }}" [style.width.%]="donePercent()[project.id]"></div>
+                                </div>
+                            }
+                            <div class="flex items-center gap-2 text-caption text-writing-minor">
+                                <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
+                                <span class="text-writing-least" aria-hidden="true">·</span>
+                                <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 }
             </div>
         }
 
         @if (archivedProjects().length > 0) {
-            <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">Archived</div>
-            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+            <div class="eyebrow mb-3">Archived</div>
+            <div class="card divide-y divide-line-subtle">
                 @for (project of archivedProjects(); track project.id) {
-                    <div class="card p-4 cursor-pointer opacity-70 hover:opacity-100 hover:shadow-2 transition-all"
-                         (click)="openProject(project)">
-                        <div class="flex items-start justify-between gap-3 mb-2">
-                            <div class="text-[15px] font-semibold text-primary-500 truncate" dir="auto">{{ project.name }}</div>
-                            <span class="shrink-0 text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-layer-3 text-writing-minor">
-                                Archived
-                            </span>
+                    <a [routerLink]="projectUrls()[project.id]"
+                       class="flex items-center gap-3 px-4 py-3 no-underline hover:bg-layer-overlay transition-colors first:rounded-t-xl last:rounded-b-xl">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-body font-medium text-writing-minor truncate" dir="auto">{{ project.name }}</div>
                         </div>
-                        @if (project.description) {
-                            <p class="text-[13px] text-writing-minor line-clamp-2 mb-3" dir="auto">{{ project.description }}</p>
-                        }
-                        <div class="flex items-center gap-3 text-[12px] text-writing-minor">
-                            <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
-                            <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
-                        </div>
-                    </div>
+                        <span class="text-caption text-writing-least shrink-0">
+                            {{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}
+                        </span>
+                    </a>
                 }
             </div>
         }

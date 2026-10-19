@@ -1,36 +1,31 @@
 @reference "../../styles.css";
 
-.main-input {
-    @apply w-full bg-layer-2 text-writing rounded appearance-none disabled:opacity-60 disabled:cursor-not-allowed;
-    padding: 6px 8px;
-    border: 1px solid #dddddd;
-    font-size: 16px;
-    line-height: 1.5;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
+/* In the components layer so a utility on the same element wins, as in Tailwind. */
+@layer components {
+  /* A text field. 16px text keeps iOS Safari from zooming in on focus. */
+  .main-input {
+      @apply w-full bg-layer-2 text-writing text-lead rounded appearance-none border border-line
+      disabled:opacity-60 disabled:cursor-not-allowed;
+      padding: 6px 8px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
 
-.main-input::placeholder {
-    color: #a39e98;
-}
+  .main-input::placeholder {
+      @apply text-writing-least;
+  }
 
-.main-input:focus {
-    outline: none;
-    border-color: #0075de;
-    box-shadow: 0 0 0 2px rgba(0,117,222,0.15);
-}
+  .main-input:focus {
+      @apply outline-none border-accent;
+      box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
 
-.dark .main-input {
-    border-color: rgba(255,255,255,0.12);
-    background-color: #31302e;
-}
+  .dark .main-input {
+      border-color: rgba(255,255,255,0.12);
+  }
 
-.dark .main-input:focus {
-    border-color: #62aef0;
-    box-shadow: 0 0 0 2px rgba(98,174,240,0.15);
-}
-
-.input-label {
-    @apply block text-sm font-medium text-writing-minor;
+  .input-label {
+      @apply block text-meta font-medium text-writing-minor;
+  }
 }
 
 /* Chrome, Safari, Edge */

@@ -60,7 +60,7 @@ function cellClasses(inMonth: boolean, isPast: boolean, booking: UnitBookingSche
       parts.push('bg-layer-2', 'hover:bg-layer-3', 'cursor-pointer');
     }
   } else if (mine) {
-    parts.push('bg-notion-blue/15', 'border-notion-blue/40', 'cursor-pointer');
+    parts.push('bg-accent/15', 'border-accent/40', 'cursor-pointer');
   } else {
     parts.push('bg-layer-4', 'border-layer-4', 'cursor-pointer');
   }

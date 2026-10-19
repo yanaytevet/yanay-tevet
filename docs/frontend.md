@@ -20,16 +20,28 @@ drawer — hold throughout and are not repeated here.
 
 ## Styling
 
-Tailwind utilities, plus the shared classes in `src/assets/styles/` — `btn`, `btn-primary`,
-`btn-secondary`, `icon-btn` (`buttons.css`), `main-input`, `input-label` (`forms.css`), `card`
-(`surfaces.css`). A component `.css` file is only for what utilities cannot express.
+`DESIGN.md` is the spec; this is how it is wired. Tailwind utilities, plus the shared classes in
+`src/assets/styles/` — `btn` with `btn-primary` / `btn-secondary` / `btn-ghost` / `btn-danger` / `btn-sm`,
+`icon-btn` (+ `icon-btn-danger`) in `buttons.css`; `main-input`, `input-label` in `forms.css`; `card`,
+`card-interactive`, `chip` + variants, `app-chip`, `page-narrow`, `page-wide` in `surfaces.css`; the dialog
+shell in `common/dialogs/dialogs-style.css`. They sit in `@layer components`, so a utility on the same
+element overrides them. A component `.css` file is only for what utilities cannot express.
 
-`DESIGN.md`'s palette is implemented as theme tokens in `src/styles.css` (`@theme`), and the same file
-redefines them under `.dark`. Colour and shadow come from those tokens — `bg-layer-1`/`bg-layer-2`,
-`text-writing`, `text-writing-minor`, `text-primary-500`, `text-secondary-400`, `shadow-1`/`shadow-2` —
-never from a hex value or a stock Tailwind colour, because only the tokens follow the theme.
-`DarkModeService` toggles `.dark` on `<html>` from the switch in the left drawer and remembers it in
+Colour and size come only from the tokens in `src/styles.css` (`@theme`, redefined under `.dark`):
+`bg-layer-1…4`, `text-writing` / `-minor` / `-least`, `border-line` / `-subtle`, `bg-accent`,
+`text-on-accent`, `danger` / `warning` / `success` / `info` (+ `-soft`), and the text roles `text-label` …
+`text-hero` — never a hex value, a stock Tailwind colour or `text-[13px]`, because only the tokens follow the
+theme. `DarkModeService` toggles `.dark` on `<html>` from the switch in the left drawer and remembers it in
 `localStorage`.
+
+The accent follows the app: `AppAccentService` (`shared/apps/`) writes the current app's key to
+`<html data-app>` on navigation, from the registry in `shared/apps/hub-apps.ts` (key, name, icon, first URL
+segment). A new app adds an entry there and its colour pair in `styles.css`. Pages are built from the shared
+pieces in `common/components/page/` — `app-page-header`, `app-empty-state`, `app-loading-state`,
+`app-error-state`, `app-sub-nav`; task management is the reference.
+
+`can-hover:` is a custom variant for devices with a mouse; use it for hover-only reveals (row actions), so
+touch screens keep them visible.
 
 ## Templates
 
@@ -94,7 +106,7 @@ export class MyComponent {
 ```
 
 ```html
-<ng-icon [svg]="bootstrapGearFill" class="text-base text-secondary-400" />
+<ng-icon [svg]="bootstrapGearFill" class="text-base text-writing-minor" />
 ```
 
 Size comes from the text size: `text-sm` ≈ 14px, `text-base` ≈ 16px, `text-xl` ≈ 20px.

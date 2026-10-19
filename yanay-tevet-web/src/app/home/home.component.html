@@ -1,183 +1,83 @@
 @if (authService.isLoggedIn()) {
 
-  <div class="flex-1 overflow-y-auto px-6 py-8">
+  <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
     <div class="mx-auto w-full max-w-4xl">
 
       <div class="text-center mb-8">
-        <h1 class="text-[26px] font-bold text-writing tracking-[-0.75px] mb-2">
+        <h1 class="text-display font-bold text-writing mb-2">
           Welcome to Yanay Tevet's Platform
         </h1>
-        <p class="text-[15px] text-writing-minor leading-normal">
+        <p class="text-ui text-writing-minor">
           This is where I build stuff.
         </p>
       </div>
 
-      <!-- Public Apps -->
       <div class="mb-8">
-        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
-          Public Apps
-        </div>
+        <div class="eyebrow mb-3">Public apps</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <a
-            [routerLink]="routingService.getGenreTrainerUrl()"
-            class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-            <div class="text-3xl">🎧</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">Genre Trainer</div>
-              <div class="text-[13px] text-writing-minor">Train your ear on electronic music genres</div>
-            </div>
-          </a>
-          <a
-            [routerLink]="routingService.getJapaneseHomeUrl()"
-            class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-            <div class="text-3xl">🈶</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">Japanese</div>
-              <div class="text-[13px] text-writing-minor">Explore Japanese through a network of sentences, words, kanji, and rules</div>
-            </div>
-          </a>
-          <a
-            [routerLink]="routingService.getSpecialDatesUrl()"
-            class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-            <div class="text-3xl">🎂</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">תאריכים חשובים</div>
-              <div class="text-[13px] text-writing-minor">Birthdays, anniversaries and memorials — in Hebrew and Gregorian dates</div>
-            </div>
-          </a>
+          <app-hub-tile [app]="apps.genre" [url]="genreTrainerUrl"
+                        description="Train your ear on electronic music genres"/>
+          <app-hub-tile [app]="apps.japanese" [url]="japaneseUrl"
+                        description="Explore Japanese through a network of sentences, words, kanji, and rules"/>
+          <app-hub-tile [app]="apps.dates" [url]="specialDatesUrl"
+                        description="Birthdays, anniversaries and memorials — in Hebrew and Gregorian dates"/>
         </div>
       </div>
 
-      <!-- Apps the user has access to -->
-      @if (hasDreamDiary() || hasHomeSweetHome() || hasItineraryLists() || hasShoppingLists() || hasTaskManagement()) {
+      @if (hasAnyPrivateApp()) {
         <div class="mb-8">
-          <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
-            Your Apps
-          </div>
+          <div class="eyebrow mb-3">Your apps</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            @if (hasDreamDiary()) {
-              <a
-                [routerLink]="routingService.getDreamDiaryUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">🌙</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Dream Diary</div>
-                  <div class="text-[13px] text-writing-minor">Log and explore your dreams</div>
-                </div>
-              </a>
-            }
-            @if (hasHomeSweetHome()) {
-              <a
-                [routerLink]="homeSweetHomeUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">🏠</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Home Sweet Home</div>
-                  <div class="text-[13px] text-writing-minor">Find your next place — hunt apartments, track villas, and manage renters</div>
-                </div>
-              </a>
-            }
-            @if (hasItineraryLists()) {
-              <a
-                [routerLink]="routingService.getItineraryListsUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">📋</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Itinerary Lists</div>
-                  <div class="text-[13px] text-writing-minor">Reusable packing & prep lists you activate when you head out</div>
-                </div>
-              </a>
+            @if (hasTaskManagement()) {
+              <app-hub-tile [app]="apps.tasks" [url]="taskManagementUrl"
+                            description="Projects, tasks and subtasks with due dates, priorities and sharing"/>
             }
             @if (hasShoppingLists()) {
-              <a
-                [routerLink]="routingService.getShoppingListsUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">🛒</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Shopping Lists</div>
-                  <div class="text-[13px] text-writing-minor">Shared grocery lists — check items off and re-add them from history</div>
-                </div>
-              </a>
+              <app-hub-tile [app]="apps.shopping" [url]="shoppingListsUrl"
+                            description="Shared grocery lists — check items off and re-add them from history"/>
             }
-            @if (hasTaskManagement()) {
-              <a
-                [routerLink]="routingService.getTaskManagementUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">✅</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Task Management</div>
-                  <div class="text-[13px] text-writing-minor">Projects, tasks and subtasks with due dates, priorities and sharing</div>
-                </div>
-              </a>
+            @if (hasItineraryLists()) {
+              <app-hub-tile [app]="apps.itinerary" [url]="itineraryListsUrl"
+                            description="Reusable packing and prep lists you activate when you head out"/>
+            }
+            @if (hasHomeSweetHome()) {
+              <app-hub-tile [app]="apps.home" [url]="homeSweetHomeUrl()"
+                            description="Find your next place — hunt apartments, track villas, and manage renters"/>
             }
             @if (hasWorkoutPlan()) {
-              <a
-                [routerLink]="routingService.getWorkoutPlanUrl()"
-                class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-                <div class="text-3xl">🏋️</div>
-                <div>
-                  <div class="text-[15px] font-semibold text-primary-500">Workout Plan</div>
-                  <div class="text-[13px] text-writing-minor">Routines of exercises with the sets, reps and times you're training</div>
-                </div>
-              </a>
+              <app-hub-tile [app]="apps.workout" [url]="workoutPlanUrl"
+                            description="Routines of exercises with the sets, reps and times you're training"/>
+            }
+            @if (hasDreamDiary()) {
+              <app-hub-tile [app]="apps.dreams" [url]="dreamDiaryUrl"
+                            description="Log and explore your dreams"/>
             }
           </div>
         </div>
       }
 
-      <!-- Admin tools -->
       @if (authService.user()?.is_admin) {
         <div class="mb-8">
-          <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
-            Admin
-          </div>
+          <div class="eyebrow mb-3">Admin</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <a
-              [routerLink]="routingService.getMyDashboardUrl()"
-              class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-              <div class="text-3xl">📊</div>
-              <div>
-                <div class="text-[15px] font-semibold text-primary-500">My Dashboard</div>
-                <div class="text-[13px] text-writing-minor">Live status from the services I depend on</div>
-              </div>
-            </a>
-            <a
-              [routerLink]="routingService.getAdminUsersUrl()"
-              class="card p-4 flex flex-col gap-2 no-underline hover:shadow-2 transition-shadow">
-              <div class="text-3xl">👥</div>
-              <div>
-                <div class="text-[15px] font-semibold text-primary-500">User Management</div>
-                <div class="text-[13px] text-writing-minor">View users and grant or revoke permissions</div>
-              </div>
-            </a>
+            <app-hub-tile [app]="apps.dashboard" [url]="myDashboardUrl"
+                          description="Live status from the services I depend on"/>
+            <app-hub-tile [app]="userManagementApp" [url]="adminUsersUrl"
+                          description="View users and grant or revoke permissions"/>
           </div>
         </div>
       }
 
-      <div class="mt-12 pt-6 border-t border-[rgba(0,0,0,0.1)] text-center">
-        <p class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3">
-          Learn more
-        </p>
-        <div class="flex items-center justify-center gap-3 text-[13px] flex-wrap">
-          <a [routerLink]="routingService.getFaqUrl()"
-             class="text-writing-minor hover:text-writing transition-colors no-underline">
-            FAQ
-          </a>
-          <span class="text-writing-minor opacity-60">·</span>
-          <a [routerLink]="routingService.getContactUrl()"
-             class="text-writing-minor hover:text-writing transition-colors no-underline">
-            Contact
-          </a>
-          <span class="text-writing-minor opacity-60">·</span>
-          <a [routerLink]="routingService.getPrivacyUrl()"
-             class="text-writing-minor hover:text-writing transition-colors no-underline">
-            Privacy
-          </a>
-          <span class="text-writing-minor opacity-60">·</span>
-          <a [routerLink]="routingService.getTermsUrl()"
-             class="text-writing-minor hover:text-writing transition-colors no-underline">
-            Terms
-          </a>
+      <div class="mt-12 pt-6 border-t border-line text-center">
+        <p class="eyebrow mb-3">Learn more</p>
+        <div class="flex items-center justify-center gap-3 text-meta flex-wrap">
+          <a [routerLink]="faqUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">FAQ</a>
+          <span class="text-writing-least" aria-hidden="true">·</span>
+          <a [routerLink]="contactUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Contact</a>
+          <span class="text-writing-least" aria-hidden="true">·</span>
+          <a [routerLink]="privacyUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Privacy</a>
+          <span class="text-writing-least" aria-hidden="true">·</span>
+          <a [routerLink]="termsUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Terms</a>
         </div>
       </div>
 
@@ -186,59 +86,32 @@
 
 } @else {
 
-  <section class="hero-section">
+  <div class="hero-section">
     <div class="hero-glow"></div>
     <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
 
-      <h1 class="hero-heading">
-        Yanay Tevet
-      </h1>
+      <h1 class="hero-heading">Yanay Tevet</h1>
 
-      <p class="hero-sub">
-        My projects — some public, some not.
-      </p>
+      <p class="hero-sub">My projects — some public, some not.</p>
 
       <div class="flex items-center gap-3 mt-10">
-        <a routerLink="/login" class="cta-primary">Sign in</a>
-        <a routerLink="/faq" class="cta-secondary">Learn more</a>
+        <a routerLink="/login" class="btn btn-primary px-5 py-2.5 text-ui no-underline">Sign in</a>
+        <a [routerLink]="faqUrl" class="btn btn-secondary px-5 py-2.5 text-ui no-underline">Learn more</a>
       </div>
 
       <div class="mt-12 w-full max-w-sm">
-        <div class="text-[11px] font-semibold text-writing-minor uppercase tracking-[0.08em] mb-3 text-left">
-          Try for free
-        </div>
+        <div class="eyebrow mb-3 text-start">Try for free</div>
         <div class="grid grid-cols-1 gap-3">
-          <a
-            [routerLink]="routingService.getGenreTrainerUrl()"
-            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow text-left">
-            <div class="text-3xl">🎧</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">Genre Trainer</div>
-              <div class="text-[13px] text-writing-minor">Train your ear on electronic music genres</div>
-            </div>
-          </a>
-          <a
-            [routerLink]="routingService.getJapaneseHomeUrl()"
-            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow text-left">
-            <div class="text-3xl">🈶</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">Japanese</div>
-              <div class="text-[13px] text-writing-minor">Explore Japanese through a network of nodes</div>
-            </div>
-          </a>
-          <a
-            [routerLink]="routingService.getSpecialDatesUrl()"
-            class="card p-4 flex items-center gap-4 no-underline hover:shadow-2 transition-shadow text-left">
-            <div class="text-3xl">🎂</div>
-            <div>
-              <div class="text-[15px] font-semibold text-primary-500">תאריכים חשובים</div>
-              <div class="text-[13px] text-writing-minor">Birthdays and anniversaries in Hebrew and Gregorian dates</div>
-            </div>
-          </a>
+          <app-hub-tile [app]="apps.genre" [url]="genreTrainerUrl"
+                        description="Train your ear on electronic music genres"/>
+          <app-hub-tile [app]="apps.japanese" [url]="japaneseUrl"
+                        description="Explore Japanese through a network of nodes"/>
+          <app-hub-tile [app]="apps.dates" [url]="specialDatesUrl"
+                        description="Birthdays and anniversaries in Hebrew and Gregorian dates"/>
         </div>
       </div>
 
     </div>
-  </section>
+  </div>
 
 }

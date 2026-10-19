@@ -29,7 +29,7 @@ export class SelectInputComponent implements ControlValueAccessor {
   emptyValueDisplay = input<string>('No Value');
   className = input<string>('flex-1');
   selectClassName = input<string>('');
-  errorClassName = input<string>('border-red-500');
+  errorClassName = input<string>('border-danger');
   hasError = input<boolean>(false);
   bgClassName = input<string>('bg-layer-2');
 

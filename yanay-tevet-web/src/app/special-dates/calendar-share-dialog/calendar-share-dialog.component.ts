@@ -112,6 +112,8 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
       title: 'איפוס הקישור',
       text: 'הקישור הנוכחי יפסיק לעבוד, ומי שכבר הצטרף יישאר בלוח. להמשיך?',
       confirmActionName: 'איפוס',
+      danger: true,
+      dir: 'rtl',
       cancelActionName: 'ביטול',
     });
     if (!confirmed) {
@@ -154,6 +156,8 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
       title: 'הסרה מהלוח',
       text: `להסיר את ${name} מהלוח? האירועים שהוסיף/ה יישארו בלוח.`,
       confirmActionName: 'הסרה',
+      danger: true,
+      dir: 'rtl',
       cancelActionName: 'ביטול',
     });
     if (!confirmed) {

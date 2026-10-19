@@ -241,6 +241,7 @@ export class ListDetailComponent {
       title: 'Delete item',
       text: `Delete "${item.name}"?`,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {
@@ -316,6 +317,7 @@ export class ListDetailComponent {
       title: 'Delete task',
       text: `Delete "${task.name}"?`,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

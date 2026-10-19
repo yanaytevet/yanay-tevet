@@ -1,0 +1,14 @@
+<div class="card px-6 py-10 flex flex-col items-center text-center">
+  @if (chipIcon(); as icon) {
+    <div class="app-chip size-12 text-2xl mb-4" aria-hidden="true">
+      <ng-icon [svg]="icon"/>
+    </div>
+  }
+  <p class="text-ui font-semibold text-writing" dir="auto">{{ title() }}</p>
+  @if (text()) {
+    <p class="text-meta text-writing-minor mt-1 max-w-sm" dir="auto">{{ text() }}</p>
+  }
+  <div class="mt-5 flex flex-wrap justify-center gap-2 empty:hidden">
+    <ng-content/>
+  </div>
+</div>

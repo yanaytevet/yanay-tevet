@@ -1,0 +1,12 @@
+<div class="card px-6 py-10 flex flex-col items-center text-center">
+  <div class="inline-flex items-center justify-center size-12 rounded-lg bg-danger-soft text-danger text-2xl mb-4" aria-hidden="true">
+    <ng-icon [svg]="featherAlertCircle"/>
+  </div>
+  <p class="text-ui text-writing max-w-sm" dir="auto">{{ text() }}</p>
+  @if (backUrl(); as url) {
+    <a [routerLink]="url" class="btn btn-secondary mt-5 no-underline">
+      <ng-icon [svg]="featherArrowLeft"/>
+      {{ backLabel() }}
+    </a>
+  }
+</div>

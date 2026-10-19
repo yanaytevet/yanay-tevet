@@ -1,9 +1,9 @@
-<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+<div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-4">
         <div>
-            <h2 class="text-[18px] font-bold text-primary-500">Booking</h2>
-            <p class="text-[13px] text-writing-minor mt-0.5">{{ booking.start_date }} → {{ booking.end_date }}</p>
+            <h2 class="text-section font-bold text-writing">Booking</h2>
+            <p class="text-meta text-writing-minor mt-0.5">{{ booking.start_date }} → {{ booking.end_date }}</p>
         </div>
         <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
             <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
@@ -11,7 +11,7 @@
     </div>
 
     @if (booking.booked_for_name) {
-        <div class="text-[13px] text-writing-minor mb-4">
+        <div class="text-meta text-writing-minor mb-4">
             Booked for <span class="text-writing font-medium">{{ booking.booked_for_name }}</span>
             @if (bookedByOther) {
                 <span> · by {{ booking.created_by_name }}</span>
@@ -26,13 +26,13 @@
     </div>
 
     <div class="flex items-center justify-between gap-2">
-        <button type="button" class="btn inline-flex items-center gap-1.5 text-notion-red"
+        <button type="button" class="btn inline-flex items-center gap-1.5 text-danger"
                 [disabled]="isDeleting()" (click)="onCancelBooking()">
             <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
             Cancel booking
         </button>
         <div class="flex gap-2">
-            <button type="button" class="btn cancel-btn" (click)="onClose()">Close</button>
+            <button type="button" class="btn btn-secondary" (click)="onClose()">Close</button>
             <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="onSave()">Save</button>
         </div>
     </div>

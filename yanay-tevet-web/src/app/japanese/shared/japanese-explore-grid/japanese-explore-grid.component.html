@@ -10,11 +10,11 @@
   </div>
 
   @if (error(); as err) {
-    <div class="card p-4 mb-4 text-red-700 bg-red-50">{{ err }}</div>
+    <div class="card p-4 mb-4 text-danger bg-danger-soft">{{ err }}</div>
   }
 
   @if (nodes().length === 0 && !isLoading()) {
-    <div class="card p-4 text-writing-minor text-[14px]">Nothing here yet.</div>
+    <div class="card p-4 text-writing-minor text-body">Nothing here yet.</div>
   }
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">

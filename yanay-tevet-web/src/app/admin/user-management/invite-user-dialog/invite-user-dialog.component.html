@@ -1,12 +1,12 @@
-<div class="card bg-layer-2 p-5 sm:p-6 w-full">
+<div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-1">
-        <h2 class="text-[18px] font-bold text-primary-500">Invite by email</h2>
+        <h2 class="text-section font-bold text-writing">Invite by email</h2>
         <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
             <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
         </button>
     </div>
-    <p class="text-[13px] text-writing-minor mb-5">
+    <p class="text-meta text-writing-minor mb-5">
         Send an invitation with the selected permissions. If they already have an account, the permissions are applied
         right away; otherwise they'll get an email and their access is granted when they first sign in.
     </p>
@@ -24,10 +24,10 @@
             @for (option of permissionOptions; track option.value) {
                 <button type="button"
                         (click)="togglePermission(option)"
-                        class="text-[12px] font-medium px-3 py-1 rounded-full border transition-colors"
+                        class="text-caption font-medium px-3 py-1 rounded-full border transition-colors"
                         [class]="permissionSelected()[option.value]
-                            ? 'bg-notion-blue text-white border-notion-blue hover:bg-notion-blue-active'
-                            : 'bg-layer-2 text-writing-minor border-outline-border-1 hover:bg-layer-overlay'">
+                            ? 'bg-accent text-on-accent border-accent hover:bg-accent-hover'
+                            : 'bg-layer-2 text-writing-minor border-line hover:bg-layer-overlay'">
                     {{ option.label }}
                 </button>
             }
@@ -35,7 +35,7 @@
     </div>
 
     <div class="flex justify-end gap-2">
-        <button type="button" class="btn cancel-btn" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
         <button type="button" class="btn btn-primary flex items-center gap-1.5"
                 [disabled]="isInviting()" (click)="onInvite()">
             <ng-icon [svg]="featherMail" class="h-4 w-4"></ng-icon>

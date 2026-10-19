@@ -4,18 +4,18 @@
 
     <!-- Header -->
     <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-primary-500" style="letter-spacing: -1.5px">Genre Trainer</h1>
-      <p class="mt-2 text-secondary-400 text-base">Listen and identify the electronic music genre</p>
+      <h1 class="text-4xl font-bold text-writing" style="letter-spacing: -1.5px">Genre Trainer</h1>
+      <p class="mt-2 text-writing-minor text-lead">Listen and identify the electronic music genre</p>
       @if (service.totalAnswered() > 0) {
-        <div class="mt-4 flex items-center justify-center gap-6 text-sm">
+        <div class="mt-4 flex items-center justify-center gap-6 text-body">
           <div class="flex flex-col items-center">
-            <span class="text-2xl font-bold text-primary-500">{{ service.streak() }}</span>
-            <span class="text-xs text-secondary-400 mt-0.5">Streak</span>
+            <span class="text-title font-bold text-writing">{{ service.streak() }}</span>
+            <span class="text-caption text-writing-minor mt-0.5">Streak</span>
           </div>
-          <div class="w-px h-8 bg-black/10"></div>
+          <div class="w-px h-8 bg-layer-3"></div>
           <div class="flex flex-col items-center">
-            <span class="text-2xl font-bold text-primary-500">{{ service.totalCorrect() }}/{{ service.totalAnswered() }}</span>
-            <span class="text-xs text-secondary-400 mt-0.5">Correct</span>
+            <span class="text-title font-bold text-writing">{{ service.totalCorrect() }}/{{ service.totalAnswered() }}</span>
+            <span class="text-caption text-writing-minor mt-0.5">Correct</span>
           </div>
         </div>
       }
@@ -24,7 +24,7 @@
     <app-genre-trainer-player />
 
     @if (service.error()) {
-      <div class="mt-4 p-4 rounded-xl text-sm text-red-700 bg-red-50 border border-red-200">
+      <div class="mt-4 p-4 rounded-xl text-body text-danger bg-danger-soft border border-danger/30">
         {{ service.error() }}
       </div>
     }

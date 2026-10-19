@@ -1,13 +1,13 @@
 <div class="h-screen bg-layer-1 flex flex-col relative overflow-hidden">
   <!-- Header -->
-  <div class="flex items-center bg-layer-2 border-b border-outline-border-1 sticky top-0 z-40 px-3 h-14 gap-2">
+  <div class="flex items-center bg-layer-2 border-b border-line sticky top-0 z-40 px-3 h-14 gap-2">
 
     <!-- Left: hamburger + logo + breadcrumb -->
     <div class="flex items-center gap-1 min-w-0 flex-1">
       <button
         class="hover:bg-layer-overlay cursor-pointer transition-colors duration-200 flex items-center justify-center p-2 rounded-lg shrink-0"
         (click)="layoutService.toggleLeftDrawer()">
-        <ng-icon [svg]="bootstrapList" class="h-6 w-6 text-primary-500"></ng-icon>
+        <ng-icon [svg]="bootstrapList" class="h-6 w-6 text-writing"></ng-icon>
       </button>
       @if (layoutService.breadcrumbParentSegment(); as parent) {
         <a [routerLink]="parent.link"
@@ -31,25 +31,24 @@
     <!-- Right: utility icons + auth action / right drawer -->
     <div class="flex items-center gap-1 shrink-0">
       <a routerLink="/faq"
-         routerLinkActive="!text-primary-500 !bg-layer-overlay"
-         class="p-2 rounded-lg text-secondary-400 hover:text-primary-500 hover:bg-layer-overlay transition-colors flex items-center justify-center no-underline"
+         routerLinkActive="!text-writing !bg-layer-overlay"
+         class="p-2 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors flex items-center justify-center no-underline"
          title="FAQ"
          aria-label="FAQ">
         <ng-icon [svg]="bootstrapQuestionCircle" class="h-5 w-5"></ng-icon>
       </a>
       @if (!authService.isLoggedIn()) {
-        <a routerLink="/login"
-           class="ml-1 px-4 py-1.5 text-[14px] font-semibold bg-notion-blue text-white rounded hover:bg-notion-blue-active transition-colors no-underline">
+        <a routerLink="/login" data-app="hub" class="btn btn-primary btn-sm ms-1 no-underline">
           Sign in
         </a>
       } @else if (layoutService.isRightDrawerVisible()) {
         <button
           class="relative p-2 rounded-lg hover:bg-layer-overlay cursor-pointer transition-colors duration-300 flex items-center justify-center"
           (click)="layoutService.toggleRightDrawer()">
-          <ng-icon [svg]="layoutService.rightDrawerIcon()" class="h-6 w-6 text-primary-500"></ng-icon>
+          <ng-icon [svg]="layoutService.rightDrawerIcon()" class="h-6 w-6 text-writing"></ng-icon>
           @if (layoutService.rightDrawerBadge()) {
-            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500 animate-ping opacity-75"></span>
-            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-red-500"></span>
+            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-danger animate-ping opacity-75"></span>
+            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-danger"></span>
           }
         </button>
       }
@@ -80,18 +79,18 @@
     <!-- Right Drawer (inline, pushes content) -->
     @if (layoutService.isRightDrawerVisible()) {
       <div
-        class="flex flex-col bg-layer-2 transition-[width] duration-300 overflow-hidden border-l border-outline-border-1 shrink-0"
+        class="flex flex-col bg-layer-2 transition-[width] duration-300 overflow-hidden border-l border-line shrink-0"
         [ngClass]="layoutService.isRightDrawerOpen() ? 'w-full md:w-96' : 'w-0'">
 
         <!-- Drawer Header -->
-        <div class="flex items-center justify-between bg-layer-2 border-b border-outline-border-1 px-4 py-3 shrink-0">
-          <h2 class="text-xl font-bold text-primary-500 overflow-hidden whitespace-nowrap">
+        <div class="flex items-center justify-between bg-layer-2 border-b border-line px-4 py-3 shrink-0">
+          <h2 class="text-section font-bold text-writing overflow-hidden whitespace-nowrap">
             {{ layoutService.rightDrawerTitle() }}
           </h2>
 
           <button (click)="layoutService.toggleRightDrawer()"
                   class="icon-btn">
-            <ng-icon [svg]="bootstrapChevronRight" size="24" class="text-primary-500"></ng-icon>
+            <ng-icon [svg]="bootstrapChevronRight" size="24" class="text-writing"></ng-icon>
           </button>
         </div>
 

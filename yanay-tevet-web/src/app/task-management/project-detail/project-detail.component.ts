@@ -39,12 +39,16 @@ import {
   updateTaskView,
 } from '../../../generated-files/api/task-management';
 import {paginateItineraryListsView} from '../../../generated-files/api/itinerary-lists';
-import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button/menu-button.component';
+import {MenuButtonComponent, MenuItem, SEPARATOR} from '../../common/components/menu-button/menu-button.component';
 import {CelebrationService} from '../../common/components/celebration/celebration.service';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {
   TaskDialogComponent,
   TaskDialogData,
@@ -60,7 +64,10 @@ import {
 @Component({
   selector: 'app-task-project-detail',
   standalone: true,
-  imports: [NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink, DragDropModule],
+  imports: [
+    NgIcon, NgTemplateOutlet, ReactiveFormsModule, MenuButtonComponent, RouterLink, DragDropModule,
+    PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   providers: [provideIcons({
     featherArchive, featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight,
     featherClock, featherCornerDownRight, featherEdit, featherLink, featherMoreHorizontal,
@@ -139,7 +146,16 @@ export class ProjectDetailComponent {
     return {total, done, pct: total === 0 ? 0 : Math.round((done / total) * 100)};
   });
 
-  readonly headerActions = computed<MenuItem[]>(() => {
+  readonly headerSubtitle = computed(() => {
+    const {total, done, pct} = this.progress();
+    if (total === 0) {
+      return 'No tasks yet';
+    }
+    return `${done} of ${total} done · ${pct}%`;
+  });
+
+  // Share and Edit sit in the header; the rarer and riskier actions live behind "more".
+  readonly overflowActions = computed<MenuItem[]>(() => {
     const actions: MenuItem[] = [
       {
         display: this.isArchived() ? 'Unarchive' : 'Archive',
@@ -147,11 +163,10 @@ export class ProjectDetailComponent {
         disabled: this.isUpdatingStatus(),
         callback: () => void this.toggleArchive(),
       },
-      {display: 'Share', icon: featherShare2, callback: () => void this.openShareDialog()},
-      {display: 'Edit', icon: featherEdit, callback: () => void this.editProject()},
     ];
     if (this.isOwner()) {
-      actions.push({display: 'Delete', icon: featherTrash2, callback: () => void this.deleteProject()});
+      actions.push(SEPARATOR);
+      actions.push({display: 'Delete project', icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
     }
     return actions;
   });
@@ -163,7 +178,7 @@ export class ProjectDetailComponent {
         actions.push({display: 'Add subtask', icon: featherPlus, callback: () => this.toggleAddSubtask(task)});
       }
       actions.push({display: 'Edit', icon: featherEdit, callback: () => void this.editTask(task)});
-      actions.push({display: 'Delete', icon: featherTrash2, callback: () => void this.deleteTask(task)});
+      actions.push({display: 'Delete', icon: featherTrash2, danger: true, callback: () => void this.deleteTask(task)});
       return [task.id, actions];
     })));
 
@@ -334,6 +349,7 @@ export class ProjectDetailComponent {
       title: 'Delete task',
       text,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

@@ -1,12 +1,12 @@
 <div class="max-w-4xl mx-auto w-full p-6">
 
     @if (isLoading()) {
-        <div class="card p-10 text-center text-writing-minor text-[13px]">Loading…</div>
+        <div class="card p-10 text-center text-writing-minor text-meta">Loading…</div>
     } @else {
         <div class="flex items-center justify-between gap-3 mb-5">
             <div>
-                <h1 class="text-[22px] font-bold text-primary-500 mb-1">Villa Villekulla</h1>
-                <p class="text-[13px] text-writing-minor">Properties you can book.</p>
+                <h1 class="text-title font-bold text-writing mb-1">Villa Villekulla</h1>
+                <p class="text-meta text-writing-minor">Properties you can book.</p>
             </div>
             @if (isSiteAdmin()) {
                 <button type="button" class="btn btn-primary inline-flex items-center gap-1.5 shrink-0" (click)="createProject()">
@@ -20,11 +20,11 @@
             <div class="card p-10 text-center">
                 <div class="text-4xl mb-3">🏡</div>
                 @if (isSiteAdmin()) {
-                    <p class="text-[15px] font-semibold text-primary-500 mb-1">No property yet</p>
-                    <p class="text-[13px] text-writing-minor">Create your first property to start taking bookings.</p>
+                    <p class="text-ui font-semibold text-writing mb-1">No property yet</p>
+                    <p class="text-meta text-writing-minor">Create your first property to start taking bookings.</p>
                 } @else {
-                    <p class="text-[15px] font-semibold text-primary-500 mb-1">Nothing here yet</p>
-                    <p class="text-[13px] text-writing-minor">You don't have access to a property yet. Ask the host to invite you.</p>
+                    <p class="text-ui font-semibold text-writing mb-1">Nothing here yet</p>
+                    <p class="text-meta text-writing-minor">You don't have access to a property yet. Ask the host to invite you.</p>
                 }
             </div>
         } @else {
@@ -34,9 +34,9 @@
                             class="card p-4 text-left flex items-center justify-between gap-3 hover:bg-layer-3 transition-colors cursor-pointer"
                             (click)="open(project)">
                         <div class="min-w-0">
-                            <div class="text-[15px] font-semibold text-primary-500 truncate">{{ project.name }}</div>
+                            <div class="text-ui font-semibold text-writing truncate">{{ project.name }}</div>
                             @if (project.description) {
-                                <div class="text-[13px] text-writing-minor truncate">{{ project.description }}</div>
+                                <div class="text-meta text-writing-minor truncate">{{ project.description }}</div>
                             }
                         </div>
                         <ng-icon [svg]="featherChevronRight" class="h-5 w-5 text-writing-least shrink-0"></ng-icon>

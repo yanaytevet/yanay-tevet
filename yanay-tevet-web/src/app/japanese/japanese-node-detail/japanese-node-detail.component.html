@@ -6,79 +6,79 @@
   }
 
   @if (error(); as err) {
-    <div class="card p-4 text-red-700 bg-red-50">{{ err }}</div>
+    <div class="card p-4 text-danger bg-danger-soft">{{ err }}</div>
   }
 
   @if (node(); as n) {
     <div class="flex items-center justify-end gap-2 mb-4">
-      <span class="text-[11px] uppercase tracking-[0.08em] font-semibold text-writing-minor">
+      <span class="eyebrow">
         {{ n.type }}
       </span>
       @if (n.jlpt_level) {
-        <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold bg-layer-3 text-writing-minor">
+        <span class="px-2 py-0.5 rounded-full text-label font-semibold bg-layer-3 text-writing-minor">
           {{ n.jlpt_level.toUpperCase() }}
         </span>
       }
-      <span class="px-2 py-0.5 rounded-pill text-[11px] font-semibold" [class]="statusClass()">
+      <span class="px-2 py-0.5 rounded-full text-label font-semibold" [class]="statusClass()">
         {{ statusLabel() }}
       </span>
     </div>
 
     <header class="card p-5 mb-6">
       @if (n.passage_data; as data) {
-        <div class="text-[28px] font-bold leading-tight mb-1">{{ data.title }}</div>
+        <div class="text-display font-bold leading-tight mb-1">{{ data.title }}</div>
         @if (data.source) {
-          <div class="text-[14px] text-writing-minor">{{ data.source }}</div>
+          <div class="text-body text-writing-minor">{{ data.source }}</div>
         }
       }
       @if (n.sentence_data; as data) {
         <div class="flex items-center gap-3 mb-2">
-          <div class="text-[28px] leading-relaxed">
+          <div class="text-display leading-relaxed">
             <app-furigana [text]="data.japanese"/>
           </div>
           <app-speak-button [text]="data.japanese"/>
         </div>
-        <div class="text-[16px] text-writing-minor">{{ data.english_translation }}</div>
+        <div class="text-lead text-writing-minor">{{ data.english_translation }}</div>
       }
       @if (n.word_data; as data) {
         <div class="flex items-center gap-3 mb-2">
-          <div class="text-[32px] font-bold leading-none">
+          <div class="text-3xl font-bold leading-none">
             <app-furigana [text]="data.base_form"/>
           </div>
-          <div class="text-[18px] text-writing-minor">{{ data.reading }}</div>
+          <div class="text-section text-writing-minor">{{ data.reading }}</div>
           <app-speak-button [text]="data.base_form"/>
         </div>
-        <div class="text-[12px] text-writing-minor mb-2">
+        <div class="text-caption text-writing-minor mb-2">
           {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }
         </div>
-        <div class="text-[15px] text-writing">{{ data.meanings.join(', ') }}</div>
+        <div class="text-ui text-writing">{{ data.meanings.join(', ') }}</div>
       }
       @if (n.kanji_data; as data) {
         <div class="flex items-baseline gap-6">
-          <div class="text-[72px] font-bold leading-none">{{ data.character }}</div>
+          <div class="text-7xl font-bold leading-none">{{ data.character }}</div>
           <div>
-            <div class="text-[15px] mb-1">{{ data.meanings.join(', ') }}</div>
+            <div class="text-ui mb-1">{{ data.meanings.join(', ') }}</div>
             @if (data.readings_on.length) {
-              <div class="text-[13px] text-writing-minor">音 {{ data.readings_on.join('、') }}</div>
+              <div class="text-meta text-writing-minor">音 {{ data.readings_on.join('、') }}</div>
             }
             @if (data.readings_kun.length) {
-              <div class="text-[13px] text-writing-minor">訓 {{ data.readings_kun.join('、') }}</div>
+              <div class="text-meta text-writing-minor">訓 {{ data.readings_kun.join('、') }}</div>
             }
             @if (data.radicals.length) {
-              <div class="text-[13px] text-writing-minor">radicals: {{ data.radicals.join(' ') }}</div>
+              <div class="text-meta text-writing-minor">radicals: {{ data.radicals.join(' ') }}</div>
             }
           </div>
         </div>
       }
       @if (n.particle_data; as data) {
         <div class="flex items-baseline gap-6">
-          <div class="text-[48px] font-bold leading-none">{{ data.particle }}</div>
-          <div class="text-[15px]">{{ data.primary_function }}</div>
+          <div class="text-5xl font-bold leading-none">{{ data.particle }}</div>
+          <div class="text-ui">{{ data.primary_function }}</div>
         </div>
       }
       @if (n.rule_data; as data) {
-        <div class="text-[22px] font-semibold mb-1">{{ data.name }}</div>
-        <div class="text-[13px] text-writing-minor">{{ data.category }}</div>
+        <div class="text-title font-semibold mb-1">{{ data.name }}</div>
+        <div class="text-meta text-writing-minor">{{ data.category }}</div>
       }
     </header>
 
@@ -111,17 +111,17 @@
     @if (n.content_html) {
       <article class="card p-6 mb-8 japanese-content" [innerHTML]="contentHtml()"></article>
     } @else {
-      <div class="card p-6 mb-8 text-writing-minor text-[14px]">
+      <div class="card p-6 mb-8 text-writing-minor text-body">
         No content yet. @if (authService.user()?.is_admin) { Click "Generate content" to create it. }
       </div>
     }
 
     @if (outgoingGroups().length > 0) {
       <section class="mb-8">
-        <h2 class="text-[16px] font-semibold mb-3 text-writing">Links from this node</h2>
+        <h2 class="text-lead font-semibold mb-3 text-writing">Links from this node</h2>
         @for (group of outgoingGroups(); track group.label) {
           <div class="mb-5">
-            <h3 class="text-[12px] uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
+            <h3 class="text-caption uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
               {{ group.label }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -136,10 +136,10 @@
 
     @if (incomingGroups().length > 0) {
       <section class="mb-8">
-        <h2 class="text-[16px] font-semibold mb-3 text-writing">Links to this node</h2>
+        <h2 class="text-lead font-semibold mb-3 text-writing">Links to this node</h2>
         @for (group of incomingGroups(); track group.label) {
           <div class="mb-5">
-            <h3 class="text-[12px] uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
+            <h3 class="text-caption uppercase tracking-[0.08em] font-semibold text-writing-minor mb-2">
               {{ group.label }}
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">

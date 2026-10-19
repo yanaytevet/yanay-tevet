@@ -155,6 +155,7 @@ export class DreamDiaryComponent {
       title: 'Delete Entry',
       text: 'Are you sure you want to delete this dream diary entry?',
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

@@ -1,0 +1,16 @@
+<div class="border-b border-line bg-layer-2">
+  <div class="mx-auto w-full px-4 sm:px-6"
+       [class.max-w-3xl]="width() === 'narrow'"
+       [class.max-w-5xl]="width() === 'wide'">
+    <div class="-ms-3 flex items-center gap-1 overflow-x-auto no-scrollbar">
+      @for (link of links(); track link.label) {
+        <a [routerLink]="link.url"
+           routerLinkActive="!text-writing !border-accent"
+           [routerLinkActiveOptions]="{exact: link.exact ?? false}"
+           class="shrink-0 px-3 py-3 -mb-px text-body font-medium text-writing-minor border-b-2 border-transparent hover:text-writing transition-colors no-underline">
+          {{ link.label }}
+        </a>
+      }
+    </div>
+  </div>
+</div>

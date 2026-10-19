@@ -261,6 +261,7 @@ export class ProjectDetailComponent {
       title: 'Delete apartment',
       text: `Delete "${prospect.title || prospect.full_address || 'this apartment'}"?`,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

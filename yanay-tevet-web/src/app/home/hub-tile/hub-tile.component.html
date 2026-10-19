@@ -1,0 +1,9 @@
+<a [routerLink]="url()" [attr.data-app]="app().key" class="card card-interactive h-full p-4 flex items-start gap-3">
+  <div class="app-chip size-10 text-xl" aria-hidden="true">
+    <ng-icon [svg]="app().icon"/>
+  </div>
+  <div class="min-w-0 text-start">
+    <div class="text-ui font-semibold text-writing"><bdi>{{ app().name }}</bdi></div>
+    <div class="text-meta text-writing-minor mt-0.5">{{ description() }}</div>
+  </div>
+</a>

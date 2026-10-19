@@ -95,7 +95,8 @@ app, and start or repair the stack with the command it prints rather than asking
 - Don't stop the stack when a task is done; leave it running.
 
 **A UI change is not done until you have looked at it.** Open the page at http://localhost:4201 in the
-built-in browser (its sign-in persists between sessions), check what changed in both themes (the dark-mode
+built-in browser (its sign-in persists between sessions; if it is signed out, `bash seed_design_test_user.sh`
+creates a local test user with every app and sample tasks — credentials in the script), check what changed in both themes (the dark-mode
 switch is in the left drawer) and the console for errors. A clean build says nothing about layout, dark mode
 or what a page actually shows.
 
@@ -117,7 +118,7 @@ After changing backend models or endpoints:
 
 ## Design System
 
-**Always read `DESIGN.md` before writing any UI code.** It is the authoritative reference. Its palette is implemented as theme tokens in `yanay-tevet-web/src/styles.css` (light, and `.dark` overrides) plus the shared classes in `src/assets/styles/{buttons,forms,surfaces}.css`.
+**Always read `DESIGN.md` before writing any UI code.** It is the authoritative reference. Its palette is implemented as theme tokens in `yanay-tevet-web/src/styles.css` (light, `.dark` overrides, per-app accents under `[data-app]`) plus the shared classes in `src/assets/styles/{buttons,forms,surfaces}.css`. `design/` holds the audit and the roadmap of what is not done yet.
 
 ---
 

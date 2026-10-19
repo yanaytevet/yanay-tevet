@@ -151,6 +151,7 @@ export class RoutineDetailComponent {
       title: 'Delete exercise',
       text: `Delete "${exercise.name}"?`,
       confirmActionName: 'Delete',
+      danger: true,
       cancelActionName: 'Cancel',
     });
     if (!confirmed) {

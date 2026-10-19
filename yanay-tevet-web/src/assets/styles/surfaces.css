@@ -1,55 +1,84 @@
 @reference "../../styles.css";
 
-.cdk-overlay-black-backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
-}
+/* In the components layer so a utility on the same element (px-5 on a .btn) wins, as in Tailwind. */
+@layer components {
+  .cdk-overlay-black-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
 
-.mask-edges {
-  @apply
-  [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
-  [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
-}
+  /* Page containers (DESIGN.md §4): narrow for lists, details and forms; wide for tables and grids. */
+  .page-narrow {
+    @apply mx-auto w-full max-w-3xl px-4 py-6 sm:px-6;
+  }
 
-.page {
-  @apply flex flex-col h-full overflow-y-auto p-2
-  [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
-  [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
-}
+  .page-wide {
+    @apply mx-auto w-full max-w-5xl px-4 py-6 sm:px-6;
+  }
 
-.tooltip-box {
-  @apply bg-layer-2 text-writing text-xs rounded py-1 px-2 whitespace-nowrap pointer-events-none z-50 absolute;
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: rgba(0,0,0,0.04) 0 4px 18px, rgba(0,0,0,0.027) 0 2.025px 7.84688px, rgba(0,0,0,0.02) 0 0.8px 2.925px, rgba(0,0,0,0.01) 0 0.175px 1.04062px;
-}
+  .mask-edges {
+    @apply
+    [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
+    [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
+  }
 
-/* Notion-style card */
-.card {
-  @apply bg-layer-2 text-writing rounded-xl;
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: rgba(0,0,0,0.04) 0 4px 18px, rgba(0,0,0,0.027) 0 2.025px 7.84688px, rgba(0,0,0,0.02) 0 0.8px 2.925px, rgba(0,0,0,0.01) 0 0.175px 1.04062px;
-}
+  .page {
+    @apply flex flex-col h-full overflow-y-auto p-2
+    [mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)]
+    [-webkit-mask-image:linear-gradient(to_bottom,transparent,black_2%,black_98%,transparent)];
+  }
 
-.dark .card {
-  border-color: rgba(255,255,255,0.08);
-}
+  .tooltip-box {
+    @apply bg-layer-2 text-writing text-caption rounded py-1 px-2 whitespace-nowrap pointer-events-none z-50 absolute
+    border border-line shadow-1;
+  }
 
-.card-layer-2 {
-  @apply bg-layer-2 text-writing rounded-xl;
-  padding: 16px;
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: rgba(0,0,0,0.04) 0 4px 18px, rgba(0,0,0,0.027) 0 2.025px 7.84688px, rgba(0,0,0,0.02) 0 0.8px 2.925px, rgba(0,0,0,0.01) 0 0.175px 1.04062px;
-}
+  .card {
+    @apply bg-layer-2 text-writing rounded-xl border border-line shadow-1;
+  }
 
-.dark .card-layer-2 {
-  border-color: rgba(255,255,255,0.08);
-}
+  /* A whole card that is a link or button. */
+  .card-interactive {
+    @apply cursor-pointer no-underline transition-shadow duration-150;
+  }
 
-.card-layer-3 {
-  @apply bg-layer-3 text-writing rounded-xl;
-  padding: 16px;
-  border: 1px solid rgba(0,0,0,0.08);
-}
+  .card-interactive:hover {
+    @apply shadow-2;
+  }
 
-.dark .card-layer-3 {
-  border-color: rgba(255,255,255,0.06);
+  .card-layer-2 {
+    @apply bg-layer-2 text-writing rounded-xl p-4 border border-line shadow-1;
+  }
+
+  .card-layer-3 {
+    @apply bg-layer-3 text-writing rounded-xl p-4 border border-line-subtle;
+  }
+
+  /* The app's icon on a tint of its accent: page headers, home tiles, the drawer, empty states. */
+  .app-chip {
+    @apply inline-flex items-center justify-center shrink-0 rounded-lg bg-accent-soft text-accent;
+  }
+
+  /* Pills for tags and statuses. */
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-caption font-medium leading-none
+    bg-layer-3 text-writing-minor whitespace-nowrap;
+  }
+
+  button.chip {
+    @apply cursor-pointer transition-colors duration-150;
+  }
+
+  button.chip:hover {
+    @apply text-writing;
+  }
+
+  .chip-accent { @apply bg-accent-soft text-accent; }
+  .chip-success { @apply bg-success-soft text-success; }
+  .chip-warning { @apply bg-warning-soft text-warning; }
+  .chip-danger { @apply bg-danger-soft text-danger; }
+  .chip-info { @apply bg-info-soft text-info; }
+
+  .chip-selected, button.chip-selected:hover {
+    @apply bg-accent text-on-accent;
+  }
 }

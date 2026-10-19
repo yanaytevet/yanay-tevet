@@ -11,7 +11,7 @@
                         dir="auto"
                         formControlName="inputValue"
                         class="w-full main-input mt-2"
-                        [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
+                        [class.border-danger]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
                         [maxlength]="data.maxLength"
                         (keydown.enter)="onConfirm()"
                 >
@@ -20,7 +20,7 @@
                         dir="auto"
                         formControlName="inputValue"
                         class="w-full main-input mt-2"
-                        [class.border-red-500]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
+                        [class.border-danger]="getErrorMessage() && (inputControl?.touched || inputControl?.dirty)"
                         [rows]="data.textAreaRows || 4"
                         [maxlength]="data.maxLength"
                         (keydown.enter)="data.isTextArea ? null : onConfirm()"
@@ -28,7 +28,7 @@
             }
 
             @if (getErrorMessage() && (inputControl?.touched || inputControl?.dirty)) {
-                <p class="text-red-500 text-xs italic mt-1">{{ getErrorMessage() }}</p>
+                <p class="text-danger text-caption italic mt-1">{{ getErrorMessage() }}</p>
             }
         </div>
     </form>
@@ -36,7 +36,7 @@
     <div class="dialog-buttons-container">
         <span class="flex-1"></span>
         <button
-                class="btn cancel-btn"
+                class="btn btn-secondary"
                 (click)="emitClose(null)">
             {{ data.cancelActionName ?? 'Cancel' }}
         </button>
