@@ -1,16 +1,21 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
+import {NgIcon} from '@ng-icons/core';
 import {joinSpecialDateCalendarView} from '../../../generated-files/api/special-dates';
 import {
   getSpecialDateCalendarJoinPreviewView,
   SpecialDateCalendarJoinPreviewSchema,
 } from '../../../generated-files/api/special-dates-public';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {HUB_APPS} from '../../shared/apps/hub-apps';
 import {RoutingService} from '../../shared/services/routing.service';
 
 @Component({
   selector: 'app-join-calendar',
   standalone: true,
+  imports: [NgIcon, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './join-calendar.component.html',
 })
 export class JoinCalendarComponent {
@@ -20,6 +25,8 @@ export class JoinCalendarComponent {
   readonly authService = inject(AuthenticationService);
 
   private readonly token = this.route.snapshot.paramMap.get('token') ?? '';
+
+  protected readonly appIcon = HUB_APPS.dates.icon;
 
   readonly preview = signal<SpecialDateCalendarJoinPreviewSchema | null>(null);
   readonly isLoading = signal<boolean>(true);

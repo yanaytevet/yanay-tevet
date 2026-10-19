@@ -10,14 +10,18 @@
   </div>
 
   @if (error(); as err) {
-    <div class="card p-4 mb-4 text-danger bg-danger-soft">{{ err }}</div>
+    <div class="rounded-xl p-4 mb-4 text-body text-danger bg-danger-soft">{{ err }}</div>
   }
 
-  @if (nodes().length === 0 && !isLoading()) {
-    <div class="card p-4 text-writing-minor text-body">Nothing here yet.</div>
+  @if (nodes().length === 0) {
+    @if (isLoading()) {
+      <app-loading-state/>
+    } @else if (!error()) {
+      <app-empty-state [title]="emptyTitle()" text="Ingested text and the entities generated from it show up here."/>
+    }
   }
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
     @for (node of nodes(); track node.id) {
       <app-node-summary-card [node]="node"/>
     }

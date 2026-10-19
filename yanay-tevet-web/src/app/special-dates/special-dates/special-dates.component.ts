@@ -21,6 +21,10 @@ import {
   UpcomingSpecialDatesSchema,
 } from '../../../generated-files/api/special-dates';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {CalendarsDialogComponent} from '../calendars-dialog/calendars-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
@@ -40,13 +44,18 @@ import {
 
 type SpecialDatesTab = 'upcoming' | 'all';
 
+interface SpecialDatesTabOption {
+  value: SpecialDatesTab;
+  label: string;
+}
+
 const SEARCH_DEBOUNCE_MS = 250;
 const MAX_PAGE_SIZE = 1000;
 
 @Component({
   selector: 'app-special-dates',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent],
   templateUrl: './special-dates.component.html',
 })
 export class SpecialDatesComponent {
@@ -65,8 +74,18 @@ export class SpecialDatesComponent {
   readonly isLoadingUpcoming = signal<boolean>(true);
   readonly isLoadingAll = signal<boolean>(false);
   readonly hasLoadedAll = signal<boolean>(false);
+  readonly loadError = signal<boolean>(false);
 
   readonly categories = SPECIAL_DATE_CATEGORIES;
+  // Hand-rolled rather than <app-tabs-group>: that one keeps the tab in a query param with no change event
+  // (the "all" list loads on first open), renders tabs as non-focusable divs, and its scroll arrows are
+  // LTR-only. The look is the same: a 2px accent underline on the active tab.
+  readonly tabs: SpecialDatesTabOption[] = [
+    {value: 'upcoming', label: 'בשבועיים הקרובים'},
+    {value: 'all', label: 'כל האירועים'},
+  ];
+  readonly emptyIntroText = 'הוסיפו ימי הולדת, ימי נישואין ואזכרות, ונזכיר לכם בזמן — לפי התאריך העברי והלועזי.';
+  readonly upcomingEmptyText = 'אפשר לראות את כולם בלשונית "כל האירועים".';
 
   readonly hasMultipleCalendars = computed(() => this.calendars().length > 1);
   readonly totalEventCount = computed(() => this.calendars().reduce((sum, c) => sum + c.event_count, 0));
@@ -89,6 +108,19 @@ export class SpecialDatesComponent {
   });
   readonly todayHebrew = computed(() => this.upcoming()?.today_hebrew_date ?? '');
   readonly upcomingDays = computed(() => this.upcoming()?.days ?? 14);
+  readonly upcomingEmptyTitle = computed(() => `אין אירועים ב-${this.upcomingDays()} הימים הקרובים`);
+
+  readonly subtitle = computed(() => {
+    if (this.upcoming()) {
+      return `היום ${this.todayHebrew()} · ${this.todayGregorian()}`;
+    }
+    return 'ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי.';
+  });
+
+  readonly tabSelected = computed<Record<SpecialDatesTab, boolean>>(() => ({
+    upcoming: this.tab() === 'upcoming',
+    all: this.tab() === 'all',
+  }));
 
   readonly hiddenFromUpcomingLabel = computed(() =>
     this.calendars().filter(c => c.hide_from_upcoming).map(c => c.name).join(', '));
@@ -175,7 +207,8 @@ export class SpecialDatesComponent {
   }
 
   private async initialize(): Promise<void> {
-    await Promise.all([this.loadCalendars(), this.loadUpcoming()]);
+    const [calendarsLoaded, upcomingLoaded] = await Promise.all([this.loadCalendars(), this.loadUpcoming()]);
+    this.loadError.set(!calendarsLoaded || !upcomingLoaded);
     const joined = Number(this.route.snapshot.queryParamMap.get('joined'));
     if (joined) {
       await this.router.navigate([], {queryParams: {}, replaceUrl: true});
@@ -310,24 +343,27 @@ export class SpecialDatesComponent {
     ]);
   }
 
-  private async loadCalendars(): Promise<void> {
+  private async loadCalendars(): Promise<boolean> {
     const res = await listSpecialDateCalendarsView();
     if (res.error) {
-      return;
+      return false;
     }
     this.calendars.set(res.data.calendars);
     const selected = this.selectedCalendarId();
     if (selected !== null && !res.data.calendars.some(c => c.id === selected)) {
       this.selectedCalendarId.set(null);
     }
+    return true;
   }
 
-  private async loadUpcoming(): Promise<void> {
+  private async loadUpcoming(): Promise<boolean> {
     try {
       const res = await getUpcomingSpecialDatesView();
-      if (!res.error) {
-        this.upcoming.set(res.data);
+      if (res.error) {
+        return false;
       }
+      this.upcoming.set(res.data);
+      return true;
     } finally {
       this.isLoadingUpcoming.set(false);
     }

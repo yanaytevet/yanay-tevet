@@ -1,13 +1,17 @@
 import {Component, computed, inject, signal} from '@angular/core';
+import {RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherPlus} from '@ng-icons/feather-icons';
 import {ItineraryListSchema, paginateItineraryListsView} from '../../../generated-files/api/itinerary-lists';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-itinerary-lists',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, RouterLink, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent],
   providers: [provideIcons({featherPlus})],
   templateUrl: './lists.component.html',
 })
@@ -19,6 +23,10 @@ export class ListsComponent {
 
   readonly activeLists = computed(() => this.lists().filter(l => l.status === 'active'));
   readonly standbyLists = computed(() => this.lists().filter(l => l.status === 'standby'));
+
+  readonly listUrls = computed(() =>
+    Object.fromEntries(this.lists().map(l => [l.id, this.routingService.getItineraryListUrl(l.id)])),
+  );
 
   protected readonly featherPlus = featherPlus;
 
@@ -34,10 +42,6 @@ export class ListsComponent {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  async openList(list: ItineraryListSchema): Promise<void> {
-    await this.routingService.navigateToItineraryList(list.id);
   }
 
   async createList(): Promise<void> {

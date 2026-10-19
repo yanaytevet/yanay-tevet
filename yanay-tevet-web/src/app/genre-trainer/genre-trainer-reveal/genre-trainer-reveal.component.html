@@ -39,14 +39,10 @@
 
     @if (service.trackGenreFamily(); as family) {
       <div class="mt-3 pt-3 border-t border-line">
-        <p class="text-caption font-semibold text-writing-minor mb-2">{{ family.name }} family</p>
+        <p class="eyebrow mb-2">{{ family.name }} family</p>
         <div class="flex flex-wrap gap-2">
           @for (g of family.genres; track g) {
-            <span
-              class="px-3 py-1 rounded-full text-caption font-semibold border"
-              [class]="g === service.track()!.genre
-                ? 'bg-accent border-accent text-on-accent'
-                : 'bg-transparent border-line text-writing-minor'">
+            <span class="chip px-3 py-1" [class.chip-selected]="g === service.track()!.genre">
               {{ service.genreLabelMap()[g] }}
             </span>
           }

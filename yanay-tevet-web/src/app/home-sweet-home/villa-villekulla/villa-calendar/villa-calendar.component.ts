@@ -25,6 +25,10 @@ import {RoutingService} from '../../../shared/services/routing.service';
 import {VillaBookingDialogComponent} from '../villa-booking-dialog/villa-booking-dialog.component';
 import {VillaBookingDetailsDialogComponent} from '../villa-booking-details-dialog/villa-booking-details-dialog.component';
 import {VillaInviteDialogComponent} from '../villa-invite-dialog/villa-invite-dialog.component';
+import {PageHeaderComponent} from '../../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../../common/components/page/error-state/error-state.component';
 
 interface DayCell {
   iso: string;
@@ -60,9 +64,9 @@ function cellClasses(inMonth: boolean, isPast: boolean, booking: UnitBookingSche
       parts.push('bg-layer-2', 'hover:bg-layer-3', 'cursor-pointer');
     }
   } else if (mine) {
-    parts.push('bg-accent/15', 'border-accent/40', 'cursor-pointer');
+    parts.push('bg-accent-soft', 'border-accent/40', 'cursor-pointer');
   } else {
-    parts.push('bg-layer-4', 'border-layer-4', 'cursor-pointer');
+    parts.push('bg-layer-4', 'border-line', 'cursor-pointer');
   }
   return parts.join(' ');
 }
@@ -70,7 +74,10 @@ function cellClasses(inMonth: boolean, isPast: boolean, booking: UnitBookingSche
 @Component({
   selector: 'app-villa-calendar',
   standalone: true,
-  imports: [NgIcon, NgClass, RouterLink],
+  imports: [
+    NgIcon, NgClass, RouterLink,
+    PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   providers: [provideIcons({featherArrowLeft, featherChevronLeft, featherChevronRight, featherUserPlus})],
   templateUrl: './villa-calendar.component.html',
 })
@@ -93,6 +100,11 @@ export class VillaCalendarComponent {
   readonly viewMonth = signal<Date>(this.startOfMonth(new Date()));
 
   private readonly todayIso = toIso(new Date());
+
+  readonly subtitle = computed<string | null>(() => {
+    const unit = this.unit();
+    return unit === null ? null : `Pick a free day to book ${unit.name}.`;
+  });
 
   readonly monthLabel = computed<string>(() =>
     this.viewMonth().toLocaleDateString(undefined, {month: 'long', year: 'numeric'}),

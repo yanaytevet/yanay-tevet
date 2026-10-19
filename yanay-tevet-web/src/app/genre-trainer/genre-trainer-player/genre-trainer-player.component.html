@@ -32,16 +32,18 @@
     <!-- Auto-start toggle -->
     <button
       type="button"
+      [attr.aria-pressed]="service.autoStart()"
       (click)="toggleAutoStart()"
-      class="flex items-center gap-1.5 text-caption font-medium text-writing-minor hover:text-writing transition-colors flex-shrink-0">
-      <div
+      class="flex items-center gap-1.5 rounded-md text-caption font-medium text-writing-minor hover:text-writing transition-colors flex-shrink-0">
+      <span
         class="relative w-7 h-3.5 rounded-full transition-colors duration-200"
-        [style.background]="service.autoStart() ? '#0075de' : 'rgba(0,0,0,0.12)'">
-        <div
-          class="absolute top-0.5 w-2.5 h-2.5 bg-white rounded-full shadow-sm transition-all duration-200"
+        [class]="service.autoStart() ? 'bg-accent' : 'bg-layer-4'">
+        <span
+          class="absolute top-0.5 w-2.5 h-2.5 rounded-full shadow-sm transition-all duration-200"
+          [class]="service.autoStart() ? 'bg-on-accent' : 'bg-writing-minor'"
           [style.left]="service.autoStart() ? '15px' : '2px'">
-        </div>
-      </div>
+        </span>
+      </span>
       Auto
     </button>
 
@@ -76,7 +78,8 @@
     @if (isAdmin()) {
       <button
         type="button"
-        class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="icon-btn"
+        aria-label="Download track JSON"
         title="Download track JSON (admin)"
         [disabled]="!service.track() || isRecording()"
         (click)="downloadJson()">
@@ -86,12 +89,13 @@
       <!-- Admin: Download audio (renders 2 loops to WAV) -->
       <button
         type="button"
-        class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="icon-btn"
+        aria-label="Download track audio"
         title="Download track audio as WAV (admin)"
         [disabled]="!service.track() || isRecording()"
         (click)="downloadAudio()">
         @if (isRecording()) {
-          <span class="inline-block w-4 h-4 align-middle rounded-full bg-danger animate-pulse"></span>
+          <span class="inline-block size-4 rounded-full bg-danger animate-pulse" aria-hidden="true"></span>
         } @else {
           <ng-icon [svg]="bootstrapFileMusic" class="text-base" />
         }
@@ -101,7 +105,8 @@
     <!-- Settings -->
     <button
       type="button"
-      class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0"
+      class="icon-btn"
+      aria-label="Training settings"
       title="Training settings"
       (click)="openConfig()">
       <ng-icon [svg]="bootstrapGearFill" class="text-base" />

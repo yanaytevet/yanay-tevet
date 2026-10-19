@@ -1,9 +1,9 @@
 <div class="dialog-container w-full">
 
-    <div class="flex items-start justify-between mb-1">
+    <div class="flex items-start justify-between gap-3 mb-1">
         <h2 class="text-section font-bold text-writing">Invite by email</h2>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
-            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
     <p class="text-meta text-writing-minor mb-5">
@@ -13,32 +13,32 @@
 
     <div class="flex flex-col gap-1.5 mb-5">
         <span class="input-label">Email address</span>
-        <input type="email" dir="auto" class="main-input w-full" placeholder="name@example.com"
+        <input type="email" dir="auto" class="main-input" placeholder="name@example.com"
+               aria-label="Email address"
                [formControl]="emailCtrl"
                (keyup.enter)="onInvite()" />
     </div>
 
-    <div class="flex flex-col gap-2 mb-6">
+    <div class="flex flex-col gap-2 mb-2">
         <span class="input-label">Permissions</span>
         <div class="flex flex-wrap gap-2">
             @for (option of permissionOptions; track option.value) {
                 <button type="button"
-                        (click)="togglePermission(option)"
-                        class="text-caption font-medium px-3 py-1 rounded-full border transition-colors"
-                        [class]="permissionSelected()[option.value]
-                            ? 'bg-accent text-on-accent border-accent hover:bg-accent-hover'
-                            : 'bg-layer-2 text-writing-minor border-line hover:bg-layer-overlay'">
+                        class="chip px-3 py-1"
+                        [class.chip-selected]="permissionSelected()[option.value]"
+                        [attr.aria-pressed]="permissionSelected()[option.value]"
+                        (click)="togglePermission(option)">
                     {{ option.label }}
                 </button>
             }
         </div>
     </div>
 
-    <div class="flex justify-end gap-2">
+    <div class="dialog-buttons-container">
         <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5"
+        <button type="button" class="btn btn-primary"
                 [disabled]="isInviting()" (click)="onInvite()">
-            <ng-icon [svg]="featherMail" class="h-4 w-4"></ng-icon>
+            <ng-icon [svg]="featherMail"/>
             Send invitation
         </button>
     </div>

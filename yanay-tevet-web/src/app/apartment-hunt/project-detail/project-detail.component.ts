@@ -7,6 +7,7 @@ import {
   featherChevronRight,
   featherCheckCircle,
   featherEdit,
+  featherMoreHorizontal,
   featherPlus,
   featherRotateCcw,
   featherShare2,
@@ -31,6 +32,7 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
 import {
+  CURRENCY_LABELS,
   CURRENCY_SYMBOLS,
   LIKED_OPTIONS,
   PROJECT_STATUS_LABELS,
@@ -38,14 +40,22 @@ import {
   PROSPECT_STATUS_ORDER,
 } from '../apartment-hunt.constants';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
+import {MenuButtonComponent, MenuItem, SEPARATOR} from '../../common/components/menu-button/menu-button.component';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-details-panel.component';
 
 @Component({
   selector: 'app-apartment-hunt-project-detail',
   standalone: true,
-  imports: [NgIcon, DatePipe, ProspectDetailsPanelComponent, RouterLink],
+  imports: [
+    NgIcon, DatePipe, ProspectDetailsPanelComponent, RouterLink, MenuButtonComponent,
+    PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   providers: [provideIcons({
-    featherArrowLeft, featherChevronRight, featherCheckCircle, featherEdit, featherPlus,
+    featherArrowLeft, featherChevronRight, featherCheckCircle, featherEdit, featherMoreHorizontal, featherPlus,
     featherRotateCcw, featherShare2, featherTrash2,
   })],
   templateUrl: './project-detail.component.html',
@@ -78,6 +88,32 @@ export class ProjectDetailComponent {
     return Object.fromEntries(this.prospects().map(p => [p.id, ids.has(p.id)]));
   });
 
+  readonly headerSubtitle = computed(() => {
+    const project = this.project();
+    if (project === null) {
+      return null;
+    }
+    const members = `${project.member_count} member${project.member_count === 1 ? '' : 's'}`;
+    return `${CURRENCY_LABELS[project.currency]} · Owner: ${project.owner_username} · ${members}`;
+  });
+
+  // Share and Edit sit in the header; finishing and deleting live behind "more".
+  readonly overflowActions = computed<MenuItem[]>(() => {
+    const actions: MenuItem[] = [
+      {
+        display: this.isFinished() ? 'Reopen' : 'Finish',
+        icon: this.isFinished() ? featherRotateCcw : featherCheckCircle,
+        disabled: this.isUpdatingStatus(),
+        callback: () => void this.toggleFinished(),
+      },
+    ];
+    if (this.isOwner()) {
+      actions.push(SEPARATOR);
+      actions.push({display: 'Delete project', icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
+    }
+    return actions;
+  });
+
   readonly currencySymbols = CURRENCY_SYMBOLS;
   readonly projectStatusLabels = PROJECT_STATUS_LABELS;
   readonly prospectStatusLabels = PROSPECT_STATUS_LABELS;
@@ -88,6 +124,7 @@ export class ProjectDetailComponent {
   protected readonly featherChevronRight = featherChevronRight;
   protected readonly featherCheckCircle = featherCheckCircle;
   protected readonly featherEdit = featherEdit;
+  protected readonly featherMoreHorizontal = featherMoreHorizontal;
   protected readonly featherPlus = featherPlus;
   protected readonly featherRotateCcw = featherRotateCcw;
   protected readonly featherShare2 = featherShare2;

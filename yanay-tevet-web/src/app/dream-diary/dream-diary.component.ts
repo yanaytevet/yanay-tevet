@@ -11,8 +11,11 @@ import {DialogService} from '../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../common/services/files-upload.service';
 import {RoutingService} from '../shared/services/routing.service';
 import {ViewImageDialogComponent} from './dialogs/view-image-dialog/view-image-dialog.component';
-import {featherDelete, featherEdit, featherUpload, featherZap} from '@ng-icons/feather-icons';
+import {featherEdit, featherPlus, featherTrash2, featherUpload, featherZap} from '@ng-icons/feather-icons';
 import {NgIcon, provideIcons} from '@ng-icons/core';
+import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../common/components/page/loading-state/loading-state.component';
 
 interface CalendarDay {
   date: string;
@@ -29,8 +32,8 @@ const WEEK_COUNT = 4;
 @Component({
   selector: 'app-dream-diary',
   standalone: true,
-  imports: [NgIcon],
-  providers: [provideIcons({featherDelete, featherUpload, featherEdit, featherZap})],
+  imports: [NgIcon, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent],
+  providers: [provideIcons({featherTrash2, featherUpload, featherEdit, featherZap, featherPlus})],
   templateUrl: './dream-diary.component.html',
   styleUrl: './dream-diary.component.css',
 })
@@ -49,6 +52,18 @@ export class DreamDiaryComponent {
   generatingImageId = signal<number | null>(null);
 
   hasMore = computed(() => this.entries().length < this.totalAmount());
+
+  readonly subtitle = computed(() => {
+    const total = this.totalAmount();
+    if (total === 0) {
+      return 'Capture your dreams before they fade.';
+    }
+    return `${total} ${total === 1 ? 'entry' : 'entries'}`;
+  });
+
+  readonly entryTimeLabels = computed(() =>
+    Object.fromEntries(this.entries().map(e => [e.id, this.formatTime(e.time)]))
+  );
 
   calendarDays = computed<CalendarDay[]>(() => {
     const logged = new Set(this.loggedDates());
@@ -87,7 +102,8 @@ export class DreamDiaryComponent {
   });
 
   readonly weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  readonly featherDelete = featherDelete;
+  readonly featherTrash2 = featherTrash2;
+  readonly featherPlus = featherPlus;
   readonly featherUpload = featherUpload;
   readonly featherEdit = featherEdit;
   readonly featherZap = featherZap;
@@ -218,7 +234,7 @@ export class DreamDiaryComponent {
     }
   }
 
-  formatTime(isoString: string): string {
+  private formatTime(isoString: string): string {
     return new Date(isoString).toLocaleString(undefined, {
       weekday: 'short',
       year: 'numeric',

@@ -18,8 +18,12 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {UserWebsocketsService} from '../../common/services/user-websockets.service';
 import {WebsocketEvent} from '../../common/interfaces/websockets/websocket-event';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {FuriganaComponent} from '../shared/furigana/furigana.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
+import {EMPTY_NODE_DISPLAY, nodeDisplay, NodeDisplay} from '../shared/node-display';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
 import {SpeakButtonComponent} from '../shared/speak-button/speak-button.component';
 
@@ -48,7 +52,10 @@ const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
 @Component({
   selector: 'app-japanese-node-detail',
   standalone: true,
-  imports: [FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent, SpeakButtonComponent],
+  imports: [
+    FuriganaComponent, JapaneseNavComponent, NodeSummaryCardComponent, SpeakButtonComponent,
+    PageHeaderComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   templateUrl: './japanese-node-detail.component.html',
 })
 export class JapaneseNodeDetailComponent extends BasePageComponent {
@@ -67,24 +74,12 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
   readonly isWorking = signal<boolean>(false);
   readonly error = signal<string | null>(null);
 
-  readonly statusClass = computed(() => {
-    const node = this.node();
-    if (!node) {
-      return '';
-    }
-    switch (node.status) {
-      case 'published':
-        return 'bg-success-soft text-success';
-      case 'needs_review':
-        return 'bg-warning-soft text-warning';
-      case 'generating':
-        return 'bg-info-soft text-info';
-      default:
-        return 'bg-secondary-100 text-writing-minor';
-    }
-  });
+  readonly japaneseHomeUrl = this.routingService.getJapaneseHomeUrl();
 
-  readonly statusLabel = computed(() => this.node()?.status?.replace(/_/g, ' ') ?? '');
+  readonly display = computed<NodeDisplay>(() => {
+    const node = this.node();
+    return node ? nodeDisplay(node) : EMPTY_NODE_DISPLAY;
+  });
 
   readonly nodeTitle = computed<string>(() => {
     const node = this.node();

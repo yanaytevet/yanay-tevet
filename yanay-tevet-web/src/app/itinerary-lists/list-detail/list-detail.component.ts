@@ -4,10 +4,12 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
+  featherCheck,
   featherCheckCircle,
   featherCheckSquare,
   featherEdit,
   featherHome,
+  featherMoreHorizontal,
   featherPackage,
   featherPlay,
   featherPlus,
@@ -43,6 +45,10 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {RoutingService} from '../../shared/services/routing.service';
+import {MenuButtonComponent, MenuItem, SEPARATOR} from '../../common/components/menu-button/menu-button.component';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {ItemDialogComponent, ItemDialogData, ItemDialogResult} from '../dialogs/item-dialog/item-dialog.component';
 import {
   ITEM_STATUS_CHIP_CLASS,
@@ -55,10 +61,14 @@ import {
 @Component({
   selector: 'app-itinerary-list-detail',
   standalone: true,
-  imports: [NgIcon, ReactiveFormsModule, RouterLink],
+  imports: [
+    NgIcon, ReactiveFormsModule, RouterLink, MenuButtonComponent,
+    PageHeaderComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   providers: [provideIcons({
-    featherArrowLeft, featherCheckCircle, featherCheckSquare, featherEdit, featherHome, featherPackage,
-    featherPlay, featherPlus, featherShare2, featherShoppingCart, featherSquare, featherTrash2, featherTruck,
+    featherArrowLeft, featherCheck, featherCheckCircle, featherCheckSquare, featherEdit, featherHome,
+    featherMoreHorizontal, featherPackage, featherPlay, featherPlus, featherShare2, featherShoppingCart,
+    featherSquare, featherTrash2, featherTruck,
   })],
   templateUrl: './list-detail.component.html',
 })
@@ -105,6 +115,29 @@ export class ListDetailComponent {
     return {done, toDo: tasks.length - done, total: tasks.length};
   });
 
+  readonly headerSubtitle = computed(() => {
+    const list = this.list();
+    if (list === null) {
+      return null;
+    }
+    const items = this.items().length;
+    const tasks = this.tasks().length;
+    return `${items} item${items === 1 ? '' : 's'} · ${tasks} task${tasks === 1 ? '' : 's'}`
+      + ` · ${list.member_count} member${list.member_count === 1 ? '' : 's'}`;
+  });
+
+  // Activate/Finish and Share sit in the header; editing and deleting the list live behind "more".
+  readonly overflowActions = computed<MenuItem[]>(() => {
+    const actions: MenuItem[] = [
+      {display: 'Edit list', icon: featherEdit, callback: () => void this.editList()},
+    ];
+    if (this.isOwner()) {
+      actions.push(SEPARATOR);
+      actions.push({display: 'Delete list', icon: featherTrash2, danger: true, callback: () => void this.deleteList()});
+    }
+    return actions;
+  });
+
   readonly statusLabels = ITEM_STATUS_LABELS;
   readonly statusOrder = ITEM_STATUS_ORDER;
   readonly statusChipClass = ITEM_STATUS_CHIP_CLASS;
@@ -117,9 +150,11 @@ export class ListDetailComponent {
   };
 
   protected readonly featherArrowLeft = featherArrowLeft;
+  protected readonly featherCheck = featherCheck;
   protected readonly featherCheckCircle = featherCheckCircle;
   protected readonly featherCheckSquare = featherCheckSquare;
   protected readonly featherEdit = featherEdit;
+  protected readonly featherMoreHorizontal = featherMoreHorizontal;
   protected readonly featherPlay = featherPlay;
   protected readonly featherPlus = featherPlus;
   protected readonly featherShare2 = featherShare2;

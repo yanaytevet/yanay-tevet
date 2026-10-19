@@ -1,63 +1,50 @@
-<div class="max-w-2xl mx-auto w-full p-6">
+<div class="page-narrow">
 
     <a [routerLink]="allListsUrl"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         All lists
     </a>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading list...</div>
+        <app-loading-state label="Loading list"/>
     } @else if (loadError()) {
-        <div class="card p-10 text-center">
-            <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
-            <a [routerLink]="allListsUrl" class="btn btn-secondary no-underline">Back to lists</a>
-        </div>
+        <app-error-state [text]="loadError()!" [backUrl]="allListsUrl" backLabel="Back to lists"/>
     } @else if (list(); as list) {
 
-        <div class="card p-4">
-            <div class="flex items-start justify-between gap-3 mb-4">
-                <div class="min-w-0">
-                    <h1 class="text-title font-bold text-writing break-words" dir="auto">{{ list.name }}</h1>
-                    @if (!isOwner()) {
-                        <p class="text-caption text-writing-minor">Shared by {{ list.owner_username }}</p>
-                    } @else if (list.member_count > 1) {
-                        <p class="text-caption text-writing-minor">Shared with {{ list.member_count - 1 }} {{ list.member_count === 2 ? 'person' : 'people' }}</p>
-                    }
-                </div>
-                <div class="flex items-center gap-1 shrink-0">
-                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Share" (click)="openShareDialog()">
-                        <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
-                    </button>
-                    <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Rename" (click)="renameList()">
-                        <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                    </button>
-                    @if (isOwner()) {
-                        <button type="button" class="icon-btn text-writing-minor hover:text-writing" title="Delete list" (click)="deleteList()">
-                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                        </button>
-                    }
-                </div>
-            </div>
+        <app-page-header [title]="list.name" [subtitle]="headerSubtitle()">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
+                <ng-icon [svg]="featherShare2"/>
+                Share
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="renameList()">
+                <ng-icon [svg]="featherEdit"/>
+                Rename
+            </button>
+            @if (isOwner()) {
+                <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More list actions"/>
+            }
+        </app-page-header>
 
+        <div class="card p-4">
             <div class="relative mb-2">
                 <div class="flex items-center gap-2">
-                    <ng-icon [svg]="featherPlus" class="h-5 w-5 shrink-0 text-writing-minor"></ng-icon>
+                    <ng-icon [svg]="featherPlus" class="text-lead shrink-0 text-writing-minor" aria-hidden="true"/>
                     <input type="text" dir="auto" class="main-input w-full" placeholder="Add item"
-                           autocomplete="off" maxlength="255"
+                           aria-label="Add item" autocomplete="off" maxlength="255"
                            [formControl]="newItemCtrl"
                            (keydown)="onNewItemKeydown($event)"
                            (focus)="suggestionsOpen.set(true)"
                            (blur)="onNewItemBlur()" />
                 </div>
                 @if (showSuggestions()) {
-                    <div class="absolute left-7 right-0 top-full mt-1 z-10 card bg-layer-2 shadow-2 py-1 overflow-hidden">
+                    <div class="absolute start-7 end-0 top-full mt-1 z-10 card shadow-2 py-1 overflow-hidden">
                         @for (suggestion of suggestions(); track suggestion.id) {
                             <button type="button" dir="auto"
                                     class="w-full flex items-center gap-2 px-3 py-2 text-start text-body text-writing hover:bg-layer-overlay"
                                     [class.bg-layer-overlay]="suggestionHighlighted()[suggestion.id]"
                                     (mousedown)="onSuggestionMouseDown($event, suggestion)">
-                                <ng-icon [svg]="featherClock" class="h-3.5 w-3.5 shrink-0 text-writing-least"></ng-icon>
+                                <ng-icon [svg]="featherClock" class="shrink-0 text-writing-least" aria-hidden="true"/>
                                 <span class="truncate">{{ suggestion.name }}</span>
                             </button>
                         }
@@ -68,25 +55,26 @@
             @if (uncheckedItems().length === 0) {
                 <div class="text-center text-writing-minor text-meta py-6">
                     @if (checkedItems().length === 0) {
-                        Nothing here yet. Add your first item above.
+                        Add your first item above — what you check off stays here for next time.
                     } @else {
-                        All done! Everything is checked off.
+                        Everything's checked off. Add what you need next above.
                     }
                 </div>
             } @else {
                 <div class="flex flex-col">
                     @for (item of uncheckedItems(); track item.id) {
                         <div class="group flex items-center gap-2 py-1.5" dir="auto">
-                            <button type="button" class="icon-btn shrink-0 text-writing-minor hover:text-writing" title="Check off"
-                                    (click)="toggleItem(item)">
-                                <ng-icon [svg]="featherSquare" class="h-5 w-5"></ng-icon>
+                            <button type="button"
+                                    class="group/check flex items-center justify-center size-8 shrink-0 rounded-md"
+                                    aria-label="Check off" title="Check off" (click)="toggleItem(item)">
+                                <span class="flex items-center justify-center size-5 rounded-md border-2 border-layer-4 group-hover/check:border-accent transition-colors"></span>
                             </button>
                             <button type="button" class="min-w-0 flex-1 text-start text-ui text-writing truncate cursor-text"
                                     title="Edit" (click)="renameItem(item)">{{ item.name }}</button>
                             <button type="button"
-                                    class="icon-btn shrink-0 text-writing-least hover:text-writing sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                                    title="Remove" (click)="deleteItem(item)">
-                                <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                                    class="icon-btn icon-btn-danger can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                    aria-label="Remove item" title="Remove" (click)="deleteItem(item)">
+                                <ng-icon [svg]="featherX"/>
                             </button>
                         </div>
                     }
@@ -94,11 +82,12 @@
             }
 
             @if (checkedItems().length > 0) {
-                <div class="mt-3 pt-3 border-t border-line">
+                <div class="mt-3 pt-3 border-t border-line-subtle">
                     <button type="button"
-                            class="flex items-center gap-1.5 text-meta font-semibold text-writing-minor hover:text-writing mb-1"
+                            class="flex items-center gap-1.5 rounded-md px-1 py-0.5 -ms-1 text-meta font-semibold text-writing-minor hover:text-writing transition-colors mb-1"
+                            [attr.aria-expanded]="checkedExpanded()"
                             (click)="toggleCheckedExpanded()">
-                        <ng-icon [svg]="checkedExpanded() ? featherChevronDown : featherChevronRight" class="h-4 w-4"></ng-icon>
+                        <ng-icon [svg]="checkedExpanded() ? featherChevronDown : featherChevronRight"/>
                         {{ checkedItems().length }} checked item{{ checkedItems().length === 1 ? '' : 's' }}
                     </button>
 
@@ -106,21 +95,24 @@
                         <div class="flex flex-col">
                             @for (item of visibleCheckedItems(); track item.id) {
                                 <div class="group flex items-center gap-2 py-1.5 opacity-60" dir="auto">
-                                    <button type="button" class="icon-btn shrink-0 text-writing-minor hover:text-writing" title="Uncheck"
-                                            (click)="toggleItem(item)">
-                                        <ng-icon [svg]="featherCheckSquare" class="h-5 w-5"></ng-icon>
+                                    <button type="button"
+                                            class="flex items-center justify-center size-8 shrink-0 rounded-md"
+                                            aria-label="Uncheck" title="Uncheck" (click)="toggleItem(item)">
+                                        <span class="flex items-center justify-center size-5 rounded-md border-2 bg-accent border-accent text-on-accent">
+                                            <ng-icon [svg]="featherCheck" class="text-caption"/>
+                                        </span>
                                     </button>
                                     <span class="min-w-0 flex-1 text-ui text-writing-minor line-through truncate">{{ item.name }}</span>
                                     <button type="button"
-                                            class="icon-btn shrink-0 text-writing-least hover:text-writing sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 transition-opacity"
-                                            title="Remove from history" (click)="deleteItem(item)">
-                                        <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                                            class="icon-btn icon-btn-danger can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+                                            aria-label="Remove from history" title="Remove from history" (click)="deleteItem(item)">
+                                        <ng-icon [svg]="featherX"/>
                                     </button>
                                 </div>
                             }
                         </div>
                         @if (hiddenCheckedCount() > 0) {
-                            <button type="button" class="text-meta text-accent hover:underline mt-1"
+                            <button type="button" class="rounded-md text-meta text-accent hover:underline mt-1"
                                     (click)="toggleShowAllChecked()">
                                 {{ showAllChecked() ? 'Show less' : 'Show all ' + checkedItems().length }}
                             </button>

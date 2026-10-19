@@ -1,44 +1,38 @@
-<div class="min-h-screen bg-layer-1 pb-16">
+<div class="page-narrow">
 
-  <div class="max-w-3xl mx-auto px-4 pt-12">
-
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-bold text-writing" style="letter-spacing: -1.5px">Genre Trainer</h1>
-      <p class="mt-2 text-writing-minor text-lead">Listen and identify the electronic music genre</p>
-      @if (service.totalAnswered() > 0) {
-        <div class="mt-4 flex items-center justify-center gap-6 text-body">
-          <div class="flex flex-col items-center">
-            <span class="text-title font-bold text-writing">{{ service.streak() }}</span>
-            <span class="text-caption text-writing-minor mt-0.5">Streak</span>
-          </div>
-          <div class="w-px h-8 bg-layer-3"></div>
-          <div class="flex flex-col items-center">
-            <span class="text-title font-bold text-writing">{{ service.totalCorrect() }}/{{ service.totalAnswered() }}</span>
-            <span class="text-caption text-writing-minor mt-0.5">Correct</span>
-          </div>
+  <app-page-header title="Genre Trainer" subtitle="Listen and identify the electronic music genre">
+    @if (service.totalAnswered() > 0) {
+      <div class="flex items-center gap-4">
+        <div class="flex flex-col items-center">
+          <span class="text-section font-bold text-writing tabular-nums">{{ service.streak() }}</span>
+          <span class="text-caption text-writing-minor">Streak</span>
         </div>
-      }
+        <div class="w-px h-8 bg-line" aria-hidden="true"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-section font-bold text-writing tabular-nums">{{ service.totalCorrect() }}/{{ service.totalAnswered() }}</span>
+          <span class="text-caption text-writing-minor">Correct</span>
+        </div>
+      </div>
+    }
+  </app-page-header>
+
+  <app-genre-trainer-player />
+
+  @if (service.error()) {
+    <div class="mt-4 p-4 rounded-xl text-body text-danger bg-danger-soft">
+      {{ service.error() }}
     </div>
+  }
 
-    <app-genre-trainer-player />
+  @if (service.revealed()) {
+    <div class="mt-4 flex justify-center">
+      <button type="button" class="btn btn-primary px-8" (click)="onNextTrack()">
+        Next Track
+      </button>
+    </div>
+  }
 
-    @if (service.error()) {
-      <div class="mt-4 p-4 rounded-xl text-body text-danger bg-danger-soft border border-danger/30">
-        {{ service.error() }}
-      </div>
-    }
+  <app-genre-trainer-guess />
+  <app-genre-trainer-reveal />
 
-    @if (service.revealed()) {
-      <div class="mt-4 flex justify-center">
-        <button type="button" class="btn btn-primary px-8" (click)="onNextTrack()">
-          Next Track
-        </button>
-      </div>
-    }
-
-    <app-genre-trainer-guess />
-    <app-genre-trainer-reveal />
-
-  </div>
 </div>

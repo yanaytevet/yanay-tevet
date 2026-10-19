@@ -1,120 +1,84 @@
-<div class="max-w-5xl mx-auto w-full p-4 sm:p-6">
+<div class="page-wide">
 
     <a [routerLink]="allProjectsUrl"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         All projects
     </a>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading project...</div>
+        <app-loading-state label="Loading project"/>
     } @else if (loadError()) {
-        <div class="card p-10 text-center">
-            <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
-            <a [routerLink]="allProjectsUrl" class="btn btn-secondary no-underline">All projects</a>
-        </div>
+        <app-error-state [text]="loadError()!" [backUrl]="allProjectsUrl" backLabel="Back to projects"/>
     } @else if (project(); as project) {
 
-        <div class="card p-4 sm:p-6 mb-6">
-            <div class="flex flex-col @lg:flex-row @lg:items-start @lg:justify-between gap-4">
-                <div class="min-w-0">
-                    <div class="flex items-center gap-3 mb-1 flex-wrap">
-                        <h1 class="text-heading sm:text-title font-bold text-writing break-words" dir="auto">{{ project.name }}</h1>
-                        @if (isFinished()) {
-                            <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3">
-                                {{ projectStatusLabels[project.status] }}
-                            </span>
-                        } @else {
-                            <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3 text-writing">
-                                {{ projectStatusLabels[project.status] }}
-                            </span>
-                        }
-                    </div>
-                    @if (project.description) {
-                        <p class="text-meta text-writing-minor mb-2 whitespace-pre-line" dir="auto">{{ project.description }}</p>
-                    }
-                    <div class="flex items-center gap-2 sm:gap-3 text-caption text-writing-minor flex-wrap">
-                        <span>{{ currencySymbols[project.currency] }} {{ project.currency.toUpperCase() }}</span>
-                        <span>·</span>
-                        <span>Owner: {{ project.owner_username }}</span>
-                        <span>·</span>
-                        <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
-                    </div>
-                </div>
+        <app-page-header [title]="project.name" [subtitle]="headerSubtitle()">
+            @if (isFinished()) {
+                <span class="chip">{{ projectStatusLabels[project.status] }}</span>
+            }
+            <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
+                <ng-icon [svg]="featherShare2"/>
+                Share
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editProject()">
+                <ng-icon [svg]="featherEdit"/>
+                Edit
+            </button>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More project actions"/>
+        </app-page-header>
 
-                <div class="flex items-center gap-2 flex-wrap @lg:justify-end @lg:shrink-0">
-                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="openShareDialog()">
-                        <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
-                        Share
-                    </button>
-                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="editProject()">
-                        <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                        Edit
-                    </button>
-                    <button type="button" class="btn btn-secondary flex items-center gap-1.5"
-                            [disabled]="isUpdatingStatus()" (click)="toggleFinished()">
-                        @if (isFinished()) {
-                            <ng-icon [svg]="featherRotateCcw" class="h-4 w-4"></ng-icon>
-                            Reopen
-                        } @else {
-                            <ng-icon [svg]="featherCheckCircle" class="h-4 w-4"></ng-icon>
-                            Finish
-                        }
-                    </button>
-                    @if (isOwner()) {
-                        <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="deleteProject()">
-                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                            Delete
-                        </button>
-                    }
-                </div>
-            </div>
-        </div>
+        @if (project.description) {
+            <p class="-mt-2 mb-6 text-body text-writing-minor whitespace-pre-line" dir="auto">{{ project.description }}</p>
+        }
 
-        <div class="flex items-center justify-between mb-3 gap-2">
-            <h2 class="text-lead font-bold text-writing">Apartments ({{ prospects().length }})</h2>
-            <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0" (click)="addProspect()">
-                <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+        <div class="flex items-center justify-between gap-2 mb-3">
+            <h2 class="text-section font-bold text-writing">
+                Apartments <span class="font-medium text-writing-minor tabular-nums">({{ prospects().length }})</span>
+            </h2>
+            <button type="button" class="btn btn-primary shrink-0" (click)="addProspect()">
+                <ng-icon [svg]="featherPlus"/>
                 Add apartment
             </button>
         </div>
 
         @if (prospects().length === 0) {
-            <div class="card p-10 text-center">
-                <div class="text-4xl mb-3">🏡</div>
-                <p class="text-ui font-semibold text-writing mb-1">No apartments yet</p>
-                <p class="text-meta text-writing-minor mb-5">Add the first apartment you're considering.</p>
-                <button type="button" class="btn btn-primary" (click)="addProspect()">Add apartment</button>
-            </div>
+            <app-empty-state title="Add the first apartment"
+                             text="Track each place you're considering — its status, rent, contacts and photos — and compare them side by side.">
+                <button type="button" class="btn btn-primary" (click)="addProspect()">
+                    <ng-icon [svg]="featherPlus"/>
+                    Add apartment
+                </button>
+            </app-empty-state>
         } @else {
 
             <!-- Desktop / wide: table -->
             <div class="card overflow-x-auto hidden @md:block">
                 <table class="w-full text-meta min-w-[680px]">
                     <thead>
-                        <tr class="text-left text-writing-minor border-b border-line">
+                        <tr class="text-start text-writing-minor border-b border-line">
                             <th class="font-semibold px-4 py-3">Apartment</th>
                             <th class="font-semibold px-4 py-3">Status</th>
                             <th class="font-semibold px-4 py-3">Town</th>
-                            <th class="font-semibold px-4 py-3 text-right">Rent</th>
+                            <th class="font-semibold px-4 py-3 text-end">Rent</th>
                             <th class="font-semibold px-4 py-3">Liked</th>
                             <th class="font-semibold px-4 py-3 text-center">Mamad</th>
                             <th class="font-semibold px-4 py-3 whitespace-nowrap">Updated</th>
-                            <th class="font-semibold px-4 py-3 text-right">Actions</th>
+                            <th class="font-semibold px-4 py-3 text-end">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-line-subtle">
                         @for (prospect of prospects(); track prospect.id) {
-                            <tr class="border-b border-line-subtle">
+                            <tr>
                                 <td class="px-4 py-3">
                                     <button type="button"
-                                            class="flex items-center gap-2 text-left w-full group"
+                                            class="flex items-center gap-2 text-start w-full rounded-md"
+                                            [attr.aria-expanded]="expandedMap()[prospect.id]"
                                             (click)="toggleExpand(prospect)">
                                         <ng-icon [svg]="featherChevronRight"
-                                                 class="h-4 w-4 shrink-0 text-writing-minor transition-transform"
-                                                 [class.rotate-90]="expandedMap()[prospect.id]"></ng-icon>
+                                                 class="shrink-0 text-writing-minor transition-transform"
+                                                 [class.rotate-90]="expandedMap()[prospect.id]"/>
                                         <span class="min-w-0">
-                                            <span class="font-medium text-writing group-hover:text-writing transition-colors block truncate max-w-[200px]" dir="auto">
+                                            <span class="font-medium text-writing block truncate max-w-[200px]" dir="auto">
                                                 {{ prospect.title || prospect.full_address || 'Untitled' }}
                                             </span>
                                             @if (prospect.via_agency) {
@@ -125,6 +89,7 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-caption py-1 px-2 w-[170px]"
+                                            aria-label="Status"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onStatusChange(prospect, $any($event.target).value)">
                                         @for (status of statusOptions; track status) {
@@ -133,13 +98,14 @@
                                     </select>
                                 </td>
                                 <td class="px-4 py-3 text-writing-minor" dir="auto">{{ prospect.town || '—' }}</td>
-                                <td class="px-4 py-3 text-right text-writing whitespace-nowrap">
+                                <td class="px-4 py-3 text-end text-writing whitespace-nowrap tabular-nums">
                                     @if (prospect.monthly_rent !== null) {
                                         {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
                                     } @else { — }
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-meta py-1 px-2 w-[112px]"
+                                            aria-label="Liked"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onLikedChange(prospect, $any($event.target).value)">
                                         <option value="" [selected]="prospect.liked_level === null">Not rated</option>
@@ -152,19 +118,19 @@
                                 <td class="px-4 py-3 text-writing-minor whitespace-nowrap">{{ prospect.updated_at | date:'mediumDate' }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                        <button type="button" class="icon-btn" aria-label="Edit apartment" title="Edit"
                                                 (click)="editProspect(prospect)">
-                                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                            <ng-icon [svg]="featherEdit"/>
                                         </button>
-                                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                        <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete apartment" title="Delete"
                                                 (click)="deleteProspect(prospect)">
-                                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                            <ng-icon [svg]="featherTrash2"/>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
                             @if (expandedMap()[prospect.id]) {
-                                <tr class="border-b border-line-subtle bg-layer-overlay">
+                                <tr class="bg-layer-overlay">
                                     <td colspan="8" class="px-4 py-4">
                                         <app-prospect-details-panel
                                             [prospect]="prospect"
@@ -172,7 +138,7 @@
                                         <div class="mt-3">
                                             <button type="button" class="text-caption text-writing hover:underline flex items-center gap-1"
                                                     (click)="editProspect(prospect)">
-                                                <ng-icon [svg]="featherEdit" class="h-3.5 w-3.5"></ng-icon>
+                                                <ng-icon [svg]="featherEdit"/>
                                                 Edit full details
                                             </button>
                                         </div>
@@ -189,13 +155,14 @@
                 @for (prospect of prospects(); track prospect.id) {
                     <div class="card p-4">
                         <div class="flex items-start gap-2">
-                            <button type="button" class="flex items-start gap-2 text-left flex-1 min-w-0"
+                            <button type="button" class="flex items-start gap-2 text-start flex-1 min-w-0 rounded-md"
+                                    [attr.aria-expanded]="expandedMap()[prospect.id]"
                                     (click)="toggleExpand(prospect)">
                                 <ng-icon [svg]="featherChevronRight"
-                                         class="h-4 w-4 shrink-0 mt-0.5 text-writing-minor transition-transform"
-                                         [class.rotate-90]="expandedMap()[prospect.id]"></ng-icon>
+                                         class="shrink-0 mt-1 text-writing-minor transition-transform"
+                                         [class.rotate-90]="expandedMap()[prospect.id]"/>
                                 <span class="min-w-0">
-                                    <span class="font-semibold text-writing block break-words" dir="auto">
+                                    <span class="text-ui font-semibold text-writing block break-words" dir="auto">
                                         {{ prospect.title || prospect.full_address || 'Untitled' }}
                                     </span>
                                     <span class="text-caption text-writing-minor">
@@ -208,13 +175,13 @@
                                 </span>
                             </button>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                <button type="button" class="icon-btn" aria-label="Edit apartment"
                                         (click)="editProspect(prospect)">
-                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                    <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete apartment"
                                         (click)="deleteProspect(prospect)">
-                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                    <ng-icon [svg]="featherTrash2"/>
                                 </button>
                             </div>
                         </div>
@@ -222,7 +189,8 @@
                         <div class="grid grid-cols-2 gap-3 mt-3">
                             <div class="flex flex-col gap-1">
                                 <span class="eyebrow">Status</span>
-                                <select class="main-input w-full text-meta"
+                                <select class="main-input text-meta"
+                                        aria-label="Status"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onStatusChange(prospect, $any($event.target).value)">
                                     @for (status of statusOptions; track status) {
@@ -232,7 +200,8 @@
                             </div>
                             <div class="flex flex-col gap-1">
                                 <span class="eyebrow">Liked</span>
-                                <select class="main-input w-full text-meta"
+                                <select class="main-input text-meta"
+                                        aria-label="Liked"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onLikedChange(prospect, $any($event.target).value)">
                                     <option value="" [selected]="prospect.liked_level === null">Not rated</option>

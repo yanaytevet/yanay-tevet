@@ -2,8 +2,8 @@
 
     <div class="flex items-start justify-between mb-5">
         <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
-            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="text-heading"></ng-icon>
         </button>
     </div>
 
@@ -25,9 +25,9 @@
     <div class="mb-4 flex flex-col gap-2">
         <div class="flex items-center justify-between">
             <span class="input-label">Sets</span>
-            <button type="button" class="flex items-center gap-1 text-meta text-accent hover:underline"
+            <button type="button" class="flex items-center gap-1 rounded-md text-meta text-accent hover:underline"
                     (click)="addSet()">
-                <ng-icon [svg]="featherPlus" class="h-3.5 w-3.5"></ng-icon>
+                <ng-icon [svg]="featherPlus"></ng-icon>
                 Add set
             </button>
         </div>
@@ -49,9 +49,9 @@
                                    (input)="updateDuration($index, $event)" />
                             <span class="text-caption text-writing-minor w-10 shrink-0">sec</span>
                         }
-                        <button type="button" class="icon-btn text-writing-minor hover:text-writing shrink-0"
+                        <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="'Remove set ' + ($index + 1)"
                                 (click)="removeSet($index)">
-                            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                            <ng-icon [svg]="featherTrash2"></ng-icon>
                         </button>
                     </div>
                 }

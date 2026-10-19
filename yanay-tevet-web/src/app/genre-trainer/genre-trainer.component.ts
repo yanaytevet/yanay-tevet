@@ -3,6 +3,7 @@ import {GenreTrainerService} from './genre-trainer.service';
 import {GenreTrainerPlayerComponent} from './genre-trainer-player/genre-trainer-player.component';
 import {GenreTrainerGuessComponent} from './genre-trainer-guess/genre-trainer-guess.component';
 import {GenreTrainerRevealComponent} from './genre-trainer-reveal/genre-trainer-reveal.component';
+import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
 
 @Component({
   selector: 'app-genre-trainer',
@@ -11,6 +12,7 @@ import {GenreTrainerRevealComponent} from './genre-trainer-reveal/genre-trainer-
     GenreTrainerPlayerComponent,
     GenreTrainerGuessComponent,
     GenreTrainerRevealComponent,
+    PageHeaderComponent,
   ],
   providers: [GenreTrainerService],
   templateUrl: './genre-trainer.component.html',

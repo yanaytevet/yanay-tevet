@@ -1,336 +1,341 @@
-<div class="max-w-2xl mx-auto px-6 py-8 flex flex-col gap-6">
+<div class="page-narrow">
 
-  <!-- Profile Image -->
-  <div class="card p-6 flex flex-col gap-4">
-    <h2 class="text-lead font-semibold text-writing">Profile Image</h2>
-    <div class="flex items-center gap-5">
-      @if (authService.user()?.pic_url) {
-        <img
-          [src]="authService.user().pic_url"
-          alt="Profile"
-          referrerpolicy="no-referrer"
-          class="rounded-full object-cover border border-line">
-      } @else {
-        <div class="w-20 h-20 rounded-full bg-layer-3 flex items-center justify-center text-display font-semibold text-writing border border-line">
-          {{ authService.userInitials() }}
-        </div>
-      }
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="isUploadingImage()"
-        (click)="uploadProfileImage()">
-        @if (isUploadingImage()) {
-          Uploading...
+  <app-page-header title="Account settings"/>
+
+  <div class="flex flex-col gap-6">
+
+    <!-- Profile Image -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-4">
+      <h2 class="text-section font-semibold text-writing">Profile Image</h2>
+      <div class="flex items-center gap-5">
+        @if (authService.user()?.pic_url) {
+          <img
+            [src]="authService.user().pic_url"
+            alt="Profile"
+            referrerpolicy="no-referrer"
+            class="size-20 shrink-0 rounded-full object-cover border border-line">
         } @else {
-          Change Photo
+          <div class="size-20 shrink-0 rounded-full bg-layer-3 flex items-center justify-center text-display font-semibold text-writing border border-line">
+            {{ authService.userInitials() }}
+          </div>
         }
-      </button>
-    </div>
-  </div>
-
-  <!-- Profile Details -->
-  <div class="card p-6 flex flex-col gap-4">
-    <h2 class="text-lead font-semibold text-writing">Profile Details</h2>
-    <div class="flex flex-col gap-3">
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">First Name</span>
-        <input
-          class="main-input"
-          type="text"
-          dir="auto"
-          [ngModel]="firstName()"
-          (ngModelChange)="firstName.set($event)"
-          placeholder="First name">
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">Last Name</span>
-        <input
-          class="main-input"
-          type="text"
-          dir="auto"
-          [ngModel]="lastName()"
-          (ngModelChange)="lastName.set($event)"
-          placeholder="Last name">
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">Email Address</span>
-        <input
-          class="main-input"
-          type="email"
-          dir="auto"
-          [ngModel]="email()"
-          (ngModelChange)="email.set($event)"
-          placeholder="Email address">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="isUploadingImage()"
+          (click)="uploadProfileImage()">
+          @if (isUploadingImage()) {
+            Uploading...
+          } @else {
+            Change Photo
+          }
+        </button>
       </div>
     </div>
-    <div class="flex justify-end">
-      <button
-        type="button"
-        class="btn btn-primary"
-        [disabled]="isSavingName()"
-        (click)="saveProfile()">
-        @if (isSavingName()) {
-          Saving...
-        } @else {
-          Save Changes
-        }
-      </button>
-    </div>
-  </div>
 
-  <!-- Timezone -->
-  <div class="card p-6 flex flex-col gap-4">
-    <div class="flex flex-col gap-1">
-      <h2 class="text-lead font-semibold text-writing">Timezone</h2>
-      <p class="text-meta text-writing-minor leading-relaxed">
-        Repeating tasks in projects you own reset to "To do" at 4:00 AM in this timezone.
-      </p>
-    </div>
-
-    <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-lg bg-layer-3 border border-line">
-      <div class="flex flex-col gap-0.5 min-w-0">
-        <span class="text-body font-medium text-writing truncate">{{ currentTimezoneLabel() }}</span>
-        <span class="text-caption text-writing-minor">{{ currentTimezoneOffset() }}</span>
-      </div>
-      <span class="shrink-0 text-title font-semibold text-writing tabular-nums">{{ currentLocalTime() }}</span>
-    </div>
-
-    <div class="flex flex-col gap-2">
-      <button
-        type="button"
-        class="main-input flex items-center justify-between gap-2 text-left"
-        (click)="toggleTzPanel()">
-        <span class="text-body text-writing truncate">{{ currentTimezoneLabel() }}</span>
-        <span class="text-caption text-writing-minor shrink-0">{{ tzPanelOpen() ? 'Close' : 'Change' }}</span>
-      </button>
-
-      @if (tzPanelOpen()) {
-        <div class="card p-2 flex flex-col gap-2 bg-layer-2">
+    <!-- Profile Details -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-4">
+      <h2 class="text-section font-semibold text-writing">Profile Details</h2>
+      <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <span class="input-label">First Name</span>
           <input
             class="main-input"
             type="text"
             dir="auto"
-            placeholder="Search timezones..."
-            [ngModel]="tzSearch()"
-            (ngModelChange)="tzSearch.set($event)">
-          <div class="flex flex-col gap-0.5 max-h-64 overflow-auto">
-            @for (tz of filteredTimezones(); track tz.name) {
-              <button
-                type="button"
-                class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-left hover:bg-layer-3 transition-colors"
-                [class.bg-layer-3]="selectedById()[tz.name]"
-                [disabled]="isSavingTz()"
-                (click)="selectTimezone(tz.name)">
-                <span class="text-meta text-writing truncate">{{ tz.label }}</span>
-                <span class="shrink-0 text-label font-semibold px-1.5 py-0.5 rounded-full bg-layer-1 text-writing-minor">{{ tz.offset }}</span>
-              </button>
-            } @empty {
-              <span class="px-3 py-2 text-meta text-writing-minor">No timezones match "{{ tzSearch() }}".</span>
-            }
-          </div>
+            [ngModel]="firstName()"
+            (ngModelChange)="firstName.set($event)"
+            placeholder="First name">
         </div>
-      }
-    </div>
-
-    <div class="flex items-center justify-between gap-3">
-      @if (isBrowserTimezoneActive()) {
-        <span class="text-caption text-writing-minor">Using your browser's timezone.</span>
-      } @else {
-        <span class="text-caption text-writing-minor truncate">Browser detected: {{ browserTimezone }}</span>
-      }
-      <button
-        type="button"
-        class="btn btn-secondary shrink-0"
-        [disabled]="isSavingTz() || isBrowserTimezoneActive()"
-        (click)="useBrowserTimezone()">
-        Use browser timezone
-      </button>
-    </div>
-  </div>
-
-  <!-- Connect to Claude -->
-  <div class="card p-6 flex flex-col gap-4">
-    <div class="flex flex-col gap-1">
-      <h2 class="text-lead font-semibold text-writing">Connect to Claude</h2>
-      <p class="text-meta text-writing-minor leading-relaxed">
-        Add this site as a connector in Claude to manage your tasks and shopping lists from a chat. Click
-        <span class="font-medium text-writing">Add to Claude</span>, then confirm in Claude —
-        you'll sign in with your account here. You don't need to fill in any OAuth fields; if the URL
-        isn't already filled in, paste the one below.
-      </p>
-    </div>
-    @if (isLoadingMcp()) {
-      <span class="text-meta text-writing-minor">Loading…</span>
-    } @else if (mcpInfo(); as mcp) {
-      @if (!mcp.is_publicly_reachable) {
-        <div class="px-4 py-3 rounded-lg bg-layer-3 border border-line">
-          <span class="text-meta text-writing-minor">
-            The server isn't publicly reachable: MCP_PUBLIC_BASE_URL isn't configured on the backend.
-            In development, start a tunnel (ngrok) and restart the backend instead.
-          </span>
+        <div class="flex flex-col gap-1">
+          <span class="input-label">Last Name</span>
+          <input
+            class="main-input"
+            type="text"
+            dir="auto"
+            [ngModel]="lastName()"
+            (ngModelChange)="lastName.set($event)"
+            placeholder="Last name">
         </div>
-      }
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">Connector URL</span>
-        <div class="flex items-center gap-2">
-          <input class="main-input flex-1" type="text" [value]="mcp.mcp_url" readonly>
-          <button type="button" class="btn btn-secondary" (click)="copyMcpUrl()">
-            {{ mcpUrlCopied() ? 'Copied' : 'Copy' }}
-          </button>
+        <div class="flex flex-col gap-1">
+          <span class="input-label">Email Address</span>
+          <input
+            class="main-input"
+            type="email"
+            dir="auto"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            placeholder="Email address">
         </div>
       </div>
       <div class="flex justify-end">
-        <a class="btn btn-primary" [href]="mcp.add_connector_url" target="_blank" rel="noopener">
-          Add to Claude
-        </a>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isSavingName()"
+          (click)="saveProfile()">
+          @if (isSavingName()) {
+            Saving...
+          } @else {
+            Save Changes
+          }
+        </button>
       </div>
-    } @else {
-      <span class="text-meta text-writing-minor">Connection info unavailable.</span>
-    }
-  </div>
+    </div>
 
-  <!-- Change Password / Set Password -->
-  <div class="card p-6 flex flex-col gap-4">
-    <h2 class="text-lead font-semibold text-writing">
-      {{ hasUsablePassword() ? 'Change Password' : 'Set Password' }}
-    </h2>
-    @if (!hasUsablePassword()) {
-      <p class="text-meta text-writing-minor leading-relaxed">
-        Your account doesn't have a password set. You can set one here to also be able to log in with email and password.
-      </p>
-    }
-    <div class="flex flex-col gap-3">
-      @if (hasUsablePassword()) {
+    <!-- Timezone -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-section font-semibold text-writing">Timezone</h2>
+        <p class="text-meta text-writing-minor leading-relaxed">
+          Repeating tasks in projects you own reset to "To do" at 4:00 AM in this timezone.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between gap-4 px-4 py-3 rounded-lg bg-layer-3 border border-line">
+        <div class="flex flex-col gap-0.5 min-w-0">
+          <span class="text-body font-medium text-writing truncate">{{ currentTimezoneLabel() }}</span>
+          <span class="text-caption text-writing-minor">{{ currentTimezoneOffset() }}</span>
+        </div>
+        <span class="shrink-0 text-title font-semibold text-writing tabular-nums">{{ currentLocalTime() }}</span>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <button
+          type="button"
+          class="main-input flex items-center justify-between gap-2 text-start"
+          (click)="toggleTzPanel()">
+          <span class="text-body text-writing truncate">{{ currentTimezoneLabel() }}</span>
+          <span class="text-caption text-writing-minor shrink-0">{{ tzPanelOpen() ? 'Close' : 'Change' }}</span>
+        </button>
+
+        @if (tzPanelOpen()) {
+          <div class="card p-2 flex flex-col gap-2 bg-layer-2">
+            <input
+              class="main-input"
+              type="text"
+              dir="auto"
+              placeholder="Search timezones..."
+              [ngModel]="tzSearch()"
+              (ngModelChange)="tzSearch.set($event)">
+            <div class="flex flex-col gap-0.5 max-h-64 overflow-auto">
+              @for (tz of filteredTimezones(); track tz.name) {
+                <button
+                  type="button"
+                  class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg text-start hover:bg-layer-3 transition-colors"
+                  [class.bg-layer-3]="selectedById()[tz.name]"
+                  [disabled]="isSavingTz()"
+                  (click)="selectTimezone(tz.name)">
+                  <span class="text-meta text-writing truncate">{{ tz.label }}</span>
+                  <span class="shrink-0 text-label font-semibold px-1.5 py-0.5 rounded-full bg-layer-1 text-writing-minor">{{ tz.offset }}</span>
+                </button>
+              } @empty {
+                <span class="px-3 py-2 text-meta text-writing-minor">No timezones match "{{ tzSearch() }}".</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        @if (isBrowserTimezoneActive()) {
+          <span class="text-caption text-writing-minor">Using your browser's timezone.</span>
+        } @else {
+          <span class="text-caption text-writing-minor truncate">Browser detected: {{ browserTimezone }}</span>
+        }
+        <button
+          type="button"
+          class="btn btn-secondary shrink-0"
+          [disabled]="isSavingTz() || isBrowserTimezoneActive()"
+          (click)="useBrowserTimezone()">
+          Use browser timezone
+        </button>
+      </div>
+    </div>
+
+    <!-- Connect to Claude -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <h2 class="text-section font-semibold text-writing">Connect to Claude</h2>
+        <p class="text-meta text-writing-minor leading-relaxed">
+          Add this site as a connector in Claude to manage your tasks and shopping lists from a chat. Click
+          <span class="font-medium text-writing">Add to Claude</span>, then confirm in Claude —
+          you'll sign in with your account here. You don't need to fill in any OAuth fields; if the URL
+          isn't already filled in, paste the one below.
+        </p>
+      </div>
+      @if (isLoadingMcp()) {
+        <span class="text-meta text-writing-minor">Loading…</span>
+      } @else if (mcpInfo(); as mcp) {
+        @if (!mcp.is_publicly_reachable) {
+          <div class="px-4 py-3 rounded-lg bg-layer-3 border border-line">
+            <span class="text-meta text-writing-minor">
+              The server isn't publicly reachable: MCP_PUBLIC_BASE_URL isn't configured on the backend.
+              In development, start a tunnel (ngrok) and restart the backend instead.
+            </span>
+          </div>
+        }
         <div class="flex flex-col gap-1">
-          <span class="text-meta font-medium text-writing-minor">Current Password</span>
+          <span class="input-label">Connector URL</span>
+          <div class="flex items-center gap-2">
+            <input class="main-input flex-1" type="text" aria-label="Connector URL" [value]="mcp.mcp_url" readonly>
+            <button type="button" class="btn btn-secondary" (click)="copyMcpUrl()">
+              {{ mcpUrlCopied() ? 'Copied' : 'Copy' }}
+            </button>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <a class="btn btn-primary" [href]="mcp.add_connector_url" target="_blank" rel="noopener">
+            Add to Claude
+          </a>
+        </div>
+      } @else {
+        <span class="text-meta text-writing-minor">Connection info unavailable.</span>
+      }
+    </div>
+
+    <!-- Change Password / Set Password -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-4">
+      <h2 class="text-section font-semibold text-writing">
+        {{ hasUsablePassword() ? 'Change Password' : 'Set Password' }}
+      </h2>
+      @if (!hasUsablePassword()) {
+        <p class="text-meta text-writing-minor leading-relaxed">
+          Your account doesn't have a password set. You can set one here to also be able to log in with email and password.
+        </p>
+      }
+      <div class="flex flex-col gap-3">
+        @if (hasUsablePassword()) {
+          <div class="flex flex-col gap-1">
+            <span class="input-label">Current Password</span>
+            <input
+              class="main-input"
+              type="password"
+              dir="auto"
+              [ngModel]="oldPassword()"
+              (ngModelChange)="oldPassword.set($event)"
+              placeholder="Current password">
+          </div>
+        }
+        <div class="flex flex-col gap-1">
+          <span class="input-label">New Password</span>
           <input
             class="main-input"
             type="password"
             dir="auto"
-            [ngModel]="oldPassword()"
-            (ngModelChange)="oldPassword.set($event)"
-            placeholder="Current password">
-        </div>
-      }
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">New Password</span>
-        <input
-          class="main-input"
-          type="password"
-          dir="auto"
-          [ngModel]="newPassword()"
-          (ngModelChange)="newPassword.set($event)"
-          placeholder="New password">
-        @if (newPassword().length > 0) {
-          <div class="flex flex-col gap-0.75 mt-2">
-            @for (rule of passwordRules(); track rule.label) {
-              <div class="flex items-center gap-2">
-                <span class="text-label font-bold w-3 text-center"
-                      [class.text-success]="rule.met"
-                      [class.text-writing-minor]="!rule.met">
-                  {{ rule.met ? '✓' : '·' }}
-                </span>
-                <span class="text-caption"
-                      [class.text-success]="rule.met"
-                      [class.text-writing-minor]="!rule.met">
-                  {{ rule.label }}
-                </span>
-              </div>
-            }
-          </div>
-        }
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-meta font-medium text-writing-minor">Confirm New Password</span>
-        <input
-          class="main-input"
-          type="password"
-          dir="auto"
-          [ngModel]="confirmNewPassword()"
-          (ngModelChange)="confirmNewPassword.set($event)"
-          placeholder="Confirm new password">
-        @if (passwordMismatch()) {
-          <span class="text-caption text-danger mt-1">Passwords do not match</span>
-        }
-      </div>
-    </div>
-    <div class="flex items-center justify-end gap-4">
-      @if (passwordChangedSuccess()) {
-        <span class="text-meta font-medium text-success">Password changed successfully</span>
-      }
-      <button
-        type="button"
-        class="btn btn-primary"
-        [disabled]="isChangingPassword() || !canChangePassword()"
-        (click)="changePassword()">
-        @if (isChangingPassword()) {
-          Changing...
-        } @else {
-          Change Password
-        }
-      </button>
-    </div>
-  </div>
-
-  <!-- Support -->
-  <div class="card p-6 flex flex-col gap-2">
-    <h2 class="text-lead font-semibold text-writing">Need Help?</h2>
-    <p class="text-body text-writing-minor leading-relaxed">
-      If you have questions or run into any issues, contact us at
-      <a [href]="'mailto:' + supportEmail" class="text-accent hover:underline">{{ supportEmail }}</a>
-    </p>
-  </div>
-
-  <!-- Passkeys -->
-  <div id="passkeys-section" class="card p-6 flex flex-col gap-4 transition-shadow duration-300"
-       [style.box-shadow]="passkeysHighlighted() ? '0 0 0 2px #0075de' : null">
-    <h2 class="text-lead font-semibold text-writing">Passkeys</h2>
-
-    @if (authService.credentials()?.credentials?.length) {
-      <div class="flex flex-col gap-2">
-        @for (credential of authService.credentials().credentials; track credential.id) {
-          <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-layer-3 border border-line">
-            <div class="flex flex-col">
-              <span class="text-body font-medium text-writing">Passkey</span>
-              <span class="text-caption text-writing-minor">Added {{ formatDate(credential.created_at) }}</span>
-            </div>
-            <button
-              type="button"
-              class="btn btn-secondary text-meta"
-              [disabled]="isDeletingPasskey() === credential.id"
-              (click)="deletePasskey(credential.credential_id, credential.id)">
-              @if (isDeletingPasskey() === credential.id) {
-                Removing...
-              } @else {
-                Remove
+            [ngModel]="newPassword()"
+            (ngModelChange)="newPassword.set($event)"
+            placeholder="New password">
+          @if (newPassword().length > 0) {
+            <div class="flex flex-col gap-0.75 mt-2">
+              @for (rule of passwordRules(); track rule.label) {
+                <div class="flex items-center gap-2">
+                  <span class="text-label font-bold w-3 text-center"
+                        [class.text-success]="rule.met"
+                        [class.text-writing-minor]="!rule.met">
+                    {{ rule.met ? '✓' : '·' }}
+                  </span>
+                  <span class="text-caption"
+                        [class.text-success]="rule.met"
+                        [class.text-writing-minor]="!rule.met">
+                    {{ rule.label }}
+                  </span>
+                </div>
               }
-            </button>
-          </div>
-        }
+            </div>
+          }
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="input-label">Confirm New Password</span>
+          <input
+            class="main-input"
+            type="password"
+            dir="auto"
+            [ngModel]="confirmNewPassword()"
+            (ngModelChange)="confirmNewPassword.set($event)"
+            placeholder="Confirm new password">
+          @if (passwordMismatch()) {
+            <span class="text-caption text-danger mt-1">Passwords do not match</span>
+          }
+        </div>
       </div>
-    } @else {
-      <p class="text-body text-writing-minor">No passkeys registered.</p>
-    }
-
-    <div class="flex items-center justify-between">
-      @if (!canRegisterPasskey()) {
-        <span class="text-meta text-writing-minor">Maximum of 3 passkeys reached.</span>
-      } @else {
-        <span></span>
-      }
-      <button
-        type="button"
-        class="btn btn-secondary"
-        [disabled]="isRegisteringPasskey() || !canRegisterPasskey()"
-        (click)="registerPasskey()">
-        @if (isRegisteringPasskey()) {
-          Registering...
-        } @else {
-          Register New Passkey
+      <div class="flex items-center justify-end gap-4">
+        @if (passwordChangedSuccess()) {
+          <span class="text-meta font-medium text-success">Password changed successfully</span>
         }
-      </button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="isChangingPassword() || !canChangePassword()"
+          (click)="changePassword()">
+          @if (isChangingPassword()) {
+            Changing...
+          } @else {
+            Change Password
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Support -->
+    <div class="card p-5 sm:p-6 flex flex-col gap-2">
+      <h2 class="text-section font-semibold text-writing">Need Help?</h2>
+      <p class="text-body text-writing-minor leading-relaxed">
+        If you have questions or run into any issues, contact us at
+        <a [href]="'mailto:' + supportEmail" class="text-accent hover:underline">{{ supportEmail }}</a>
+      </p>
+    </div>
+
+    <!-- Passkeys -->
+    <div id="passkeys-section" class="card p-5 sm:p-6 flex flex-col gap-4 transition-shadow duration-300"
+         [class.ring-2]="passkeysHighlighted()"
+         [class.ring-accent]="passkeysHighlighted()">
+      <h2 class="text-section font-semibold text-writing">Passkeys</h2>
+
+      @if (authService.credentials()?.credentials?.length) {
+        <div class="flex flex-col gap-2">
+          @for (credential of authService.credentials().credentials; track credential.id) {
+            <div class="flex items-center justify-between px-4 py-3 rounded-lg bg-layer-3 border border-line">
+              <div class="flex flex-col">
+                <span class="text-body font-medium text-writing">Passkey</span>
+                <span class="text-caption text-writing-minor">Added {{ passkeyAddedLabels()[credential.id] }}</span>
+              </div>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                [disabled]="isDeletingPasskey() === credential.id"
+                (click)="deletePasskey(credential.credential_id, credential.id)">
+                @if (isDeletingPasskey() === credential.id) {
+                  Removing...
+                } @else {
+                  Remove
+                }
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="text-body text-writing-minor">No passkeys registered.</p>
+      }
+
+      <div class="flex items-center justify-between">
+        @if (!canRegisterPasskey()) {
+          <span class="text-meta text-writing-minor">Maximum of 3 passkeys reached.</span>
+        } @else {
+          <span></span>
+        }
+        <button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="isRegisteringPasskey() || !canRegisterPasskey()"
+          (click)="registerPasskey()">
+          @if (isRegisteringPasskey()) {
+            Registering...
+          } @else {
+            Register New Passkey
+          }
+        </button>
+      </div>
     </div>
   </div>
-
 </div>

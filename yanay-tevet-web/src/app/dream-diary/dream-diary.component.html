@@ -1,4 +1,11 @@
-<div class="max-w-3xl mx-auto w-full p-6">
+<div class="page-narrow">
+
+    <app-page-header title="Dream Diary" [subtitle]="subtitle()">
+        <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
+            <ng-icon [svg]="featherPlus"/>
+            New entry
+        </button>
+    </app-page-header>
 
     <!-- Calendar: last 4 weeks -->
     <div class="card mb-6 p-4">
@@ -16,12 +23,12 @@
                     <div class="aspect-square"></div>
                 } @else {
                     <div
-                        class="aspect-square flex items-center justify-center rounded-full text-meta font-medium transition-colors"
+                        class="aspect-square flex items-center justify-center rounded-full text-meta font-medium tabular-nums transition-colors"
                         [class.bg-accent]="day.isLogged"
                         [class.text-on-accent]="day.isLogged"
                         [class.ring-2]="day.isToday"
                         [class.ring-accent]="day.isToday && !day.isLogged"
-                        [class.ring-white]="day.isToday && day.isLogged"
+                        [class.ring-layer-2]="day.isToday && day.isLogged"
                         [class.text-writing-minor]="!day.isLogged && !day.isCurrentMonth"
                         [class.text-writing]="!day.isLogged && day.isCurrentMonth">
                         {{ day.dayOfMonth }}
@@ -31,97 +38,89 @@
         </div>
     </div>
 
-    <!-- Entries header + new button -->
-    <div class="flex items-center justify-between mb-4">
-        <span class="text-ui font-semibold text-writing">
-            {{ totalAmount() }} {{ totalAmount() === 1 ? 'entry' : 'entries' }}
-        </span>
-        <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
-            + New Dream
-        </button>
-    </div>
-
     @if (isLoadingEntries()) {
-        <div class="text-center text-writing-minor text-body py-8">Loading...</div>
-    }
+        <app-loading-state label="Loading dreams"/>
+    } @else if (entries().length === 0) {
+        <app-empty-state title="Log your first dream" text="Write it down as soon as you wake up, before it fades.">
+            <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
+                <ng-icon [svg]="featherPlus"/>
+                New entry
+            </button>
+        </app-empty-state>
+    } @else {
+        <div class="flex flex-col gap-3">
+            @for (entry of entries(); track entry.id) {
+                <div class="card overflow-hidden">
 
-    @if (!isLoadingEntries()) {
-        @for (entry of entries(); track entry.id) {
-            <div class="card mb-4 overflow-hidden">
+                    <div class="p-4">
 
-                <!-- Content section -->
-                <div class="p-4">
+                        @if (entry.title) {
+                            <div class="text-lead font-bold text-writing truncate mb-0.5" dir="auto">{{ entry.title }}</div>
+                        }
+                        <div class="text-caption text-writing-minor mb-3">{{ entryTimeLabels()[entry.id] }}</div>
 
-                    <!-- Title + time -->
-                    @if (entry.title) {
-                        <div class="text-lead font-bold text-writing truncate mb-0.5">{{ entry.title }}</div>
+                        <p class="text-ui text-writing leading-relaxed whitespace-pre-wrap" dir="auto">{{ entry.text }}</p>
+
+                        <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-line-subtle">
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                aria-label="Generate image with AI"
+                                title="Generate image with AI"
+                                [disabled]="generatingImageId() === entry.id"
+                                (click)="generateImage(entry)">
+                                @if (generatingImageId() === entry.id) {
+                                    <span class="text-label font-medium">Generating…</span>
+                                } @else {
+                                    <ng-icon [svg]="featherZap"/>
+                                }
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                aria-label="Upload image"
+                                title="Upload image"
+                                [disabled]="uploadingId() === entry.id"
+                                (click)="uploadImage(entry)">
+                                @if (uploadingId() === entry.id) {
+                                    <span class="text-label font-medium">Uploading…</span>
+                                } @else {
+                                    <ng-icon [svg]="featherUpload"/>
+                                }
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn"
+                                aria-label="Edit entry"
+                                title="Edit entry"
+                                (click)="goToEditPage(entry)">
+                                <ng-icon [svg]="featherEdit"/>
+                            </button>
+                            <button
+                                type="button"
+                                class="icon-btn icon-btn-danger"
+                                aria-label="Delete entry"
+                                title="Delete entry"
+                                (click)="deleteEntry(entry)">
+                                <ng-icon [svg]="featherTrash2"/>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- The image fades in from the card above it; clicking opens it full size. -->
+                    @if (entry.image_url) {
+                        <button type="button" class="relative block w-full" aria-label="View image"
+                                (click)="openImageDialog(entry.image_url)">
+                            <span class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-layer-2 to-transparent z-10 pointer-events-none"></span>
+                            <img
+                                [src]="entry.image_url"
+                                alt="Dream image"
+                                class="block w-full object-cover max-h-64" />
+                        </button>
                     }
-                    <div class="text-caption text-writing-minor mb-3">{{ formatTime(entry.time) }}</div>
-
-                    <!-- Dream text -->
-                    <p class="text-ui text-writing leading-relaxed whitespace-pre-wrap">{{ entry.text }}</p>
-
-                    <!-- Action buttons -->
-                    <div class="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-line-subtle">
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Generate image with AI"
-                            [disabled]="generatingImageId() === entry.id"
-                            (click)="generateImage(entry)">
-                            @if (generatingImageId() === entry.id) {
-                                <span class="text-label text-writing-minor font-medium">Generating...</span>
-                            } @else {
-                                <ng-icon [svg]="featherZap" class="h-4 w-4"></ng-icon>
-                            }
-                        </button>
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Upload image"
-                            [disabled]="uploadingId() === entry.id"
-                            (click)="uploadImage(entry)">
-                            @if (uploadingId() === entry.id) {
-                                <span class="text-label text-writing-minor font-medium">Uploading...</span>
-                            } @else {
-                                <ng-icon [svg]="featherUpload" class="h-4 w-4"></ng-icon>
-                            }
-                        </button>
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Edit entry"
-                            (click)="goToEditPage(entry)">
-                            <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                        </button>
-                        <button
-                            type="button"
-                            class="icon-btn"
-                            title="Delete entry"
-                            (click)="deleteEntry(entry)">
-                            <ng-icon [svg]="featherDelete" class="h-4 w-4"></ng-icon>
-                        </button>
-                    </div>
                 </div>
-
-                <!-- Image below content, fading in from white, clickable -->
-                @if (entry.image_url) {
-                    <div class="relative cursor-pointer" (click)="openImageDialog(entry.image_url)">
-                        <div class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-layer-2 to-transparent z-10 pointer-events-none"></div>
-                        <img
-                            [src]="entry.image_url"
-                            alt="Dream image"
-                            class="w-full object-cover max-h-64" />
-                    </div>
-                }
-            </div>
-        }
-
-        @empty {
-            <div class="text-center text-writing-minor text-body py-8">
-                No entries yet. Press <strong>+ New Dream</strong> to log your first one.
-            </div>
-        }
+            }
+        </div>
 
         @if (hasMore()) {
             <div class="flex justify-center mt-4 mb-4">
@@ -130,7 +129,7 @@
                     class="btn btn-secondary"
                     [disabled]="isLoadingMore()"
                     (click)="loadMore()">
-                    @if (isLoadingMore()) { Loading... } @else { Load More }
+                    @if (isLoadingMore()) { Loading… } @else { Load More }
                 </button>
             </div>
         }

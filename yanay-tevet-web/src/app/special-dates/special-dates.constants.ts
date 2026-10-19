@@ -33,7 +33,7 @@ export const SPECIAL_DATE_CATEGORY_BY_VALUE: Record<SpecialDateCategory, Special
 
 export const CALENDAR_CHIPS: Record<CalendarType, {label: string; cssClass: string}> = {
   hebrew: {label: 'לפי הלוח העברי', cssClass: 'calendar-chip-hebrew'},
-  gregorian: {label: 'לפי הלוח הלועזי', cssClass: 'calendar-chip-gregorian'},
+  gregorian: {label: 'לפי הלוח הלועזי', cssClass: 'chip-info'},
 };
 
 const LONG_DATE_FORMAT = new Intl.DateTimeFormat('he-IL', {weekday: 'long', day: 'numeric', month: 'long'});

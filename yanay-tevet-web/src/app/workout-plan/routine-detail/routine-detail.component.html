@@ -1,44 +1,41 @@
-<div class="max-w-3xl mx-auto w-full p-6">
+<div class="page-narrow">
 
     <a [routerLink]="allRoutinesUrl"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing mb-5">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         All routines
     </a>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading routine...</div>
+        <app-loading-state label="Loading routine"/>
     } @else if (loadError()) {
-        <div class="card p-6 text-center text-body text-writing-minor">{{ loadError() }}</div>
+        <app-error-state [text]="loadError()!" [backUrl]="allRoutinesUrl" backLabel="Back to routines"/>
     } @else if (routine(); as routine) {
 
-        <div class="flex items-start justify-between gap-3 mb-6">
-            <h1 class="text-title font-bold text-writing" dir="auto">{{ routine.name }}</h1>
-            <div class="flex items-center gap-1 shrink-0">
-                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editRoutine()">
-                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                </button>
-                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteRoutine()">
-                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                </button>
-            </div>
-        </div>
+        <app-page-header [title]="routine.name" [subtitle]="headerSubtitle()">
+            <button type="button" class="btn btn-secondary btn-sm" (click)="editRoutine()">
+                <ng-icon [svg]="featherEdit"/>
+                Edit
+            </button>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More routine actions"/>
+        </app-page-header>
 
         <div class="flex items-center justify-between mb-3">
             <span class="eyebrow">Exercises</span>
-            <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="addExercise()">
-                <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+            <button type="button" class="btn btn-primary" (click)="addExercise()">
+                <ng-icon [svg]="featherPlus"/>
                 Add exercise
             </button>
         </div>
 
         @if (exercises().length === 0) {
-            <div class="card p-10 text-center">
-                <div class="text-4xl mb-3">💪</div>
-                <p class="text-ui font-semibold text-writing mb-1">No exercises yet</p>
-                <p class="text-meta text-writing-minor mb-5">Add an exercise and record the sets you're training.</p>
-                <button type="button" class="btn btn-primary" (click)="addExercise()">Add exercise</button>
-            </div>
+            <app-empty-state title="Add your first exercise"
+                             text="Record the sets you train, by reps or by time, with any notes on weight or form.">
+                <button type="button" class="btn btn-primary" (click)="addExercise()">
+                    <ng-icon [svg]="featherPlus"/>
+                    Add exercise
+                </button>
+            </app-empty-state>
         } @else {
             <div class="flex flex-col gap-3">
                 @for (exercise of exercises(); track exercise.id) {
@@ -52,13 +49,13 @@
                                 }
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                <button type="button" class="icon-btn" aria-label="Edit exercise" title="Edit"
                                         (click)="editExercise(exercise)">
-                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                    <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete exercise" title="Delete"
                                         (click)="deleteExercise(exercise)">
-                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                    <ng-icon [svg]="featherTrash2"/>
                                 </button>
                             </div>
                         </div>

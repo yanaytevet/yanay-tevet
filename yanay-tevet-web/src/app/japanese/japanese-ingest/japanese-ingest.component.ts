@@ -1,14 +1,15 @@
-import {Component, inject, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ingestNodeView} from '../../../generated-files/api/japanese';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 
 @Component({
   selector: 'app-japanese-ingest',
   standalone: true,
-  imports: [FormsModule, JapaneseNavComponent],
+  imports: [FormsModule, JapaneseNavComponent, PageHeaderComponent],
   templateUrl: './japanese-ingest.component.html',
 })
 export class JapaneseIngestComponent {
@@ -17,6 +18,7 @@ export class JapaneseIngestComponent {
 
   readonly text = signal<string>('');
   readonly isWorking = signal<boolean>(false);
+  readonly canSubmit = computed(() => !this.isWorking() && !!this.text().trim());
 
   async onSubmit(): Promise<void> {
     const text = this.text().trim();

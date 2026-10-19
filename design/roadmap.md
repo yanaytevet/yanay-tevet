@@ -26,18 +26,22 @@ Decisions behind the rounds, from the October 2026 planning session:
 | Confirmation dialog: `danger` and `dir`; one dialog shell | ✅ |
 | Task management polish pass (flagship) | ✅ |
 
-## Round 2 — roll the shared pieces out to every app
+## Round 2 — the shared pieces in every app
 
-- Genre trainer and dashboard: drop the nested `min-h-screen` shell (double scroll) and the inline letter-spacing.
-- Replace the remaining hand-built page headers, empty states, loading lines and error blocks with the
-  shared components, app by app (shopping lists, itinerary lists, workout plan, dream diary, special dates,
-  Home Sweet Home and its sub-apps, Japanese, genre trainer, dashboard, settings).
-- Move every page to `page-narrow` / `page-wide`; align sub-nav bars with their content.
-- Switch every trash icon to `icon-btn icon-btn-danger` with an `aria-label` (confirmations already pass `danger: true`).
-- Replace the 22 `border-layer-4` hairlines with `border-line`.
-- Special dates: in-page tabs onto `app-tabs-group`; calendar palette with dark values.
+| Step | Status |
+|---|---|
+| Every app page on `<app-page-header>` and `page-narrow` / `page-wide`; sub-navs aligned with their content | ✅ |
+| Shared empty, loading and error states everywhere; emoji empty states gone | ✅ |
+| Detail pages: common actions in the header, rare and destructive ones in a "more" menu | ✅ |
+| Trash icons `icon-btn icon-btn-danger` with `aria-label`; hairline `border-layer-4` → `border-line` | ✅ |
+| Genre trainer and dashboard: nested full-height shell and inline letter-spacing removed | ✅ |
+| Special dates: page structure, calendar palette with dark values | ✅ |
+| Special dates in-page tabs onto `app-tabs-group` | ○ — blocked by `tabs-group` (see round 3) |
 
 ## Round 3 — consistency details
+
+- `tabs-group`: tabs as real buttons (keyboard), a change output, RTL-aware scroll arrows, no inner padding — then
+  move special dates onto it.
 
 - One icon per action (edit, delete, add, more) across the apps.
 - Clickable `<div>` cards become `<a>`/`<button class="card card-interactive">`.

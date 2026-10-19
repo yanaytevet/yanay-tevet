@@ -27,6 +27,9 @@ export class OpenAiCreditsCardComponent {
     return code.toUpperCase() + ' ';
   });
 
+  protected readonly todayLabel = computed(() => `${this.currencySymbol()}${(this.data()?.today ?? 0).toFixed(2)}`);
+  protected readonly monthToDateLabel = computed(() => `${this.currencySymbol()}${(this.data()?.month_to_date ?? 0).toFixed(2)}`);
+
   protected readonly fetchedLabel = computed(() => {
     const iso = this.data()?.fetched_at;
     if (!iso) { return ''; }

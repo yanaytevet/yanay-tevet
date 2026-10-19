@@ -1,21 +1,11 @@
 <app-japanese-nav/>
 
-<div class="max-w-5xl mx-auto px-4 py-6">
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-display font-bold text-writing">Review Queue</h1>
-      <p class="text-body text-writing-minor mt-1">
-        Stubs await content generation; needs-review awaits approval.
-      </p>
-    </div>
+<div class="page-wide">
+  <app-page-header title="Review Queue" subtitle="Stubs await content generation; needs-review awaits approval.">
     <button type="button" class="btn btn-secondary" (click)="refresh()" [disabled]="isLoading()">
       Refresh
     </button>
-  </div>
-
-  @if (error(); as err) {
-    <div class="card p-4 mb-6 text-danger bg-danger-soft">{{ err }}</div>
-  }
+  </app-page-header>
 
 <!--  <section class="mb-10">-->
 <!--    <h2 class="text-section font-semibold mb-3 text-writing">-->
@@ -31,17 +21,23 @@
 <!--    </div>-->
 <!--  </section>-->
 
-  <section>
-    <h2 class="text-section font-semibold mb-3 text-writing">
+  @if (isLoading() && stubs().length === 0) {
+    <app-loading-state label="Loading review queue"/>
+  } @else if (error(); as err) {
+    <app-error-state [text]="err"/>
+  } @else {
+    <div class="text-section font-semibold text-writing mb-3">
       Stubs <span class="text-writing-minor text-body font-normal">({{ stubs().length }})</span>
-    </h2>
-    @if (stubs().length === 0 && !isLoading()) {
-      <div class="card p-4 text-writing-minor text-body">No stubs waiting for content.</div>
-    }
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      @for (node of stubs(); track node.id) {
-        <app-node-summary-card [node]="node" [showStatus]="true"/>
-      }
     </div>
-  </section>
+    @if (stubs().length === 0) {
+      <app-empty-state title="No stubs waiting for content"
+                       text="Ingested text waits here until its content is generated."/>
+    } @else {
+      <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+        @for (node of stubs(); track node.id) {
+          <app-node-summary-card [node]="node" [showStatus]="true"/>
+        }
+      </div>
+    }
+  }
 </div>

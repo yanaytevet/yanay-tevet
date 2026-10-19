@@ -18,6 +18,9 @@ import {
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {FilesUploadService} from '../../common/services/files-upload.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {
   CONTACT_METHOD_LABELS,
   CONTACT_METHOD_ORDER,
@@ -34,7 +37,7 @@ type ContactGroup = FormGroup<{
 @Component({
   selector: 'app-apartment-hunt-prospect-form',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon, RouterLink],
+  imports: [ReactiveFormsModule, NgIcon, RouterLink, PageHeaderComponent, LoadingStateComponent, ErrorStateComponent],
   providers: [provideIcons({featherArrowLeft, featherPlus, featherTrash2, featherUpload, featherX})],
   templateUrl: './prospect-form.component.html',
 })

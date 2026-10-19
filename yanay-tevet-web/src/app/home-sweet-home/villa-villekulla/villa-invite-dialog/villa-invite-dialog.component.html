@@ -2,8 +2,8 @@
 
     <div class="flex items-start justify-between mb-1">
         <h2 class="text-section font-bold text-writing">Invite people</h2>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
-            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
     <p class="text-meta text-writing-minor mb-5">Friends can view the calendar and book the unit. Co-admins can also manage bookings and invite others.</p>
@@ -16,27 +16,29 @@
                    (keyup.enter)="onInvite()" />
         </div>
         <div class="flex items-center gap-2">
-            <div class="flex rounded-full bg-layer-3 p-0.5">
+            <div class="flex rounded-full bg-layer-3 p-0.5" role="group" aria-label="Role">
                 <button type="button"
                         class="px-3 py-1 text-caption font-semibold rounded-full transition-colors"
-                        [class.bg-layer-1]="role() === 'collaborator'"
-                        [class.text-writing]="role() === 'collaborator'"
+                        [attr.aria-pressed]="role() === 'collaborator'"
+                        [class.bg-accent]="role() === 'collaborator'"
+                        [class.text-on-accent]="role() === 'collaborator'"
                         [class.text-writing-minor]="role() !== 'collaborator'"
                         (click)="setRole('collaborator')">
                     Friend
                 </button>
                 <button type="button"
                         class="px-3 py-1 text-caption font-semibold rounded-full transition-colors"
-                        [class.bg-layer-1]="role() === 'owner'"
-                        [class.text-writing]="role() === 'owner'"
+                        [attr.aria-pressed]="role() === 'owner'"
+                        [class.bg-accent]="role() === 'owner'"
+                        [class.text-on-accent]="role() === 'owner'"
                         [class.text-writing-minor]="role() !== 'owner'"
                         (click)="setRole('owner')">
                     Co-admin
                 </button>
             </div>
-            <button type="button" class="btn btn-primary flex items-center gap-1.5 ml-auto"
+            <button type="button" class="btn btn-primary ms-auto"
                     [disabled]="isInviting()" (click)="onInvite()">
-                <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
+                <ng-icon [svg]="featherUserPlus"/>
                 Invite
             </button>
         </div>
@@ -45,7 +47,7 @@
     <div class="eyebrow mb-2">People with access</div>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-meta py-6">Loading...</div>
+        <app-loading-state label="Loading people"/>
     } @else {
         <div class="flex flex-col gap-1">
             @for (member of members(); track member.user_id) {
@@ -55,13 +57,14 @@
                         <div class="text-caption text-writing-minor truncate">{{ member.username }}</div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                        <span class="eyebrow px-2 py-0.5 rounded-full bg-layer-2">
+                        <span class="chip bg-layer-2">
                             {{ member.role === 'owner' ? 'Co-admin' : 'Friend' }}
                         </span>
-                        <button type="button" class="icon-btn text-writing-minor hover:text-writing"
+                        <button type="button" class="icon-btn icon-btn-danger"
+                                [attr.aria-label]="'Remove ' + (member.full_name || member.username)"
                                 [disabled]="removingUserId() === member.user_id"
                                 (click)="onRemove(member)">
-                            <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
+                            <ng-icon [svg]="featherX"/>
                         </button>
                     </div>
                 </div>
@@ -77,9 +80,7 @@
                             <ng-icon [svg]="featherMail" class="h-4 w-4 text-writing-minor shrink-0"></ng-icon>
                             <div class="text-body text-writing truncate">{{ invitation.email }}</div>
                         </div>
-                        <span class="eyebrow px-2 py-0.5 rounded-full bg-layer-2 shrink-0">
-                            Invited
-                        </span>
+                        <span class="chip bg-layer-2 shrink-0">Invited</span>
                     </div>
                 }
             </div>

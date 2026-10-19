@@ -9,6 +9,7 @@ import {
   SpecialDateCalendarSchema,
   updateSpecialDateCalendarPreferencesView,
 } from '../../../generated-files/api/special-dates';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
@@ -21,7 +22,7 @@ const CALENDAR_NAME_MAX_LENGTH = 100;
 @Component({
   selector: 'app-calendars-dialog',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, LoadingStateComponent],
   templateUrl: './calendars-dialog.component.html',
 })
 export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean> {

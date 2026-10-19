@@ -7,7 +7,8 @@
     </div>
     <button
       type="button"
-      class="p-1.5 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-all flex-shrink-0 disabled:opacity-40"
+      class="icon-btn"
+      aria-label="Refresh OpenAI spend"
       title="Refresh"
       [disabled]="isLoading()"
       (click)="refresh()">
@@ -18,18 +19,18 @@
   @if (isLoading() && !data()) {
     <div class="text-body text-writing-minor">Loading…</div>
   } @else if (error()) {
-    <div class="p-3 rounded-lg text-body text-danger bg-danger-soft border border-danger/30">
+    <div class="p-3 rounded-lg text-body text-danger bg-danger-soft">
       {{ error() }}
     </div>
-  } @else if (data(); as d) {
+  } @else if (data()) {
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <div class="text-caption uppercase tracking-wide text-writing-minor mb-1">Today</div>
-        <div class="text-title font-bold text-writing">{{ currencySymbol() }}{{ d.today.toFixed(2) }}</div>
+        <div class="eyebrow mb-1">Today</div>
+        <div class="text-display font-bold text-writing tabular-nums">{{ todayLabel() }}</div>
       </div>
       <div>
-        <div class="text-caption uppercase tracking-wide text-writing-minor mb-1">Month to date</div>
-        <div class="text-title font-bold text-writing">{{ currencySymbol() }}{{ d.month_to_date.toFixed(2) }}</div>
+        <div class="eyebrow mb-1">Month to date</div>
+        <div class="text-display font-bold text-writing tabular-nums">{{ monthToDateLabel() }}</div>
       </div>
     </div>
     <div class="mt-4 text-caption text-writing-minor">

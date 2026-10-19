@@ -1,49 +1,43 @@
-<div class="max-w-4xl mx-auto w-full p-6">
+<div class="page-narrow">
 
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-title font-bold text-writing mb-1">Itinerary Lists</h1>
-            <p class="text-meta text-writing-minor">Reusable packing & prep lists. Activate one when you head out.</p>
-        </div>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="createList()">
-            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
-            Create list
+    <app-page-header title="Itinerary Lists" subtitle="Reusable packing & prep lists. Activate one when you head out.">
+        <button type="button" class="btn btn-primary" (click)="createList()">
+            <ng-icon [svg]="featherPlus"/>
+            New list
         </button>
-    </div>
+    </app-page-header>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading lists...</div>
+        <app-loading-state label="Loading lists"/>
     } @else if (lists().length === 0) {
-        <div class="card p-10 text-center">
-            <div class="text-4xl mb-3">📋</div>
-            <p class="text-ui font-semibold text-writing mb-1">No lists yet</p>
-            <p class="text-meta text-writing-minor mb-5">Create a reusable list to start tracking what to pack and prepare.</p>
-            <button type="button" class="btn btn-primary" (click)="createList()">Create list</button>
-        </div>
+        <app-empty-state title="Start your first list"
+                         text="Write down what to pack and prepare once, then activate the list each time you head out.">
+            <button type="button" class="btn btn-primary" (click)="createList()">
+                <ng-icon [svg]="featherPlus"/>
+                New list
+            </button>
+        </app-empty-state>
     } @else {
         @if (activeLists().length > 0) {
-            <div class="eyebrow mb-3">📌 Active</div>
-            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-8">
+            <div class="eyebrow mb-3">Active</div>
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-3 mb-8">
                 @for (list of activeLists(); track list.id) {
-                    <div class="card p-4 cursor-pointer shadow-2 hover:shadow-3 transition-shadow"
-                         (click)="openList(list)">
+                    <a [routerLink]="listUrls()[list.id]" class="card card-interactive p-4 flex flex-col">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ list.name }}</div>
-                            <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3 text-accent">
-                                Active
-                            </span>
+                            <span class="chip chip-accent shrink-0">Active</span>
                         </div>
                         @if (list.description) {
                             <p class="text-meta text-writing-minor line-clamp-2 mb-3" dir="auto">{{ list.description }}</p>
                         }
-                        <div class="flex items-center gap-3 text-caption text-writing-minor">
+                        <div class="mt-auto flex items-center gap-2 text-caption text-writing-minor">
                             <span>{{ list.item_count }} item{{ list.item_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
+                            <span class="text-writing-least" aria-hidden="true">·</span>
                             <span>{{ list.task_count }} task{{ list.task_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
+                            <span class="text-writing-least" aria-hidden="true">·</span>
                             <span>{{ list.member_count }} member{{ list.member_count === 1 ? '' : 's' }}</span>
                         </div>
-                    </div>
+                    </a>
                 }
             </div>
         }
@@ -52,27 +46,24 @@
             @if (activeLists().length > 0) {
                 <div class="eyebrow mb-3">Standby</div>
             }
-            <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
                 @for (list of standbyLists(); track list.id) {
-                    <div class="card p-4 cursor-pointer hover:shadow-2 transition-shadow"
-                         (click)="openList(list)">
+                    <a [routerLink]="listUrls()[list.id]" class="card card-interactive p-4 flex flex-col">
                         <div class="flex items-start justify-between gap-3 mb-2">
                             <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ list.name }}</div>
-                            <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3">
-                                Standby
-                            </span>
+                            <span class="chip shrink-0">Standby</span>
                         </div>
                         @if (list.description) {
                             <p class="text-meta text-writing-minor line-clamp-2 mb-3" dir="auto">{{ list.description }}</p>
                         }
-                        <div class="flex items-center gap-3 text-caption text-writing-minor">
+                        <div class="mt-auto flex items-center gap-2 text-caption text-writing-minor">
                             <span>{{ list.item_count }} item{{ list.item_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
+                            <span class="text-writing-least" aria-hidden="true">·</span>
                             <span>{{ list.task_count }} task{{ list.task_count === 1 ? '' : 's' }}</span>
-                            <span>·</span>
+                            <span class="text-writing-least" aria-hidden="true">·</span>
                             <span>{{ list.member_count }} member{{ list.member_count === 1 ? '' : 's' }}</span>
                         </div>
-                    </div>
+                    </a>
                 }
             </div>
         }

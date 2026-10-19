@@ -1,4 +1,5 @@
 import {Component, computed, inject, signal} from '@angular/core';
+import {RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherPlus, featherSquare, featherUsers} from '@ng-icons/feather-icons';
 import {
@@ -8,11 +9,14 @@ import {
 } from '../../../generated-files/api/shopping-lists';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-shopping-lists',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, RouterLink, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent],
   providers: [provideIcons({featherPlus, featherSquare, featherUsers})],
   templateUrl: './shopping-lists.component.html',
 })
@@ -23,6 +27,10 @@ export class ShoppingListsComponent {
   readonly lists = signal<ShoppingListSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isCreating = signal<boolean>(false);
+
+  readonly listUrls = computed(() =>
+    Object.fromEntries(this.lists().map(l => [l.id, this.routingService.getShoppingListUrl(l.id)])),
+  );
 
   readonly moreCount = computed(() =>
     Object.fromEntries(this.lists().map(l => [l.id, l.unchecked_count - l.preview_items.length])),
@@ -44,10 +52,6 @@ export class ShoppingListsComponent {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  async openList(list: ShoppingListSchema): Promise<void> {
-    await this.routingService.navigateToShoppingList(list.id);
   }
 
   async createList(): Promise<void> {

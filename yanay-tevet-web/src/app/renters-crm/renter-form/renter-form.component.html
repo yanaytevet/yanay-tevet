@@ -1,27 +1,20 @@
-<div class="max-w-3xl mx-auto w-full p-6">
+<div class="page-wide">
 
     <a [routerLink]="backUrl()"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         Back to project
     </a>
 
-    <div class="card p-6">
-        <div class="mb-6">
-            <h1 class="text-title font-bold text-writing mb-1">
-                {{ isEditMode() ? 'Edit Renter' : 'New Renter' }}
-            </h1>
-            <p class="text-meta text-writing-minor">Track who came to see the apartment and where they stand.</p>
-        </div>
+    <app-page-header [title]="isEditMode() ? 'Edit renter' : 'New renter'"
+                     subtitle="Track who came to see the apartment and where they stand."/>
 
-        @if (isLoading()) {
-            <div class="text-center text-writing-minor text-body py-12">Loading renter...</div>
-        } @else if (loadError()) {
-            <div class="text-center py-12">
-                <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
-                <button type="button" class="btn btn-secondary" (click)="onCancel()">Back</button>
-            </div>
-        } @else {
+    @if (isLoading()) {
+        <app-loading-state label="Loading renter"/>
+    } @else if (loadError()) {
+        <app-error-state [text]="loadError()!" [backUrl]="backUrl()" backLabel="Back to project"/>
+    } @else {
+        <div class="card p-5 sm:p-6">
 
             <!-- Basics -->
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
@@ -91,9 +84,9 @@
             <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-line-subtle">
                 <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
-                    {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Create Renter') }}
+                    {{ isSaving() ? 'Saving…' : (isEditMode() ? 'Save changes' : 'Create renter') }}
                 </button>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>

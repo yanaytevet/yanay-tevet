@@ -4,6 +4,7 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
   featherEdit,
+  featherMoreHorizontal,
   featherPlus,
   featherTrash2,
 } from '@ng-icons/feather-icons';
@@ -19,6 +20,11 @@ import {
 } from '../../../generated-files/api/workout-plan';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button/menu-button.component';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {
   ExerciseDialogComponent,
   ExerciseDialogData,
@@ -28,8 +34,11 @@ import {
 @Component({
   selector: 'app-workout-routine-detail',
   standalone: true,
-  imports: [NgIcon, RouterLink],
-  providers: [provideIcons({featherArrowLeft, featherEdit, featherPlus, featherTrash2})],
+  imports: [
+    NgIcon, RouterLink, MenuButtonComponent,
+    PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
+  providers: [provideIcons({featherArrowLeft, featherEdit, featherMoreHorizontal, featherPlus, featherTrash2})],
   templateUrl: './routine-detail.component.html',
 })
 export class RoutineDetailComponent {
@@ -53,8 +62,19 @@ export class RoutineDetailComponent {
     return map;
   });
 
+  readonly headerSubtitle = computed(() => {
+    const count = this.exercises().length;
+    return count === 0 ? null : `${count} exercise${count === 1 ? '' : 's'}`;
+  });
+
+  // Edit sits in the header; deleting the routine lives behind "more".
+  readonly overflowActions = computed<MenuItem[]>(() => [
+    {display: 'Delete routine', icon: featherTrash2, danger: true, callback: () => void this.deleteRoutine()},
+  ]);
+
   protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherEdit = featherEdit;
+  protected readonly featherMoreHorizontal = featherMoreHorizontal;
   protected readonly featherPlus = featherPlus;
   protected readonly featherTrash2 = featherTrash2;
 

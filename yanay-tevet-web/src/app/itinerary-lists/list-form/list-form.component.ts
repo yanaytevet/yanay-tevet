@@ -11,11 +11,14 @@ import {
 } from '../../../generated-files/api/itinerary-lists';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 
 @Component({
   selector: 'app-itinerary-list-form',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon, RouterLink],
+  imports: [ReactiveFormsModule, NgIcon, RouterLink, PageHeaderComponent, LoadingStateComponent, ErrorStateComponent],
   providers: [provideIcons({featherArrowLeft})],
   templateUrl: './list-form.component.html',
 })

@@ -8,6 +8,7 @@ import {
   SpecialDateCalendarSchema,
   SpecialDateSchema,
 } from '../../../generated-files/api/special-dates';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {calendarColorClass, SPECIAL_DATE_CATEGORY_BY_VALUE} from '../special-dates.constants';
 
@@ -25,7 +26,7 @@ function duplicateKey(specialDate: SpecialDateSchema): string {
 @Component({
   selector: 'app-move-dates-dialog',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, LoadingStateComponent],
   templateUrl: './move-dates-dialog.component.html',
 })
 export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialogData, boolean> {

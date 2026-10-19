@@ -1,15 +1,26 @@
-import {Component, effect, input, signal} from '@angular/core';
+import {Component, computed, effect, input, signal} from '@angular/core';
 import {
   getRandomNodesView,
   NodeSummarySchema,
   NodeType,
 } from '../../../../generated-files/api/japanese';
+import {EmptyStateComponent} from '../../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../../common/components/page/loading-state/loading-state.component';
 import {NodeSummaryCardComponent} from '../node-summary-card/node-summary-card.component';
+
+const EMPTY_TITLES: Record<NodeType, string> = {
+  passage: 'No passages yet',
+  sentence: 'No sentences yet',
+  word: 'No words yet',
+  kanji: 'No kanji yet',
+  particle: 'No particles yet',
+  rule: 'No rules yet',
+};
 
 @Component({
   selector: 'app-japanese-explore-grid',
   standalone: true,
-  imports: [NodeSummaryCardComponent],
+  imports: [NodeSummaryCardComponent, EmptyStateComponent, LoadingStateComponent],
   templateUrl: './japanese-explore-grid.component.html',
 })
 export class JapaneseExploreGridComponent {
@@ -19,6 +30,7 @@ export class JapaneseExploreGridComponent {
   readonly nodes = signal<NodeSummarySchema[]>([]);
   readonly isLoading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
+  readonly emptyTitle = computed(() => EMPTY_TITLES[this.nodeType()]);
 
   constructor() {
     effect(() => {

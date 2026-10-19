@@ -12,6 +12,7 @@ import {
   SpecialDateCalendarMembersSchema,
   SpecialDateCalendarSchema,
 } from '../../../generated-files/api/special-dates';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {buildJoinUrl} from '../special-dates.constants';
@@ -25,7 +26,7 @@ const COPIED_FEEDBACK_MS = 2000;
 @Component({
   selector: 'app-calendar-share-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [ReactiveFormsModule, NgIcon, LoadingStateComponent],
   templateUrl: './calendar-share-dialog.component.html',
 })
 export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarShareDialogData, boolean> {

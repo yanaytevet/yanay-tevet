@@ -1,35 +1,31 @@
 <app-japanese-nav/>
 
-<div class="max-w-3xl mx-auto px-4 py-6">
-  <div class="mb-6">
-    <h1 class="text-display font-bold text-writing">Ingest</h1>
-    <p class="text-body text-writing-minor mt-1">
-      Paste a word, kanji, particle, grammar rule, a single sentence, or a whole passage (a song,
-      poem, or paragraph). The backend classifies it and creates a stub. Content + linked entities
-      are generated in a separate step from the node page.
-    </p>
-  </div>
+<div class="page-wide">
+  <app-page-header title="Ingest"
+                   subtitle="Add a word, kanji, particle, grammar rule, a single sentence, or a whole passage (a song, poem, or paragraph)."/>
 
   <div class="card p-5">
-    <span class="block text-meta font-semibold text-writing mb-2">Japanese text</span>
+    <span class="input-label mb-1.5">Japanese text</span>
     <textarea
       dir="auto"
-      class="main-input w-full"
+      class="main-input"
       rows="4"
+      aria-label="Japanese text"
       placeholder="例: 私(わたし)は寿司(すし)を食(た)べた。"
       [ngModel]="text()"
       (ngModelChange)="text.set($event)"
       [disabled]="isWorking()"></textarea>
+    <p class="text-caption text-writing-minor mt-1.5">
+      The backend classifies it and creates a stub. Content and linked entities are generated in a separate step
+      from the node page. Tip: include furigana inline as 漢字(かんじ).
+    </p>
 
-    <div class="flex items-center justify-between mt-4">
-      <span class="text-caption text-writing-minor">
-        Tip: include furigana inline as 漢字(かんじ).
-      </span>
+    <div class="flex justify-end mt-4">
       <button
         type="button"
         class="btn btn-primary"
         (click)="onSubmit()"
-        [disabled]="isWorking() || !text().trim()">
+        [disabled]="!canSubmit()">
         @if (isWorking()) { Ingesting… } @else { Ingest }
       </button>
     </div>

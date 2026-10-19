@@ -1,5 +1,5 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {Router} from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherPlus, featherChevronRight} from '@ng-icons/feather-icons';
 import {
@@ -10,11 +10,14 @@ import {
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 
 @Component({
   selector: 'app-villa-villekulla',
   standalone: true,
-  imports: [NgIcon],
+  imports: [NgIcon, RouterLink, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent],
   providers: [provideIcons({featherPlus, featherChevronRight})],
   templateUrl: './villa-villekulla.component.html',
 })
@@ -28,6 +31,10 @@ export class VillaVillekullaComponent {
   readonly projects = signal<RentalProjectSchema[]>([]);
 
   readonly isSiteAdmin = computed<boolean>(() => this.authService.user()?.is_admin ?? false);
+
+  readonly projectUrls = computed(() =>
+    Object.fromEntries(this.projects().map(p => [p.id, this.routingService.getVillaVillekullaProjectUrl(p.id)]))
+  );
 
   protected readonly featherPlus = featherPlus;
   protected readonly featherChevronRight = featherChevronRight;
@@ -49,10 +56,6 @@ export class VillaVillekullaComponent {
     } finally {
       this.isLoading.set(false);
     }
-  }
-
-  async open(project: RentalProjectSchema): Promise<void> {
-    await this.routingService.navigateToVillaVillekullaProject(project.id);
   }
 
   async createProject(): Promise<void> {

@@ -5,14 +5,14 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
   featherArrowLeft,
-  featherCheckSquare,
+  featherCheck,
   featherChevronDown,
   featherChevronRight,
   featherClock,
   featherEdit,
+  featherMoreHorizontal,
   featherPlus,
   featherShare2,
-  featherSquare,
   featherTrash2,
   featherX,
 } from '@ng-icons/feather-icons';
@@ -35,6 +35,10 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {RoutingService} from '../../shared/services/routing.service';
+import {MenuButtonComponent, MenuItem} from '../../common/components/menu-button/menu-button.component';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 
 const CHECKED_PREVIEW_COUNT = 10;
 const MAX_SUGGESTIONS = 6;
@@ -43,10 +47,13 @@ const SYNC_INTERVAL_MS = 15000;
 @Component({
   selector: 'app-shopping-list-detail',
   standalone: true,
-  imports: [NgIcon, ReactiveFormsModule, RouterLink],
+  imports: [
+    NgIcon, ReactiveFormsModule, RouterLink, MenuButtonComponent,
+    PageHeaderComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   providers: [provideIcons({
-    featherArrowLeft, featherCheckSquare, featherChevronDown, featherChevronRight, featherClock, featherEdit,
-    featherPlus, featherShare2, featherSquare, featherTrash2, featherX,
+    featherArrowLeft, featherCheck, featherChevronDown, featherChevronRight, featherClock, featherEdit,
+    featherMoreHorizontal, featherPlus, featherShare2, featherTrash2, featherX,
   })],
   templateUrl: './shopping-list-detail.component.html',
 })
@@ -81,6 +88,26 @@ export class ShoppingListDetailComponent {
     const list = this.list();
     return !!list && list.owner_id === this.authService.user()?.id;
   });
+
+  readonly headerSubtitle = computed(() => {
+    const list = this.list();
+    if (list === null) {
+      return null;
+    }
+    if (!this.isOwner()) {
+      return `Shared by ${list.owner_username}`;
+    }
+    if (list.member_count > 1) {
+      const others = list.member_count - 1;
+      return `Shared with ${others} ${others === 1 ? 'person' : 'people'}`;
+    }
+    return null;
+  });
+
+  // Share and Rename sit in the header; deleting the whole list lives behind "more".
+  readonly overflowActions = computed<MenuItem[]>(() => [
+    {display: 'Delete list', icon: featherTrash2, danger: true, callback: () => void this.deleteList()},
+  ]);
 
   readonly uncheckedItems = computed(() =>
     this.items()
@@ -134,15 +161,14 @@ export class ShoppingListDetailComponent {
   });
 
   protected readonly featherArrowLeft = featherArrowLeft;
-  protected readonly featherCheckSquare = featherCheckSquare;
+  protected readonly featherCheck = featherCheck;
   protected readonly featherChevronDown = featherChevronDown;
   protected readonly featherChevronRight = featherChevronRight;
   protected readonly featherClock = featherClock;
   protected readonly featherEdit = featherEdit;
+  protected readonly featherMoreHorizontal = featherMoreHorizontal;
   protected readonly featherPlus = featherPlus;
   protected readonly featherShare2 = featherShare2;
-  protected readonly featherSquare = featherSquare;
-  protected readonly featherTrash2 = featherTrash2;
   protected readonly featherX = featherX;
 
   constructor() {

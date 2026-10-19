@@ -1,20 +1,22 @@
-<div class="max-w-md mx-auto w-full p-6 pt-12" dir="rtl" lang="he">
-    <div class="card p-8 text-center">
-        @if (isLoading()) {
-            <div class="text-writing-minor text-body py-6">טוען...</div>
-        } @else if (isInvalid()) {
-            <div class="text-4xl mb-3">🔗</div>
-            <p class="text-section font-bold text-writing mb-2">הקישור לא תקף</p>
-            <p class="text-body text-writing-minor">ייתכן שבעלי הלוח איפסו אותו. בקשו מהם קישור חדש.</p>
-        } @else if (preview()) {
-            <div class="text-5xl mb-4">🗓️</div>
-            <p class="text-body text-writing-minor mb-1">{{ preview()!.owner_name }} מזמין/ה אותך ללוח</p>
-            <p class="text-title font-bold text-writing mb-2" dir="auto">{{ preview()!.calendar_name }}</p>
+<div class="page-narrow" dir="rtl" lang="he">
+    @if (isLoading()) {
+        <app-loading-state label="טוען את ההזמנה"/>
+    } @else if (isInvalid()) {
+        <div class="max-w-md mx-auto sm:pt-6">
+            <app-error-state text="הקישור לא תקף. ייתכן שבעלי הלוח איפסו אותו — בקשו מהם קישור חדש."/>
+        </div>
+    } @else if (preview(); as preview) {
+        <div class="card max-w-md mx-auto sm:mt-6 p-6 sm:p-8 flex flex-col items-center text-center">
+            <div class="app-chip size-12 text-2xl mb-4" aria-hidden="true">
+                <ng-icon [svg]="appIcon"/>
+            </div>
+            <p class="text-body text-writing-minor mb-1">{{ preview.owner_name }} מזמין/ה אותך ללוח</p>
+            <p class="text-title font-bold text-writing mb-2" dir="auto">{{ preview.calendar_name }}</p>
             <p class="text-meta text-writing-minor mb-6">{{ summary() }}</p>
             <p class="text-meta text-writing-minor mb-6">ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי, עם תזכורות לשבועיים הקרובים.</p>
 
             @if (!isAuthKnown()) {
-                <div class="text-writing-minor text-body">טוען...</div>
+                <p class="text-body text-writing-minor py-3">טוען…</p>
             } @else if (isLoggedIn()) {
                 <button type="button" class="btn btn-primary w-full !py-3 text-ui" [disabled]="isJoining()" (click)="join()">
                     הצטרפות ללוח
@@ -28,6 +30,6 @@
             @if (errorMessage()) {
                 <p class="text-meta text-danger mt-3">{{ errorMessage() }}</p>
             }
-        }
-    </div>
+        </div>
+    }
 </div>

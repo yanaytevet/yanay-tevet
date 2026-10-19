@@ -5,8 +5,8 @@
             <h2 class="text-section font-bold text-writing">Booking</h2>
             <p class="text-meta text-writing-minor mt-0.5">{{ booking.start_date }} → {{ booking.end_date }}</p>
         </div>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
-            <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+            <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
 
@@ -26,9 +26,9 @@
     </div>
 
     <div class="flex items-center justify-between gap-2">
-        <button type="button" class="btn inline-flex items-center gap-1.5 text-danger"
+        <button type="button" class="btn btn-secondary hover:text-danger focus-visible:text-danger"
                 [disabled]="isDeleting()" (click)="onCancelBooking()">
-            <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+            <ng-icon [svg]="featherTrash2"/>
             Cancel booking
         </button>
         <div class="flex gap-2">

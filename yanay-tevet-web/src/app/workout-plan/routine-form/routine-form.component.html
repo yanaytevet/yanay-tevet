@@ -1,26 +1,28 @@
-<div class="max-w-xl mx-auto w-full p-6">
+<div class="page-narrow">
 
     <a [routerLink]="backUrl()"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing mb-5">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         Back
     </a>
 
-    <h1 class="text-title font-bold text-writing mb-6">
-        {{ isEditMode() ? 'Edit routine' : 'New routine' }}
-    </h1>
+    <app-page-header [title]="isEditMode() ? 'Edit routine' : 'New routine'"
+                     subtitle="A routine groups the exercises you train together, like Push Day."/>
 
-    @if (loadError()) {
-        <div class="card p-6 text-center text-body text-writing-minor">{{ loadError() }}</div>
+    @if (isLoading()) {
+        <app-loading-state label="Loading routine"/>
+    } @else if (loadError()) {
+        <app-error-state [text]="loadError()!" [backUrl]="backUrl()"/>
     } @else {
         <div class="card p-5 sm:p-6">
-            <div class="flex flex-col gap-1.5 mb-6">
+            <div class="flex flex-col gap-1.5">
                 <span class="input-label">Name <span class="text-writing-least">*</span></span>
-                <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Push Day"
+                <input type="text" dir="auto" class="main-input" placeholder="e.g. Push Day"
+                       aria-label="Name"
                        [formControl]="nameCtrl" (keyup.enter)="onSave()" />
             </div>
 
-            <div class="flex items-center justify-end gap-2">
+            <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-line-subtle">
                 <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
                     {{ isEditMode() ? 'Save' : 'Create routine' }}

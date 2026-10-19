@@ -1,30 +1,26 @@
-<div class="max-w-4xl mx-auto w-full p-6">
+<div class="page-narrow">
 
-    <div class="flex items-center justify-between gap-3 mb-6">
-        <div>
-            <h1 class="text-title font-bold text-writing mb-1">Shopping Lists</h1>
-            <p class="text-meta text-writing-minor">Check things off as you shop — they're one tap away next time.</p>
-        </div>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5 shrink-0"
-                [disabled]="isCreating()" (click)="createList()">
-            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+    <app-page-header title="Shopping Lists" subtitle="Check things off as you shop — they're one tap away next time.">
+        <button type="button" class="btn btn-primary" [disabled]="isCreating()" (click)="createList()">
+            <ng-icon [svg]="featherPlus"/>
             New list
         </button>
-    </div>
+    </app-page-header>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading lists...</div>
+        <app-loading-state label="Loading lists"/>
     } @else if (lists().length === 0) {
-        <div class="card p-10 text-center">
-            <div class="text-4xl mb-3">🛒</div>
-            <p class="text-ui font-semibold text-writing mb-1">No shopping lists yet</p>
-            <p class="text-meta text-writing-minor mb-5">Create a list for groceries, the pharmacy, or anything else you buy regularly.</p>
-            <button type="button" class="btn btn-primary" [disabled]="isCreating()" (click)="createList()">New list</button>
-        </div>
+        <app-empty-state title="Start your first list"
+                         text="One for groceries, the pharmacy, or anything else you buy regularly. What you check off stays a tap away.">
+            <button type="button" class="btn btn-primary" [disabled]="isCreating()" (click)="createList()">
+                <ng-icon [svg]="featherPlus"/>
+                New list
+            </button>
+        </app-empty-state>
     } @else {
-        <div class="grid grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 gap-4 items-start">
+        <div class="grid grid-cols-1 @md:grid-cols-2 gap-3 items-start">
             @for (list of lists(); track list.id) {
-                <div class="card p-4 cursor-pointer hover:shadow-2 transition-shadow" (click)="openList(list)">
+                <a [routerLink]="listUrls()[list.id]" class="card card-interactive p-4 flex flex-col">
                     <div class="text-ui font-semibold text-writing truncate mb-2" dir="auto">{{ list.name }}</div>
 
                     @if (list.preview_items.length === 0) {
@@ -33,27 +29,27 @@
                         <div class="flex flex-col gap-1 mb-3">
                             @for (name of list.preview_items; track $index) {
                                 <div class="flex items-center gap-2 text-meta text-writing min-w-0" dir="auto">
-                                    <ng-icon [svg]="featherSquare" class="h-3.5 w-3.5 shrink-0 text-writing-minor"></ng-icon>
+                                    <ng-icon [svg]="featherSquare" class="shrink-0 text-writing-minor" aria-hidden="true"/>
                                     <span class="truncate">{{ name }}</span>
                                 </div>
                             }
                             @if (moreCount()[list.id] > 0) {
-                                <div class="text-caption text-writing-minor pl-[22px]">+ {{ moreCount()[list.id] }} more</div>
+                                <div class="text-caption text-writing-minor ps-5">+ {{ moreCount()[list.id] }} more</div>
                             }
                         </div>
                     }
 
-                    <div class="flex items-center gap-3 text-caption text-writing-minor">
+                    <div class="flex items-center gap-2 text-caption text-writing-minor">
                         <span>{{ list.checked_count }} checked</span>
                         @if (list.member_count > 1) {
-                            <span>·</span>
+                            <span class="text-writing-least" aria-hidden="true">·</span>
                             <span class="inline-flex items-center gap-1">
-                                <ng-icon [svg]="featherUsers" class="h-3.5 w-3.5"></ng-icon>
+                                <ng-icon [svg]="featherUsers" aria-hidden="true"/>
                                 Shared
                             </span>
                         }
                     </div>
-                </div>
+                </a>
             }
         </div>
     }

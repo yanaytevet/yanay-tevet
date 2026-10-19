@@ -14,6 +14,9 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {InputDebounce} from '../../common/data/input-debouncer';
 import {BasePageComponent} from '../../common/components/base-page-component';
 import {TooltipDirective} from '../../common/components/tooltip/tooltip.directive';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {InviteUserDialogComponent} from './invite-user-dialog/invite-user-dialog.component';
 
 interface PermissionOption {
@@ -27,7 +30,7 @@ const PAGE_SIZE = 25;
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon, TooltipDirective],
+  imports: [ReactiveFormsModule, NgIcon, TooltipDirective, PageHeaderComponent, EmptyStateComponent, LoadingStateComponent],
   providers: [provideIcons({featherChevronLeft, featherChevronRight})],
   templateUrl: './user-management.component.html',
 })

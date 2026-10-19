@@ -1,26 +1,20 @@
 @if (service.genres().length > 0) {
   <div class="mt-5 card p-4">
-    <div class="flex items-center gap-2 mb-3">
-      <span class="text-caption font-semibold text-writing-minor uppercase tracking-wide">Train on</span>
-    </div>
+    <div class="eyebrow mb-3">Train on</div>
     <div class="flex flex-wrap gap-2">
       <button
         type="button"
-        (click)="service.clearFocus()"
-        class="px-3 py-1 rounded-full text-caption font-semibold border transition-all duration-150"
-        [class]="service.noFocus()
-          ? 'bg-accent border-accent text-on-accent'
-          : 'bg-transparent border-line text-writing-minor hover:border-writing-least'">
+        class="chip px-3 py-1"
+        [class.chip-selected]="service.noFocus()"
+        (click)="service.clearFocus()">
         All
       </button>
       @for (genre of service.genres(); track genre) {
         <button
           type="button"
-          (click)="service.toggleFocusGenre(genre)"
-          class="px-3 py-1 rounded-full text-caption font-semibold border transition-all duration-150"
-          [class]="service.focusGenreState()[genre]
-            ? 'bg-accent border-accent text-on-accent'
-            : 'bg-transparent border-line text-writing-minor hover:border-writing-least'">
+          class="chip px-3 py-1"
+          [class.chip-selected]="service.focusGenreState()[genre]"
+          (click)="service.toggleFocusGenre(genre)">
           {{ service.genreLabelMap()[genre] }}
         </button>
       }

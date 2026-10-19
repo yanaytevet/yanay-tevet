@@ -1,80 +1,63 @@
-<div class="max-w-3xl mx-auto w-full p-6">
+<div class="page-narrow">
 
     <a [routerLink]="allListsUrl"
-       class="inline-flex items-center gap-1.5 text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft" class="h-4 w-4"></ng-icon>
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="featherArrowLeft"/>
         All lists
     </a>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading list...</div>
+        <app-loading-state label="Loading list"/>
     } @else if (loadError()) {
-        <div class="card p-10 text-center">
-            <p class="text-body text-writing-minor mb-4">{{ loadError() }}</p>
-            <a [routerLink]="allListsUrl" class="btn btn-secondary no-underline">Back to lists</a>
-        </div>
+        <app-error-state [text]="loadError()!" [backUrl]="allListsUrl" backLabel="Back to lists"/>
     } @else if (list(); as list) {
 
-        <div class="card p-5 mb-5">
-            <div class="flex items-start justify-between gap-3 mb-2">
-                <h1 class="text-title font-bold text-writing break-words min-w-0" dir="auto">{{ list.name }}</h1>
-                @if (isActive()) {
-                    <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3 text-accent">📌 Active</span>
-                } @else {
-                    <span class="eyebrow shrink-0 px-2 py-0.5 rounded-full bg-layer-3">Standby</span>
-                }
-            </div>
-            @if (list.description) {
-                <p class="text-meta text-writing-minor leading-relaxed mb-4 whitespace-pre-line" dir="auto">{{ list.description }}</p>
+        <app-page-header [title]="list.name" [subtitle]="headerSubtitle()">
+            @if (isActive()) {
+                <span class="chip chip-accent">Active</span>
+            } @else {
+                <span class="chip">Standby</span>
             }
-
-            <div class="flex flex-wrap items-center gap-2 pt-1">
-                <button type="button" class="btn btn-primary flex items-center gap-1.5"
-                        [disabled]="isUpdatingStatus()" (click)="toggleActive()">
-                    @if (isActive()) {
-                        <ng-icon [svg]="featherCheckCircle" class="h-4 w-4"></ng-icon>
-                        Finish
-                    } @else {
-                        <ng-icon [svg]="featherPlay" class="h-4 w-4"></ng-icon>
-                        Activate
-                    }
-                </button>
-                <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="openShareDialog()">
-                    <ng-icon [svg]="featherShare2" class="h-4 w-4"></ng-icon>
-                    Share
-                </button>
-                <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="editList()">
-                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
-                    Edit
-                </button>
-                @if (isOwner()) {
-                    <button type="button" class="btn btn-secondary flex items-center gap-1.5" (click)="deleteList()">
-                        <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
-                        Delete
-                    </button>
+            <button type="button" class="btn btn-secondary btn-sm"
+                    [disabled]="isUpdatingStatus()" (click)="toggleActive()">
+                @if (isActive()) {
+                    <ng-icon [svg]="featherCheckCircle"/>
+                    Finish
+                } @else {
+                    <ng-icon [svg]="featherPlay"/>
+                    Activate
                 }
-            </div>
-        </div>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
+                <ng-icon [svg]="featherShare2"/>
+                Share
+            </button>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More list actions"/>
+        </app-page-header>
+
+        @if (list.description) {
+            <p class="-mt-2 mb-5 text-body text-writing-minor whitespace-pre-line" dir="auto">{{ list.description }}</p>
+        }
 
         @if (items().length > 0 || tasks().length > 0) {
             <div class="flex flex-wrap gap-1.5 mb-4">
                 @for (status of statusOrder; track status) {
                     @if (statusCounts()[status] > 0) {
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-semibold {{ statusChipClass[status] }}">
-                            <ng-icon [svg]="statusIcon[status]" class="h-3.5 w-3.5"></ng-icon>
+                        <span class="chip {{ statusChipClass[status] }}">
+                            <ng-icon [svg]="statusIcon[status]" aria-hidden="true"/>
                             {{ statusCounts()[status] }} {{ statusLabels[status] }}
                         </span>
                     }
                 }
                 @if (taskCounts().done > 0) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-semibold bg-layer-3 text-accent">
-                        <ng-icon [svg]="featherCheckSquare" class="h-3.5 w-3.5"></ng-icon>
+                    <span class="chip chip-success">
+                        <ng-icon [svg]="featherCheckSquare" aria-hidden="true"/>
                         {{ taskCounts().done }} task{{ taskCounts().done === 1 ? '' : 's' }} done
                     </span>
                 }
                 @if (taskCounts().toDo > 0) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-semibold bg-layer-3 text-writing-minor">
-                        <ng-icon [svg]="featherSquare" class="h-3.5 w-3.5"></ng-icon>
+                    <span class="chip">
+                        <ng-icon [svg]="featherSquare" aria-hidden="true"/>
                         {{ taskCounts().toDo }} task{{ taskCounts().toDo === 1 ? '' : 's' }} to do
                     </span>
                 }
@@ -85,12 +68,12 @@
             <div class="flex items-end gap-2 mb-1">
                 <div class="flex-1 flex flex-col gap-1.5">
                     <span class="input-label">Add an item</span>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Sunscreen, Beach towel"
+                    <input type="text" dir="auto" class="main-input" placeholder="e.g. Sunscreen, Beach towel"
+                           aria-label="Add an item"
                            [formControl]="newItemCtrl" (keyup.enter)="addItem()" />
                 </div>
-                <button type="button" class="btn btn-primary flex items-center gap-1.5"
-                        [disabled]="isAdding()" (click)="addItem()">
-                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                <button type="button" class="btn btn-primary" [disabled]="isAdding()" (click)="addItem()">
+                    <ng-icon [svg]="featherPlus"/>
                     Add
                 </button>
             </div>
@@ -99,17 +82,17 @@
             </p>
 
             @if (items().length === 0) {
-                <div class="text-center text-writing-minor text-meta py-8">No items yet. Add your first one above.</div>
+                <div class="text-center text-writing-minor text-meta py-8">Add what to pack or buy above, then tap its status as you go.</div>
             } @else {
                 <div class="flex flex-col divide-y divide-line-subtle">
                     @for (item of items(); track item.id) {
                         <div class="flex items-center gap-3 py-2.5">
                             <button type="button"
-                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-caption font-semibold select-none shrink-0 transition-opacity disabled:opacity-50 {{ statusChipClass[item.status] }}"
+                                    class="chip px-2.5 py-1 select-none shrink-0 transition-opacity disabled:opacity-50 {{ statusChipClass[item.status] }}"
                                     [disabled]="savingItemId() === item.id"
                                     (click)="cycleStatus(item)"
                                     (contextmenu)="openStatusPicker($event, item)">
-                                <ng-icon [svg]="statusIcon[item.status]" class="h-3.5 w-3.5"></ng-icon>
+                                <ng-icon [svg]="statusIcon[item.status]" aria-hidden="true"/>
                                 {{ statusLabels[item.status] }}
                             </button>
                             <div class="min-w-0 flex-1">
@@ -119,11 +102,11 @@
                                 }
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editItem(item)">
-                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                <button type="button" class="icon-btn" aria-label="Edit item" title="Edit" (click)="editItem(item)">
+                                    <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteItem(item)">
-                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete item" title="Delete" (click)="deleteItem(item)">
+                                    <ng-icon [svg]="featherTrash2"/>
                                 </button>
                             </div>
                         </div>
@@ -137,29 +120,33 @@
             <div class="flex items-end gap-2 mb-1">
                 <div class="flex-1 flex flex-col gap-1.5">
                     <span class="input-label">Add a task</span>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book parking, Confirm reservation"
+                    <input type="text" dir="auto" class="main-input" placeholder="e.g. Book parking, Confirm reservation"
+                           aria-label="Add a task"
                            [formControl]="newTaskCtrl" (keyup.enter)="addTask()" />
                 </div>
-                <button type="button" class="btn btn-primary flex items-center gap-1.5"
-                        [disabled]="isAddingTask()" (click)="addTask()">
-                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+                <button type="button" class="btn btn-primary" [disabled]="isAddingTask()" (click)="addTask()">
+                    <ng-icon [svg]="featherPlus"/>
                     Add
                 </button>
             </div>
 
             @if (tasks().length === 0) {
-                <div class="text-center text-writing-minor text-meta py-8">No tasks yet. Add your first one above.</div>
+                <div class="text-center text-writing-minor text-meta py-8">Add anything to sort out before you go, like booking parking.</div>
             } @else {
                 <div class="flex flex-col divide-y divide-line-subtle mt-2">
                     @for (task of tasks(); track task.id) {
                         <div class="flex items-center gap-3 py-2.5">
                             <button type="button"
-                                    class="icon-btn shrink-0 transition-opacity disabled:opacity-50"
-                                    [class.text-accent]="task.status === 'done'"
-                                    [class.text-writing-minor]="task.status !== 'done'"
+                                    class="group/check flex items-center justify-center size-8 shrink-0 -ms-1.5 rounded-md disabled:opacity-50"
                                     [disabled]="savingTaskId() === task.id"
+                                    [attr.aria-pressed]="task.status === 'done'"
+                                    [attr.aria-label]="task.status === 'done' ? 'Mark as not done' : 'Mark as done'"
                                     (click)="toggleTask(task)">
-                                <ng-icon [svg]="task.status === 'done' ? featherCheckSquare : featherSquare" class="h-5 w-5"></ng-icon>
+                                <span class="flex items-center justify-center size-5 rounded-md border-2 transition-colors {{ task.status === 'done' ? 'bg-accent border-accent text-on-accent' : 'border-layer-4 group-hover/check:border-accent' }}">
+                                    @if (task.status === 'done') {
+                                        <ng-icon [svg]="featherCheck" class="text-caption check-pop-in"/>
+                                    }
+                                </span>
                             </button>
                             <div class="min-w-0 flex-1">
                                 <div class="text-body truncate" dir="auto"
@@ -171,11 +158,11 @@
                                 }
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="editTask(task)">
-                                    <ng-icon [svg]="featherEdit" class="h-4 w-4"></ng-icon>
+                                <button type="button" class="icon-btn" aria-label="Edit task" title="Edit" (click)="editTask(task)">
+                                    <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="deleteTask(task)">
-                                    <ng-icon [svg]="featherTrash2" class="h-4 w-4"></ng-icon>
+                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete task" title="Delete" (click)="deleteTask(task)">
+                                    <ng-icon [svg]="featherTrash2"/>
                                 </button>
                             </div>
                         </div>

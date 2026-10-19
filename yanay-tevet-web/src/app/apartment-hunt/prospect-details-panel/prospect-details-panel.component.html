@@ -11,7 +11,7 @@
                     }
                 }
                 @if (prospect.liked_level === null) {
-                    <span class="text-writing-minor ml-1">Not rated</span>
+                    <span class="text-writing-minor ms-1">Not rated</span>
                 }
             </div>
         </div>
@@ -45,7 +45,7 @@
             <div class="@lg:col-span-3">
                 <div class="eyebrow text-writing-least mb-0.5">Listing</div>
                 <a [href]="prospect.listing_url" target="_blank" rel="noopener"
-                   class="text-writing hover:underline break-all">{{ prospect.listing_url }}</a>
+                   class="text-accent hover:underline break-all">{{ prospect.listing_url }}</a>
             </div>
         }
         @if (prospect.contacts.length > 0) {

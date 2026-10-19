@@ -319,8 +319,6 @@ html, body {
 
 /* Special dates — calendar chips and the "today" highlight */
 .calendar-chip-hebrew    { background: rgba(42,157,153,0.14); color: #1f7f7c; }
-.calendar-chip-gregorian { background: var(--color-info-soft); color: var(--color-info); }
-.no-reminder-chip        { background: var(--color-warning-soft); color: var(--color-warning); }
 .today-card {
   background: var(--color-accent-soft);
   border: 2px solid var(--color-accent);
@@ -328,19 +326,29 @@ html, body {
 
 .dark .calendar-chip-hebrew { background: rgba(42,157,153,0.22); color: #5fc9c5; }
 
-/* Special dates — one color per calendar (by calendar id), used for dots and calendar chips */
-.calendar-color-0 { --calendar-color: #0075de; }
-.calendar-color-1 { --calendar-color: #2a9d99; }
-.calendar-color-2 { --calendar-color: #dd5b00; }
-.calendar-color-3 { --calendar-color: #d63d9e; }
+/* Special dates — one colour per calendar (by calendar id), for dots and calendar chips. Same rule as the
+   app accents: the light colour carries white text as a fill and reads at ≥ 4.5:1 on the page and card;
+   the dark colour carries #141413 as a fill and reads at ≥ 4.5:1 on the card, also on the chip's tint. */
+.calendar-color-0 { --calendar-color: #0270d5; }
+.calendar-color-1 { --calendar-color: #0a7e7b; }
+.calendar-color-2 { --calendar-color: #be4e03; }
+.calendar-color-3 { --calendar-color: #c82e92; }
 .calendar-color-4 { --calendar-color: #7a4fc9; }
-.calendar-color-5 { --calendar-color: #1aae39; }
+.calendar-color-5 { --calendar-color: #048325; }
+.dark .calendar-color-0 { --calendar-color: #6caeff; }
+.dark .calendar-color-1 { --calendar-color: #4fbbb6; }
+.dark .calendar-color-2 { --calendar-color: #ff8a53; }
+.dark .calendar-color-3 { --calendar-color: #f884c6; }
+.dark .calendar-color-4 { --calendar-color: #b79bff; }
+.dark .calendar-color-5 { --calendar-color: #5abf63; }
 .calendar-dot { background: var(--calendar-color); }
 .calendar-chip {
   background: color-mix(in srgb, var(--calendar-color) 12%, transparent);
   color: var(--calendar-color);
 }
+/* The calendar fills follow the accent's contrast rule, so they take its text colour: white in light,
+   near-black in dark. */
 .calendar-chip-selected {
   background: var(--calendar-color);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }

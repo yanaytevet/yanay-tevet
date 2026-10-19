@@ -1,35 +1,31 @@
-<div class="max-w-4xl mx-auto w-full p-6">
+<div class="page-narrow">
 
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-title font-bold text-writing mb-1">Workout Plan</h1>
-            <p class="text-meta text-writing-minor">Group your exercises into routines and keep your sets up to date.</p>
-        </div>
-        <button type="button" class="btn btn-primary flex items-center gap-1.5" (click)="createRoutine()">
-            <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+    <app-page-header title="Workout Plan" subtitle="Group your exercises into routines and keep your sets up to date.">
+        <button type="button" class="btn btn-primary" (click)="createRoutine()">
+            <ng-icon [svg]="featherPlus"/>
             New routine
         </button>
-    </div>
+    </app-page-header>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-body py-12">Loading routines...</div>
+        <app-loading-state label="Loading routines"/>
     } @else if (routines().length === 0) {
-        <div class="card p-10 text-center">
-            <div class="text-4xl mb-3">🏋️</div>
-            <p class="text-ui font-semibold text-writing mb-1">No routines yet</p>
-            <p class="text-meta text-writing-minor mb-5">Create a routine like "Push Day" to start adding exercises.</p>
-            <button type="button" class="btn btn-primary" (click)="createRoutine()">New routine</button>
-        </div>
+        <app-empty-state title="Build your first routine"
+                         text="Start with something like Push Day, then add the exercises and sets you train.">
+            <button type="button" class="btn btn-primary" (click)="createRoutine()">
+                <ng-icon [svg]="featherPlus"/>
+                New routine
+            </button>
+        </app-empty-state>
     } @else {
-        <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
             @for (routine of routines(); track routine.id) {
-                <div class="card p-4 cursor-pointer shadow-2 hover:shadow-3 transition-shadow"
-                     (click)="openRoutine(routine)">
+                <a [routerLink]="routineUrls()[routine.id]" class="card card-interactive p-4 flex flex-col">
                     <div class="text-ui font-semibold text-writing truncate mb-2" dir="auto">{{ routine.name }}</div>
                     <div class="text-caption text-writing-minor">
                         {{ routine.exercise_count }} exercise{{ routine.exercise_count === 1 ? '' : 's' }}
                     </div>
-                </div>
+                </a>
             }
         </div>
     }

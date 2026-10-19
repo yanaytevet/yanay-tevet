@@ -3,13 +3,20 @@ import {
   getReviewQueueView,
   NodeSummarySchema,
 } from '../../../generated-files/api/japanese';
+import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
+import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.component';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
 
 @Component({
   selector: 'app-japanese-review',
   standalone: true,
-  imports: [NodeSummaryCardComponent, JapaneseNavComponent],
+  imports: [
+    NodeSummaryCardComponent, JapaneseNavComponent,
+    PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
+  ],
   templateUrl: './japanese-review.component.html',
 })
 export class JapaneseReviewComponent {

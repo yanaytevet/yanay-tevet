@@ -11,6 +11,7 @@ import {
 } from '../../../../generated-files/api/villa-villekulla';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../../common/dialogs/dialogs.service';
+import {LoadingStateComponent} from '../../../common/components/page/loading-state/loading-state.component';
 
 export interface VillaInviteDialogData {
   projectId: number;
@@ -19,7 +20,7 @@ export interface VillaInviteDialogData {
 @Component({
   selector: 'app-villa-invite-dialog',
   standalone: true,
-  imports: [ReactiveFormsModule, NgIcon],
+  imports: [ReactiveFormsModule, NgIcon, LoadingStateComponent],
   providers: [provideIcons({featherX, featherUserPlus, featherMail})],
   templateUrl: './villa-invite-dialog.component.html',
 })

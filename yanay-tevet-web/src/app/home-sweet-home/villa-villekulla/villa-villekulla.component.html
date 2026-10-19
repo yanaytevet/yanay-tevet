@@ -1,48 +1,43 @@
-<div class="max-w-4xl mx-auto w-full p-6">
+<div class="page-wide">
+
+    <app-page-header title="Villa Villekulla" subtitle="Properties you can book.">
+        @if (isSiteAdmin()) {
+            <button type="button" class="btn btn-primary" (click)="createProject()">
+                <ng-icon [svg]="featherPlus"/>
+                New property
+            </button>
+        }
+    </app-page-header>
 
     @if (isLoading()) {
-        <div class="card p-10 text-center text-writing-minor text-meta">Loading…</div>
-    } @else {
-        <div class="flex items-center justify-between gap-3 mb-5">
-            <div>
-                <h1 class="text-title font-bold text-writing mb-1">Villa Villekulla</h1>
-                <p class="text-meta text-writing-minor">Properties you can book.</p>
-            </div>
-            @if (isSiteAdmin()) {
-                <button type="button" class="btn btn-primary inline-flex items-center gap-1.5 shrink-0" (click)="createProject()">
-                    <ng-icon [svg]="featherPlus" class="h-4 w-4"></ng-icon>
+        <app-loading-state label="Loading properties"/>
+    } @else if (projects().length === 0) {
+        @if (isSiteAdmin()) {
+            <app-empty-state title="Create your first property"
+                             text="Add a property, then invite friends to book its unit.">
+                <button type="button" class="btn btn-primary" (click)="createProject()">
+                    <ng-icon [svg]="featherPlus"/>
                     New property
                 </button>
+            </app-empty-state>
+        } @else {
+            <app-empty-state title="Ask the host for an invite"
+                             text="Once the host invites you, the property's booking calendar shows up here."/>
+        }
+    } @else {
+        <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
+            @for (project of projects(); track project.id) {
+                <a [routerLink]="projectUrls()[project.id]"
+                   class="card card-interactive p-4 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ project.name }}</div>
+                        @if (project.description) {
+                            <div class="text-meta text-writing-minor truncate" dir="auto">{{ project.description }}</div>
+                        }
+                    </div>
+                    <ng-icon [svg]="featherChevronRight" class="text-xl text-writing-least shrink-0" aria-hidden="true"/>
+                </a>
             }
         </div>
-
-        @if (projects().length === 0) {
-            <div class="card p-10 text-center">
-                <div class="text-4xl mb-3">🏡</div>
-                @if (isSiteAdmin()) {
-                    <p class="text-ui font-semibold text-writing mb-1">No property yet</p>
-                    <p class="text-meta text-writing-minor">Create your first property to start taking bookings.</p>
-                } @else {
-                    <p class="text-ui font-semibold text-writing mb-1">Nothing here yet</p>
-                    <p class="text-meta text-writing-minor">You don't have access to a property yet. Ask the host to invite you.</p>
-                }
-            </div>
-        } @else {
-            <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
-                @for (project of projects(); track project.id) {
-                    <button type="button"
-                            class="card p-4 text-left flex items-center justify-between gap-3 hover:bg-layer-3 transition-colors cursor-pointer"
-                            (click)="open(project)">
-                        <div class="min-w-0">
-                            <div class="text-ui font-semibold text-writing truncate">{{ project.name }}</div>
-                            @if (project.description) {
-                                <div class="text-meta text-writing-minor truncate">{{ project.description }}</div>
-                            }
-                        </div>
-                        <ng-icon [svg]="featherChevronRight" class="h-5 w-5 text-writing-least shrink-0"></ng-icon>
-                    </button>
-                }
-            </div>
-        }
     }
 </div>

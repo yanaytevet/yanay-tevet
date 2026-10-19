@@ -11,6 +11,7 @@ import {updateMyTimezoneView, updateMyUserView, uploadUserProfileImageView} from
 import {changePasswordView} from '../../generated-files/auth';
 import {getMcpConnectionInfoView, McpConnectionInfo} from '../../generated-files/api/mcp';
 import {interval} from 'rxjs';
+import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
 
 interface TimezoneOption {
   name: string;
@@ -20,7 +21,7 @@ interface TimezoneOption {
 
 @Component({
   selector: 'app-user-settings-page',
-  imports: [FormsModule],
+  imports: [FormsModule, PageHeaderComponent],
   providers: [LayoutHandle],
   templateUrl: './user-settings-page.html',
 })
@@ -33,6 +34,9 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
 
   readonly supportEmail = SUPPORT_EMAIL;
   readonly passkeysHighlighted = signal(false);
+  readonly passkeyAddedLabels = computed(() =>
+    Object.fromEntries((this.authService.credentials()?.credentials ?? []).map(c => [c.id, this.formatDate(c.created_at)]))
+  );
 
   readonly firstName = signal('');
   readonly lastName = signal('');
@@ -352,7 +356,7 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
     }
   }
 
-  formatDate(dateStr: string): string {
+  private formatDate(dateStr: string): string {
     return new Date(dateStr).toLocaleDateString();
   }
 }
