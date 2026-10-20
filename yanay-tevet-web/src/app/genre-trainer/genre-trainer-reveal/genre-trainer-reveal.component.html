@@ -25,14 +25,106 @@
     }
 
     <div class="mt-3 pt-3 border-t border-line">
+      <p class="eyebrow mb-2">Listen closer</p>
+
+      @if (service.compareTarget(); as target) {
+        <div class="flex flex-wrap rounded-md border border-line overflow-hidden w-fit max-w-full mb-3" role="group" aria-label="Which track to play">
+          <button
+            type="button"
+            class="px-3 py-1.5 text-caption font-semibold transition-all duration-150"
+            [attr.aria-pressed]="service.listening() === 'track'"
+            [class]="service.listening() === 'track' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
+            (click)="listenTo('track')">
+            This track
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 text-caption font-semibold transition-all duration-150"
+            [attr.aria-pressed]="service.listening() === 'compare'"
+            [disabled]="service.isCompareLoading()"
+            [class]="service.listening() === 'compare' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
+            (click)="listenTo('compare')">
+            @if (service.isCompareLoading()) { Loading… } @else { Your guess: {{ target.label }} }
+          </button>
+        </div>
+        @if (service.easyMode() && service.listening() === 'compare' && service.compareGenreLabel()) {
+          <p class="text-caption text-writing-minor -mt-1 mb-3">
+            Playing <span class="font-semibold text-writing">{{ service.compareGenreLabel() }}</span> from that family.
+          </p>
+        }
+      }
+
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex rounded-md border border-line overflow-hidden" role="group" aria-label="What tapping a part does">
+          <button
+            type="button"
+            class="px-3 py-1 text-caption font-semibold transition-all duration-150"
+            [attr.aria-pressed]="chipMode() === 'solo'"
+            [class]="chipMode() === 'solo' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
+            (click)="chipMode.set('solo')">
+            Solo
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1 text-caption font-semibold transition-all duration-150"
+            [attr.aria-pressed]="chipMode() === 'mute'"
+            [class]="chipMode() === 'mute' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
+            (click)="chipMode.set('mute')">
+            Mute
+          </button>
+        </div>
+        <button
+          type="button"
+          class="chip px-3 py-1"
+          [class.chip-selected]="isFullMix()"
+          [attr.aria-pressed]="isFullMix()"
+          (click)="audio.resetRoles()">
+          Full mix
+        </button>
+        @for (chip of service.roleChips(); track chip.role) {
+          <button
+            type="button"
+            class="chip px-3 py-1 inline-flex items-center gap-1"
+            [class.chip-selected]="chipState()[chip.role].soloed"
+            [class.line-through]="chipState()[chip.role].muted"
+            [class.text-writing-least]="chipState()[chip.role].muted"
+            [attr.aria-pressed]="chipState()[chip.role].soloed || chipState()[chip.role].muted"
+            (click)="onChip(chip.role)">
+            @if (chip.isKey) {
+              <ng-icon [svg]="bootstrapStarFill" class="text-xs" aria-hidden="true" />
+            }
+            {{ chip.label }}
+          </button>
+        }
+      </div>
+      @if (service.keyRoleHint()) {
+        <p class="text-caption text-writing-minor mt-2 flex items-center gap-1">
+          <ng-icon [svg]="bootstrapStarFill" class="text-xs flex-shrink-0" aria-hidden="true" />
+          {{ service.keyRoleHint() }}
+        </p>
+      }
+    </div>
+
+    <div class="mt-3 pt-3 border-t border-line">
       <p class="text-caption text-writing-minor leading-relaxed">{{ service.trackGenreDescription() }}</p>
       <p class="text-caption text-writing-minor mt-1">
         This track: <span class="font-semibold text-writing">{{ service.track()!.bpm }} BPM</span>
+        @if (service.compareTrack(); as compare) {
+          · your guess's track: <span class="font-semibold text-writing">{{ compare.bpm }} BPM</span>
+        }
       </p>
       @if (service.currentGenreStat(); as stat) {
         <p class="text-caption text-writing-minor mt-1">
           Your record on <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>:
           <span class="font-semibold text-writing">{{ stat.correct }}/{{ stat.seen }}</span>
+        </p>
+      }
+      @if (service.currentConfusions().length > 0) {
+        <p class="text-caption text-writing-minor mt-1">
+          You've taken it for
+          @for (c of service.currentConfusions(); track c.label; let last = $last) {
+            <span class="font-semibold text-writing">{{ c.label }}</span> {{ c.count }}×@if (!last) { · }
+          }
         </p>
       }
     </div>

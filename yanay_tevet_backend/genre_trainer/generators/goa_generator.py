@@ -4,279 +4,486 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _reverb, _delay, _dist, _chorus, _filt, _auto,
-    _vel, _vel_groove, _vel_kick,
+    BaseTrackGenerator, _N, _cfg, _reverb, _delay, _dist, _chorus, _filt, _pingpong, _auto, _vel,
+    _vel_groove, _slides, _on, _vel_flat, _rolling, _vel_roll,
 )
 
+_STEPS = 32
+
+
+# Inside each beat the 16th after the kick sits back under the kick's longer tail, the middle one
+# leads. Slightly wider than full-on — the older rolls breathe a little more.
+_ROLL_LEVELS = {1: (0.76, 0.84), 2: (0.88, 0.96), 3: (0.82, 0.9)}
+
+
 # ---------------------------------------------------------------------------
-# KICKS — softer than dark psy / hard psy, more "bouncy" classic '90s feel.
-# Slight reverb on a couple, never very distorted — that's the Goa signature.
+# KICKS — strict four-on-the-floor, softer and longer than full-on: a slower
+# pitch drop and a rounder body, the bouncier mid-'90s thump. Never distorted.
 # ---------------------------------------------------------------------------
 _KICKS = [
+    # Classic '90s
+    _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.045, 'octaves': 7,
+          'envelope': {'attack': 0.001, 'decay': 0.36, 'sustain': 0, 'release': 0.1}},
+         [], _on(range(0, _STEPS, 4), 'G1')),
+    # Bouncy — longest body
+    _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.05, 'octaves': 7,
+          'envelope': {'attack': 0.001, 'decay': 0.4, 'sustain': 0, 'release': 0.1}},
+         [], _on(range(0, _STEPS, 4), 'F#1')),
+    # Room — a little space around it
     _cfg('kick', 'kick', -3, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.06, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.45, 'sustain': 0.01, 'release': 1.5}},
-         [],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
-    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.055, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.42, 'sustain': 0.01, 'release': 1.4}},
-         [],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
-    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.065, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.5, 'sustain': 0.01, 'release': 1.7}},
-         [_reverb(1.0, 0.14)],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+         {'pitchDecay': 0.045, 'octaves': 6.5,
+          'envelope': {'attack': 0.001, 'decay': 0.38, 'sustain': 0, 'release': 0.1}},
+         [_reverb(1.0, 0.1)], _on(range(0, _STEPS, 4), 'G1')),
+    # Soft and round — lowpassed
     _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.06, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.46, 'sustain': 0.01, 'release': 1.5}},
-         [],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
+         {'pitchDecay': 0.055, 'octaves': 6,
+          'envelope': {'attack': 0.001, 'decay': 0.42, 'sustain': 0, 'release': 0.1}},
+         [_filt('lowpass', 1600, 0.7)], _on(range(0, _STEPS, 4), 'F1')),
+    # Punchier late-'90s
     _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.07, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.48, 'sustain': 0.01, 'release': 1.6}},
-         [_reverb(1.5, 0.18)],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N]),
-    # Anticipation hit before bar-2 beat 1 — classic Goa transition
-    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.062, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.44, 'sustain': 0.01, 'release': 1.4}},
-         [],
-         ['C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,'C1',_N,
-          'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,_N,_N,'C1',_N,'C1',_N]),
+         {'pitchDecay': 0.035, 'octaves': 8,
+          'envelope': {'attack': 0.001, 'decay': 0.34, 'sustain': 0, 'release': 0.09}},
+         [], _on(range(0, _STEPS, 4), 'A1')),
+    # Triangle body — warmer top end
+    _cfg('kick', 'kick', -3, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.045, 'octaves': 7, 'oscillator': {'type': 'triangle'},
+          'envelope': {'attack': 0.001, 'decay': 0.36, 'sustain': 0, 'release': 0.1}},
+         [_filt('lowpass', 2200, 0.7)], _on(range(0, _STEPS, 4), 'G1')),
 ]
 
 # ---------------------------------------------------------------------------
-# HI-HATS — classic '90s metallic shimmer, sparser than full-on
-# ---------------------------------------------------------------------------
-_HIHATS = [
-    # Offbeat 8ths
-    _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
-         {'frequency': 800, 'envelope': {'attack': 0.001, 'decay': 0.04, 'release': 0.02},
-          'harmonicity': 3.5, 'modulationIndex': 18, 'resonance': 7000, 'octaves': 1.0},
-         [],
-         ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,
-          'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N]),
-    # On the "and" — classic disco-style
-    _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
-         {'frequency': 750, 'envelope': {'attack': 0.001, 'decay': 0.035, 'release': 0.015},
-          'harmonicity': 3.0, 'modulationIndex': 16, 'resonance': 6500, 'octaves': 1.0},
-         [],
-         [_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,
-          _N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
-    # Full 16ths driving
-    _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
-         {'frequency': 700, 'envelope': {'attack': 0.001, 'decay': 0.04, 'release': 0.02},
-          'harmonicity': 3.2, 'modulationIndex': 17, 'resonance': 6000, 'octaves': 1.0},
-         [],
-         ['C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4',
-          'C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4']),
-    # Sparse breathing
-    _cfg('hihat', 'hihat', -18, '16n', 'MetalSynth',
-         {'frequency': 720, 'envelope': {'attack': 0.001, 'decay': 0.038, 'release': 0.018},
-          'harmonicity': 3.0, 'modulationIndex': 16, 'resonance': 6200, 'octaves': 1.0},
-         [],
-         [_N,_N,'C4',_N,'C4',_N,_N,_N,_N,_N,'C4',_N,_N,_N,'C4',_N,
-          _N,_N,'C4',_N,'C4',_N,_N,_N,_N,_N,'C4',_N,_N,_N,'C4',_N]),
-    # Open-hat feel — longer decay
-    _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
-         {'frequency': 680, 'envelope': {'attack': 0.001, 'decay': 0.06, 'release': 0.04},
-          'harmonicity': 2.8, 'modulationIndex': 14, 'resonance': 5500, 'octaves': 0.9},
-         [],
-         [_N,_N,'C4',_N,_N,'C4',_N,_N,_N,_N,'C4',_N,_N,'C4',_N,_N,
-          _N,_N,'C4',_N,_N,'C4',_N,_N,_N,_N,'C4',_N,_N,'C4',_N,_N]),
-]
-
-# ---------------------------------------------------------------------------
-# BASSES — Goa typically uses rolling acid 303-style bass with filter sweeps.
-# Phrygian dominant scale gives the "Indian / Middle Eastern" colour.
-# Bass plays mostly on offbeats but with more melodic movement than full-on.
+# BASSES — rolling K-B-B-B like full-on, but warmer and older-sounding: saw
+# (or detuned saw / square) MonoSynth through a gentle resonant lowpass, very
+# little drive. Rolls with octave jumps and phrygian-dominant turns are the
+# Goa flavour. Written on A1.
 # ---------------------------------------------------------------------------
 _MONO_GOA = {
     'oscillator': {'type': 'sawtooth'},
-    'envelope': {'attack': 0.005, 'decay': 0.1, 'sustain': 0.0, 'release': 0.06},
-    'filterEnvelope': {'attack': 0.005, 'decay': 0.08, 'sustain': 0.0, 'release': 0.06,
-                       'baseFrequency': 150, 'octaves': 4.5},
+    'filter': {'Q': 2.5, 'type': 'lowpass', 'rolloff': -24},
+    'envelope': {'attack': 0.003, 'decay': 0.12, 'sustain': 0, 'release': 0.05},
+    'filterEnvelope': {'attack': 0.003, 'decay': 0.1, 'sustain': 0, 'release': 0.05,
+                       'baseFrequency': 160, 'octaves': 3.2},
+}
+# Two slightly detuned saws: the analogue warmth of the old hardware.
+_FAT_GOA = {
+    'oscillator': {'type': 'fatsawtooth', 'count': 2, 'spread': 14},
+    'filter': {'Q': 2, 'type': 'lowpass', 'rolloff': -24},
+    'envelope': {'attack': 0.003, 'decay': 0.12, 'sustain': 0, 'release': 0.05},
+    'filterEnvelope': {'attack': 0.003, 'decay': 0.1, 'sustain': 0, 'release': 0.05,
+                       'baseFrequency': 150, 'octaves': 3},
+}
+_SQUARE_GOA = {
+    'oscillator': {'type': 'square'},
+    'filter': {'Q': 3, 'type': 'lowpass', 'rolloff': -24},
+    'envelope': {'attack': 0.003, 'decay': 0.12, 'sustain': 0, 'release': 0.05},
+    'filterEnvelope': {'attack': 0.003, 'decay': 0.09, 'sustain': 0, 'release': 0.05,
+                       'baseFrequency': 140, 'octaves': 3.4},
 }
 
 _BASSES = [
-    # D Phrygian dominant — exotic colour
+    # Pure roll
     _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _MONO_GOA,
-         [_dist(0.35, 0.4), _filt('lowpass', 600, 5)],
-         [_N,_N,'D1',_N,'F1',_N,'D1',_N,_N,_N,'Eb1',_N,'A1',_N,'D1',_N,
-          _N,_N,'D1',_N,'F1',_N,'C2',_N,_N,_N,'A1',_N,'G1',_N,'F1',_N],
-         automation=[_auto('effect:1:frequency', 250, 2400, 'tri')]),
-    # E Phrygian dominant
-    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _MONO_GOA,
-         [_dist(0.32, 0.4), _filt('lowpass', 650, 5)],
-         [_N,_N,'E1',_N,'G1',_N,'E1',_N,_N,_N,'F1',_N,'B1',_N,'E1',_N,
-          _N,_N,'E1',_N,'G1',_N,'B1',_N,_N,_N,'D2',_N,'C2',_N,'B1',_N],
-         automation=[_auto('effect:1:frequency', 280, 2600, 'tri')]),
-    # A Phrygian dominant — exotic Indian scale
-    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _MONO_GOA,
-         [_dist(0.36, 0.42), _filt('lowpass', 620, 5)],
-         [_N,_N,'A1',_N,'C2',_N,'A1',_N,_N,_N,'Bb1',_N,'E2',_N,'A1',_N,
-          _N,_N,'A1',_N,'C#2',_N,'E2',_N,_N,_N,'C2',_N,'Bb1',_N,'A1',_N],
-         automation=[_auto('effect:1:frequency', 300, 2500, 'tri')]),
-    # G Phrygian — minor with chromatic descent
+         [_filt('lowpass', 900, 3), _dist(0.12, 0.15)],
+         _rolling('A1'),
+         automation=[_auto('effect:0:frequency', 400, 2200, 'tri')]),
+    # Octave jump on the last 16th of every other beat
+    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _FAT_GOA,
+         [_filt('lowpass', 850, 2.5)],
+         _rolling('A1', {3: 'A2', 11: 'A2', 19: 'A2', 27: 'A2'}),
+         automation=[_auto('effect:0:frequency', 380, 2000, 'tri')]),
+    # Bouncing octave — the middle 16th of every beat an octave up
     _cfg('bass', 'bass', -8, '16n', 'MonoSynth', _MONO_GOA,
-         [_dist(0.35, 0.4), _filt('lowpass', 580, 5)],
-         [_N,_N,'G1',_N,'A1',_N,'G1',_N,_N,_N,'Ab1',_N,'D2',_N,'G1',_N,
-          _N,_N,'G1',_N,'A1',_N,'C2',_N,_N,_N,'A1',_N,'G1',_N,'F1',_N]),
-    # E Phrygian — alternating with octave jump
-    _cfg('bass', 'bass', -8, '16n', 'MonoSynth', _MONO_GOA,
-         [_reverb(0.6, 0.12), _filt('lowpass', 700, 4)],
-         [_N,_N,'E1',_N,_N,_N,'E1',_N,_N,_N,'E2',_N,_N,_N,'E1',_N,
-          _N,_N,'E1',_N,_N,_N,'G1',_N,_N,_N,'A1',_N,_N,_N,'B1',_N],
-         automation=[_auto('effect:1:frequency', 250, 2200, 'tri')]),
-    # A Phrygian rolling melodic answer in bar 2
+         [_filt('lowpass', 950, 3)],
+         _rolling('A1', {i: 'A2' for i in range(2, _STEPS, 4)}),
+         automation=[_auto('effect:0:frequency', 420, 2400, 'tri')]),
+    # Phrygian-dominant walk-down into the downbeat
+    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _SQUARE_GOA,
+         [_filt('lowpass', 800, 3), _dist(0.1, 0.12)],
+         _rolling('A1', {29: 'D2', 30: 'C#2', 31: 'Bb1'}),
+         automation=[_auto('effect:0:frequency', 380, 2100, 'tri')]),
+    # Following the chords — up to the third, down to the flat seven
     _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _MONO_GOA,
-         [_dist(0.4, 0.42), _filt('lowpass', 600, 5)],
-         [_N,_N,'A1',_N,'A1',_N,'A1',_N,_N,_N,'G1',_N,'A1',_N,'E1',_N,
-          _N,_N,'A1',_N,'C2',_N,'D2',_N,_N,_N,'C2',_N,'Bb1',_N,'A1',_N]),
+         [_filt('lowpass', 900, 3)],
+         _rolling('A1', {21: 'C2', 22: 'C2', 23: 'C2', 29: 'G1', 30: 'G1', 31: 'G1'}),
+         automation=[_auto('effect:0:frequency', 400, 2300, 'ramp')]),
+    # Low fifth, then a breath before the downbeat
+    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _FAT_GOA,
+         [_filt('lowpass', 880, 2.5)],
+         _rolling('A1', {25: 'E1', 26: 'E1', 27: 'E1', 31: _N}),
+         automation=[_auto('effect:0:frequency', 380, 2000, 'tri')]),
+    # Flat-two rub at the end of each bar
+    _cfg('bass', 'bass', -7, '16n', 'MonoSynth', _SQUARE_GOA,
+         [_filt('lowpass', 820, 3)],
+         _rolling('A1', {13: 'Bb1', 29: 'Bb1', 30: 'Bb1'}),
+         automation=[_auto('effect:0:frequency', 400, 2200, 'tri')]),
 ]
 
 # ---------------------------------------------------------------------------
-# LEADS — the heart of Goa: layered 16th-note acid lead lines in
-# Phrygian/Phrygian-dominant. Long delay tails for the trance hypnosis.
-# Filter automation on key effects creates evolving brightness.
+# HATS — the open hat on every offbeat plus 16th ticks; a shaker sometimes on top.
 # ---------------------------------------------------------------------------
+_OFFBEATS = range(2, _STEPS, 4)
+
+_OPEN_HATS = [
+    # Crisp '90s open hat
+    _cfg('open_hat', 'hihat', -15, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.002, 'decay': 0.12, 'sustain': 0, 'release': 0.04}},
+         [_filt('highpass', 7000, 0.9)], _on(_OFFBEATS, 'C4')),
+    # Ringing — resonant highpass for a metallic edge
+    _cfg('open_hat', 'hihat', -17, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.002, 'decay': 0.11, 'sustain': 0, 'release': 0.04}},
+         [_filt('highpass', 7800, 4)], _on(_OFFBEATS, 'C4')),
+    # Long sizzle with room
+    _cfg('open_hat', 'hihat', -17, '8n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.002, 'decay': 0.2, 'sustain': 0, 'release': 0.06}},
+         [_filt('highpass', 8500, 0.8), _reverb(1.2, 0.18)], _on(_OFFBEATS, 'C4')),
+    # Pink and soft
+    _cfg('open_hat', 'hihat', -14, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.002, 'decay': 0.12, 'sustain': 0, 'release': 0.04}},
+         [_filt('bandpass', 8000, 1.1)], _on(_OFFBEATS, 'C4')),
+    # FM metal
+    _cfg('open_hat', 'hihat', -19, '16n', 'FMSynth',
+         {'harmonicity': 5.1, 'modulationIndex': 38,
+          'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.04},
+          'modulationEnvelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.04}},
+         [_filt('highpass', 6000, 1)], _on(_OFFBEATS, 'A5')),
+]
+
+_CLOSED_HATS = [
+    # Straight 16ths
+    _cfg('closed_hat', 'hihat', -21, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.028, 'sustain': 0, 'release': 0.01}},
+         [_filt('highpass', 9000, 0.8)], _on(range(_STEPS), 'C4'), pan=-0.2),
+    # Around the open hat
+    _cfg('closed_hat', 'hihat', -20, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.03, 'sustain': 0, 'release': 0.01}},
+         [_filt('highpass', 8800, 1)], _on((i for i in range(_STEPS) if i % 4 != 2), 'C4'), pan=-0.2),
+    # Off-16th ticks
+    _cfg('closed_hat', 'hihat', -19, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.022, 'sustain': 0, 'release': 0.01}},
+         [_filt('highpass', 9800, 1)], _on(range(1, _STEPS, 2), 'C4'), pan=-0.25),
+    # FM tick 16ths
+    _cfg('closed_hat', 'hihat', -25, '16n', 'FMSynth',
+         {'harmonicity': 3.5, 'modulationIndex': 20,
+          'envelope': {'attack': 0.001, 'decay': 0.022, 'sustain': 0, 'release': 0.01},
+          'modulationEnvelope': {'attack': 0.001, 'decay': 0.022, 'sustain': 0, 'release': 0.01}},
+         [_filt('highpass', 7000, 1)], _on(range(_STEPS), 'C7'), pan=-0.15),
+    # Off the kick
+    _cfg('closed_hat', 'hihat', -20, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.001, 'decay': 0.03, 'sustain': 0, 'release': 0.01}},
+         [_filt('bandpass', 9500, 1.4)], _on((i for i in range(_STEPS) if i % 4 != 0), 'C4'), pan=-0.2),
+]
+
+_SHAKERS = [
+    _cfg('shaker', 'perc', -21, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.008, 'decay': 0.045, 'sustain': 0, 'release': 0.02}},
+         [_filt('bandpass', 6000, 1.2)], _on(range(_STEPS), 'C4'), pan=0.3),
+    _cfg('shaker', 'perc', -20, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.006, 'decay': 0.05, 'sustain': 0, 'release': 0.02}},
+         [_filt('bandpass', 5200, 1.2)], _on((i for i in range(_STEPS) if i % 2 == 1), 'C4'), pan=0.3),
+    _cfg('shaker', 'perc', -21, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.01, 'decay': 0.06, 'sustain': 0, 'release': 0.02}},
+         [_filt('bandpass', 7000, 1.5), _reverb(0.8, 0.12)], _on((i for i in range(_STEPS) if i % 4 != 0), 'C4'), pan=0.3),
+]
+
+# ---------------------------------------------------------------------------
+# LEADS — the heart of Goa and the part to listen for: modal 16th lines in A
+# phrygian, phrygian dominant (the raised third, the "eastern" sound) or
+# harmonic minor, on squelchy resonant or detuned 90s voices drenched in
+# dotted-8th delay and long reverb. Root-heavy so key coherence finds the
+# right root; the filter on effect 0 opens and closes over the loop.
+# ---------------------------------------------------------------------------
+# Resonant saw with a filter envelope — the squelchy sequence voice.
+_GOA_ACID = {
+    'oscillator': {'type': 'sawtooth'},
+    'filter': {'Q': 9, 'type': 'lowpass', 'rolloff': -24},
+    'envelope': {'attack': 0.003, 'decay': 0.18, 'sustain': 0.25, 'release': 0.08},
+    'filterEnvelope': {'attack': 0.003, 'decay': 0.14, 'sustain': 0.15, 'release': 0.08,
+                       'baseFrequency': 320, 'octaves': 3.5},
+}
+# Detuned saw stack — the wide mid-'90s lead.
+_GOA_FATSAW = {
+    'oscillator': {'type': 'fatsawtooth', 'count': 3, 'spread': 22},
+    'envelope': {'attack': 0.004, 'decay': 0.2, 'sustain': 0.3, 'release': 0.15},
+}
+# Narrow pulse through a resonant filter: nasal and reed-like.
+_GOA_REED = {
+    'oscillator': {'type': 'pulse', 'width': 0.25},
+    'filter': {'Q': 6, 'type': 'lowpass', 'rolloff': -24},
+    'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.45, 'release': 0.12},
+    'filterEnvelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.4, 'release': 0.12,
+                       'baseFrequency': 500, 'octaves': 2.5},
+}
+# FM bell — metallic and glassy, for answering phrases.
+_GOA_BELL = {
+    'harmonicity': 3.5, 'modulationIndex': 7,
+    'envelope': {'attack': 0.002, 'decay': 0.3, 'sustain': 0.05, 'release': 0.3},
+    'modulationEnvelope': {'attack': 0.002, 'decay': 0.2, 'sustain': 0.1, 'release': 0.3},
+}
+# Pulse-width modulation — hollow and slowly moving.
+_GOA_PWM = {
+    'oscillator': {'type': 'pwm', 'modulationFrequency': 0.6},
+    'envelope': {'attack': 0.005, 'decay': 0.2, 'sustain': 0.35, 'release': 0.2},
+}
+
 _LEADS = [
-    # D Phrygian dominant — exotic melodic phrase
-    _cfg('lead', 'lead', -10, '16n', 'Synth',
-         {'oscillator': {'type': 'sawtooth'},
-          'envelope': {'attack': 0.005, 'decay': 0.25, 'sustain': 0.2, 'release': 0.5}},
-         [_reverb(3.0, 0.5, 0.05), _delay('8n', 0.4, 0.3), _filt('lowpass', 3000, 2)],
-         ['D5',_N,'F5',_N,'A5',_N,'C6',_N,'A5',_N,'G5',_N,'F5',_N,'D5',_N,
-          'D5',_N,'Eb5',_N,'F5',_N,'A5',_N,'C6',_N,'A5',_N,'G5',_N,'E5',_N],
-         automation=[_auto('effect:2:frequency', 800, 6500, 'tri')]),
-    # E Phrygian dominant — climbing
-    _cfg('lead', 'lead', -11, '16n', 'Synth',
-         {'oscillator': {'type': 'sawtooth'},
-          'envelope': {'attack': 0.005, 'decay': 0.22, 'sustain': 0.18, 'release': 0.45}},
-         [_reverb(2.5, 0.55, 0.02), _delay('8n', 0.3, 0.25), _filt('lowpass', 2800, 2)],
-         ['E5',_N,_N,'F5',_N,_N,'G5',_N,'F5',_N,_N,_N,'E5',_N,_N,_N,
-          'D5',_N,_N,'E5',_N,_N,'G5',_N,'A5',_N,_N,_N,'B5',_N,'A5',_N],
-         automation=[_auto('effect:2:frequency', 700, 5800, 'tri')]),
-    # A Phrygian dominant — pinging arpeggio
-    _cfg('lead', 'lead', -10, '16n', 'AMSynth',
-         {'harmonicity': 1.0,
-          'envelope': {'attack': 0.005, 'decay': 0.3, 'sustain': 0.2, 'release': 0.5},
-          'modulationEnvelope': {'attack': 0.5, 'decay': 0.2, 'sustain': 0.5, 'release': 0.5}},
-         [_reverb(3.0, 0.6, 0.02), _delay('8n.', 0.3, 0.25)],
-         ['A5',_N,_N,_N,'C#6',_N,'E6',_N,'D6',_N,'C#6',_N,'A5',_N,_N,_N,
-          'A5',_N,_N,_N,'C#6',_N,'E6',_N,'F#6',_N,_N,_N,'E6',_N,'C#6',_N]),
-    # G Phrygian dominant — descending answer
-    _cfg('lead', 'lead', -10, '16n', 'Synth',
-         {'oscillator': {'type': 'sawtooth'},
-          'envelope': {'attack': 0.005, 'decay': 0.25, 'sustain': 0.18, 'release': 0.45}},
-         [_reverb(3.0, 0.6, 0.02), _delay('8n.', 0.32, 0.22), _filt('lowpass', 2500, 2.5)],
-         ['G5',_N,_N,'Ab5',_N,'Bb5',_N,_N,'C6',_N,'Bb5',_N,'Ab5',_N,_N,_N,
-          'G5',_N,_N,'Ab5','C6',_N,'D6',_N,'C6','Bb5',_N,_N,'Ab5',_N,_N,_N],
-         automation=[_auto('effect:2:frequency', 600, 5000, 'tri')]),
-    # E Phrygian — high-energy 16th saw run
-    _cfg('lead', 'lead', -9, '16n', 'Synth',
-         {'oscillator': {'type': 'sawtooth'},
-          'envelope': {'attack': 0.005, 'decay': 0.22, 'sustain': 0.22, 'release': 0.5}},
-         [_reverb(4.0, 0.7, 0.04), _delay('8n.', 0.45, 0.35)],
-         ['E5','G5','B5','E6','B5','G5','E5','D5','E5','G5','B5','D6','B5','G5','D5','C5',
-          'E5','G5','B5','E6','G6','E6','B5','G5','A5','C6','E6','A6','E6','C6','A5','G5']),
-    # A Phrygian — chromatic answer at top
-    _cfg('lead', 'lead', -9, '16n', 'AMSynth',
-         {'harmonicity': 1.0,
-          'envelope': {'attack': 0.005, 'decay': 0.3, 'sustain': 0.25, 'release': 0.5},
-          'modulationEnvelope': {'attack': 0.5, 'decay': 0.2, 'sustain': 0.5, 'release': 0.5}},
-         [_reverb(5.0, 0.72, 0.05), _delay('8n.', 0.5, 0.38)],
-         ['A5','C6','E6','A6','E6','C6','A5','G5','A5','C6','E6','G6','E6','C6','G5','F5',
-          'A5','C6','E6','A6','B6','A6','E6','C6','D6','F6','A6','D7','A6','F6','D6','C6']),
-    # B Phrygian — uplifting melodic answer with FM colour
-    _cfg('lead', 'lead', -10, '16n', 'FMSynth',
-         {'harmonicity': 1.5, 'modulationIndex': 6,
-          'envelope': {'attack': 0.005, 'decay': 0.28, 'sustain': 0.2, 'release': 0.48},
-          'modulationEnvelope': {'attack': 0.4, 'decay': 0.15, 'sustain': 0.4, 'release': 0.4}},
-         [_reverb(3.5, 0.65, 0.03), _delay('8n', 0.35, 0.28)],
-         ['B5',_N,'D6',_N,'E6',_N,'G6',_N,'E6',_N,'D6',_N,'B5',_N,'A5',_N,
-          'B5',_N,'D6',_N,'E6',_N,'F#6',_N,'E6',_N,'D6','B5',_N,_N,'A5',_N]),
+    # Phrygian-dominant run — squelch up and down the scale
+    _cfg('lead', 'lead', -13, '16n', 'MonoSynth', _GOA_ACID,
+         [_filt('lowpass', 2600, 2.5), _delay('8n.', 0.4, 0.28), _reverb(3.5, 0.32, 0.02)],
+         ['A4','Bb4','C#5','A4','D5','C#5','Bb4','A4','E5','A4','F5','E5','D5','C#5','Bb4','A4',
+          'A4','Bb4','C#5','A4','D5','C#5','Bb4','A4','G5','F5','E5','F5','E5','D5','C#5','Bb4'],
+         automation=[_auto('effect:0:frequency', 800, 5500, 'tri')]),
+    # Pedal riff — the root alternating with a falling melody
+    _cfg('lead', 'lead', -13, '16n', 'MonoSynth', _GOA_REED,
+         [_filt('lowpass', 3000, 2), _delay('8n.', 0.38, 0.26), _reverb(3.0, 0.3, 0.02)],
+         ['A4','E5','A4','F5','A4','E5','A4','D5','A4','E5','A4','F5','A4','G5','F5','E5',
+          'A4','E5','A4','F5','A4','E5','A4','C#5','A4','D5','A4','Bb4','A4','C#5','D5','E5'],
+         automation=[_auto('effect:0:frequency', 900, 5000, 'tri')]),
+    # Slow modal melody — long notes, the detuned stack in a big room
+    _cfg('lead', 'lead', -14, '8n', 'Synth', _GOA_FATSAW,
+         [_filt('lowpass', 2400, 1.5), _delay('8n.', 0.45, 0.3), _reverb(4.5, 0.4, 0.03)],
+         ['A4',_N,_N,'Bb4',_N,_N,'C#5',_N,'D5',_N,'C#5',_N,'Bb4',_N,'A4',_N,
+          'A4',_N,'A4','Bb4',_N,_N,'C#5',_N,'E5',_N,'F5',_N,'E5','D5','C#5','A4'],
+         automation=[_auto('effect:0:frequency', 700, 4200, 'tri')]),
+    # Low squelch sequence — 303-style, with slides
+    _cfg('lead', 'lead', -14, '16n', 'MonoSynth', _GOA_ACID,
+         [_filt('lowpass', 1800, 3), _delay('8n.', 0.35, 0.24), _reverb(3.0, 0.28, 0.02)],
+         ['A3','A3','A4','A3','Bb3','A3','C#4','A3','A3','D4','A3','E4','F4','E4','C#4','Bb3',
+          'A3','A3','A4','A3','Bb3','A3','C#4','A3','A3','G3','A3','Bb3','A3','C#4','D4','E4'],
+         automation=[_auto('effect:0:frequency', 600, 4800, 'ramp')]),
+    # Harmonic-minor climb — the raised seventh pulling back to the root
+    _cfg('lead', 'lead', -14, '16n', 'Synth', _GOA_PWM,
+         [_filt('lowpass', 2800, 2), _delay('8n.', 0.4, 0.28), _reverb(3.5, 0.35, 0.02)],
+         ['A4','B4','C5','A4','E5','C5','B4','A4','G#4','A4','B4','C5','E5','D5','C5','B4',
+          'A4','B4','C5','A4','F5','E5','D5','C5','A4','C5','D5','E5','G#5','E5','B4','A4'],
+         automation=[_auto('effect:0:frequency', 800, 5200, 'tri')]),
+    # Broken-chord lead — minor to flat-two, the root returning between
+    _cfg('lead', 'lead', -14, '16n', 'Synth', _GOA_FATSAW,
+         [_filt('lowpass', 2600, 2), _delay('8n.', 0.42, 0.28), _reverb(4.0, 0.35, 0.02)],
+         ['A4','C5','E5','A5','E5','C5','A4','A4','Bb4','D5','F5','Bb5','F5','D5','Bb4','D5',
+          'A4','C5','E5','A5','E5','C5','A4','A4','G4','Bb4','D5','G5','F5','E5','D5','C5'],
+         automation=[_auto('effect:0:frequency', 900, 5000, 'tri')]),
+    # Slow pedal melody — reed voice in 8ths around the root
+    _cfg('lead', 'lead', -13, '8n', 'MonoSynth', _GOA_REED,
+         [_filt('lowpass', 2800, 2), _delay('8n.', 0.45, 0.3), _reverb(4.0, 0.38, 0.03)],
+         ['A4',_N,'A4','Bb4','A4',_N,'G4',_N,'A4',_N,'C5',_N,'Bb4',_N,'A4',_N,
+          'A4',_N,'A4','Bb4','A4',_N,'G4',_N,'F4',_N,'G4',_N,'Bb4',_N,'A4','G4'],
+         automation=[_auto('effect:0:frequency', 900, 4500, 'tri')]),
 ]
 
 # ---------------------------------------------------------------------------
-# ARPS — high-register triangle/sine arpeggios, hypnotic
+# CALL AND RESPONSE — two leads trading bars: the call phrases in bar 1, a
+# second voice answers in bar 2 from the other side of the stereo field.
+# Pairs are fixed so the answer always shares the call's scale.
+# ---------------------------------------------------------------------------
+_BAR_REST = [_N] * 16
+
+_CALL_RESPONSES = [
+    # Phrygian-dominant question, bell answer an octave up
+    (_cfg('call', 'lead', -13, '16n', 'MonoSynth', _GOA_ACID,
+          [_filt('lowpass', 2400, 2.5), _delay('8n.', 0.4, 0.26), _reverb(3.5, 0.32, 0.02)],
+          ['A4',_N,'Bb4','A4',_N,'C#5',_N,'D5','E5',_N,'D5','C#5','Bb4',_N,'A4',_N] + _BAR_REST,
+          automation=[_auto('effect:0:frequency', 900, 5000, 'tri')], pan=-0.35),
+     _cfg('response', 'lead', -15, '16n', 'FMSynth', _GOA_BELL,
+          [_pingpong('8n.', 0.4, 0.3), _reverb(4.0, 0.4, 0.03)],
+          _BAR_REST + ['A5',_N,'A5','G5',_N,'F5',_N,'E5','F5',_N,'E5','D5','C#5',_N,'A4',_N],
+          pan=0.35)),
+    # Slow reed phrase, echoed higher by the PWM voice
+    (_cfg('call', 'lead', -13, '16n', 'MonoSynth', _GOA_REED,
+          [_filt('lowpass', 2800, 2), _delay('8n.', 0.42, 0.28), _reverb(4.0, 0.36, 0.03)],
+          ['A4',_N,_N,_N,'Bb4',_N,'A4',_N,'G4',_N,'F4',_N,'G4',_N,'A4',_N] + _BAR_REST,
+          automation=[_auto('effect:0:frequency', 900, 4200, 'tri')], pan=-0.35),
+     _cfg('response', 'lead', -15, '16n', 'Synth', _GOA_PWM,
+          [_pingpong('8n.', 0.42, 0.3), _reverb(4.0, 0.38, 0.03)],
+          _BAR_REST + ['A5',_N,'Bb5',_N,'A5',_N,'G5',_N,'F5',_N,'E5',_N,'F5',_N,'A5',_N],
+          pan=0.35)),
+    # Fast minor / flat-two burst, answered by a descending bell figure
+    (_cfg('call', 'lead', -14, '16n', 'Synth', _GOA_FATSAW,
+          [_filt('lowpass', 2600, 2), _delay('8n.', 0.4, 0.28), _reverb(3.5, 0.35, 0.02)],
+          ['A4','C5','E5','A4','D5','C5','Bb4','A4','Bb4','C5','A4',_N,_N,_N,_N,_N] + _BAR_REST,
+          automation=[_auto('effect:0:frequency', 800, 4800, 'tri')], pan=-0.35),
+     _cfg('response', 'lead', -15, '16n', 'FMSynth', _GOA_BELL,
+          [_pingpong('8n.', 0.4, 0.3), _reverb(4.0, 0.4, 0.03)],
+          _BAR_REST + ['A5','G5','F5','A5','E5','F5','D5','A5','C5','D5','A5',_N,_N,_N,_N,_N],
+          pan=0.35)),
+    # Low squelch question, reed answer
+    (_cfg('call', 'lead', -14, '16n', 'MonoSynth', _GOA_ACID,
+          [_filt('lowpass', 1800, 3), _delay('8n.', 0.38, 0.26), _reverb(3.0, 0.3, 0.02)],
+          ['A3','A3','Bb3','A3','C#4','A3','D4','A3','E4','D4','C#4','Bb3','A3',_N,_N,_N] + _BAR_REST,
+          automation=[_auto('effect:0:frequency', 600, 4200, 'tri')], pan=-0.35),
+     _cfg('response', 'lead', -14, '16n', 'MonoSynth', _GOA_REED,
+          [_filt('lowpass', 3000, 2), _pingpong('8n.', 0.4, 0.3), _reverb(3.5, 0.35, 0.02)],
+          _BAR_REST + ['A4',_N,'E5',_N,'D5',_N,'C#5','D5','A4',_N,'Bb4',_N,'A4',_N,_N,_N],
+          automation=[_auto('effect:0:frequency', 1000, 4500, 'tri')], pan=0.35)),
+]
+
+# ---------------------------------------------------------------------------
+# ARPS — quieter, high-register 16th arpeggios layered over the lead: root
+# pedals, 3-against-4 cycles and broken chords, all in the lead's modes.
 # ---------------------------------------------------------------------------
 _ARPS = [
-    # D minor triplet-arp
-    _cfg('arp', 'lead', -15, '16n', 'Synth',
-         {'oscillator': {'type': 'triangle'},
-          'envelope': {'attack': 0.002, 'decay': 0.15, 'sustain': 0.1, 'release': 0.2}},
-         [_reverb(2.5, 0.5), _delay('16n', 0.3, 0.2)],
-         ['D6','F6','A6','D7','A6','F6','D6','C6','D6','F6','A6','C7','A6','F6','C6','Bb5',
-          'D6','F6','A6','D7','F7','D7','A6','F6','E6','G6','B6','E7','B6','G6','E6','D6']),
-    # E minor arp
-    _cfg('arp', 'lead', -16, '16n', 'AMSynth',
-         {'harmonicity': 0.5,
-          'envelope': {'attack': 0.002, 'decay': 0.12, 'sustain': 0.08, 'release': 0.18},
-          'modulationEnvelope': {'attack': 0.4, 'decay': 0.1, 'sustain': 0.4, 'release': 0.3}},
-         [_reverb(3.0, 0.55), _delay('16n', 0.28, 0.22)],
-         ['E6','G6','B6','E7','B6','G6','E6','D6','E6','G6','B6','D7','B6','G6','D6','C6',
-          'E6','G6','B6','E7','G7','E7','B6','G6','A6','C7','E7','A7','E7','C7','A6','G6']),
-    # A minor sparse — sine
+    # Root-pedal arp in phrygian dominant
     _cfg('arp', 'lead', -17, '16n', 'Synth',
+         {'oscillator': {'type': 'triangle'},
+          'envelope': {'attack': 0.002, 'decay': 0.14, 'sustain': 0.08, 'release': 0.15}},
+         [_delay('16n', 0.3, 0.2), _reverb(3.0, 0.45)],
+         ['A5','E6','A5','C#6','A5','D6','A5','Bb5','A5','E6','A5','C#6','A5','F6','A5','E6',
+          'A5','E6','A5','C#6','A5','D6','A5','Bb5','A5','G6','A5','F6','A5','E6','D6','C#6'],
+         pan=0.25),
+    # Three-note cycle against the 4/4 — the pattern lands somewhere new on every beat
+    _cfg('arp', 'lead', -18, '16n', 'Synth',
          {'oscillator': {'type': 'sine'},
-          'envelope': {'attack': 0.003, 'decay': 0.2, 'sustain': 0.12, 'release': 0.25}},
-         [_reverb(4.0, 0.6), _delay('8n', 0.4, 0.3)],
-         ['A5',_N,'C6',_N,'E6',_N,'A6',_N,'E6',_N,'C6',_N,'A5',_N,'G5',_N,
-          'B5',_N,'D6',_N,'G6',_N,'D6',_N,'B5',_N,'G5',_N,'F5',_N,'E5',_N]),
+          'envelope': {'attack': 0.002, 'decay': 0.16, 'sustain': 0.1, 'release': 0.2}},
+         [_delay('8n.', 0.35, 0.25), _reverb(3.5, 0.5)],
+         [('A5', 'E6', 'A6')[i % 3] for i in range(_STEPS)],
+         pan=0.25),
+    # Broken chords — root, third, fifth, octave over minor and flat-two
+    _cfg('arp', 'lead', -19, '16n', 'MonoSynth',
+         {'oscillator': {'type': 'square'},
+          'filter': {'Q': 4, 'type': 'lowpass', 'rolloff': -24},
+          'envelope': {'attack': 0.002, 'decay': 0.1, 'sustain': 0, 'release': 0.08},
+          'filterEnvelope': {'attack': 0.002, 'decay': 0.08, 'sustain': 0, 'release': 0.05,
+                             'baseFrequency': 900, 'octaves': 2.5}},
+         [_delay('16n', 0.3, 0.2), _reverb(3.0, 0.45)],
+         ['A5','C#6','E6','A6','A5','C#6','E6','A6','Bb5','D6','F6','Bb6','A5','C#6','E6','A6',
+          'A5','C#6','E6','A6','A5','C#6','E6','A6','G5','Bb5','D6','G6','A5','C#6','E6','A6'],
+         pan=0.25),
+    # FM bell arp in 8ths
+    _cfg('arp', 'lead', -18, '16n', 'FMSynth', _GOA_BELL,
+         [_pingpong('8n.', 0.4, 0.3), _reverb(4.0, 0.5)],
+         ['A5',_N,'E6',_N,'A6',_N,'E6',_N,'F6',_N,'E6',_N,'C#6',_N,'A5',_N,
+          'A5',_N,'E6',_N,'A6',_N,'G6',_N,'F6',_N,'E6',_N,'D6',_N,'A5',_N],
+         pan=0.25),
+    # Descending cascade
+    _cfg('arp', 'lead', -18, '16n', 'Synth',
+         {'oscillator': {'type': 'triangle'},
+          'envelope': {'attack': 0.002, 'decay': 0.12, 'sustain': 0.05, 'release': 0.15}},
+         [_delay('8n.', 0.38, 0.25), _reverb(3.5, 0.5)],
+         ['A6','E6','C6','A5','E6','C6','A5','E5','A6','E6','C6','A5','F6','D6','Bb5','A5',
+          'A6','E6','C6','A5','E6','C6','A5','E5','A6','F6','D6','A5','G6','E6','C6','A5'],
+         pan=0.25),
 ]
 
 # ---------------------------------------------------------------------------
-# PADS — long emotional pads, the Goa "cosmic" texture
+# PADS — long cosmic pads under the leads, entering after the intro.
 # ---------------------------------------------------------------------------
 _PADS = [
-    _cfg('pad', 'pad', -18, '16n', 'AMSynth',
+    # Minor to flat-two — the phrygian lift
+    _cfg('pad', 'pad', -20, '1m', 'PolySynth',
+         {'oscillator': {'type': 'sawtooth'},
+          'envelope': {'attack': 0.7, 'decay': 0.5, 'sustain': 0.8, 'release': 2.5}},
+         [_filt('lowpass', 1400, 1), _chorus(0.4, 4, 0.5, 0.35), _reverb(5.0, 0.6)],
+         ['A3,C4,E4'] + [_N]*15 + ['Bb3,D4,F4'] + [_N]*15,
+         automation=[_auto('effect:0:frequency', 800, 2200, 'tri')],
+         entry_loop=2),
+    # AM pad — root to flat seven
+    _cfg('pad', 'pad', -19, '1m', 'AMSynth',
          {'harmonicity': 0.8,
           'envelope': {'attack': 0.6, 'decay': 0.5, 'sustain': 0.8, 'release': 2.5},
           'modulationEnvelope': {'attack': 0.7, 'decay': 0.3, 'sustain': 0.7, 'release': 2.0}},
-         [_reverb(5.0, 0.8)],
-         ['D3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
-          'F3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N],
+         [_reverb(5.0, 0.7)],
+         ['A3'] + [_N]*15 + ['G3'] + [_N]*15,
          entry_loop=2),
-    _cfg('pad', 'pad', -20, '16n', 'Synth',
+    # Phrygian-dominant major chord — bright and "eastern"
+    _cfg('pad', 'pad', -21, '1m', 'PolySynth',
          {'oscillator': {'type': 'triangle'},
           'envelope': {'attack': 0.8, 'decay': 0.5, 'sustain': 0.9, 'release': 3.0}},
-         [_reverb(6.0, 0.85), _chorus(0.4, 4, 0.5, 0.3)],
-         ['A3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
-          'G3',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N],
+         [_chorus(0.4, 4, 0.5, 0.3), _reverb(6.0, 0.75)],
+         _on([0, 16], 'A3,C#4,E4'),
          entry_loop=2),
+]
+
+# ---------------------------------------------------------------------------
+# FX — sci-fi ear candy: laser zaps, bubbling FM blips, a noise riser.
+# ---------------------------------------------------------------------------
+_FX = [
+    # Laser zap into bar 2, every other loop
+    _cfg('zap', 'perc', -17, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.25, 'octaves': 5,
+          'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0, 'release': 0.05}},
+         [_pingpong('8n.', 0.45, 0.35), _reverb(2.5, 0.3)],
+         _on([14], 'G4'),
+         loop_modulo=2, loop_modulo_remainder=1),
+    # Bubbling FM blips
+    _cfg('bubbles', 'perc', -21, '16n', 'FMSynth',
+         {'harmonicity': 1.5, 'modulationIndex': 12,
+          'envelope': {'attack': 0.001, 'decay': 0.06, 'sustain': 0, 'release': 0.03},
+          'modulationEnvelope': {'attack': 0.001, 'decay': 0.04, 'sustain': 0, 'release': 0.02}},
+         [_pingpong('16n', 0.35, 0.3)],
+         [_N,_N,_N,'E6',_N,_N,_N,_N,_N,_N,_N,'G6',_N,_N,_N,_N,
+          _N,_N,_N,'E6',_N,_N,_N,_N,_N,_N,'C6',_N,'D6',_N,_N,_N], pan=-0.3),
+    # Noise riser into the next phrase — every 8 loops
+    _cfg('riser', 'perc', -14, '1n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 1.8, 'decay': 0.05, 'sustain': 0.95, 'release': 0.1}},
+         [_filt('highpass', 1800, 1.3), _reverb(1.5, 0.45)],
+         ['C3'] + [_N]*31,
+         loop_modulo=8, loop_modulo_remainder=7),
 ]
 
 
 class GoaTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.GOA
-    BPM_RANGE = (136, 142)
+    BPM_RANGE = (138, 145)
+    LEVEL_DB = -2.5
+    KEY_ROLES = ('lead', 'bass')
+    SIDECHAIN_DEPTH = 1.0
+    SIDECHAIN_RELEASE = 0.25
+
+    @classmethod
+    def _lead_velocities(cls, lead: dict[str, Any]) -> None:
+        steps = lead['pattern']['steps']
+        lead['pattern']['velocities'] = _vel(steps, accent_prob=0.22, ghost_prob=0.06)
+        if lead['instrument']['type'] == 'MonoSynth':
+            lead['pattern']['slides'] = _slides(steps, 0.2)
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
         kick = copy.deepcopy(cls._pick(_KICKS))
         bass = copy.deepcopy(cls._pick(_BASSES))
-        hihat = copy.deepcopy(cls._pick(_HIHATS))
-        lead = copy.deepcopy(cls._pick(_LEADS))
+        open_hat = copy.deepcopy(cls._pick(_OPEN_HATS))
 
-        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
-        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.2, ghost_prob=0.05)
-        hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
-        lead['pattern']['velocities'] = _vel(lead['pattern']['steps'], accent_prob=0.22, ghost_prob=0.06)
+        kick['pattern']['velocities'] = _vel_flat(kick['pattern']['steps'], 0.9, 1.0)
+        bass['pattern']['velocities'] = _vel_roll(bass['pattern']['steps'], _ROLL_LEVELS, (0.82, 0.88))
+        open_hat['pattern']['velocities'] = _vel_flat(open_hat['pattern']['steps'], 0.68, 0.86)
 
-        layers = [kick, bass, hihat, lead]
+        layers = [kick, bass, open_hat]
 
-        # Arp — layered acid lead is a Goa signature
+        if random.random() < 0.75:
+            closed_hat = copy.deepcopy(cls._pick(_CLOSED_HATS))
+            closed_hat['pattern']['velocities'] = _vel_groove(closed_hat['pattern']['steps'])
+            layers.append(closed_hat)
+
+        if random.random() < 0.35:
+            shaker = copy.deepcopy(cls._pick(_SHAKERS))
+            shaker['pattern']['velocities'] = _vel_groove(shaker['pattern']['steps'])
+            layers.append(shaker)
+
+        # The lead is always there — it is what makes it Goa. Either one long line or two voices
+        # trading bars.
+        if random.random() < 0.4:
+            call, response = copy.deepcopy(random.choice(_CALL_RESPONSES))
+            cls._lead_velocities(call)
+            cls._lead_velocities(response)
+            layers += [call, response]
+        else:
+            lead = copy.deepcopy(cls._pick(_LEADS))
+            cls._lead_velocities(lead)
+            layers.append(lead)
+
         if random.random() < 0.55:
             arp = copy.deepcopy(cls._pick(_ARPS))
             arp['pattern']['velocities'] = _vel(arp['pattern']['steps'], accent_prob=0.18, ghost_prob=0.1)
             arp['entry_loop'] = random.choice([0, 2])
             layers.append(arp)
 
-        # Pad — slower harmonic glue for emotional content
         if random.random() < 0.45:
             layers.append(copy.deepcopy(cls._pick(_PADS)))
+
+        if random.random() < 0.4:
+            fx = copy.deepcopy(cls._pick(_FX))
+            fx['pattern']['velocities'] = _vel(fx['pattern']['steps'], accent_prob=0.15, ghost_prob=0.1)
+            layers.append(fx)
 
         cls._apply_key_coherence(layers)
         return layers

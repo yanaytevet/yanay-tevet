@@ -4,338 +4,321 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _filt, _chorus,
-    _vel, _vel_groove, _vel_kick, _vel_snare, _delay,
+    BaseTrackGenerator, _N, _cfg, _auto, _chorus, _dist, _filt, _reverb, _midi_to_note,
+    _note_to_midi, _vel_groove, _vel_snare, _on, _at,
 )
 
+
+def _vel_two_step(steps: list) -> list[float | None]:
+    """The two kicks of the two-step (the one and the "and" of 3) hit hardest; doubles and pickups
+    sit under them, so they push the groove without blurring which hits are the beat."""
+    vels: list[float | None] = []
+    for i, step in enumerate(steps):
+        if step is None:
+            vels.append(None)
+        elif i % 16 in (0, 10):
+            vels.append(round(random.uniform(0.88, 1.0), 2))
+        else:
+            vels.append(round(random.uniform(0.6, 0.78), 2))
+    return vels
+
+
+# MIDI D1. Every sub note is folded into the octave above it (37–69 Hz): low enough to be felt
+# under the reese, high enough to still be heard on small speakers.
+_SUB_FLOOR = 26
+
+
+def _sub_under(bass: dict[str, Any]) -> dict[str, Any]:
+    """A sine sub doubling the chosen bass line, note for note, folded into the sub register."""
+    steps = [_N if s is None else _midi_to_note(_SUB_FLOOR + (_note_to_midi(s) - _SUB_FLOOR) % 12)
+             for s in bass['pattern']['steps']]
+    return _cfg('sub', 'sub', -9, bass['note_duration'], 'Synth',
+                {'oscillator': {'type': 'sine'},
+                 'envelope': {'attack': 0.005, 'decay': 0.1, 'sustain': 1.0, 'release': 0.12}},
+                [], steps, velocities=[_N if s is None else 0.85 for s in steps],
+                sidechain='shallow')
+
+
 # ---------------------------------------------------------------------------
-# KICKS — DnB two-step and syncopated variants.
-# MembraneSynth with short pitch decay for that punchy sub impact.
-# Velocities applied dynamically in _generate_layers via _vel_kick.
+# KICKS — the two-step: kick on the one and on the "and" of beat 3 (step 10)
+# of every bar, against the snare on 2 and 4. Variations add a double, a
+# lead-in or a pickup, but none puts a kick on every quarter — that would be
+# a four-on-the-floor genre. Tight, punchy MembraneSynths: DnB kicks are short
+# so the bass owns the low end between them.
 # ---------------------------------------------------------------------------
 _KICKS = [
-    # Two-step classic: 1 + 2.75 per bar — the defining DnB groove
+    # K . . . S . . . . . K . S . . . | same — the plain two-step
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.04, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.35, 'sustain': 0.01, 'release': 1.2}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,_N]),
-    # Syncopated: beat 1 + pickup 16th before beat 3 + early beat 3
+         {'pitchDecay': 0.035, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0.01, 'release': 0.6}},
+         [], _on([0, 10, 16, 26], 'C1')),
+    # Bar 2 doubles the "and" of 3 (0+10+11) — the push rollers use to turn the phrase
     _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.042, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.32, 'sustain': 0.01, 'release': 1.1}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,'C1',_N,_N,_N,_N,'C1',_N,_N,_N,'C1',_N]),
-    # Staggered: anticipation kick on beat 2.5 each bar
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.038, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0.01, 'release': 1.0}},
-         [],
-         ['C1',_N,_N,'C1',_N,_N,_N,_N,'C1',_N,'C1',_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,'C1',_N,_N]),
-    # Sparse half-time feel with double-kick pickup into bar 2
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.04, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.33, 'sustain': 0.01, 'release': 1.1}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,'C1',
-          'C1',_N,_N,_N,_N,'C1',_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N]),
-    # Two-step with variation: bar 2 has an extra syncopated hit
-    _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.042, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0.01, 'release': 1.0}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,'C1']),
-    # Jump-up: 1, 2.75, 3 in bar 1; 1, 2.75, 3.5 in bar 2
-    _cfg('kick', 'kick', -2, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.04, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.28, 'sustain': 0.01, 'release': 0.9}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,'C1','C1',_N,_N,_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N]),
-    # Dense fill in bar 2: open bar 1, rolling pickup into bar 2
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.035, 'octaves': 12, 'envelope': {'attack': 0.001, 'decay': 0.28, 'sustain': 0.01, 'release': 1.0}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,'C1',_N,_N,_N,_N,_N]),
-    # Bar-split: sparse bar 1, dense pickup bar 2 into beat 1
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.038, 'octaves': 11, 'envelope': {'attack': 0.001, 'decay': 0.31, 'sustain': 0.01, 'release': 1.05}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,'C1',
-          'C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,'C1',_N,_N,_N,_N,_N]),
-    # Double-kick on beat 3.75 for rolling energy
-    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.04, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.33, 'sustain': 0.01, 'release': 1.1}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,'C1','C1',_N,_N,
-          'C1',_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,'C1','C1',_N,_N]),
-    # Fluid: kicks on 1, 1.75, 3 — floaty two-step variant
+         {'pitchDecay': 0.04, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.28, 'sustain': 0.01, 'release': 0.55}},
+         [], _on([0, 10, 16, 26, 27], 'C1')),
+    # Lead-in on the "a" of 2 (0+7+10) in bar 1, plain answer in bar 2
     _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
-         {'pitchDecay': 0.041, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.34, 'sustain': 0.01, 'release': 1.15}},
-         [],
-         ['C1',_N,_N,_N,_N,_N,_N,_N,'C1',_N,_N,_N,_N,_N,_N,_N,
-          'C1',_N,_N,_N,_N,_N,'C1','C1',_N,_N,_N,_N,_N,_N,_N,_N]),
+         {'pitchDecay': 0.032, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.32, 'sustain': 0.01, 'release': 0.6}},
+         [], _on([0, 7, 10, 16, 26], 'C1')),
+    # Pickup kick on the last 16th, rolling back into the downbeat of the next loop
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.038, 'octaves': 10, 'envelope': {'attack': 0.001, 'decay': 0.26, 'sustain': 0.01, 'release': 0.5}},
+         [], _on([0, 10, 16, 26, 31], 'C1')),
+    # Double on the one (0+2) in bar 1 — the "Think"-break shape inside the two-step
+    _cfg('kick', 'kick', -1, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.036, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.3, 'sustain': 0.01, 'release': 0.55}},
+         [], _on([0, 2, 10, 16, 26], 'C1')),
+    # 0+10+11 in both bars — the heavier, techstep version
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.042, 'octaves': 9, 'envelope': {'attack': 0.001, 'decay': 0.27, 'sustain': 0.01, 'release': 0.5}},
+         [_dist(0.12, 0.2)], _on([0, 10, 11, 16, 26, 27], 'C1')),
+    # Bar 2 adds the "and" of 2 before the second kick — a skip that still lands on the two-step
+    _cfg('kick', 'kick', 0, '8n', 'MembraneSynth',
+         {'pitchDecay': 0.034, 'octaves': 8, 'envelope': {'attack': 0.001, 'decay': 0.31, 'sustain': 0.01, 'release': 0.6}},
+         [], _on([0, 10, 16, 22, 26], 'C1')),
 ]
 
 # ---------------------------------------------------------------------------
-# SNARES — backbeat foundation with ghost hits for organic feel.
-# Main hits at beats 2 & 4 (steps 4,12,20,28); ghost hits at other positions.
-# _vel_snare applied in _generate_layers: main → 0.78–0.95, ghost → 0.16–0.32.
+# SNARES — the backbeat on 2 and 4 (steps 4, 12, 20, 28) in every entry; it is
+# the loudest, most exposed sound in DnB. Variation lives only in the ghost
+# notes around it (_vel_snare keeps them at ghost level). A highpass keeps the
+# noise crisp so the crack reads clean, not lo-fi.
 # ---------------------------------------------------------------------------
 _SNARES = [
-    # Backbeat + ghost before beat 3 and before bar-2 beat 3
+    # . . . . S . . . . . . . S . . . | same — the clean backbeat
     _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.06}},
-         [_reverb(0.6, 0.25)],
-         [_N,_N,'C2',_N,'C2',_N,_N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N,
-          _N,_N,'C2',_N,'C2',_N,_N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N]),
-    # Off-beat ghosts on the "and" of beats 2 and 4
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.16, 'sustain': 0, 'release': 0.08}},
+         [_filt('highpass', 1100, 0.8), _reverb(0.9, 0.18)],
+         _on([4, 12, 20, 28])),
+    # Ghost on the last 16th of each bar, dragging into the downbeat
+    _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.15, 'sustain': 0, 'release': 0.07}},
+         [_filt('highpass', 1300, 0.8), _reverb(0.8, 0.16)],
+         _on([4, 12, 15, 20, 28, 31])),
+    # Ghost on the "e" of 3 each bar — the rolling ghost between the two kicks
     _cfg('snare', 'snare', -4, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.17, 'sustain': 0, 'release': 0.08}},
+         [_filt('highpass', 1000, 0.7), _reverb(1.0, 0.2)],
+         _on([4, 9, 12, 20, 25, 28])),
+    # Bar 2 answers with ghosts on the "a" of 2 and the "and" of 4
+    _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
          {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.14, 'sustain': 0, 'release': 0.07}},
-         [_reverb(0.8, 0.3)],
-         [_N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N,_N,_N,'C2',_N,'C2',_N,
-          _N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N,_N,_N,'C2',_N,'C2',_N]),
-    # Fill into bar 2: ghost roll on steps 14–15 then double-hit landing
-    _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.13, 'sustain': 0, 'release': 0.06}},
-         [_reverb(0.7, 0.28)],
-         [_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2',_N,'C2','C2',
-          _N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2','C2',_N,_N]),
-    # Clean backbeat — ghost only on "e" of beat 4 each bar
-    _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.06}},
-         [_reverb(0.5, 0.22)],
-         [_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,'C2',
-          _N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,'C2']),
-    # Heavy room snare with pre-beat ghost and stutter on beat 4
-    _cfg('snare', 'snare', -8, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.14, 'sustain': 0, 'release': 0.06}},
-         [_reverb(1.0, 0.3)],
-         [_N,_N,_N,'C4','C4',_N,_N,_N,_N,_N,'C4',_N,'C4',_N,_N,'C4',
-          _N,_N,_N,_N,'C4',_N,_N,_N,_N,_N,'C4',_N,'C4',_N,'C4',_N]),
-    # Rim/ghost layer: dense irregular pattern for texture behind main snare
-    _cfg('snare', 'snare', -18, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.1, 'sustain': 0, 'release': 0.04}},
-         [],
-         [_N,_N,'C4',_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,_N,_N,'C4',
-          _N,_N,'C4',_N,_N,'C4',_N,_N,_N,'C4',_N,_N,_N,_N,'C4',_N]),
-    # Syncopated snare: shifted beat 2 + ghost setup into beats
-    _cfg('snare', 'snare', -5, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.06}},
-         [_reverb(0.7, 0.28)],
-         [_N,_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,'C2',_N,
-          _N,_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,'C2',_N]),
-    # Ghost-heavy: fills on the "ah" of every beat
-    _cfg('snare', 'snare', -6, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.11, 'sustain': 0, 'release': 0.05}},
-         [_reverb(0.9, 0.28)],
-         [_N,_N,_N,_N,'C2',_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,'C2',
-          _N,_N,_N,_N,'C2',_N,_N,'C2',_N,_N,_N,_N,'C2',_N,_N,'C2']),
-    # DnB feel: ghost on "e" of beat 2 and "and" of beat 3 each bar
+         [_filt('highpass', 1400, 0.8), _reverb(0.7, 0.15)],
+         _on([4, 12, 20, 23, 28, 30])),
+    # Short ghost roll at the end of bar 2 turning the loop around
     _cfg('snare', 'snare', -4, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.13, 'sustain': 0, 'release': 0.06}},
-         [_reverb(0.65, 0.26)],
-         [_N,_N,_N,_N,'C2','C2',_N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N,
-          _N,_N,_N,_N,'C2','C2',_N,_N,_N,_N,'C2',_N,'C2',_N,_N,_N]),
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.15, 'sustain': 0, 'release': 0.07}},
+         [_filt('highpass', 1200, 0.8), _reverb(0.9, 0.18)],
+         _on([4, 12, 14, 20, 28, 29, 30, 31])),
+    # Ghosts on the "and" of 2 — a lighter, liquid-style shuffle
+    _cfg('snare', 'snare', -4, '16n', 'NoiseSynth',
+         {'noise': {'type': 'pink'}, 'envelope': {'attack': 0.001, 'decay': 0.18, 'sustain': 0, 'release': 0.09}},
+         [_filt('highpass', 900, 0.7), _reverb(1.3, 0.24)],
+         _on([4, 6, 12, 20, 22, 28])),
+    # Ghost a 16th before beat 4 in both bars — a flam-like lean into the backbeat
+    _cfg('snare', 'snare', -3, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.16, 'sustain': 0, 'release': 0.08}},
+         [_filt('highpass', 1150, 0.8), _reverb(0.85, 0.17)],
+         _on([4, 11, 12, 20, 27, 28])),
 ]
 
 # ---------------------------------------------------------------------------
-# HI-HATS — metallic 16th patterns, velocity applied via _vel_groove in
-# _generate_layers so quarter-note accents and off-beat ghosts emerge naturally.
+# SNARE BODIES — a short pitched thump under the backbeat only. Noise alone is
+# all crack and no weight; the body is what makes the 2 and 4 hit like a real
+# DnB snare. Ghosts get no body, so they stay ghosts.
 # ---------------------------------------------------------------------------
+_SNARE_BODIES = [
+    _cfg('snare_body', 'snare', -9, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.02, 'octaves': 2, 'envelope': {'attack': 0.001, 'decay': 0.12, 'sustain': 0, 'release': 0.05}},
+         [], _on([4, 12, 20, 28], 'G3')),
+    _cfg('snare_body', 'snare', -10, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.018, 'octaves': 2.5, 'envelope': {'attack': 0.001, 'decay': 0.1, 'sustain': 0, 'release': 0.05}},
+         [], _on([4, 12, 20, 28], 'A3')),
+    _cfg('snare_body', 'snare', -9, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.025, 'octaves': 2, 'envelope': {'attack': 0.001, 'decay': 0.14, 'sustain': 0, 'release': 0.06}},
+         [], _on([4, 12, 20, 28], 'E3')),
+]
+
+# ---------------------------------------------------------------------------
+# HI-HATS — driving 8ths and 16ths (or a ride / shaker) that keep the 170+ BPM
+# momentum between the sparse kicks. Velocity comes from _vel_groove.
+# ---------------------------------------------------------------------------
+_CLOSED_HAT = {'frequency': 420, 'envelope': {'attack': 0.001, 'decay': 0.035, 'release': 0.02},
+               'harmonicity': 5.1, 'modulationIndex': 32, 'resonance': 7000, 'octaves': 1.5}
+
 _HIHATS = [
-    # Full 16ths — dense driving grid
-    _cfg('hihat', 'hihat', -14, '16n', 'MetalSynth',
-         {'frequency': 600, 'envelope': {'attack': 0.001, 'decay': 0.012, 'release': 0.008},
-          'harmonicity': 7.0, 'modulationIndex': 45, 'resonance': 6000, 'octaves': 1.8},
-         [],
-         ['C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4',
-          'C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4']),
-    # Off-beats only — Amen-break hi-hat spacing
-    _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
-         {'frequency': 550, 'envelope': {'attack': 0.001, 'decay': 0.015, 'release': 0.01},
-          'harmonicity': 6.5, 'modulationIndex': 42, 'resonance': 5500, 'octaves': 1.7},
-         [],
-         [_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',
-          _N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4']),
-    # Full 16ths, brighter tone
-    _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth',
-         {'frequency': 650, 'envelope': {'attack': 0.001, 'decay': 0.01, 'release': 0.007},
-          'harmonicity': 7.5, 'modulationIndex': 48, 'resonance': 6500, 'octaves': 1.9},
-         [],
-         ['C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4',
-          'C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4','C4']),
-    # Syncopated groups: 2+1 feel with breathing gaps
+    # Straight 8ths — the plainest driving top
+    _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth', _CLOSED_HAT, [],
+         _on(list(range(0, 32, 2)), 'C4')),
+    # Full 16ths — the rushing top of a roller
     _cfg('hihat', 'hihat', -17, '16n', 'MetalSynth',
-         {'frequency': 580, 'envelope': {'attack': 0.001, 'decay': 0.014, 'release': 0.009},
-          'harmonicity': 6.8, 'modulationIndex': 44, 'resonance': 5800, 'octaves': 1.8},
-         [],
-         ['C4','C4',_N,'C4','C4',_N,'C4','C4','C4',_N,'C4','C4',_N,'C4','C4',_N,
-          'C4','C4',_N,'C4','C4',_N,'C4','C4','C4',_N,'C4','C4',_N,'C4','C4',_N]),
-    # 8th notes with 16th fills into beat 4 — creates DnB push
-    _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth',
-         {'frequency': 620, 'envelope': {'attack': 0.001, 'decay': 0.013, 'release': 0.008},
-          'harmonicity': 7.2, 'modulationIndex': 46, 'resonance': 6200, 'octaves': 1.85},
-         [],
-         ['C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4','C4','C4',_N,
-          'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4',_N,'C4','C4','C4',_N]),
-    # Sparse breathing: dotted-8th feel with gaps letting kick/snare dominate
+         {'frequency': 460, 'envelope': {'attack': 0.001, 'decay': 0.028, 'release': 0.015},
+          'harmonicity': 5.4, 'modulationIndex': 36, 'resonance': 7800, 'octaves': 1.6},
+         [], _on(list(range(32)), 'C4')),
+    # Offbeat 8ths, half-open — the classic DnB "tss" between the kick and snare
     _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
-         {'frequency': 570, 'envelope': {'attack': 0.001, 'decay': 0.016, 'release': 0.01},
-          'harmonicity': 6.3, 'modulationIndex': 41, 'resonance': 5600, 'octaves': 1.75},
-         [],
-         ['C4',_N,'C4',_N,_N,_N,'C4',_N,'C4',_N,_N,_N,'C4',_N,'C4',_N,
-          'C4',_N,'C4',_N,_N,_N,'C4',_N,'C4',_N,_N,_N,'C4',_N,'C4',_N]),
-    # Triplet-feel: groups of 3 give shuffle energy in a 16th grid
+         {'frequency': 380, 'envelope': {'attack': 0.001, 'decay': 0.11, 'release': 0.06},
+          'harmonicity': 5.1, 'modulationIndex': 30, 'resonance': 6000, 'octaves': 1.4},
+         [], _on(list(range(2, 32, 4)), 'C4')),
+    # 8ths with 16th pickups into each snare
+    _cfg('hihat', 'hihat', -15, '16n', 'MetalSynth', _CLOSED_HAT, [],
+         _on([0, 2, 3, 6, 8, 10, 11, 14, 16, 18, 19, 22, 24, 26, 27, 30], 'C4')),
+    # Ride on 8ths — the jazzier, liquid top
+    _cfg('ride', 'hihat', -19, '16n', 'MetalSynth',
+         {'frequency': 300, 'envelope': {'attack': 0.001, 'decay': 0.5, 'release': 0.3},
+          'harmonicity': 5.1, 'modulationIndex': 28, 'resonance': 4200, 'octaves': 1.5},
+         [], _on(list(range(0, 32, 2)), 'C4')),
+    # Shaker 16ths — soft, airy drive
+    _cfg('shaker', 'hihat', -19, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.002, 'decay': 0.04, 'sustain': 0, 'release': 0.02}},
+         [_filt('highpass', 6500, 0.7)], _on(list(range(32)), 'C4')),
+    # Rolling 16ths with breathing gaps on the backbeat
     _cfg('hihat', 'hihat', -16, '16n', 'MetalSynth',
-         {'frequency': 590, 'envelope': {'attack': 0.001, 'decay': 0.011, 'release': 0.007},
-          'harmonicity': 7.1, 'modulationIndex': 47, 'resonance': 6100, 'octaves': 1.82},
-         [],
-         ['C4','C4','C4',_N,'C4','C4','C4',_N,'C4','C4','C4',_N,'C4','C4','C4',_N,
-          'C4','C4','C4',_N,'C4','C4','C4',_N,'C4','C4','C4',_N,'C4','C4','C4',_N]),
+         {'frequency': 440, 'envelope': {'attack': 0.001, 'decay': 0.03, 'release': 0.018},
+          'harmonicity': 5.6, 'modulationIndex': 34, 'resonance': 7400, 'octaves': 1.5},
+         [], _on([0, 1, 2, 3, 6, 7, 8, 10, 11, 14, 15, 16, 17, 18, 19, 22, 23, 24, 26, 27, 30, 31], 'C4')),
 ]
 
 # ---------------------------------------------------------------------------
-# BASSES — Reese/AM/FM basses with call-and-response phrasing.
-# Vary between busier rolling patterns and half-time breathing patterns.
-# Velocities applied in _generate_layers.
+# TOPS — an optional second top loop (ride, shaker, tambourine) layered over
+# the hats; stacking tops is how DnB fills the space above the breaks.
 # ---------------------------------------------------------------------------
+_TOPS = [
+    _cfg('ride_top', 'perc', -23, '16n', 'MetalSynth',
+         {'frequency': 300, 'envelope': {'attack': 0.001, 'decay': 0.45, 'release': 0.3},
+          'harmonicity': 5.1, 'modulationIndex': 28, 'resonance': 4200, 'octaves': 1.5},
+         [], _on(list(range(0, 32, 2)), 'C4')),
+    _cfg('shaker_top', 'perc', -24, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.002, 'decay': 0.035, 'sustain': 0, 'release': 0.02}},
+         [_filt('highpass', 7000, 0.7)], _on(list(range(32)), 'C4')),
+    _cfg('tambourine', 'perc', -22, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.08, 'sustain': 0, 'release': 0.04}},
+         [_filt('bandpass', 8500, 1.2)], _on(list(range(2, 32, 4)), 'C4')),
+]
+
+# ---------------------------------------------------------------------------
+# BASSES — held reese and neuro lines, 8n to 2n. The reese is three detuned
+# saws beating against each other (fatsawtooth), lowpassed and chorused, with a
+# slow filter sweep across the loop so it breathes; the neuro entries are FM
+# growls whose filter is swept harder. Notes mostly follow the two-step kick so
+# bass and kick move together. Every line puts its root first and most often,
+# which is the note key coherence locks to the track root.
+# ---------------------------------------------------------------------------
+
+
+def _reese(spread: int, cutoff: float) -> dict[str, Any]:
+    return {'oscillator': {'type': 'fatsawtooth', 'count': 3, 'spread': spread},
+            'envelope': {'attack': 0.01, 'decay': 0.3, 'sustain': 0.85, 'release': 0.25},
+            'filter': {'Q': 1.5, 'type': 'lowpass', 'rolloff': -24},
+            'filterEnvelope': {'attack': 0.02, 'decay': 0.5, 'sustain': 0.6, 'release': 0.3,
+                               'baseFrequency': cutoff, 'octaves': 2.5}}
+
+
+_NEURO = {'harmonicity': 1.0, 'modulationIndex': 14,
+          'oscillator': {'type': 'sawtooth'}, 'modulation': {'type': 'square'},
+          'envelope': {'attack': 0.005, 'decay': 0.2, 'sustain': 0.8, 'release': 0.15},
+          'modulationEnvelope': {'attack': 0.02, 'decay': 0.25, 'sustain': 0.45, 'release': 0.2}}
+
 _BASSES = [
-    # A minor — rolling 16ths with stepwise approach and octave jump
-    _cfg('reese_bass', 'bass', -5, '8n', 'AMSynth',
-         {'harmonicity': 0.5, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.7, 'release': 0.3},
-          'modulationEnvelope': {'attack': 0.1, 'decay': 0.2, 'sustain': 0.8, 'release': 0.2}},
-         [_dist(0.3, 0.4), _filt('lowpass', 900, 3)],
-         ['A1',_N,'A1',_N,'G1','A1',_N,_N,'E1','A1',_N,'G1','A1',_N,_N,_N,
-          'A1',_N,'C2','A1','G1',_N,'A1',_N,'E1',_N,'D1','E1','G1','A1',_N,_N]),
-    # D minor — quarter-note walking with call-and-response across bars
-    _cfg('reese_bass', 'bass', -2, '8n', 'MonoSynth',
-         {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.6, 'release': 0.3},
-          'filterEnvelope': {'attack': 0.01, 'decay': 0.3, 'sustain': 0.4, 'release': 0.3, 'baseFrequency': 200, 'octaves': 2}},
-         [],
-         ['D1',_N,_N,_N,'F1',_N,_N,_N,'D1',_N,_N,_N,'A1',_N,_N,_N,
-          'D1',_N,_N,_N,'G1',_N,_N,_N,'F1',_N,_N,_N,'E1',_N,_N,_N]),
-    # F minor — ascending motif with chromatic neighbour tones
-    _cfg('reese_bass', 'bass', -5, '8n', 'MonoSynth',
-         {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.01, 'decay': 0.18, 'sustain': 0.55, 'release': 0.28},
-          'filterEnvelope': {'attack': 0.01, 'decay': 0.28, 'sustain': 0.35, 'release': 0.28, 'baseFrequency': 180, 'octaves': 2.2}},
-         [_chorus(2, 2, 0.4, 0.2)],
-         ['F1',_N,'F1','G1','A1',_N,'G1',_N,'F1',_N,'E1',_N,'D1','E1','F1',_N,
-          'F1',_N,'G1',_N,'A1',_N,'C2','A1','G1',_N,'F1',_N,'E1','D1','E1',_N]),
-    # G major — dense 16th rolling with varied note density between bars
-    _cfg('reese_bass', 'bass', -4, '8n', 'FMSynth',
-         {'harmonicity': 0.5, 'modulationIndex': 8, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.65, 'release': 0.3},
-          'modulationEnvelope': {'attack': 0.01, 'decay': 0.1, 'sustain': 0.4, 'release': 0.3}},
-         [_dist(0.38, 0.45), _filt('lowpass', 1000, 3.5)],
-         ['G1',_N,'G1','A1','G1','F1','G1',_N,'E1','G1',_N,'F1','E1',_N,'D1','E1',
-          'G1',_N,'G1','A1','C2','A1','G1','F1','E1','D1','C1',_N,'D1','E1','G1',_N]),
-    # D minor — punchy one-note motif with rhythmic displacement
-    _cfg('reese_bass', 'bass', -4, '8n', 'FMSynth',
-         {'harmonicity': 0.5, 'modulationIndex': 8, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.65, 'release': 0.3},
-          'modulationEnvelope': {'attack': 0.01, 'decay': 0.1, 'sustain': 0.4, 'release': 0.3}},
-         [_chorus(1.5, 3.5, 0.7, 0.5), _dist(0.3, 0.3)],
-         ['D1',_N,'D1','D1',_N,'D1',_N,'D1','C1',_N,'D1',_N,'C1','D1',_N,_N,
-          'D1',_N,'D1','F1','D1',_N,_N,'D1','C1','D1',_N,'C1','Bb0',_N,'C1','D1']),
-    # G minor — similar motif transposed, creates alternation when picked
-    _cfg('reese_bass', 'bass', -5, '8n', 'FMSynth',
-         {'harmonicity': 0.5, 'modulationIndex': 8, 'envelope': {'attack': 0.01, 'decay': 0.2, 'sustain': 0.65, 'release': 0.3},
-          'modulationEnvelope': {'attack': 0.01, 'decay': 0.1, 'sustain': 0.4, 'release': 0.3}},
-         [_chorus(1.2, 3.5, 0.65, 0.48), _dist(0.28, 0.28)],
-         ['G1',_N,'G1','G1',_N,'G1',_N,'G1','F1',_N,'G1',_N,'F1','G1',_N,_N,
-          'G1',_N,'G1','Bb1','G1',_N,_N,'G1','F1','G1',_N,'F1','Eb1',_N,'F1','G1']),
-    # A minor — AM bass with wider note range, high-to-low arc across 2 bars
-    _cfg('reese_bass', 'bass', -3, '8n', 'AMSynth',
-         {'harmonicity': 0.75, 'envelope': {'attack': 0.01, 'decay': 0.22, 'sustain': 0.72, 'release': 0.32},
-          'modulationEnvelope': {'attack': 0.12, 'decay': 0.18, 'sustain': 0.82, 'release': 0.22}},
-         [_dist(0.35, 0.42), _filt('lowpass', 1100, 2.5)],
-         ['A1',_N,_N,'C2',_N,'A1',_N,'G1','A1',_N,'E1',_N,'G1','A1',_N,_N,
-          'A1',_N,_N,'C2','E2',_N,'D2','C2','A1',_N,'G1',_N,'A1','C2',_N,_N]),
-    # A minor — half-time: bar 1 open, bar 2 answering phrase
-    _cfg('reese_bass', 'bass', -4, '8n', 'AMSynth',
-         {'harmonicity': 0.6, 'envelope': {'attack': 0.01, 'decay': 0.25, 'sustain': 0.65, 'release': 0.35},
-          'modulationEnvelope': {'attack': 0.08, 'decay': 0.22, 'sustain': 0.75, 'release': 0.25}},
-         [_dist(0.32, 0.38), _filt('lowpass', 950, 3)],
-         ['A1',_N,_N,_N,'E1',_N,'A1',_N,'G1',_N,_N,_N,'E1',_N,_N,_N,
-          'A1',_N,'A2',_N,'G1',_N,'E1',_N,'D1',_N,'E1','G1','A1',_N,_N,_N]),
-    # E minor — sparse with stepwise motion and deliberate rhythmic gaps
-    _cfg('reese_bass', 'bass', -3, '8n', 'FMSynth',
-         {'harmonicity': 0.45, 'modulationIndex': 10, 'envelope': {'attack': 0.01, 'decay': 0.22, 'sustain': 0.6, 'release': 0.32},
-          'modulationEnvelope': {'attack': 0.01, 'decay': 0.12, 'sustain': 0.35, 'release': 0.28}},
-         [_dist(0.4, 0.44), _filt('lowpass', 1050, 3.2)],
-         ['E1',_N,_N,_N,'B0',_N,'E1',_N,'D1',_N,_N,_N,'B0',_N,'C1','D1',
-          'E1',_N,_N,'G1','E1',_N,'D1',_N,'C1',_N,'B0',_N,'G0',_N,'B0',_N]),
-    # G minor — rolling 16ths with varied density: busy bar 1, melodic bar 2
-    _cfg('reese_bass', 'bass', -4, '8n', 'MonoSynth',
-         {'oscillator': {'type': 'sawtooth'}, 'envelope': {'attack': 0.008, 'decay': 0.16, 'sustain': 0.5, 'release': 0.25},
-          'filterEnvelope': {'attack': 0.01, 'decay': 0.25, 'sustain': 0.3, 'release': 0.25, 'baseFrequency': 190, 'octaves': 2.3}},
-         [_chorus(1.8, 2.5, 0.45, 0.22)],
-         ['G1','G1','A1','G1','F1','G1','A1',_N,'G1','G1','F1','G1','E1',_N,'F1','G1',
-          'G1',_N,'A1','G1','F1','G1',_N,'E1','D1','E1','F1',_N,'G1','A1',_N,_N]),
+    # A minor reese — root held across the two-step, falling to the b6 and b7 in bar 2
+    _cfg('reese_bass', 'bass', -6, '2n', 'MonoSynth', _reese(30, 140),
+         [_filt('lowpass', 700, 2), _chorus(0.5, 3.5, 0.6, 0.35), _dist(0.15, 0.2)],
+         _at({0: 'A1', 10: 'A1', 16: 'A1', 26: 'F1', 29: 'G1'}),
+         automation=[_auto('effect:0:frequency', 320, 1500, 'tri')]),
+    # D minor techstep reese — wide detune, dark, sinking to the b6 and 5th
+    _cfg('reese_bass', 'bass', -6, '2n', 'MonoSynth', _reese(42, 110),
+         [_filt('lowpass', 600, 2.5), _chorus(0.35, 4, 0.7, 0.4), _dist(0.2, 0.25)],
+         _at({0: 'D2', 10: 'D2', 16: 'Bb1', 24: 'A1', 28: 'C2'}),
+         automation=[_auto('effect:0:frequency', 260, 1300, 'tri')]),
+    # E minor neuro growl — dotted-8th stabs, the filter swept hard for the "talking" movement
+    _cfg('neuro_bass', 'bass', -7, '8n', 'FMSynth', _NEURO,
+         [_dist(0.45, 0.4), _filt('lowpass', 1200, 4)],
+         _at({0: 'E2', 3: 'E2', 6: 'E2', 10: 'E2', 13: 'G2', 16: 'E2', 19: 'E2', 22: 'F2', 26: 'E2', 29: 'D2'}),
+         automation=[_auto('effect:1:frequency', 400, 2600, 'tri')]),
+    # G minor reese — octave lift on beat 3 of bar 1, then the minor third and 7th
+    _cfg('reese_bass', 'bass', -6, '4n', 'MonoSynth', _reese(26, 150),
+         [_filt('lowpass', 800, 2), _chorus(0.6, 3, 0.5, 0.3), _dist(0.12, 0.18)],
+         _at({0: 'G1', 8: 'G2', 10: 'G1', 16: 'G1', 24: 'Bb1', 28: 'F1'}),
+         automation=[_auto('effect:0:frequency', 350, 1700, 'ramp')]),
+    # C minor neuro — busy syncopated growl with a ramped filter opening across the loop
+    _cfg('neuro_bass', 'bass', -7, '8n', 'FMSynth',
+         {'harmonicity': 0.5, 'modulationIndex': 20,
+          'oscillator': {'type': 'square'}, 'modulation': {'type': 'sawtooth'},
+          'envelope': {'attack': 0.005, 'decay': 0.18, 'sustain': 0.75, 'release': 0.12},
+          'modulationEnvelope': {'attack': 0.01, 'decay': 0.15, 'sustain': 0.5, 'release': 0.15}},
+         [_dist(0.5, 0.4), _filt('lowpass', 1000, 5)],
+         _at({0: 'C2', 2: 'C2', 6: 'Eb2', 10: 'C2', 16: 'C2', 22: 'C2', 26: 'Bb1', 30: 'G1'}),
+         automation=[_auto('effect:1:frequency', 300, 2400, 'ramp')]),
+    # F minor rolling square-reese — rounder, for the liquid end of the genre
+    _cfg('reese_bass', 'bass', -6, '4n', 'MonoSynth',
+         {'oscillator': {'type': 'fatsquare', 'count': 2, 'spread': 18},
+          'envelope': {'attack': 0.01, 'decay': 0.25, 'sustain': 0.8, 'release': 0.2},
+          'filter': {'Q': 1.2, 'type': 'lowpass', 'rolloff': -24},
+          'filterEnvelope': {'attack': 0.015, 'decay': 0.35, 'sustain': 0.5, 'release': 0.25,
+                             'baseFrequency': 120, 'octaves': 2.2}},
+         [_filt('lowpass', 650, 1.5), _chorus(0.8, 2.5, 0.5, 0.3)],
+         _at({0: 'F1', 6: 'Ab1', 10: 'F1', 16: 'F1', 22: 'Eb2', 26: 'C2'}),
+         automation=[_auto('effect:0:frequency', 380, 1200, 'tri')]),
+    # B minor reese — two long notes per bar, the slow half-time movement of a breakdown roller
+    _cfg('reese_bass', 'bass', -6, '2n', 'MonoSynth', _reese(36, 120),
+         [_filt('lowpass', 650, 2.2), _chorus(0.3, 4, 0.7, 0.4), _dist(0.18, 0.22)],
+         _at({0: 'B1', 10: 'B1', 16: 'G1', 26: 'A1'}),
+         automation=[_auto('effect:0:frequency', 280, 1400, 'tri')]),
 ]
 
 # ---------------------------------------------------------------------------
-# ATMOSPHERES — pads, sub drones, airy textures for breakdown moments.
-# Used probabilistically in _generate_layers.
+# ATMOSPHERES — long minor-7th/9th pads and drones behind the drums: the
+# rolling-but-spacious feel of DnB. Chords put the tonic chord first so key
+# coherence locks them to the bass root.
 # ---------------------------------------------------------------------------
 _ATMOSPHERES = [
-    # D minor pad — slow harmonic movement every half-bar
-    _cfg('atmosphere', 'pad', -20, '16n', 'AMSynth',
+    # Am9 -> Fmaj7, wide detuned saws behind a slowly opening lowpass
+    _cfg('atmosphere', 'pad', -24, '1n', 'PolySynth',
+         {'oscillator': {'type': 'fatsawtooth', 'count': 3, 'spread': 24},
+          'envelope': {'attack': 1.2, 'decay': 0.5, 'sustain': 0.8, 'release': 2.5}},
+         [_filt('lowpass', 1400, 0.7), _chorus(0.3, 4, 0.7, 0.5), _reverb(6.0, 0.75)],
+         _at({0: 'A3,C4,E4,G4,B4', 16: 'F3,A3,C4,E4'}),
+         automation=[_auto('effect:0:frequency', 800, 2200, 'tri')]),
+    # Dm9 -> Bbmaj7, soft triangles for the liquid side
+    _cfg('atmosphere', 'pad', -22, '1n', 'PolySynth',
+         {'oscillator': {'type': 'triangle'},
+          'envelope': {'attack': 0.9, 'decay': 0.6, 'sustain': 0.75, 'release': 2.8}},
+         [_chorus(0.4, 3.5, 0.6, 0.45), _reverb(5.5, 0.72)],
+         _at({0: 'D3,F3,A3,C4,E4', 16: 'Bb2,D3,F3,A3'})),
+    # D minor AM drone — slow harmonic movement every half-bar
+    _cfg('atmosphere', 'pad', -21, '2n', 'AMSynth',
          {'harmonicity': 0.25, 'envelope': {'attack': 0.5, 'decay': 0.4, 'sustain': 0.7, 'release': 2.0},
           'modulationEnvelope': {'attack': 0.6, 'decay': 0.3, 'sustain': 0.6, 'release': 2.0}},
          [_reverb(4.0, 0.75)],
-         ['D2',_N,_N,_N,_N,_N,_N,_N,'A2',_N,_N,_N,_N,_N,_N,_N,
-          'D2',_N,_N,_N,_N,_N,_N,_N,'G2',_N,_N,_N,_N,_N,_N,_N]),
-    # A minor sine — very long decay, sub presence
-    _cfg('atmosphere', 'pad', -22, '16n', 'Synth',
-         {'oscillator': {'type': 'sine'}, 'envelope': {'attack': 0.6, 'decay': 0.5, 'sustain': 0.8, 'release': 2.5}},
-         [_reverb(5.0, 0.8)],
-         ['A1',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
-          'E2',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
-    # G minor FM pad — slow FM modulation creates shimmer
-    _cfg('atmosphere', 'pad', -21, '16n', 'FMSynth',
-         {'harmonicity': 0.1, 'modulationIndex': 5, 'envelope': {'attack': 0.4, 'decay': 0.4, 'sustain': 0.75, 'release': 2.2},
-          'modulationEnvelope': {'attack': 0.5, 'decay': 0.3, 'sustain': 0.65, 'release': 2.0}},
-         [_reverb(4.5, 0.78), _dist(0.2, 0.15)],
-         ['G1',_N,_N,_N,_N,_N,_N,_N,'D2',_N,_N,_N,_N,_N,_N,_N,
-          'G1',_N,_N,_N,_N,_N,_N,_N,'C2',_N,_N,_N,_N,_N,_N,_N]),
-    # Sub drone — ultra-low FMSynth fills sub frequencies in breakdowns
-    _cfg('sub_drone', 'pad', -22, '4n', 'FMSynth',
-         {'harmonicity': 0.1, 'modulationIndex': 50,
-          'envelope': {'attack': 0.8, 'decay': 0.5, 'sustain': 0.7, 'release': 2.5},
-          'modulationEnvelope': {'attack': 1.0, 'decay': 0.5, 'sustain': 0.5, 'release': 2.0}},
-         [_reverb(4.5, 0.7), _filt('lowpass', 300, 1)],
-         ['A1',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,
-          'E1',_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N,_N]),
-    # Airy triangle pad — high register shimmer, very wet reverb
-    _cfg('airy_pad', 'pad', -26, '16n', 'Synth',
+         _at({0: 'D2', 8: 'A2', 16: 'D2', 24: 'G2'})),
+    # Airy high triangle — shimmer above everything, very wet
+    _cfg('airy_pad', 'pad', -26, '2n', 'Synth',
          {'oscillator': {'type': 'triangle'}, 'envelope': {'attack': 0.8, 'decay': 0.5, 'sustain': 0.7, 'release': 3.0}},
          [_reverb(6.0, 0.9), _chorus(0.5, 4.0, 0.6, 0.5)],
-         ['A3',_N,_N,_N,_N,_N,_N,_N,'E3',_N,_N,_N,_N,_N,_N,_N,
-          'G3',_N,_N,_N,_N,_N,_N,_N,'D3',_N,_N,_N,_N,_N,_N,_N]),
+         _at({0: 'A4', 8: 'E4', 16: 'A4', 24: 'G4'})),
 ]
 
-
 # ---------------------------------------------------------------------------
-# FILLS — snare rolls, reverse swells, and breakbeat flourishes every 8-16 bars.
-# DnB phrases are usually 8 or 16 bars; these gate to the last bar of the phrase.
+# FILLS — snare rolls, reverse swells and tom runs on the last loop of an 8- or
+# 16-bar phrase (DnB is arranged in 8/16-bar blocks).
 # ---------------------------------------------------------------------------
 _FILLS = [
-    # 16-step snare roll into the next drop — every 8 bars
-    _cfg('fill_roll', 'snare', -6, '16n', 'NoiseSynth',
-         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.05, 'sustain': 0, 'release': 0.04}},
-         [_reverb(0.4, 0.3)],
-         [_N]*24 + ['C2', 'C2', 'C2', 'C2', 'C2', 'C2', 'C2', 'C2'],
+    # 16th snare roll through the last two beats — every 8 bars
+    _cfg('fill_roll', 'snare', -8, '16n', 'NoiseSynth',
+         {'noise': {'type': 'white'}, 'envelope': {'attack': 0.001, 'decay': 0.06, 'sustain': 0, 'release': 0.04}},
+         [_filt('highpass', 1200, 0.8), _reverb(0.5, 0.25)],
+         _on(list(range(24, 32))),
          loop_modulo=4, loop_modulo_remainder=3),
     # Reverse cymbal sweep — every 16 bars
-    _cfg('fill_sweep', 'perc', -14, '1n', 'NoiseSynth',
+    _cfg('fill_sweep', 'perc', -16, '1n', 'NoiseSynth',
          {'noise': {'type': 'pink'}, 'envelope': {'attack': 2.0, 'decay': 0.05, 'sustain': 0.95, 'release': 0.1}},
          [_reverb(1.5, 0.55), _filt('highpass', 1500, 1.2)],
-         ['C3'] + [_N]*31,
+         _on([0], 'C3'),
          loop_modulo=8, loop_modulo_remainder=7),
-    # Tom run — every 16 bars
-    _cfg('fill_tom', 'perc', -8, '16n', 'MembraneSynth',
-         {'pitchDecay': 0.08, 'octaves': 6, 'envelope': {'attack': 0.001, 'decay': 0.2, 'sustain': 0.01, 'release': 0.3}},
-         [_reverb(0.7, 0.35)],
-         [_N]*22 + ['G2', _N, 'F2', _N, 'E2', _N, 'D2', _N, 'C2', _N],
+    # Descending tom run — every 16 bars
+    _cfg('fill_tom', 'perc', -9, '16n', 'MembraneSynth',
+         {'pitchDecay': 0.08, 'octaves': 3, 'envelope': {'attack': 0.001, 'decay': 0.2, 'sustain': 0.01, 'release': 0.3}},
+         [_reverb(0.7, 0.3)],
+         _at({22: 'G2', 24: 'F2', 26: 'E2', 28: 'D2', 30: 'C2'}),
          loop_modulo=8, loop_modulo_remainder=7),
 ]
 
@@ -343,41 +326,48 @@ _FILLS = [
 class DrumAndBassTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.DRUM_AND_BASS
     BPM_RANGE = (170, 176)
-    SWING = 0.03  # Slight shuffle to humanize the breakbeat grid
+    LEVEL_DB = -4.7
+    SWING = 0.03  # A hair of shuffle humanizes the grid; DnB is played nearly straight
+    KEY_ROLES = ('snare', 'bass')
+    SIDECHAIN_DEPTH = 0.5
+    SIDECHAIN_RELEASE = 0.4
 
     @classmethod
     def _generate_layers(cls) -> list[dict[str, Any]]:
         kick = copy.deepcopy(cls._pick(_KICKS))
         snare = copy.deepcopy(cls._pick(_SNARES))
+        body = copy.deepcopy(cls._pick(_SNARE_BODIES))
+        hihat = copy.deepcopy(cls._pick(_HIHATS))
         bass = copy.deepcopy(cls._pick(_BASSES))
 
-        kick['pattern']['velocities'] = _vel_kick(kick['pattern']['steps'])
+        kick['pattern']['velocities'] = _vel_two_step(kick['pattern']['steps'])
         snare['pattern']['velocities'] = _vel_snare(snare['pattern']['steps'])
-        bass['pattern']['velocities'] = _vel(bass['pattern']['steps'], accent_prob=0.22, ghost_prob=0.08)
-
-        layers = [kick, snare, bass]
-
-        # Hi-hat — always present; occasionally layer a second sparse hat for texture
-        hihat_idx = random.randrange(len(_HIHATS))
-        hihat = copy.deepcopy(_HIHATS[hihat_idx])
+        body['pattern']['velocities'] = _vel_snare(body['pattern']['steps'])
         hihat['pattern']['velocities'] = _vel_groove(hihat['pattern']['steps'])
-        layers.append(hihat)
+        # Held reese notes want an even level; accents would read as random swells.
+        bass['pattern']['velocities'] = [_N if s is None else round(random.uniform(0.78, 0.92), 2)
+                                         for s in bass['pattern']['steps']]
 
-        if random.random() < 0.38:
-            other_hats = [h for i, h in enumerate(_HIHATS) if i != hihat_idx]
-            hihat2 = copy.deepcopy(random.choice(other_hats))
-            hihat2['pattern']['velocities'] = _vel_groove(hihat2['pattern']['steps'])
-            hihat2['volume'] = hihat2['volume'] - 4
-            layers.append(hihat2)
+        layers = [kick, snare, body, hihat, bass]
 
-        # Atmosphere — present in more than half of tracks
-        atm = cls._maybe(_ATMOSPHERES, 0.55)
+        top = cls._maybe(_TOPS, 0.4)
+        if top:
+            top = copy.deepcopy(top)
+            top['pattern']['velocities'] = _vel_groove(top['pattern']['steps'])
+            layers.append(top)
+
+        atm = cls._maybe(_ATMOSPHERES, 0.5)
         if atm:
-            layers.append(copy.deepcopy(atm))
+            atm = copy.deepcopy(atm)
+            atm['entry_loop'] = random.choice([0, 2])
+            layers.append(atm)
 
-        # Phrase fill — snare roll / reverse sweep / tom run every 8-16 bars
-        if random.random() < 0.6:
+        if random.random() < 0.5:
             layers.append(copy.deepcopy(cls._pick(_FILLS)))
 
         cls._apply_key_coherence(layers)
+        # The sub is built from the bass after key coherence has moved it, so it is already in key and
+        # folds straight into its register; transposing it as well could push it below 30 Hz.
+        if random.random() < 0.5:
+            layers.append(_sub_under(bass))
         return layers

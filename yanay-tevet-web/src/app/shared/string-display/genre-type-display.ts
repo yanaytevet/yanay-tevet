@@ -2,13 +2,13 @@ import {EnumDisplay} from '../../common/string-display/enum-display';
 
 export class GenreTypeDisplay extends EnumDisplay {
   override data: Record<string, string> = {
-    psytrance: 'Psytrance',
+    psytrance: 'Full-On Psytrance',
+    progressive_psy: 'Progressive Psy',
     goa: 'Goa Trance',
-    psy_bass: 'Psy Bass',
-    dark_psy: 'Dark Psy',
-    forest_psy: 'Forest Psy',
+    psy_bass: 'Psybass',
+    dark_psy: 'Dark / Forest Psy',
     tek: 'Tek',
-    hightek: 'High-Tek',
+    hightek: 'Hi-Tech Psy',
     techno: 'Techno',
     hard_techno: 'Hard Techno',
     acid_techno: 'Acid Techno',
@@ -20,30 +20,46 @@ export class GenreTypeDisplay extends EnumDisplay {
     weird_finnish_trance: 'Weird Finnish Trance',
   };
 
+  // What to listen for. The BPM ranges match the generators (genre_trainer/generators/).
   descriptions: Record<string, string> = {
-    psytrance: '145–150 BPM · Four-on-floor kick · Acid 303-style basslines · Hypnotic, fast-moving leads',
-    goa: '136–145 BPM · Melodic layered arpeggios · Mystical lead sequences · Drenched in reverb and delay',
-    psy_bass: '138–143 BPM · Very heavy sub bass · Deep wobble or neuro basslines · Psychedelic grooves',
-    dark_psy: '148–152 BPM · Dissonant, alien basslines · Heavy FM distortion · Dark, oppressive atmosphere',
-    forest_psy: '148–155 BPM · Organic dark atmosphere · Chromatic chromatic basslines · Alien, heavily distorted leads',
-    tek: '155–165 BPM · Purely percussive — no melody or bassline · Extremely distorted kick · Minimal and raw',
-    hightek: '168–180 BPM · Faster and harsher than Tek · Industrial, chaotic percussion · Maximum aggression',
-    techno: '128–140 BPM · Dark, mechanical groove · Four-on-floor with industrial textures · Hypnotic repetition',
-    hard_techno: '145–152 BPM · Heavily distorted kick · Aggressive acid basslines · Faster and harder than techno',
-    acid_techno: '133–140 BPM · TB-303 squelching acid basslines · Tight filter envelope · Raw and hypnotic',
-    minimal_techno: '124–132 BPM · Sparse, hypnotic groove · Very few elements · Power through empty space',
-    melodic_techno: '130–138 BPM · Emotional, cinematic feel · Rich AMSynth pads · Driving kick with melodic leads',
-    house: '120–130 BPM · Soulful groove · Clap on beats 2 and 4 · Warm bass and chord stabs',
-    drum_and_bass: '170–174 BPM · Breakbeat kick — not on every beat · Heavy reese or sub bass · Very fast hi-hats',
-    jungle: '160–170 BPM · Syncopated amen-break patterns · Off-beat snares · Raw rave energy',
-    weird_finnish_trance: '138–143 BPM · Quirky rhythms and unusual chord choices · Unpredictable structure · Finnish psychedelia',
+    psytrance: '143–148 BPM · Rolling bass on the three 16ths after every kick · Squelchy, fast-moving leads · Driving and bright',
+    progressive_psy: '134–140 BPM · Galloping bass on the last two 16ths of each beat · Deep, minimal and groovy · Sparse delayed plucks',
+    goa: '138–145 BPM · Layered modal leads and arpeggios · Eastern-sounding scales · Warm rolling bass, lots of reverb and delay',
+    psy_bass: '100–110 BPM · Swung, broken glitch-hop beat · Bass that wobbles in time with the beat · Psychedelic zaps and textures',
+    dark_psy: '148–158 BPM · Distorted, squelchy rolling bass · Horror atmospheres or organic forest textures · Chromatic and alien',
+    tek: '162–172 BPM · Heavily distorted, relentless kick · Offbeat bass and acid squelches · Raw free-party sound',
+    hightek: '180–195 BPM · Very fast, tight rolling bass · Glitchy 32nd-note zaps and stutters · Relentless and bright',
+    techno: '130–138 BPM · Offbeat open hi-hat · Rumbling or offbeat bass · Dark, hypnotic repetition',
+    hard_techno: '145–155 BPM · Heavily distorted, pounding kick · Distorted rumble bass · Industrial and aggressive',
+    acid_techno: '132–140 BPM · Squelching TB-303 line that slides between notes · Resonant filter sweeps · Raw and hypnotic',
+    minimal_techno: '124–130 BPM · Sparse clicks, rims and blips · Very few elements · Power through empty space',
+    melodic_techno: '120–126 BPM · Rolling offbeat bass · Arpeggiated plucks over minor chords · Big pumping pads, cinematic',
+    house: '122–128 BPM · Swung groove with an offbeat open hi-hat · Clap on beats 2 and 4 · Offbeat bass and chord stabs',
+    drum_and_bass: '170–176 BPM · Two-step kick, snare on beats 2 and 4 · Reese or growling bass · Fast hi-hats',
+    jungle: '160–170 BPM · Busy, chopped amen-style breaks · Deep dub sub bass · Raw rave energy',
+    weird_finnish_trance: '142–150 BPM · Bouncy bass, playful leads · Odd intervals and cartoonish sounds · Unpredictable phrasing (suomisaundi)',
   };
 
   families: { name: string; genres: string[] }[] = [
-    { name: 'Psychedelic Trance', genres: ['psytrance', 'goa', 'dark_psy', 'forest_psy', 'weird_finnish_trance'] },
+    { name: 'Psychedelic Trance', genres: ['psytrance', 'progressive_psy', 'goa', 'dark_psy', 'hightek', 'weird_finnish_trance'] },
     { name: 'Bass Music', genres: ['psy_bass', 'drum_and_bass', 'jungle'] },
-    { name: 'Tek / Free Party', genres: ['tek', 'hightek'] },
+    { name: 'Tek / Free Party', genres: ['tek'] },
     { name: 'Techno', genres: ['techno', 'hard_techno', 'acid_techno', 'minimal_techno', 'melodic_techno'] },
     { name: 'House', genres: ['house'] },
   ];
+
+  // Layer roles in mix order (drums first), as the reveal's solo/mute chips show them.
+  roleOrder: string[] = ['kick', 'snare', 'hihat', 'perc', 'bass', 'sub', 'lead', 'stab', 'pad'];
+
+  roleLabels: Record<string, string> = {
+    kick: 'Kick',
+    snare: 'Snare / clap',
+    hihat: 'Hi-hats',
+    perc: 'Percussion',
+    bass: 'Bass',
+    sub: 'Sub',
+    lead: 'Lead',
+    stab: 'Stabs',
+    pad: 'Pads',
+  };
 }

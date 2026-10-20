@@ -17,6 +17,8 @@ class LayerPatternSchema(Schema):
     subdivision: str
     steps: list[str | None]
     velocities: list[float | None] | None = None
+    # 303-style slide per step: the note glides from the previous one instead of retriggering.
+    slides: list[bool] | None = None
 
 
 class EffectConfigSchema(Schema):
@@ -54,6 +56,9 @@ class TrackLayerSchema(Schema):
     loop_modulo_remainder: int = 0
     # Stereo position in [-1.0, 1.0]; 0 = center. None lets the player apply a role-based default.
     pan: float | None = None
+    # Sidechain duck for this layer ('deep' | 'medium' | 'shallow' | 'none'). None lets the player
+    # apply the role-based default.
+    sidechain: str | None = None
 
 
 class TrackSchema(Schema):
@@ -63,6 +68,14 @@ class TrackSchema(Schema):
     # Transport-level swing applied to 16th notes (0 = straight, ~0.15-0.25 = noticeable shuffle).
     # Per-genre default lives on each generator's SWING class attribute.
     swing: float = 0.0
+    # The player ducks everything but the kick on each main-kick hit. Depth scales the duck (0 = off);
+    # release is the recovery time in beats.
+    sidechain_depth: float = 1.0
+    sidechain_release: float = 0.5
+    # Per-genre output trim the player applies after its limiter, to level loudness across genres.
+    gain_db: float = 0.0
+    # The layer role that defines the genre, highlighted on reveal so the listener knows what to solo.
+    key_role: str | None = None
     layers: list[TrackLayerSchema]
 
 

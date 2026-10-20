@@ -1,5 +1,6 @@
-import {afterNextRender, Component, inject, viewChild} from '@angular/core';
+import {afterNextRender, Component, inject} from '@angular/core';
 import {GenreTrainerService} from './genre-trainer.service';
+import {GenreTrainerAudioService} from './genre-trainer-audio.service';
 import {GenreTrainerPlayerComponent} from './genre-trainer-player/genre-trainer-player.component';
 import {GenreTrainerGuessComponent} from './genre-trainer-guess/genre-trainer-guess.component';
 import {GenreTrainerRevealComponent} from './genre-trainer-reveal/genre-trainer-reveal.component';
@@ -14,13 +15,13 @@ import {PageHeaderComponent} from '../common/components/page/page-header/page-he
     GenreTrainerRevealComponent,
     PageHeaderComponent,
   ],
-  providers: [GenreTrainerService],
+  providers: [GenreTrainerService, GenreTrainerAudioService],
   templateUrl: './genre-trainer.component.html',
   styleUrl: './genre-trainer.component.css',
 })
 export class GenreTrainerComponent {
   protected readonly service = inject(GenreTrainerService);
-  private readonly player = viewChild.required(GenreTrainerPlayerComponent);
+  private readonly audio = inject(GenreTrainerAudioService);
 
   constructor() {
     afterNextRender(() => {
@@ -29,14 +30,13 @@ export class GenreTrainerComponent {
   }
 
   async onNextTrack(): Promise<void> {
-    await this.player().stop();
-    this.service.selectedGenre.set(null);
-    this.service.selectedFamily.set(null);
-    this.service.revealed.set(false);
-    this.service.track.set(null);
+    this.audio.stop();
+    this.audio.resetRoles();
+    this.service.clearTrack();
     await this.service.loadData();
-    if (this.service.autoStart()) {
-      await this.player().start();
+    const track = this.service.track();
+    if (this.service.autoStart() && track) {
+      await this.audio.play(track, this.service.autoStopLoops());
     }
   }
 

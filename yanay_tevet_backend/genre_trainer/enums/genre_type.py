@@ -3,6 +3,7 @@ from common.base_enum import BaseEnum
 
 class GenreType(BaseEnum):
     PSYTRANCE = 'psytrance'
+    PROGRESSIVE_PSY = 'progressive_psy'
     GOA = 'goa'
     PSY_BASS = 'psy_bass'
     DARK_PSY = 'dark_psy'
@@ -14,7 +15,6 @@ class GenreType(BaseEnum):
     DRUM_AND_BASS = 'drum_and_bass'
     WEIRD_FINNISH_TRANCE = 'weird_finnish_trance'
     ACID_TECHNO = 'acid_techno'
-    FOREST_PSY = 'forest_psy'
     MINIMAL_TECHNO = 'minimal_techno'
     MELODIC_TECHNO = 'melodic_techno'
     JUNGLE = 'jungle'

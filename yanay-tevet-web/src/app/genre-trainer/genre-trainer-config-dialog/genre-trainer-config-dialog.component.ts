@@ -1,7 +1,8 @@
-import {computed, signal, Component} from '@angular/core';
+import {computed, inject, signal, Component} from '@angular/core';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {ConfirmationButtonComponent} from '../../common/dialogs/confirmation-button/confirmation-button.component';
-import {GenreFamily} from '../genre-trainer.service';
+import {DialogService} from '../../common/dialogs/dialogs.service';
+import {ConfusionPair, GenreFamily} from '../genre-trainer.service';
 
 export interface GenreTrainerConfigDialogInput {
   genres: string[];
@@ -11,6 +12,8 @@ export interface GenreTrainerConfigDialogInput {
   autoStopLoops: number;
   genreLabelMap: Record<string, string>;
   allFamilies: GenreFamily[];
+  topConfusions: ConfusionPair[];
+  hasProgress: boolean;
 }
 
 export interface GenreTrainerConfigDialogOutput {
@@ -18,6 +21,7 @@ export interface GenreTrainerConfigDialogOutput {
   focusFamilies: Set<string>;
   easyMode: boolean;
   autoStopLoops: number;
+  resetProgress: boolean;
 }
 
 @Component({
@@ -34,6 +38,23 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
   readonly localFocus = signal<Set<string>>(new Set(this.data.focusGenres));
   readonly localFocusFamilies = signal<Set<string>>(new Set(this.data.focusFamilies));
   readonly localAutoStopLoops = signal(this.data.autoStopLoops);
+  // Applied with the rest of the settings, so Cancel still keeps the old progress.
+  readonly localResetProgress = signal(false);
+
+  private readonly dialogService = inject(DialogService);
+
+  readonly confusionRows = computed(() =>
+    this.localResetProgress()
+      ? []
+      : this.data.topConfusions.map(c => ({
+        key: `${c.actual}>${c.guessed}`,
+        actual: this.data.genreLabelMap[c.actual] ?? c.actual,
+        guessed: this.data.genreLabelMap[c.guessed] ?? c.guessed,
+        count: c.count,
+      }))
+  );
+
+  readonly canReset = computed(() => this.data.hasProgress && !this.localResetProgress());
 
   readonly localNoFocus = computed(() => this.localFocus().size === 0);
   readonly localNoFamilyFocus = computed(() => this.localFocusFamilies().size === 0);
@@ -88,12 +109,25 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
     this.localAutoStopLoops.update(v => Math.max(v - 1, 0));
   }
 
+  async resetProgress(): Promise<void> {
+    const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
+      title: 'Reset your progress?',
+      text: 'Your per-genre record and the list of genres you mix up are cleared when you apply.',
+      confirmActionName: 'Reset',
+      danger: true,
+    });
+    if (confirmed) {
+      this.localResetProgress.set(true);
+    }
+  }
+
   confirm(): void {
     this.emitClose({
       focusGenres: this.localFocus(),
       focusFamilies: this.localFocusFamilies(),
       easyMode: this.localEasyMode(),
       autoStopLoops: this.localAutoStopLoops(),
+      resetProgress: this.localResetProgress(),
     });
   }
 }

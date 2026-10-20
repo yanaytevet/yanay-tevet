@@ -93,6 +93,29 @@
     </div>
   </div>
 
+  <div class="pt-4 mt-5 border-t border-line">
+    <div class="flex items-center gap-3 mb-3">
+      <span class="eyebrow flex-1">Genres you mix up</span>
+      <button type="button" class="btn btn-secondary btn-sm" [disabled]="!canReset()" (click)="resetProgress()">
+        Reset progress
+      </button>
+    </div>
+    @if (localResetProgress()) {
+      <p class="text-meta text-writing-minor">Your record and mix-ups will be cleared when you apply.</p>
+    } @else {
+      @for (row of confusionRows(); track row.key) {
+        <div class="flex items-baseline gap-2 py-1 text-body">
+          <span class="font-semibold text-writing">{{ row.actual }}</span>
+          <span class="text-writing-minor">taken for</span>
+          <span class="font-semibold text-writing flex-1">{{ row.guessed }}</span>
+          <span class="text-writing-minor tabular-nums">{{ row.count }}×</span>
+        </div>
+      } @empty {
+        <p class="text-meta text-writing-minor">No mix-ups yet. Wrong guesses in Hard mode show up here.</p>
+      }
+    }
+  </div>
+
   <div class="dialog-buttons-container">
     <span class="flex-1"></span>
     <button type="button" class="btn btn-secondary" (click)="emitClose(null)">Cancel</button>

@@ -1,5 +1,6 @@
 import random
 import uuid
+from collections.abc import Iterable
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
@@ -12,10 +13,13 @@ def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_op
          entry_loop: int = 0, dropout_prob: float = 0.0,
          automation: list | None = None,
          loop_modulo: int = 0, loop_modulo_remainder: int = 0,
-         pan: float | None = None) -> dict[str, Any]:
-    pattern: dict = {'subdivision': '16n', 'steps': steps}
+         pan: float | None = None, slides: list[bool] | None = None,
+         subdivision: str = '16n', sidechain: str | None = None) -> dict[str, Any]:
+    pattern: dict = {'subdivision': subdivision, 'steps': steps}
     if velocities is not None:
         pattern['velocities'] = velocities
+    if slides is not None:
+        pattern['slides'] = slides
     result: dict[str, Any] = {
         'id': id_,
         'role': role,
@@ -36,6 +40,8 @@ def _cfg(id_: str, role: str, vol: float, note_dur: str, inst_type: str, inst_op
         result['loop_modulo_remainder'] = loop_modulo_remainder
     if pan is not None:
         result['pan'] = pan
+    if sidechain is not None:
+        result['sidechain'] = sidechain
     return result
 
 
@@ -76,17 +82,16 @@ def _vel_groove(steps: list) -> list[float | None]:
 
 
 def _vel_kick(steps: list) -> list[float | None]:
-    """Strong on-beat kicks, softer secondary hits."""
+    """Every beat equally strong, softer pickups between beats. Weaker kicks on 2 and 4 would read as
+    half-time against a four-on-the-floor pattern."""
     vels = []
     for i, step in enumerate(steps):
         if step is None:
             vels.append(None)
-            continue
-        pos = i % 32
-        if pos % 8 == 0:
-            vels.append(round(random.uniform(0.88, 1.0), 2))
+        elif i % 4 == 0:
+            vels.append(round(random.uniform(0.9, 1.0), 2))
         else:
-            vels.append(round(random.uniform(0.55, 0.75), 2))
+            vels.append(round(random.uniform(0.7, 0.85), 2))
     return vels
 
 
@@ -104,6 +109,102 @@ def _vel_snare(steps: list) -> list[float | None]:
             vels.append(round(random.uniform(0.16, 0.32), 2))
     return vels
 
+
+
+def _vel_flat(steps: list, low: float, high: float) -> list[float | None]:
+    """Machine-even velocities in [low, high] — psy basses and hats get no ghosts or accents."""
+    return [None if s is None else round(random.uniform(low, high), 2) for s in steps]
+
+
+def _vel_roll(steps: list, levels: dict[int, tuple[float, float]],
+              default: tuple[float, float]) -> list[float | None]:
+    """Velocities by position inside the beat (i % 4 -> (low, high)). A rolling bass sets the 16th
+    straight after the kick back, under the kick's tail, and lets the middle one lead."""
+    return [None if s is None else round(random.uniform(*levels.get(i % 4, default)), 2)
+            for i, s in enumerate(steps)]
+
+
+def _vel_rumble(steps: list) -> list[float | None]:
+    """The techno rumble swells out of each kick: the 16th straight after the kick sits lowest, the
+    offbeat peaks and the last 16th eases off into the next kick."""
+    ranges = {0: (0.7, 0.8), 1: (0.6, 0.72), 2: (0.84, 0.96), 3: (0.7, 0.82)}
+    vels = []
+    for i, step in enumerate(steps):
+        if step is None:
+            vels.append(None)
+        else:
+            low, high = ranges[i % 4]
+            vels.append(round(random.uniform(low, high), 2))
+    return vels
+
+
+# ---------------------------------------------------------------------------
+# PATTERN BUILDERS — patterns are written as hit positions or per-beat notes
+# rather than 32-slot lists, so the comment grid above each pool entry is the
+# thing to read and the core rhythm can't drift between entries.
+# ---------------------------------------------------------------------------
+def _on(positions: Iterable[int], note: str = 'C2', length: int = 32) -> list[str | None]:
+    """`note` on the given steps, rests everywhere else."""
+    hits = set(positions)
+    return [note if i in hits else _N for i in range(length)]
+
+
+def _at(notes: dict[int, str], length: int = 32) -> list[str | None]:
+    """A melodic step list from {step: note}. Held lines are mostly rests, so writing only where the
+    notes start shows the phrasing far better than a 32-slot list."""
+    return [notes.get(i) for i in range(length)]
+
+
+def _four(note: str) -> list[str | None]:
+    """Strict four-on-the-floor: one kick on every quarter, nothing in between."""
+    return [note, _N, _N, _N] * 8
+
+
+def _roll(*beats: str) -> list[str | None]:
+    """The rolling psy bassline (K-B-B-B), one beat at a time: each beat's first 16th belongs to the
+    kick and stays silent, the three notes given ('A1 A1 Bb1') fill the rest. '-' rests a 16th."""
+    steps: list[str | None] = []
+    for beat in beats:
+        steps.append(_N)
+        steps.extend(_N if note == '-' else note for note in beat.split())
+    return steps
+
+
+def _rolling(root: str, changes: dict[int, str | None] | None = None) -> list[str | None]:
+    """K-B-B-B on one root over both bars: the bass fills the three 16ths after every kick and is never
+    on the kick itself. `changes` swaps single steps for the passing notes, octave jumps and dropped
+    notes of a phrase-end fill."""
+    steps = _on((i for i in range(32) if i % 4 != 0), root)
+    for i, note in (changes or {}).items():
+        steps[i] = note
+    return steps
+
+
+def _phrase(length: int, *placed: tuple[int, str]) -> list[str | None]:
+    """A mostly silent pattern of `length` steps holding short fragments, each given as
+    (start step, 'notes ...'); '-' rests a step inside a fragment."""
+    steps: list[str | None] = [_N] * length
+    for start, notes in placed:
+        for offset, note in enumerate(notes.split()):
+            steps[start + offset] = _N if note == '-' else note
+    return steps
+
+
+def _clear_kick_steps(layer: dict[str, Any], kick: dict[str, Any]) -> None:
+    """Carve a bass out wherever the kick hits, so a kick entry with an extra 16th lead-in never
+    lands on top of a bass note. Call before velocities and slides are assigned."""
+    kick_hits = {i for i, step in enumerate(kick['pattern']['steps']) if step is not None}
+    layer['pattern']['steps'] = [
+        _N if i in kick_hits else step for i, step in enumerate(layer['pattern']['steps'])
+    ]
+
+
+def _tune_kick(kick: dict[str, Any], root_pc: int, lowest_midi: int) -> None:
+    """Tune the kick to the track's root. Its tail (and a rumble built from it) then agrees with the
+    bassline instead of beating against it — on a distorted kick the tail is a clearly pitched note.
+    The kick lands in the 12 semitones from lowest_midi up."""
+    note = _midi_to_note(lowest_midi + (root_pc - lowest_midi) % 12)
+    kick['pattern']['steps'] = [note if step is not None else _N for step in kick['pattern']['steps']]
 
 def _dist(d: float, wet: float) -> dict:
     return {'type': 'Distortion', 'options': {'distortion': d}, 'wet': wet}
@@ -126,6 +227,29 @@ def _filt(ftype: str, freq: float, q: float, wet: float = 1.0) -> dict:
 
 def _chorus(f: float, dt: float, depth: float, wet: float) -> dict:
     return {'type': 'Chorus', 'options': {'frequency': f, 'delayTime': dt, 'depth': depth}, 'wet': wet}
+
+
+def _wobble(rate: str, base_freq: float, octaves: float, q: float, wet: float = 1.0,
+            shape: str = 'sine') -> dict:
+    """Tempo-synced filter LFO (Tone.AutoFilter) — the wobble of bass music. `rate` is a note
+    value ('8n', '8t', '16n'), so the wobble stays locked to the beat."""
+    return {'type': 'AutoFilter',
+            'options': {'frequency': rate, 'baseFrequency': base_freq, 'octaves': octaves, 'type': shape,
+                        'filter': {'type': 'lowpass', 'Q': q, 'rolloff': -24}},
+            'wet': wet}
+
+
+def _pingpong(t: str, fb: float, wet: float) -> dict:
+    return {'type': 'PingPongDelay', 'options': {'delayTime': t, 'feedback': fb}, 'wet': wet}
+
+
+def _slides(steps: list, prob: float = 0.25) -> list[bool]:
+    """303-style slides: a slide step glides from the previous note instead of retriggering, so it
+    is only marked on a note that directly follows another note (wrapping at the loop end)."""
+    return [
+        step is not None and steps[i - 1] is not None and random.random() < prob
+        for i, step in enumerate(steps)
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -213,11 +337,8 @@ def _transpose_layer_to_root(layer: dict[str, Any], target_pc: int) -> None:
 # ---------------------------------------------------------------------------
 _KICK_PROFILES = {
     GenreType.TEK: 'hard',
-    GenreType.HIGHTEK: 'hard',
     GenreType.HARD_TECHNO: 'hard',
     GenreType.DARK_PSY: 'hard',
-    GenreType.FOREST_PSY: 'hard',
-    GenreType.PSY_BASS: 'deep',
     GenreType.MELODIC_TECHNO: 'deep',
     GenreType.MINIMAL_TECHNO: 'deep',
     GenreType.HOUSE: 'deep',
@@ -246,16 +367,36 @@ class BaseTrackGenerator:
     # Transport-level 16n swing amount. Genres override this where shuffle is part of the feel
     # (house ~0.12, garage ~0.2, jungle/DnB ~0.05 light); most four-on-the-floor genres stay at 0.
     SWING: float = 0.0
+    # The parts that define the genre, most telling first. The reveal highlights the first of these
+    # roles the track actually has, so the listener knows which layer to solo.
+    KEY_ROLES: tuple[str, ...] = ('bass',)
+    # The player ducks the non-kick layers on every hit of the main kick. Depth scales the per-role
+    # duck (0 turns it off, 1 is the default pump); release is how long the duck takes to recover, in
+    # beats. Pumping genres (house, trance-y techno) recover slowly; psy recovers within a 16th so the
+    # rolling bass between kicks stays at full level.
+    SIDECHAIN_DEPTH: float = 1.0
+    SIDECHAIN_RELEASE: float = 0.5
+    # Output trim in dB, applied after the player's limiter, so every genre plays at about the same
+    # loudness (−18 dB RMS, the quietest genres' level). Without it the loudest genres sat 10 dB above
+    # the quietest — loudness became a giveaway — and they peaked at full scale. Cut only: a boost after
+    # the limiter would push peaks past it. Measured by rendering tracks offline; re-measure after
+    # changing a genre's levels (docs/genre-trainer.md).
+    LEVEL_DB: float = 0.0
 
     @classmethod
     def generate(cls) -> dict[str, Any]:
         layers = cls._generate_layers()
         cls._enhance_kick(layers)
+        roles = {layer['role'] for layer in layers}
         return {
             'id': f'{cls.GENRE.value}_{uuid.uuid4().hex[:6]}',
             'genre': cls.GENRE.value,
             'bpm': random.randint(*cls.BPM_RANGE),
             'swing': cls.SWING,
+            'sidechain_depth': cls.SIDECHAIN_DEPTH,
+            'sidechain_release': cls.SIDECHAIN_RELEASE,
+            'gain_db': cls.LEVEL_DB,
+            'key_role': next((role for role in cls.KEY_ROLES if role in roles), None),
             'layers': layers,
         }
 

@@ -102,6 +102,10 @@ export type LayerPatternSchema = {
      * Velocities
      */
     velocities?: Array<number | null> | null;
+    /**
+     * Slides
+     */
+    slides?: Array<boolean> | null;
 };
 
 /**
@@ -154,6 +158,10 @@ export type TrackLayerSchema = {
      * Pan
      */
     pan?: number | null;
+    /**
+     * Sidechain
+     */
+    sidechain?: string | null;
 };
 
 /**
@@ -176,6 +184,22 @@ export type TrackSchema = {
      * Swing
      */
     swing?: number;
+    /**
+     * Sidechain Depth
+     */
+    sidechain_depth?: number;
+    /**
+     * Sidechain Release
+     */
+    sidechain_release?: number;
+    /**
+     * Gain Db
+     */
+    gain_db?: number;
+    /**
+     * Key Role
+     */
+    key_role?: string | null;
     /**
      * Layers
      */
