@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _reverb, _delay, _dist, _filt, _chorus, _auto, _pingpong, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _reverb, _delay, _dist, _filt, _chorus, _auto, _pingpong, _vel,
     _vel_groove, _vel_kick, _vel_snare, _four, _roll,
 )
 
@@ -367,6 +367,15 @@ class WeirdFinnishTranceTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.WEIRD_FINNISH_TRANCE
     BPM_RANGE = (142, 150)
     LEVEL_DB = -2.1
+    PROFILE = GenreProfile(
+        drums='Plain four-on-the-floor kick, sometimes claps on 2 and 4',
+        bass='Bouncy rolling bass, often hopping octaves',
+        signature='Cartoonish leads (detuned bells, squeaky sweeps, swoops) leaping through odd intervals',
+        mood='Playful, quirky, unpredictable',
+        key_trait='signature',
+        kick_pattern='four',
+        bass_pattern='rolling',
+    )
     KEY_ROLES = ('lead', 'bass')
     SIDECHAIN_DEPTH = 0.8
     SIDECHAIN_RELEASE = 0.25

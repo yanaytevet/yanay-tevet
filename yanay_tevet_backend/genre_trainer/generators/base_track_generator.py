@@ -1,6 +1,8 @@
 import random
 import uuid
 from collections.abc import Iterable
+from contextvars import ContextVar
+from dataclasses import dataclass
 from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
@@ -276,6 +278,12 @@ _NAME_BY_PC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 # Common minor-friendly dance roots (pitch classes): A C D E F G B F# Bb Eb.
 _TRACK_ROOT_PCS = [9, 0, 2, 4, 5, 7, 11, 6, 10, 3]
 
+# The root a caller asked for — the comparison track is generated in the key of the track it is played
+# against, so switching between them changes the genre and nothing else — and the root the track ended
+# up in. Both live only for one generate() call.
+_requested_root: ContextVar[int | None] = ContextVar('requested_root', default=None)
+_chosen_root: ContextVar[int | None] = ContextVar('chosen_root', default=None)
+
 
 def _note_to_midi(note: str) -> int:
     pc = _PC_BY_LETTER[note[0].upper()]
@@ -361,8 +369,25 @@ def _build_kick_click(kick_steps: list, profile: str) -> dict[str, Any]:
                 [], steps)
 
 
+@dataclass(frozen=True)
+class GenreProfile:
+    """What to listen for, in the words the reveal shows when comparing two genres. Tempo comes from
+    BPM_RANGE, so it can't drift from what the generator plays."""
+    drums: str
+    bass: str
+    signature: str
+    mood: str
+    # The trait that gives the genre away: 'drums', 'bass', 'signature' or 'mood'.
+    key_trait: str
+    # The rhythmic skeleton, as tags compared between genres (never shown): when two genres share a
+    # kick and bass pattern, the drums or bass can't be what tells them apart.
+    kick_pattern: str
+    bass_pattern: str
+
+
 class BaseTrackGenerator:
     GENRE: GenreType
+    PROFILE: GenreProfile
     BPM_RANGE: tuple[int, int]
     # Transport-level 16n swing amount. Genres override this where shuffle is part of the feel
     # (house ~0.12, garage ~0.2, jungle/DnB ~0.05 light); most four-on-the-floor genres stay at 0.
@@ -384,8 +409,16 @@ class BaseTrackGenerator:
     LEVEL_DB: float = 0.0
 
     @classmethod
-    def generate(cls) -> dict[str, Any]:
-        layers = cls._generate_layers()
+    def generate(cls, root_pc: int | None = None) -> dict[str, Any]:
+        """A random track of this genre, in the key of `root_pc` (a pitch class) when one is given."""
+        requested = _requested_root.set(root_pc)
+        chosen = _chosen_root.set(None)
+        try:
+            layers = cls._generate_layers()
+            root = _chosen_root.get()
+        finally:
+            _requested_root.reset(requested)
+            _chosen_root.reset(chosen)
         cls._enhance_kick(layers)
         roles = {layer['role'] for layer in layers}
         return {
@@ -397,6 +430,7 @@ class BaseTrackGenerator:
             'sidechain_release': cls.SIDECHAIN_RELEASE,
             'gain_db': cls.LEVEL_DB,
             'key_role': next((role for role in cls.KEY_ROLES if role in roles), None),
+            'root': root,
             'layers': layers,
         }
 
@@ -436,7 +470,10 @@ class BaseTrackGenerator:
         in a single key. Returns the chosen root pitch class. Call once at the end
         of _generate_layers, after all layers (and their velocities) are assembled."""
         if root_pc is None:
+            root_pc = _requested_root.get()
+        if root_pc is None:
             root_pc = random.choice(_TRACK_ROOT_PCS)
+        _chosen_root.set(root_pc)
         for layer in layers:
             if layer['role'] in _MELODIC_ROLES:
                 _transpose_layer_to_root(layer, root_pc)

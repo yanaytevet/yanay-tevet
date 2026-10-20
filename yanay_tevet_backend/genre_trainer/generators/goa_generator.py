@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _reverb, _delay, _dist, _chorus, _filt, _pingpong, _auto, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _reverb, _delay, _dist, _chorus, _filt, _pingpong, _auto, _vel,
     _vel_groove, _slides, _on, _vel_flat, _rolling, _vel_roll,
 )
 
@@ -426,6 +426,15 @@ class GoaTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.GOA
     BPM_RANGE = (138, 145)
     LEVEL_DB = -2.5
+    PROFILE = GenreProfile(
+        drums='Softer, longer four-on-the-floor kick; offbeat hat and 16ths',
+        bass='Warm rolling K-B-B-B, often jumping octaves',
+        signature='Layered melodic leads and arpeggios in Eastern-sounding modes, often in call and response',
+        mood='Mystical, uplifting, drenched in delay',
+        key_trait='signature',
+        kick_pattern='four',
+        bass_pattern='rolling',
+    )
     KEY_ROLES = ('lead', 'bass')
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.25

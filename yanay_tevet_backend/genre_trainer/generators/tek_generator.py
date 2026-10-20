@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _auto, _slides, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _auto, _slides, _vel,
     _vel_groove, _vel_kick, _clear_kick_steps, _tune_kick, _vel_rumble,
 )
 
@@ -374,6 +374,15 @@ class TekTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.TEK
     BPM_RANGE = (162, 172)
     LEVEL_DB = -6.0
+    PROFILE = GenreProfile(
+        drums='Overdriven, lo-fi, relentless kick, with extra 16ths rolling into the downbeat',
+        bass='Dry, crushed offbeat bass',
+        signature='Acid squelch lines that cross the kick; raw metallic percussion',
+        mood='Raw, fast, free-party',
+        key_trait='drums',
+        kick_pattern='four',
+        bass_pattern='offbeat',
+    )
     KEY_ROLES = ('kick',)
     SIDECHAIN_DEPTH = 0.8
     SIDECHAIN_RELEASE = 0.35

@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _reverb, _delay, _filt,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _reverb, _delay, _filt,
     _vel, _vel_groove, _vel_kick,
 )
 
@@ -288,6 +288,15 @@ class MinimalTechnoTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.MINIMAL_TECHNO
     BPM_RANGE = (124, 130)
     LEVEL_DB = -1.9
+    PROFILE = GenreProfile(
+        drums='Clean, round four-on-the-floor kick; sparse hi-hats that drop in and out',
+        bass='Sparse, short, round notes in the gaps',
+        signature='Tiny clicks, rims, blips and toks, with lots of silence',
+        mood='Restrained, spacious, hypnotic',
+        key_trait='drums',
+        kick_pattern='four',
+        bass_pattern='sparse',
+    )
     KEY_ROLES = ('perc', 'hihat')
     SIDECHAIN_DEPTH = 0.6
     SIDECHAIN_RELEASE = 0.4

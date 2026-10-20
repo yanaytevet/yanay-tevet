@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _delay, _dist, _filt, _reverb, _vel, _vel_groove, _on, _at,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _delay, _dist, _filt, _reverb, _vel, _vel_groove, _on, _at,
 )
 
 
@@ -325,6 +325,15 @@ class JungleTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.JUNGLE
     BPM_RANGE = (160, 170)
     LEVEL_DB = -8.4
+    PROFILE = GenreProfile(
+        drums='Busy, chopped amen-style break: ghost snares, rolls, bar 2 different from bar 1',
+        bass='Deep dub sub: long held notes moving slowly',
+        signature='Ragga offbeat chord stabs, dub sirens',
+        mood='Raw, rough, old-school rave',
+        key_trait='drums',
+        kick_pattern='break',
+        bass_pattern='dub_sub',
+    )
     SWING = 0.05  # Light shuffle — the break's own feel, rawer than DnB's near-straight grid
     KEY_ROLES = ('snare', 'bass')
     SIDECHAIN_DEPTH = 0.4

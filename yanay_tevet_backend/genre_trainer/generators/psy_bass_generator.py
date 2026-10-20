@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _auto, _chorus, _delay, _dist, _filt, _pingpong, _reverb, _wobble,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _auto, _chorus, _delay, _dist, _filt, _pingpong, _reverb, _wobble,
     _midi_to_note, _note_to_midi, _vel, _vel_groove, _vel_snare, _on, _at,
 )
 
@@ -337,6 +337,15 @@ class PsyBassTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.PSY_BASS
     BPM_RANGE = (100, 110)
     LEVEL_DB = -4.6
+    PROFILE = GenreProfile(
+        drums='Slow, swung broken beat: kick on 1 plus a syncopated kick, heavy snare on 2 and 4',
+        bass='Long notes that wobble in time with the beat',
+        signature='Pitch-swept zaps, glitch stutters, Middle-Eastern plucks',
+        mood='Heavy, psychedelic, laid-back',
+        key_trait='bass',
+        kick_pattern='halftime',
+        bass_pattern='wobble',
+    )
     SWING = 0.2  # Glitch-hop leans hard on the shuffle; it is half of what makes it groove at ~105 BPM
     KEY_ROLES = ('bass',)
     SIDECHAIN_DEPTH = 0.5

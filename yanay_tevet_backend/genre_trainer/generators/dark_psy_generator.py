@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _auto, _pingpong, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _auto, _pingpong, _vel,
     _vel_groove, _vel_kick, _vel_snare, _four, _roll, _phrase,
 )
 
@@ -546,6 +546,15 @@ class DarkPsyTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.DARK_PSY
     BPM_RANGE = (148, 158)
     LEVEL_DB = -2.5
+    PROFILE = GenreProfile(
+        drums='Hard, distorted four-on-the-floor kick; woody percussion in the forest flavour',
+        bass='Rolling K-B-B-B, very short, distorted and squelchy, crawling chromatically',
+        signature='Horror drones and metallic hits (dark), or wet glitches and nature sounds (forest)',
+        mood='Dark, alien, intense',
+        key_trait='bass',
+        kick_pattern='four',
+        bass_pattern='rolling',
+    )
     KEY_ROLES = ('bass',)
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.18

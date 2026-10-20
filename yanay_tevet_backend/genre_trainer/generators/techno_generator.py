@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _pingpong, _auto,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _pingpong, _auto,
     _vel, _vel_groove, _vel_kick, _vel_snare, _vel_rumble, _clear_kick_steps, _tune_kick,
 )
 
@@ -432,6 +432,15 @@ class TechnoTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.TECHNO
     BPM_RANGE = (130, 138)
     LEVEL_DB = -2.5
+    PROFILE = GenreProfile(
+        drums='Round, punchy four-on-the-floor kick; offbeat open hi-hat over 16ths',
+        bass="A rumble from the kick's tail on the 16ths after it, or an offbeat bass",
+        signature='Hypnotic one- or two-note stabs, dub chords, metallic percussion',
+        mood='Dark, mechanical, hypnotic',
+        key_trait='bass',
+        kick_pattern='four',
+        bass_pattern='rumble',
+    )
     KEY_ROLES = ('bass', 'hihat')
     SIDECHAIN_DEPTH = 0.8
     SIDECHAIN_RELEASE = 0.5

@@ -6,6 +6,9 @@ import {GenreTrainerAudioService} from '../genre-trainer-audio.service';
 
 type ChipMode = 'solo' | 'mute';
 
+// Each side of a comparison plays this many loops before switching.
+const COMPARE_LOOPS_EACH = 2;
+
 @Component({
   selector: 'app-genre-trainer-reveal',
   standalone: true,
@@ -31,10 +34,31 @@ export class GenreTrainerRevealComponent {
     }]));
   });
 
+  // Which side of the comparison is sounding — it changes on its own while comparing — or, when
+  // nothing plays, which one Play would start.
+  protected readonly selectedSide = computed<Listening>(() => {
+    const playingId = this.audio.playingTrackId();
+    if (playingId && playingId === this.service.compareTrack()?.id) { return 'compare'; }
+    if (playingId && playingId === this.service.track()?.id) { return 'track'; }
+    return this.service.listening();
+  });
+
   async listenTo(which: Listening): Promise<void> {
     if (which === 'compare' && !(await this.service.loadCompareTrack())) { return; }
     this.service.listening.set(which);
     await this.playActive();
+  }
+
+  async toggleCompare(): Promise<void> {
+    if (this.audio.isAlternating()) {
+      this.audio.stop();
+      return;
+    }
+    const track = this.service.track();
+    const compare = await this.service.loadCompareTrack();
+    if (track && compare) {
+      await this.audio.playAlternating(track, compare, COMPARE_LOOPS_EACH);
+    }
   }
 
   async onChip(role: string): Promise<void> {

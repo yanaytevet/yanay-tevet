@@ -20,26 +20,6 @@ export class GenreTypeDisplay extends EnumDisplay {
     weird_finnish_trance: 'Weird Finnish Trance',
   };
 
-  // What to listen for. The BPM ranges match the generators (genre_trainer/generators/).
-  descriptions: Record<string, string> = {
-    psytrance: '143–148 BPM · Rolling bass on the three 16ths after every kick · Squelchy, fast-moving leads · Driving and bright',
-    progressive_psy: '134–140 BPM · Galloping bass on the last two 16ths of each beat · Deep, minimal and groovy · Sparse delayed plucks',
-    goa: '138–145 BPM · Layered modal leads and arpeggios · Eastern-sounding scales · Warm rolling bass, lots of reverb and delay',
-    psy_bass: '100–110 BPM · Swung, broken glitch-hop beat · Bass that wobbles in time with the beat · Psychedelic zaps and textures',
-    dark_psy: '148–158 BPM · Distorted, squelchy rolling bass · Horror atmospheres or organic forest textures · Chromatic and alien',
-    tek: '162–172 BPM · Heavily distorted, relentless kick · Offbeat bass and acid squelches · Raw free-party sound',
-    hightek: '180–195 BPM · Very fast, tight rolling bass · Glitchy 32nd-note zaps and stutters · Relentless and bright',
-    techno: '130–138 BPM · Offbeat open hi-hat · Rumbling or offbeat bass · Dark, hypnotic repetition',
-    hard_techno: '145–155 BPM · Heavily distorted, pounding kick · Distorted rumble bass · Industrial and aggressive',
-    acid_techno: '132–140 BPM · Squelching TB-303 line that slides between notes · Resonant filter sweeps · Raw and hypnotic',
-    minimal_techno: '124–130 BPM · Sparse clicks, rims and blips · Very few elements · Power through empty space',
-    melodic_techno: '120–126 BPM · Rolling offbeat bass · Arpeggiated plucks over minor chords · Big pumping pads, cinematic',
-    house: '122–128 BPM · Swung groove with an offbeat open hi-hat · Clap on beats 2 and 4 · Offbeat bass and chord stabs',
-    drum_and_bass: '170–176 BPM · Two-step kick, snare on beats 2 and 4 · Reese or growling bass · Fast hi-hats',
-    jungle: '160–170 BPM · Busy, chopped amen-style breaks · Deep dub sub bass · Raw rave energy',
-    weird_finnish_trance: '142–150 BPM · Bouncy bass, playful leads · Odd intervals and cartoonish sounds · Unpredictable phrasing (suomisaundi)',
-  };
-
   families: { name: string; genres: string[] }[] = [
     { name: 'Psychedelic Trance', genres: ['psytrance', 'progressive_psy', 'goa', 'dark_psy', 'hightek', 'weird_finnish_trance'] },
     { name: 'Bass Music', genres: ['psy_bass', 'drum_and_bass', 'jungle'] },
@@ -50,6 +30,14 @@ export class GenreTypeDisplay extends EnumDisplay {
 
   // Layer roles in mix order (drums first), as the reveal's solo/mute chips show them.
   roleOrder: string[] = ['kick', 'snare', 'hihat', 'perc', 'bass', 'sub', 'lead', 'stab', 'pad'];
+
+  traitLabels: Record<'tempo' | 'drums' | 'bass' | 'signature' | 'mood', string> = {
+    tempo: 'Tempo',
+    drums: 'Drums',
+    bass: 'Bass',
+    signature: 'Signature sound',
+    mood: 'Mood',
+  };
 
   roleLabels: Record<string, string> = {
     kick: 'Kick',

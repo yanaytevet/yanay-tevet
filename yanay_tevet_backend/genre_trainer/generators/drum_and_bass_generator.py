@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _auto, _chorus, _dist, _filt, _reverb, _midi_to_note,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _auto, _chorus, _dist, _filt, _reverb, _midi_to_note,
     _note_to_midi, _vel_groove, _vel_snare, _on, _at,
 )
 
@@ -327,6 +327,15 @@ class DrumAndBassTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.DRUM_AND_BASS
     BPM_RANGE = (170, 176)
     LEVEL_DB = -4.7
+    PROFILE = GenreProfile(
+        drums="Two-step: kick on 1 and the 'and' of 3, snare on 2 and 4, fast hi-hats",
+        bass='Held reese or growling neuro bass over a sub',
+        signature='A clean, punchy break with ghost snares; dark pads',
+        mood='Fast, rolling, tense',
+        key_trait='drums',
+        kick_pattern='two_step',
+        bass_pattern='reese',
+    )
     SWING = 0.03  # A hair of shuffle humanizes the grid; DnB is played nearly straight
     KEY_ROLES = ('snare', 'bass')
     SIDECHAIN_DEPTH = 0.5

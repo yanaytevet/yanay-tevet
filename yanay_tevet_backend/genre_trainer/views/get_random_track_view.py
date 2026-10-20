@@ -1,16 +1,17 @@
-import random
 from typing import Any, Type
 
-from ninja import Schema, Query, Path as NinjaPath
+from ninja import Field, Schema, Query, Path as NinjaPath
 
 from common.simple_api.api_request import APIRequest
 from common.simple_api.views.simple_views.simple_get_api_view import SimpleGetAPIView
-from genre_trainer.enums.genre_type import GenreType
-from genre_trainer.generators.genre_generator_registry import GENRE_GENERATORS
+from genre_trainer.managers.genre_catalog_manager import GenreCatalogManager
 
 
 class GetRandomTrackQuerySchema(Schema):
     genres: str | None = None
+    # Pitch class (0 = C … 11 = B) of the key to generate in — the comparison track is made in the key
+    # of the track it is played against.
+    root: int | None = Field(None, ge=0, le=11)
 
 
 class LayerPatternSchema(Schema):
@@ -76,6 +77,8 @@ class TrackSchema(Schema):
     gain_db: float = 0.0
     # The layer role that defines the genre, highlighted on reveal so the listener knows what to solo.
     key_role: str | None = None
+    # Pitch class of the track's key (0 = C … 11 = B).
+    root: int | None = None
     layers: list[TrackLayerSchema]
 
 
@@ -98,19 +101,6 @@ class GetRandomTrackView(SimpleGetAPIView):
 
     @classmethod
     async def get_data(cls, api_request: APIRequest, query: Query = None, path: NinjaPath = None) -> GetRandomTrackOutput:
-        available = dict(GENRE_GENERATORS)
-
-        if query and query.genres:
-            requested = {g for g in query.genres.split(',') if g}
-            filtered = {
-                genre_type: gen
-                for genre_type, gen in GENRE_GENERATORS.items()
-                if genre_type.value in requested
-            }
-            if filtered:
-                available = filtered
-
-        genre_type = random.choice(list(available.keys()))
-        generator = available[genre_type]
-        track_data = generator.generate()
+        genres = {g for g in query.genres.split(',') if g} if query and query.genres else set()
+        track_data = GenreCatalogManager.generate_random_track(genres, query.root if query else None)
         return GetRandomTrackOutput(track=TrackSchema.model_validate(track_data))

@@ -1,5 +1,5 @@
 import {computed, Injectable, signal} from '@angular/core';
-import {getGenresView, getRandomTrackView, TrackSchema} from '../../generated-files/api/genre-trainer';
+import {GenreProfileSchema, getGenresView, getRandomTrackView, TrackSchema} from '../../generated-files/api/genre-trainer';
 import {GenreTypeDisplay} from '../shared/string-display/genre-type-display';
 
 export interface GenreFamily {
@@ -29,6 +29,35 @@ export interface RoleChip {
 
 // Which track the reveal is playing: the one being guessed, or one of the genre the user guessed.
 export type Listening = 'track' | 'compare';
+
+export type Trait = 'tempo' | 'drums' | 'bass' | 'signature' | 'mood';
+export type Verdict = 'Very close' | 'Close' | 'Not close';
+
+export interface TraitRow {
+  trait: Trait;
+  label: string;
+  actual: string;
+  other: string;
+  // The trait that tells the two genres apart.
+  isKey: boolean;
+}
+
+// Why the track is its genre and not the one guessed (in easy mode: the closest genre of the guessed
+// family), built from the two genres' profiles.
+export interface Explanation {
+  actualLabel: string;
+  otherLabel: string;
+  // How the compared genre relates to the answer: the guess itself, or the closest genre of the guessed family.
+  otherNote: string;
+  verdict: Verdict;
+  reason: string;
+  rows: TraitRow[];
+  tip: string;
+}
+
+const TRAITS: Exclude<Trait, 'tempo'>[] = ['drums', 'bass', 'signature', 'mood'];
+// A tempo gap this wide is the easiest cue to hear, so it outranks the genre's own defining trait.
+const TELLING_TEMPO_GAP_BPM = 5;
 
 // v2 reworked psy_bass (now halftime bass music) and hightek (now hi-tech psytrance) and merged
 // forest_psy into dark_psy, so old records for those genres describe different music.
@@ -61,6 +90,9 @@ export class GenreTrainerService {
   readonly confusions = signal<Confusions>(this.loadConfusionsFromStorage());
   // The last wrong genre guess, so the next pick can bring the genre the user reached for back soon.
   private readonly lastMiss = signal<{actual: string; guessed: string} | null>(null);
+
+  // Each genre's listening profile (tempo, drums, bass, signature sound, mood), from the backend.
+  readonly profiles = signal<Record<string, GenreProfileSchema>>({});
 
   readonly compareTrack = signal<TrackSchema | null>(null);
   readonly isCompareLoading = signal(false);
@@ -104,9 +136,23 @@ export class GenreTrainerService {
     return t ? this.genreDisplay.get(t.genre) : '';
   });
 
-  readonly trackGenreDescription = computed(() => {
+  readonly trackProfileRows = computed(() => {
     const t = this.track();
-    return t ? (this.genreDisplay.descriptions[t.genre] ?? '') : '';
+    const profile = t ? this.profiles()[t.genre] : undefined;
+    if (!profile) { return []; }
+    return [
+      {label: this.genreDisplay.traitLabels['tempo'], text: `${profile.bpm_min}–${profile.bpm_max} BPM`},
+      ...TRAITS.map(trait => ({label: this.genreDisplay.traitLabels[trait], text: profile[trait]})),
+    ];
+  });
+
+  // After a correct answer: the trait that gives the genre away, so a lucky guess still teaches the cue.
+  readonly giveaway = computed(() => {
+    const t = this.track();
+    const profile = t ? this.profiles()[t.genre] : undefined;
+    if (!profile || !this.revealed() || !this.isCorrect()) { return null; }
+    const trait = profile.key_trait as Exclude<Trait, 'tempo'>;
+    return {label: this.genreDisplay.traitLabels[trait], text: profile[trait]};
   });
 
   readonly trackGenreFamily = computed(() => {
@@ -144,21 +190,78 @@ export class GenreTrainerService {
     return g ? this.genreDisplay.get(g) : '';
   });
 
-  // After a wrong answer: what "hear your guess" plays — the guessed genre, or in easy mode the
-  // guessed family (one of its genres is picked when the comparison loads).
-  readonly compareTarget = computed<{label: string; genres: string[]} | null>(() => {
-    if (!this.revealed() || this.isCorrect()) { return null; }
-    if (this.easyMode()) {
-      const family = this.allFamilies.find(f => f.name === this.selectedFamily());
-      return family ? {label: family.name, genres: family.genres} : null;
-    }
-    const genre = this.selectedGenre();
-    return genre ? {label: this.genreDisplay.get(genre), genres: [genre]} : null;
+  // After a wrong answer: the genre the track is compared with — the guessed genre, or in easy mode the
+  // genre of the guessed family closest in tempo to the real one, since the nearest miss teaches the
+  // boundary best.
+  readonly compareGenre = computed<string | null>(() => {
+    const t = this.track();
+    if (!t || !this.revealed() || this.isCorrect()) { return null; }
+    if (!this.easyMode()) { return this.selectedGenre(); }
+    const family = this.allFamilies.find(f => f.name === this.selectedFamily());
+    if (!family) { return null; }
+    const profiles = this.profiles();
+    const center = (genre: string): number => {
+      const p = profiles[genre];
+      return p ? (p.bpm_min + p.bpm_max) / 2 : 0;
+    };
+    const target = center(t.genre);
+    return [...family.genres].sort((a, b) => Math.abs(center(a) - target) - Math.abs(center(b) - target))[0] ?? null;
   });
 
-  readonly compareGenreLabel = computed(() => {
-    const t = this.compareTrack();
-    return t ? this.genreDisplay.get(t.genre) : '';
+  readonly compareLabel = computed(() => {
+    const genre = this.compareGenre();
+    if (!genre) { return ''; }
+    return this.easyMode() ? this.genreDisplay.get(genre) : `Your guess: ${this.genreDisplay.get(genre)}`;
+  });
+
+  readonly explanation = computed<Explanation | null>(() => {
+    const t = this.track();
+    const other = this.compareGenre();
+    const profiles = this.profiles();
+    const a = t ? profiles[t.genre] : undefined;
+    const o = other ? profiles[other] : undefined;
+    if (!t || !other || !a || !o) { return null; }
+
+    const actualLabel = this.genreDisplay.get(t.genre);
+    const otherLabel = this.genreDisplay.get(other);
+    const familyOf = (genre: string): string | undefined => this.allFamilies.find(f => f.genres.includes(genre))?.name;
+    const sameFamily = familyOf(t.genre) === familyOf(other);
+    const tempoGap = Math.max(o.bpm_min - a.bpm_max, a.bpm_min - o.bpm_max, 0);
+    const overlap = a.bpm_min <= o.bpm_max && o.bpm_min <= a.bpm_max;
+    const verdict: Verdict = sameFamily && overlap ? 'Very close' : sameFamily || overlap ? 'Close' : 'Not close';
+    const decider = this.decidingTrait(a, o, tempoGap);
+
+    const familyPart = sameFamily ? 'Same family' : 'Different families';
+    const tempoPart = overlap
+      ? ', overlapping tempo'
+      : `; ${actualLabel} is ${a.bpm_min > o.bpm_max ? 'faster' : 'slower'} (${a.bpm_min}–${a.bpm_max} vs ${o.bpm_min}–${o.bpm_max} BPM)`;
+    const deciderLabel = this.genreDisplay.traitLabels[decider].toLowerCase();
+    const gives = decider === 'drums' ? 'give' : 'gives';
+    const reason = `${familyPart}${tempoPart} — the ${deciderLabel} ${gives} it away.`;
+
+    const rows: TraitRow[] = [
+      {
+        trait: 'tempo',
+        label: this.genreDisplay.traitLabels['tempo'],
+        actual: `${a.bpm_min}–${a.bpm_max} BPM (this track: ${t.bpm})`,
+        other: `${o.bpm_min}–${o.bpm_max} BPM`,
+        isKey: decider === 'tempo',
+      },
+      ...TRAITS.map(trait => ({
+        trait,
+        label: this.genreDisplay.traitLabels[trait],
+        actual: a[trait],
+        other: o[trait],
+        isKey: decider === trait,
+      })),
+    ];
+
+    const tip = decider === 'tempo'
+      ? `Next time, feel the tempo: ${actualLabel} runs at ${a.bpm_min}–${a.bpm_max} BPM, ${otherLabel} at ${o.bpm_min}–${o.bpm_max}.`
+      : `Next time, listen for the ${deciderLabel} — ${a[decider as Exclude<Trait, 'tempo'>]}.`;
+
+    const otherNote = this.easyMode() ? 'closest in the family you picked' : 'your guess';
+    return {actualLabel, otherLabel, otherNote, verdict, reason, rows, tip};
   });
 
   readonly activeTrack = computed(() =>
@@ -223,6 +326,20 @@ export class GenreTrainerService {
     if (focus.size === 0) { return this.allFamilies; }
     return this.allFamilies.filter(f => focus.has(f.name));
   });
+
+  // What tells the two genres apart, easiest cue first: a clear tempo gap, then a different kick
+  // pattern. Next comes the real genre's own defining trait when it is melodic (melodic techno's
+  // arps), then a different bass pattern; when the rhythm is the same (full-on vs goa) it is the
+  // guessed genre's melodic trait.
+  private decidingTrait(actual: GenreProfileSchema, other: GenreProfileSchema, tempoGap: number): Trait {
+    const rhythmic = new Set(['drums', 'bass']);
+    if (tempoGap >= TELLING_TEMPO_GAP_BPM) { return 'tempo'; }
+    if (actual.kick_pattern !== other.kick_pattern) { return 'drums'; }
+    if (!rhythmic.has(actual.key_trait)) { return actual.key_trait as Trait; }
+    if (actual.bass_pattern !== other.bass_pattern) { return 'bass'; }
+    if (!rhythmic.has(other.key_trait)) { return other.key_trait as Trait; }
+    return 'signature';
+  }
 
   private loadFocusFromStorage(): Set<string> {
     try {
@@ -415,6 +532,7 @@ export class GenreTrainerService {
         ]);
         this.track.set(trackRes.data.track);
         this.genres.set(genresRes.data.genres);
+        this.profiles.set(Object.fromEntries(genresRes.data.profiles.map(p => [p.genre, p])));
         this.pruneFocus(genresRes.data.genres);
       } else {
         // Subsequent loads: weight selection toward the genres the user struggles with.
@@ -435,17 +553,18 @@ export class GenreTrainerService {
     }
   }
 
-  /** Loads (once per reveal) a track of the genre the user guessed, to play against the real one. */
+  /** Loads (once per reveal) a track of the compared genre, in the real track's key, so switching
+   * between the two changes the genre and nothing else. */
   async loadCompareTrack(): Promise<TrackSchema | null> {
     const existing = this.compareTrack();
     if (existing) { return existing; }
-    const target = this.compareTarget();
-    if (!target) { return null; }
+    const genre = this.compareGenre();
+    const root = this.track()?.root;
+    if (!genre) { return null; }
     this.isCompareLoading.set(true);
     this.error.set(null);
     try {
-      const genre = target.genres[Math.floor(Math.random() * target.genres.length)];
-      const res = await getRandomTrackView({query: {genres: genre}});
+      const res = await getRandomTrackView({query: {genres: genre, root: root ?? undefined}});
       this.compareTrack.set(res.data.track);
       return res.data.track;
     } catch {

@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _auto, _pingpong, _slides,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _delay, _filt, _auto, _pingpong, _slides,
     _vel, _vel_groove, _vel_kick, _vel_snare,
 )
 
@@ -288,6 +288,15 @@ class AcidTechnoTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.ACID_TECHNO
     BPM_RANGE = (132, 140)
     LEVEL_DB = -7.0
+    PROFILE = GenreProfile(
+        drums='Distorted four-on-the-floor kick, 16th hi-hats, offbeat open hat',
+        bass='A TB-303 line: squelching resonant filter, accents, notes sliding into each other',
+        signature='The 303 itself, often with a second one answering it',
+        mood='Raw, hypnotic, squelchy',
+        key_trait='bass',
+        kick_pattern='four',
+        bass_pattern='acid',
+    )
     KEY_ROLES = ('bass',)
     # The 303 crosses the kick, so it only dips a little and comes straight back.
     SIDECHAIN_DEPTH = 0.7

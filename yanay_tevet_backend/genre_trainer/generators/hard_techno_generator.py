@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _auto, _slides, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _chorus, _filt, _delay, _auto, _slides, _vel,
     _vel_groove, _vel_kick, _vel_snare, _clear_kick_steps, _tune_kick, _vel_rumble,
 )
 
@@ -376,6 +376,15 @@ class HardTechnoTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HARD_TECHNO
     BPM_RANGE = (145, 155)
     LEVEL_DB = -7.7
+    PROFILE = GenreProfile(
+        drums='Loud, heavily distorted kick with a pitched tail; fast 16th hi-hats',
+        bass='Distorted rolling rumble that growls between the kicks',
+        signature='Screeching hoovers, acid screams, sirens',
+        mood='Aggressive, industrial, pounding',
+        key_trait='drums',
+        kick_pattern='four',
+        bass_pattern='rumble',
+    )
     KEY_ROLES = ('kick', 'bass')
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.35

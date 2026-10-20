@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _auto, _pingpong,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _delay, _filt, _auto, _pingpong,
     _transpose_layer_to_root, _vel, _vel_groove, _vel_kick, _vel_snare, _four, _phrase, _roll,
 )
 
@@ -318,6 +318,15 @@ class HightekTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HIGHTEK
     BPM_RANGE = (180, 195)
     LEVEL_DB = 0.0
+    PROFILE = GenreProfile(
+        drums='Very short, clicky four-on-the-floor kick; fast hi-hats',
+        bass='Rolling K-B-B-B with tiny, bright notes',
+        signature='Bursts of glitchy 32nd-note zaps, blips and stutters',
+        mood='Frantic, sci-fi, relentless',
+        key_trait='signature',
+        kick_pattern='four',
+        bass_pattern='rolling',
+    )
     KEY_ROLES = ('perc', 'bass')
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.12

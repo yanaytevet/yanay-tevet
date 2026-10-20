@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _pingpong, _auto, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _pingpong, _auto, _vel,
     _vel_groove, _slides, _on, _vel_flat, _vel_kick, _rolling, _vel_roll,
 )
 
@@ -345,6 +345,15 @@ class PsytranceTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.PSYTRANCE
     BPM_RANGE = (143, 148)
     LEVEL_DB = 0.0
+    PROFILE = GenreProfile(
+        drums='Tight, punchy four-on-the-floor kick; offbeat open hi-hat over 16ths',
+        bass='Rolling: three short notes after every kick (K-B-B-B), filter opening over the bar',
+        signature='Squelchy acid and FM-zap leads in Phrygian, with delay',
+        mood='Driving, bright, relentless',
+        key_trait='bass',
+        kick_pattern='four',
+        bass_pattern='rolling',
+    )
     KEY_ROLES = ('bass',)
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.2

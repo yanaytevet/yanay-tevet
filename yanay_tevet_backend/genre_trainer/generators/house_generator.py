@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _chorus, _delay, _dist, _filt, _reverb, _vel, _vel_groove,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _chorus, _delay, _dist, _filt, _reverb, _vel, _vel_groove,
     _vel_kick, _vel_snare, _on, _at,
 )
 
@@ -319,6 +319,15 @@ class HouseTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.HOUSE
     BPM_RANGE = (122, 128)
     LEVEL_DB = -1.6
+    PROFILE = GenreProfile(
+        drums='Four-on-the-floor kick, clap on 2 and 4, swung offbeat open hat and shaker',
+        bass='Offbeat, syncopated bass with octave jumps, never on the kick',
+        signature='Organ or piano 7th and 9th chord stabs on the offbeats',
+        mood='Warm, soulful, swung',
+        key_trait='drums',
+        kick_pattern='four',
+        bass_pattern='syncopated',
+    )
     SWING = 0.12  # The house shuffle on 16ths: swung closed hats against the straight open hat
     KEY_ROLES = ('hihat', 'stab')
     SIDECHAIN_DEPTH = 1.0

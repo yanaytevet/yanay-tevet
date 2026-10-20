@@ -12,6 +12,10 @@ export type GetRandomTrackQuerySchema = {
      * Genres
      */
     genres?: string | null;
+    /**
+     * Root
+     */
+    root?: number | null;
 };
 
 /**
@@ -201,9 +205,59 @@ export type TrackSchema = {
      */
     key_role?: string | null;
     /**
+     * Root
+     */
+    root?: number | null;
+    /**
      * Layers
      */
     layers: Array<TrackLayerSchema>;
+};
+
+/**
+ * GenreProfileSchema
+ */
+export type GenreProfileSchema = {
+    /**
+     * Genre
+     */
+    genre: string;
+    /**
+     * Bpm Min
+     */
+    bpm_min: number;
+    /**
+     * Bpm Max
+     */
+    bpm_max: number;
+    /**
+     * Drums
+     */
+    drums: string;
+    /**
+     * Bass
+     */
+    bass: string;
+    /**
+     * Signature
+     */
+    signature: string;
+    /**
+     * Mood
+     */
+    mood: string;
+    /**
+     * Key Trait
+     */
+    key_trait: string;
+    /**
+     * Kick Pattern
+     */
+    kick_pattern: string;
+    /**
+     * Bass Pattern
+     */
+    bass_pattern: string;
 };
 
 /**
@@ -214,6 +268,10 @@ export type GetGenresOutput = {
      * Genres
      */
     genres: Array<string>;
+    /**
+     * Profiles
+     */
+    profiles: Array<GenreProfileSchema>;
 };
 
 export type GetRandomTrackViewData = {
@@ -224,6 +282,10 @@ export type GetRandomTrackViewData = {
          * Genres
          */
         genres?: string | null;
+        /**
+         * Root
+         */
+        root?: number | null;
     };
     url: '/api/genre-trainer/random-track/';
 };

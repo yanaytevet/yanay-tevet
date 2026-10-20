@@ -90,8 +90,11 @@ export class GenreTrainerAudioService {
   // Solo wins over mutes: with a soloed role only that role sounds.
   readonly soloRole = signal<string | null>(null);
   readonly mutedRoles = signal<ReadonlySet<string>>(new Set());
+  readonly isAlternating = signal(false);
 
   private current: Playback | null = null;
+  // While comparing: the two tracks, which one plays next, and how many loops each gets per turn.
+  private alternation: {tracks: [TrackSchema, TrackSchema]; next: 0 | 1; loopsEach: number} | null = null;
   // Bumped by every play and stop, so a play whose async build was overtaken by a later call
   // abandons itself instead of starting over the newer one.
   private playToken = 0;
@@ -115,9 +118,46 @@ export class GenreTrainerAudioService {
   }
 
   async play(track: TrackSchema, autoStopLoops: number): Promise<void> {
+    this.endAlternation();
+    await this.start(track, autoStopLoops);
+  }
+
+  /** Plays `a` and `b` in turn, `loopsEach` loops at a time, until stopped. */
+  async playAlternating(a: TrackSchema, b: TrackSchema, loopsEach: number): Promise<void> {
+    this.alternation = {tracks: [a, b], next: 1, loopsEach};
+    this.isAlternating.set(true);
+    await this.start(a, loopsEach);
+  }
+
+  stop(): void {
+    this.endAlternation();
+    this.playToken++;
+    this.teardown();
+  }
+
+  private endAlternation(): void {
+    this.alternation = null;
+    this.isAlternating.set(false);
+  }
+
+  // Runs when a playback has played its loops: the end of a track, or a turn in a comparison.
+  private onLoopsDone(): void {
+    const alternation = this.alternation;
+    if (!alternation) {
+      this.stop();
+      return;
+    }
+    const track = alternation.tracks[alternation.next];
+    alternation.next = alternation.next === 0 ? 1 : 0;
+    void this.start(track, alternation.loopsEach);
+  }
+
+  private async start(track: TrackSchema, autoStopLoops: number): Promise<void> {
     if (this.isRendering()) { return; }
     const token = ++this.playToken;
     this.teardown();
+    // Set before the build, so a comparison's switch shows the next side at once rather than nothing.
+    this.playingTrackId.set(track.id);
     await Tone.start();
 
     const transport = Tone.getTransport();
@@ -131,7 +171,7 @@ export class GenreTrainerAudioService {
         // frame and so never fires in a background tab.
         const delayMs = Math.max(0, (time - Tone.now()) * 1000);
         setTimeout(() => {
-          if (token === this.playToken) { this.stop(); }
+          if (token === this.playToken) { this.onLoopsDone(); }
         }, delayMs);
       },
     });
@@ -145,12 +185,6 @@ export class GenreTrainerAudioService {
     this.current = playback;
     transport.start();
     this.isPlaying.set(true);
-    this.playingTrackId.set(track.id);
-  }
-
-  stop(): void {
-    this.playToken++;
-    this.teardown();
   }
 
   setVolume(value: number): void {

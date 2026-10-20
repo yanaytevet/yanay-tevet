@@ -4,7 +4,7 @@ from typing import Any
 
 from genre_trainer.enums.genre_type import GenreType
 from genre_trainer.generators.base_track_generator import (
-    BaseTrackGenerator, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _pingpong, _auto, _vel,
+    BaseTrackGenerator, GenreProfile, _N, _cfg, _dist, _reverb, _delay, _filt, _chorus, _pingpong, _auto, _vel,
     _vel_snare, _on, _vel_flat,
 )
 
@@ -387,6 +387,15 @@ class ProgressivePsyTrackGenerator(BaseTrackGenerator):
     GENRE = GenreType.PROGRESSIVE_PSY
     BPM_RANGE = (134, 140)
     LEVEL_DB = 0.0
+    PROFILE = GenreProfile(
+        drums='Deep, round four-on-the-floor kick; offbeat hat, swung shakers, light clap on 2 and 4',
+        bass='Galloping: two notes on the last two 16ths of each beat (K . B B), never right after the kick',
+        signature='Sparse: one delay-heavy pluck or dub stab, lots of space',
+        mood='Deep, groovy, hypnotic',
+        key_trait='bass',
+        kick_pattern='four',
+        bass_pattern='gallop',
+    )
     KEY_ROLES = ('bass',)
     SIDECHAIN_DEPTH = 1.0
     SIDECHAIN_RELEASE = 0.25

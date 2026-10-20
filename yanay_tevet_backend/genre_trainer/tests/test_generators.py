@@ -3,7 +3,7 @@ import random
 from django.test import SimpleTestCase
 
 from genre_trainer.enums.genre_type import GenreType
-from genre_trainer.generators.base_track_generator import _note_to_midi
+from genre_trainer.generators.base_track_generator import _MELODIC_ROLES, _detect_root_pc, _note_to_midi
 from genre_trainer.generators.genre_generator_registry import GENRE_GENERATORS
 from genre_trainer.views.get_random_track_view import TrackSchema
 
@@ -27,6 +27,7 @@ _QUARTERS = frozenset(range(0, 32, 4))
 _BACKBEAT_STEPS = frozenset({4, 12, 20, 28})
 _ROLES = frozenset({'kick', 'sub', 'bass', 'snare', 'hihat', 'perc', 'lead', 'stab', 'pad'})
 _SIDECHAIN = frozenset({'deep', 'medium', 'shallow', 'none'})
+_TRAITS = frozenset({'drums', 'bass', 'signature', 'mood'})
 
 
 def _hits(layer: dict) -> set[int]:
@@ -138,3 +139,30 @@ class RhythmGrammarTest(GeneratorTestCase):
             bass = next(layer for layer in track['layers'] if layer['role'] == 'bass')
             slid += any(bass['pattern'].get('slides') or [])
         self.assertGreater(slid, _RUNS * 0.8)
+
+
+class ProfileAndKeyTest(GeneratorTestCase):
+    def test_every_genre_has_a_profile(self) -> None:
+        for genre, generator in GENRE_GENERATORS.items():
+            with self.subTest(genre=genre.value):
+                profile = generator.PROFILE
+                self.assertIn(profile.key_trait, _TRAITS)
+                for text in (profile.drums, profile.bass, profile.signature, profile.mood):
+                    self.assertTrue(text.strip())
+
+    def test_a_requested_root_puts_every_melodic_part_in_that_key(self) -> None:
+        """The comparison track is generated in the key of the track it is played against; a part
+        left in another key would make the switch sound like a key change, not a genre change."""
+        for genre, generator in GENRE_GENERATORS.items():
+            for root in range(12):
+                track = generator.generate(root)
+                with self.subTest(genre=genre.value, root=root):
+                    self.assertEqual(track['root'], root)
+                    for layer in track['layers']:
+                        if layer['role'] in _MELODIC_ROLES:
+                            self.assertEqual(_detect_root_pc(layer['pattern']['steps']), root, layer['id'])
+
+    def test_without_a_request_the_track_reports_its_key(self) -> None:
+        for genre, generator in GENRE_GENERATORS.items():
+            with self.subTest(genre=genre.value):
+                self.assertIn(generator.generate()['root'], range(12))
