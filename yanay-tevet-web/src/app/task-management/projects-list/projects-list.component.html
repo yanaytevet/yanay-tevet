@@ -24,26 +24,22 @@
                     <a [routerLink]="projectUrls()[project.id]" class="card card-interactive p-4 flex flex-col">
                         <div class="flex items-start justify-between gap-3">
                             <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ project.name }}</div>
-                            @if (project.open_task_count > 0) {
-                                <span class="chip chip-accent shrink-0">{{ project.open_task_count }} open</span>
-                            } @else if (project.task_count > 0) {
-                                <span class="chip chip-success shrink-0">All done</span>
-                            }
                         </div>
                         @if (project.description) {
                             <p class="text-meta text-writing-minor line-clamp-2 mt-1" dir="auto">{{ project.description }}</p>
                         }
-                        <div class="mt-auto pt-4">
-                            @if (project.task_count > 0) {
-                                <div class="h-1 rounded-full bg-layer-3 overflow-hidden mb-2" aria-hidden="true">
-                                    <div class="h-full rounded-full {{ donePercent()[project.id] === 100 ? 'bg-success' : 'bg-accent' }}" [style.width.%]="donePercent()[project.id]"></div>
+                        <div class="mt-auto pt-4 flex items-end justify-between gap-3">
+                            @if (project.open_task_count > 0) {
+                                <div class="flex items-baseline gap-1.5">
+                                    <span class="text-display font-semibold text-writing tabular-nums">{{ project.open_task_count }}</span>
+                                    <span class="text-meta text-writing-minor">open task{{ project.open_task_count === 1 ? '' : 's' }}</span>
                                 </div>
+                            } @else if (project.task_count > 0) {
+                                <span class="chip chip-success">All done</span>
+                            } @else {
+                                <span class="text-meta text-writing-least">No tasks yet</span>
                             }
-                            <div class="flex items-center gap-2 text-caption text-writing-minor">
-                                <span>{{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}</span>
-                                <span class="text-writing-least" aria-hidden="true">·</span>
-                                <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
-                            </div>
+                            <span class="text-caption text-writing-minor shrink-0">{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
                         </div>
                     </a>
                 }

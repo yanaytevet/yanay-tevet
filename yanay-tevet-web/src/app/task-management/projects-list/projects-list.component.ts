@@ -37,13 +37,6 @@ export class ProjectsListComponent {
     Object.fromEntries(this.projects().map(p => [p.id, this.routingService.getTaskProjectUrl(p.id)]))
   );
 
-  readonly donePercent = computed(() =>
-    Object.fromEntries(this.projects().map(p => [
-      p.id,
-      p.task_count === 0 ? 0 : Math.round(100 * (p.task_count - p.open_task_count) / p.task_count),
-    ]))
-  );
-
   protected readonly featherPlus = featherPlus;
 
   constructor() {
