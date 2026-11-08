@@ -1,6 +1,6 @@
 import type {PDFDocument, PDFPage, PDFWidget} from 'mupdf';
 import {hasRtl, startsRtl} from './bidi';
-import {ExistingFontEncoder, FallbackFonts} from './font-encoders';
+import {ExistingFontEncoder, FallbackFonts, FallbackNeed, isHebrewCodePoint} from './font-encoders';
 import {mupdf} from './mupdf-runtime';
 import {
   AddTextStyle,
@@ -130,6 +130,15 @@ function fixSingleLineAppearance(widget: PDFWidget): void {
     .replace(pattern, (_m, before: string, y: string, after: string) => `${before}${(Number(y) + shift).toFixed(3)}${after}`)
     .replace(/(-?[\d.]+) (-?[\d.]+)( -?[\d.]+ -?[\d.]+ re)/g, (_m, x: string, y: string, rest: string) => `${x} ${(Number(y) + shift).toFixed(3)}${rest}`);
   appearance.writeStream(head + moved);
+}
+
+// Every character drawn in one chosen bundled font: its Latin look-alike, and its Hebrew one when needed.
+function needsFor(choice: FontChoice, text: string): FallbackNeed[] {
+  const needs: FallbackNeed[] = [{choice, hebrew: false}];
+  if (Array.from(text).some(c => isHebrewCodePoint(c.codePointAt(0)!))) {
+    needs.push({choice, hebrew: true});
+  }
+  return needs;
 }
 
 // Where a rewritten line is pinned: its start, or for right-to-left text its end, on the baseline.
@@ -294,9 +303,9 @@ export class PdfEngine implements PdfEngineApi {
   }
 
   // The bundled fonts an edit will need: one per style whose own font lacks one of its characters.
-  private fallbackNeeds(page: number, chars: CharToWrite[]): FontChoice[] {
+  private fallbackNeeds(page: number, chars: CharToWrite[]): FallbackNeed[] {
     const pdfPage = this.loadPage(page);
-    const needs = new Map<string, FontChoice>();
+    const needs = new Map<string, FallbackNeed>();
     for (const c of chars) {
       if (c.char.trim() === '') {
         continue;
@@ -305,7 +314,8 @@ export class PdfEngine implements PdfEngineApi {
       const own = c.style ? this.fonts.existingFor(page, pdfPage, c.style.font, [codePoint]) : null;
       if (!own?.encode(codePoint)) {
         const choice = c.style ? fontChoiceOf(c.style.font) : {family: 'sans' as const, bold: false, italic: false};
-        needs.set(`${choice.family}|${choice.bold}|${choice.italic}`, choice);
+        const hebrew = isHebrewCodePoint(codePoint);
+        needs.set(`${choice.family}|${choice.bold}|${choice.italic}|${hebrew}`, {choice, hebrew});
       }
     }
     return [...needs.values()];
@@ -323,7 +333,7 @@ export class PdfEngine implements PdfEngineApi {
     const line = this.findLine(page, lineIndex, expectedText);
     const style = dominantStyle(line);
     const chars = diffChars(line.logical, newText);
-    await this.fallbackFonts.prepare(fontOverride ? [fontOverride] : this.fallbackNeeds(page, chars));
+    await this.fallbackFonts.prepare(fontOverride ? needsFor(fontOverride, newText) : this.fallbackNeeds(page, chars));
 
     const anchor = lineAnchor(line);
 
@@ -383,7 +393,7 @@ export class PdfEngine implements PdfEngineApi {
     }
     const matchedStyle = matched ? dominantStyle(matched) : null;
     await this.fallbackFonts.prepare(style.kind === 'custom'
-      ? [style.style.font]
+      ? needsFor(style.style.font, text)
       : this.fallbackNeeds(page, Array.from(text).map(char => ({char, style: matchedStyle, source: null}))));
     const size = style.kind === 'custom' ? style.style.size : matchedStyle!.size;
     const lineHeight = size * 1.25;
@@ -516,7 +526,7 @@ export class PdfEngine implements PdfEngineApi {
 
   async setWidgetValue(page: number, index: number, value: string | boolean): Promise<DocState> {
     if (typeof value === 'string' && hasRtl(value)) {
-      await this.fallbackFonts.prepare([{family: 'sans', bold: false, italic: false}]);
+      await this.fallbackFonts.prepare([{choice: {family: 'sans', bold: false, italic: false}, hebrew: true}]);
     }
     this.operation('Fill form', false, () => {
       const pdfPage = this.loadPage(page);

@@ -148,10 +148,10 @@ export class FontRegistry {
   }
 
   fallbackEncoders(codePoint: number, choice: FontChoice): FallbackFontEncoder[] {
-    return this.fallbackFonts.candidates(codePoint, choice).map(({key, label, font}) => {
+    return this.fallbackFonts.candidates(codePoint, choice).map(({key, label, font, hebrewScale}) => {
       let encoder = this.fallback.get(key);
       if (!encoder) {
-        encoder = new FallbackFontEncoder(key, label, font, this.doc);
+        encoder = new FallbackFontEncoder(key, label, font, this.doc, hebrewScale);
         this.fallback.set(key, encoder);
       }
       return encoder;
@@ -283,7 +283,8 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
       }
       continue;
     }
-    glyphs.push({encoder, glyph, size, color, advance: (glyph.width / 1000) * size, source: c.source, char: v.char});
+    const glyphSize = size * (glyph.scale ?? 1);
+    glyphs.push({encoder, glyph, size: glyphSize, color, advance: (glyph.width / 1000) * glyphSize, source: c.source, char: v.char});
   }
 
   // Keep a character's original advance when its original neighbour still follows it, unless a substitute

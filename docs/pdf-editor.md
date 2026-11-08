@@ -35,10 +35,12 @@ Coordinates everywhere are page space: points, origin top-left of the page as di
 3. **Fonts are looked up before the redaction**: redacting a line drops fonts nothing draws with any more from
    the page's resources. A font is matched by `BaseFont` == MuPDF's font name, and new characters are encoded
    through the inverse of its `/ToUnicode` (or simple encoding). Subset fonts lack most characters, so any
-   character the original can't draw falls back to a bundled font picked by serif/mono/bold/italic: Tinos
-   (serif) or Arimo (sans) from `public/pdf-editor/fonts/`, fetched when an edit needs them, which match Times
-   New Roman and Arial glyph for glyph, Hebrew included, so a substituted letter blends in; then the Nimbus
-   fonts built into MuPDF (and for mono text). The UI marks such
+   character the original can't draw falls back to a bundled font picked by serif/mono/bold/italic, fetched
+   from `public/pdf-editor/fonts/` when an edit needs it: Latin from Tinos (serif) or Arimo (sans), which match
+   Times New Roman and Arial glyph for glyph; Hebrew from Frank Ruhl Libre (serif) or Arimo (sans), whose
+   Hebrew is closest to Times New Roman's and Arial's, drawn at `HEBREW_SCALE` so the widths match (Tinos's
+   own Hebrew is a sans design and doesn't blend). Then the Nimbus fonts built into MuPDF (and for mono
+   text). The UI marks such
    lines; the user can pick a font for the whole line.
 4. The old line is redacted (text only, a band through the middle of the line), and the new glyphs are
    appended as a `q … Q`-wrapped content stream with `TJ` adjustments for the measured spacing.
@@ -104,7 +106,7 @@ result. Headless Chrome's `--print-to-pdf` makes realistic test files (subset fo
 ## License
 
 MuPDF is AGPL-3.0: once the app is public, its source has to be available to its users. The repo is private
-for now; opening it is the plan (add an AGPL `LICENSE` then). Tinos and Arimo are OFL (`public/pdf-editor/fonts/*-OFL.txt`).
+for now; opening it is the plan (add an AGPL `LICENSE` then). Tinos, Arimo and Frank Ruhl Libre are OFL (`public/pdf-editor/fonts/*-OFL.txt`).
 
 The bundled fonts go into the document whole (300–580 KB each); Download and Save pages subset fonts on a
 copy of the saved file (`subsetCopy`), so the open document keeps full fonts and its undo history.

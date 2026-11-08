@@ -6,6 +6,8 @@ export interface GlyphCode {
   hex: string;
   // Advance in thousandths of the font size, as in a PDF /Widths array.
   width: number;
+  // Draw at this fraction of the text size: a substitute Hebrew letter sized to match the original font's.
+  scale?: number;
 }
 
 // Something that can draw characters on a page: either a font the PDF already has, or a bundled one.
@@ -302,7 +304,8 @@ export class FallbackFontEncoder implements CharEncoder {
   readonly substitute = true;
   private ref: PDFObject | null = null;
 
-  constructor(readonly key: string, readonly label: string, private readonly font: Font, private readonly doc: PDFDocument) {}
+  constructor(readonly key: string, readonly label: string, private readonly font: Font, private readonly doc: PDFDocument,
+              private readonly hebrewScale = 1) {}
 
   // Whether text extraction reported `name` for text drawn with this font. The built-in fonts go in under
   // their standard names and come back under their real ones (Times-Roman → NimbusRoman-Regular).
@@ -317,7 +320,8 @@ export class FallbackFontEncoder implements CharEncoder {
     if (gid <= 0) {
       return null;
     }
-    return {hex: toHex(gid, 2), width: this.font.advanceGlyph(gid, 0) * 1000};
+    const scale = this.hebrewScale !== 1 && isHebrewCodePoint(codePoint) ? this.hebrewScale : undefined;
+    return {hex: toHex(gid, 2), width: this.font.advanceGlyph(gid, 0) * 1000, scale};
   }
 
   fontObject(): PDFObject {
@@ -346,28 +350,59 @@ const BUILT_IN_REAL_NAMES: Record<string, string> = {
 const BASE14_LABELS: Record<FontFamily, string> = {sans: 'Sans', serif: 'Serif', mono: 'Mono'};
 
 // Bundled look-alikes, fetched on first use: Tinos matches Times New Roman and Arimo matches Arial glyph for
-// glyph (same widths), Hebrew included. Mono text has no look-alike of its own and borrows Arimo's Hebrew.
+// glyph in Latin (same widths). Their Hebrew doesn't match: Hebrew serif comes from Frank Ruhl Libre, closest
+// to Times New Roman's Hebrew, and Hebrew sans from Arimo, drawn smaller (HEBREW_SCALE) to match the widths of
+// the Times New Roman and Arial Hebrew letters they stand in for.
 function fileFor(choice: FontChoice): string {
   const family = choice.family === 'serif' ? 'Tinos' : 'Arimo';
   const style = choice.bold && choice.italic ? 'BoldItalic' : choice.bold ? 'Bold' : choice.italic ? 'Italic' : 'Regular';
   return `${family}-${style}.ttf`;
 }
 
-const FILE_LABELS: Record<string, string> = {Tinos: 'Tinos (Times New Roman look-alike)', Arimo: 'Arimo (Arial look-alike)'};
+function hebrewFileFor(choice: FontChoice): string {
+  if (choice.family === 'serif') {
+    return `FrankRuhlLibre-${choice.bold ? 'Bold' : 'Regular'}.ttf`;
+  }
+  return `Arimo-${choice.bold ? 'Bold' : 'Regular'}.ttf`;
+}
+
+// Width of Times New Roman's / Arial's Hebrew alphabet over the substitute's, measured.
+const HEBREW_SCALE: Record<string, number> = {
+  'FrankRuhlLibre-Regular.ttf': 0.945, 'FrankRuhlLibre-Bold.ttf': 0.976,
+  'Arimo-Regular.ttf': 0.918, 'Arimo-Bold.ttf': 0.897,
+};
+
+const FILE_LABELS: Record<string, string> = {
+  Tinos: 'Tinos (Times New Roman look-alike)',
+  Arimo: 'Arimo (Arial look-alike)',
+  FrankRuhlLibre: 'Frank Ruhl Libre (Hebrew serif)',
+};
+
+export interface FallbackNeed {
+  choice: FontChoice;
+  hebrew: boolean;
+}
+
+export interface FallbackCandidate {
+  key: string;
+  label: string;
+  font: Font;
+  hebrewScale: number;
+}
 
 export function isHebrewCodePoint(cp: number): boolean {
   return (cp >= 0x0590 && cp <= 0x05ff) || (cp >= 0xfb1d && cp <= 0xfb4f);
 }
 
-// The bundled fonts: Tinos and Arimo (fetched when an edit needs them), then MuPDF's built-in Nimbus fonts.
+// The bundled fonts: the look-alikes (fetched when an edit needs them), then MuPDF's built-in Nimbus fonts.
 export class FallbackFonts {
   private readonly fonts = new Map<string, Font>();
 
   constructor(private readonly loadFontFile: (name: string) => Promise<ArrayBuffer>) {}
 
-  async prepare(choices: FontChoice[]): Promise<void> {
-    for (const choice of choices) {
-      const file = fileFor(choice);
+  async prepare(needs: FallbackNeed[]): Promise<void> {
+    for (const need of needs) {
+      const file = need.hebrew ? hebrewFileFor(need.choice) : fileFor(need.choice);
       if (!this.fonts.has(file)) {
         const data = await this.loadFontFile(file);
         this.fonts.set(file, new (mupdf().Font)(file.replace('.ttf', ''), new Uint8Array(data)));
@@ -375,14 +410,27 @@ export class FallbackFonts {
     }
   }
 
+  private entry(file: string, scaled: boolean): FallbackCandidate | null {
+    const font = this.fonts.get(file);
+    if (!font) {
+      return null;
+    }
+    return {key: `fallback:${file}`, label: FILE_LABELS[file.split('-')[0]], font, hebrewScale: scaled ? (HEBREW_SCALE[file] ?? 1) : 1};
+  }
+
   // The bundled fonts to try for a character, best match first.
-  candidates(codePoint: number, choice: FontChoice): {key: string; label: string; font: Font}[] {
-    const result: {key: string; label: string; font: Font}[] = [];
-    const file = fileFor(choice);
-    const lookAlike = this.fonts.get(file);
-    const lookAlikeEntry = lookAlike ? {key: `fallback:${file}`, label: FILE_LABELS[file.split('-')[0]], font: lookAlike} : null;
-    if (lookAlikeEntry && (choice.family !== 'mono' || isHebrewCodePoint(codePoint))) {
-      result.push(lookAlikeEntry);
+  candidates(codePoint: number, choice: FontChoice): FallbackCandidate[] {
+    const result: FallbackCandidate[] = [];
+    if (isHebrewCodePoint(codePoint)) {
+      const hebrew = this.entry(hebrewFileFor(choice), true);
+      if (hebrew) {
+        result.push(hebrew);
+      }
+    } else if (choice.family !== 'mono') {
+      const latin = this.entry(fileFor(choice), false);
+      if (latin) {
+        result.push(latin);
+      }
     }
     const variant = (choice.bold ? 1 : 0) + (choice.italic ? 2 : 0);
     const name = BASE14_BY_FAMILY[choice.family][variant];
@@ -392,7 +440,7 @@ export class FallbackFonts {
       this.fonts.set(name, font);
     }
     const style = [choice.bold ? 'Bold' : '', choice.italic ? 'Italic' : ''].filter(Boolean).join(' ');
-    result.push({key: `fallback:${name}`, label: `${BASE14_LABELS[choice.family]}${style ? ' ' + style : ''}`, font});
+    result.push({key: `fallback:${name}`, label: `${BASE14_LABELS[choice.family]}${style ? ' ' + style : ''}`, font, hebrewScale: 1});
     return result;
   }
 
@@ -400,8 +448,8 @@ export class FallbackFonts {
   // already loaded can be handed over: the hook is synchronous.
   fontForScript(script: string, bold: boolean): Font | null {
     if (script === 'Hebrew') {
-      return this.fonts.get(fileFor({family: 'sans', bold, italic: false}))
-        ?? this.fonts.get(fileFor({family: 'sans', bold: false, italic: false})) ?? null;
+      return this.fonts.get(hebrewFileFor({family: 'sans', bold, italic: false}))
+        ?? this.fonts.get(hebrewFileFor({family: 'sans', bold: false, italic: false})) ?? null;
     }
     return null;
   }
