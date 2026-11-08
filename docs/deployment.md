@@ -16,6 +16,11 @@ isn't covered here. Moved from DigitalOcean on 2026-10-10.
   builds the frontend for production; job `backend` fails on a missing migration, runs `manage.py check` and
   the tests against Postgres 18 and Redis 8. Railway's "Wait for CI" (backend service settings, Deploy) holds
   a deploy until the checks pass. The Cloudflare frontend doesn't wait: it builds on every push.
+- **Frontend lockfile**: Cloudflare Pages installs with **npm 10** (`npm ci`), while CI and this machine run
+  npm 11, which drops optional peer entries (`chokidar`, `readdirp`) from `package-lock.json` that npm 10's
+  `npm ci` then refuses — the Pages build fails and prod keeps the old frontend while CI stays green. After
+  adding a dependency, write the lockfile with npm 10: `npx npm@10 install <pkg> --package-lock-only`. A failed
+  Pages build shows as the "Cloudflare Pages" check on the commit in GitHub.
 - **Serving**: uvicorn on `$PORT` (pinned to `8000` by a service variable); Railway terminates TLS. Static files
   are served by whitenoise and media lives on Cloudinary, so the container keeps nothing on disk. The
   `/var/log/yanay_tevet/` file log (and the admin log viewer) reset on every deploy;
