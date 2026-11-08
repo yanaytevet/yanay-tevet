@@ -1,5 +1,6 @@
-import {computed, DestroyRef, inject, Injectable, signal} from '@angular/core';
+import {computed, DestroyRef, effect, inject, Injectable, signal} from '@angular/core';
 import {DialogService} from '../common/dialogs/dialogs.service';
+import {PdfEditorLog} from './debug/pdf-editor-log';
 import {PdfEngineClient} from './engine/pdf-engine-client';
 import {
   AddTextStyle,
@@ -52,8 +53,12 @@ function overlaps(a: Rect, b: Rect): boolean {
 @Injectable()
 export class PdfEditorStore {
   private readonly dialogService = inject(DialogService);
+  readonly log = inject(PdfEditorLog);
   private client: PdfEngineClient | null = null;
   private nextMarkerId = 1;
+  // Fonts loaded into the page for the edit boxes, per open document: PDF font name → CSS family.
+  private webFonts = new Map<string, Promise<string | null>>();
+  private nextWebFont = 1;
   private readonly busyCount = signal(0);
 
   readonly fileName = signal<string | null>(null);
@@ -84,6 +89,25 @@ export class PdfEditorStore {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.client?.terminate());
+    effect(() => this.log.log('tool', {tool: this.tool()}));
+    effect(() => this.log.log('zoom', {zoom: this.zoom()}));
+  }
+
+  // The page's lines, for the log: what an edit did to its neighbours.
+  private async linesForLog(page: number): Promise<unknown[] | null> {
+    if (!this.log.enabled) {
+      return null;
+    }
+    try {
+      return (await this.engine.call('textLines', page)).map(l => ({i: l.index, text: l.text, bbox: l.bbox}));
+    } catch {
+      return null;
+    }
+  }
+
+  private logState(type: string, data: Record<string, unknown>): void {
+    const state = this.state();
+    this.log.log(type, {...data, pages: state?.pageCount, canUndo: state?.canUndo, canRedo: state?.canRedo});
   }
 
   private get engine(): PdfEngineClient {
@@ -98,6 +122,7 @@ export class PdfEditorStore {
     try {
       return await work();
     } catch (error) {
+      this.log.log('error', {message: error instanceof Error ? error.message : String(error)});
       await this.dialogService.showNotificationDialog({
         title: 'That didn\'t work',
         text: error instanceof Error ? error.message : String(error),
@@ -133,10 +158,12 @@ export class PdfEditorStore {
       const state = await this.perform(() => this.engine.call('state'));
       if (state) {
         this.fileName.set(file.name);
+        this.webFonts = new Map();
         this.substitutions.set([]);
         this.pageVersions.set({});
         this.currentPage.set(0);
         this.applyState(state, 'all');
+        this.log.log('open', {file: file.name, bytes: file.size, pages: state.pageCount});
       }
     } finally {
       this.loading.set(false);
@@ -165,6 +192,7 @@ export class PdfEditorStore {
   }
 
   close(): void {
+    this.log.log('close', {file: this.fileName()});
     this.client?.terminate();
     this.client = null;
     this.state.set(null);
@@ -174,6 +202,36 @@ export class PdfEditorStore {
 
   render(page: number, scale: number): Promise<RenderedPage> {
     return this.engine.call('render', page, scale);
+  }
+
+  // A CSS font-family for a PDF font, loaded from the font embedded in the file; null if the browser can't
+  // use it, and the edit box falls back to a generic family.
+  webFontFamily(page: number, pdfFontName: string): Promise<string | null> {
+    let family = this.webFonts.get(pdfFontName);
+    if (!family) {
+      family = this.loadWebFont(page, pdfFontName);
+      this.webFonts.set(pdfFontName, family);
+    }
+    return family;
+  }
+
+  private async loadWebFont(page: number, pdfFontName: string): Promise<string | null> {
+    try {
+      const data = await this.engine.call('webFont', page, pdfFontName);
+      if (!data) {
+        this.log.log('web-font', {font: pdfFontName, loaded: false, reason: 'not TrueType/OpenType'});
+        return null;
+      }
+      const family = `pdf-font-${this.nextWebFont++}`;
+      const face = new FontFace(family, data);
+      await face.load();
+      document.fonts.add(face);
+      this.log.log('web-font', {font: pdfFontName, loaded: true, family, bytes: data.byteLength});
+      return family;
+    } catch (error) {
+      this.log.log('web-font', {font: pdfFontName, loaded: false, reason: error instanceof Error ? error.message : String(error)});
+      return null;
+    }
   }
 
   textLines(page: number): Promise<TextLineInfo[]> {
@@ -205,10 +263,16 @@ export class PdfEditorStore {
   }
 
   async editLine(page: number, line: TextLineInfo, newText: string, fontOverride: FontChoice | null): Promise<boolean> {
+    const linesBefore = await this.linesForLog(page);
     const result = await this.perform(() => this.engine.call('editLine', page, line.index, line.text, newText, fontOverride));
     if (!result) {
       return false;
     }
+    this.log.log('edit-line', {
+      page, line: {i: line.index, text: line.text, bbox: line.bbox, rtl: line.rtl, font: line.fontName, size: line.size},
+      newText, fontOverride, substituted: result.substitutedFonts, missing: result.missingCharacters,
+      linesBefore, linesAfter: await this.linesForLog(page),
+    });
     await this.reportText(page, newText.trim() === '' ? null : line.bbox, result);
     if (newText.trim() === '') {
       this.substitutions.update(list => list.filter(m => m.page !== page || !overlaps(m.bbox, line.bbox)));
@@ -221,19 +285,21 @@ export class PdfEditorStore {
     if (!result) {
       return false;
     }
+    this.log.log('add-text', {page, anchor, rtl, text, style, substituted: result.substitutedFonts, linesAfter: await this.linesForLog(page)});
     await this.reportText(page, bbox, result);
     return true;
   }
 
-  private async pageOperation(page: number, work: () => Promise<DocState>): Promise<void> {
+  private async pageOperation(page: number, work: () => Promise<DocState>, type: string, data: Record<string, unknown>): Promise<void> {
     const state = await this.perform(work);
     if (state) {
       this.applyState(state, page);
+      this.logState(type, {page, ...data});
     }
   }
 
   eraseArea(page: number, rect: Rect): Promise<void> {
-    return this.pageOperation(page, () => this.engine.call('eraseArea', page, rect));
+    return this.pageOperation(page, () => this.engine.call('eraseArea', page, rect), 'erase', {rect});
   }
 
   async addMarkup(page: number, from: Point, to: Point): Promise<void> {
@@ -241,6 +307,7 @@ export class PdfEditorStore {
     if (state) {
       this.applyState(state, page);
     }
+    this.log.log('markup', {page, type: this.markupType(), from, to, found: !!state});
   }
 
   async addNote(page: number, at: Point): Promise<void> {
@@ -252,12 +319,13 @@ export class PdfEditorStore {
       confirmActionName: 'Add note',
     });
     if (text) {
-      await this.pageOperation(page, () => this.engine.call('addNote', page, at, text));
+      await this.pageOperation(page, () => this.engine.call('addNote', page, at, text), 'note', {at});
     }
   }
 
   addInk(page: number, stroke: Point[]): Promise<void> {
-    return this.pageOperation(page, () => this.engine.call('addInk', page, [stroke], hexToRgb(this.drawColor()), this.drawWidth()));
+    return this.pageOperation(page, () => this.engine.call('addInk', page, [stroke], hexToRgb(this.drawColor()), this.drawWidth()),
+      'draw', {points: stroke.length});
   }
 
   async addSignature(page: number, rect: Rect): Promise<void> {
@@ -266,30 +334,31 @@ export class PdfEditorStore {
       return;
     }
     const png = await (await fetch(signature)).arrayBuffer();
-    await this.pageOperation(page, () => this.engine.call('addImage', page, rect, png));
+    await this.pageOperation(page, () => this.engine.call('addImage', page, rect, png), 'sign', {rect});
   }
 
   moveAnnotation(page: number, index: number, rect: Rect): Promise<void> {
-    return this.pageOperation(page, () => this.engine.call('moveAnnotation', page, index, rect));
+    return this.pageOperation(page, () => this.engine.call('moveAnnotation', page, index, rect), 'move-annotation', {index, rect});
   }
 
   deleteAnnotation(page: number, index: number): Promise<void> {
-    return this.pageOperation(page, () => this.engine.call('deleteAnnotation', page, index));
+    return this.pageOperation(page, () => this.engine.call('deleteAnnotation', page, index), 'delete-annotation', {index});
   }
 
   setWidgetValue(page: number, index: number, value: string | boolean): Promise<void> {
-    return this.pageOperation(page, () => this.engine.call('setWidgetValue', page, index, value));
+    return this.pageOperation(page, () => this.engine.call('setWidgetValue', page, index, value), 'fill-field', {index, value});
   }
 
-  private async structural(work: () => Promise<DocState>): Promise<void> {
+  private async structural(work: () => Promise<DocState>, type: string, data: Record<string, unknown> = {}): Promise<void> {
     const state = await this.perform(work);
     if (state) {
       this.applyState(state, 'all');
+      this.logState(type, data);
     }
   }
 
   rotatePage(page: number, degrees: number): Promise<void> {
-    return this.structural(() => this.engine.call('rotatePage', page, degrees));
+    return this.structural(() => this.engine.call('rotatePage', page, degrees), 'rotate-page', {page, degrees});
   }
 
   async deletePage(page: number): Promise<void> {
@@ -300,21 +369,21 @@ export class PdfEditorStore {
       danger: true,
     });
     if (confirmed) {
-      await this.structural(() => this.engine.call('deletePage', page));
+      await this.structural(() => this.engine.call('deletePage', page), 'delete-page', {page});
     }
   }
 
   movePage(from: number, to: number): Promise<void> {
-    return this.structural(() => this.engine.call('movePage', from, to));
+    return this.structural(() => this.engine.call('movePage', from, to), 'move-page', {from, to});
   }
 
   insertBlankPage(at: number): Promise<void> {
-    return this.structural(() => this.engine.call('insertBlankPage', at));
+    return this.structural(() => this.engine.call('insertBlankPage', at), 'insert-blank-page', {at});
   }
 
   async insertPdf(file: File, at: number): Promise<void> {
     const data = await file.arrayBuffer();
-    await this.structural(() => this.engine.call('insertPdf', at, data));
+    await this.structural(() => this.engine.call('insertPdf', at, data), 'insert-pdf', {at, file: file.name});
   }
 
   async extractPages(pages: number[]): Promise<void> {
@@ -326,17 +395,18 @@ export class PdfEditorStore {
   }
 
   undo(): Promise<void> {
-    return this.structural(() => this.engine.call('undo'));
+    return this.structural(() => this.engine.call('undo'), 'undo');
   }
 
   redo(): Promise<void> {
-    return this.structural(() => this.engine.call('redo'));
+    return this.structural(() => this.engine.call('redo'), 'redo');
   }
 
   async download(): Promise<void> {
     const data = await this.perform(() => this.engine.call('save'));
     if (data) {
       this.saveFile(data, `${this.baseName()} (edited).pdf`);
+      this.log.log('download', {bytes: data.byteLength});
     }
   }
 

@@ -5,6 +5,7 @@ import {
   bootstrapChatSquareText,
   bootstrapCursor,
   bootstrapCursorText,
+  bootstrapFlag,
   bootstrapEraser,
   bootstrapFonts,
   bootstrapHighlighter,
@@ -52,6 +53,8 @@ export class PdfEditorComponent {
   protected readonly bootstrapArrowCounterclockwise = bootstrapArrowCounterclockwise;
   protected readonly bootstrapArrowClockwise = bootstrapArrowClockwise;
   protected readonly bootstrapLayoutSidebar = bootstrapLayoutSidebar;
+  protected readonly bootstrapFlag = bootstrapFlag;
+  protected readonly logEnabled = this.store.log.enabled;
 
   protected readonly tools: ToolDef[] = [
     {tool: 'select', label: 'Select', icon: bootstrapCursor,
@@ -106,10 +109,14 @@ export class PdfEditorComponent {
   @HostListener('window:keydown', ['$event'])
   protected onKey(event: KeyboardEvent): void {
     const target = event.target as HTMLElement | null;
+    const mod = event.metaKey || event.ctrlKey;
     if (!this.store.state() || target?.closest('input, textarea, select, [contenteditable="true"]')) {
+      if (this.store.state() && mod && ['z', 'y'].includes(event.key.toLowerCase())) {
+        // Undo inside a text box undoes typing, not the document; worth knowing when that surprises someone.
+        this.store.log.log('undo-key-in-text-box', {shift: event.shiftKey});
+      }
       return;
     }
-    const mod = event.metaKey || event.ctrlKey;
     if (mod && event.key.toLowerCase() === 'z') {
       event.preventDefault();
       void (event.shiftKey ? this.store.redo() : this.store.undo());
@@ -132,6 +139,26 @@ export class PdfEditorComponent {
   protected onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.store.canUndo()) {
       event.preventDefault();
+    }
+  }
+
+  protected async flag(): Promise<void> {
+    const note = await this.dialogService.getTextFromInputDialog({
+      title: 'What felt off?',
+      text: 'Saved with what just happened, for Claude to read. A word or two is enough, or leave it empty.',
+      label: 'note',
+      isTextArea: true,
+      allowEmpty: true,
+      confirmActionName: 'Flag it',
+    });
+    if (note !== null) {
+      this.store.log.log('flag', {
+        note,
+        file: this.store.fileName(),
+        tool: this.store.tool(),
+        page: this.store.currentPage(),
+        zoom: this.store.zoom(),
+      });
     }
   }
 

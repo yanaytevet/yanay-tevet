@@ -50,6 +50,8 @@ export interface TextLineInfo {
   size: number;
   font: FontChoice;
   fontName: string;
+  // The font's name as the PDF has it (with its subset tag); identifies it for webFont().
+  pdfFontName: string;
   color: RgbColor;
 }
 
@@ -93,6 +95,8 @@ export interface PdfEngineApi {
   state(): Promise<DocState>;
   render(page: number, scale: number): Promise<RenderedPage>;
   textLines(page: number): Promise<TextLineInfo[]>;
+  // The embedded font a line uses, as a font file the browser can load, or null when it can't be.
+  webFont(page: number, fontName: string): Promise<ArrayBuffer | null>;
   editLine(page: number, lineIndex: number, expectedText: string, newText: string, fontOverride: FontChoice | null): Promise<TextWriteResult>;
   addText(page: number, anchor: Point, rtl: boolean, text: string, style: AddTextStyle): Promise<TextWriteResult>;
   eraseArea(page: number, rect: Rect): Promise<DocState>;

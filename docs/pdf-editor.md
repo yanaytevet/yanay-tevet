@@ -20,6 +20,7 @@ from `import type … from 'mupdf'`.
 | `engine/text-writer.ts` | Writes text into the page's content stream; redaction; the font registry |
 | `engine/font-encoders.ts` | Drawing with a font the PDF already has (via its `/ToUnicode` or encoding) or a bundled one |
 | `engine/bidi.ts` | Display order ↔ reading order for Hebrew/mixed lines (`bidi-js` for UAX #9) |
+| `engine/web-font.ts` | The PDF's embedded font as a browser font for the edit boxes (fresh Unicode cmap, OS/2 if missing) |
 | `engine/pdf-engine-client.ts` | The page's side: typed `call(method, …args)` over `postMessage` |
 | `pdf-editor.store.ts` | Component-level state shared by the editor's pieces; every edit goes through it |
 
@@ -51,6 +52,24 @@ Coordinates everywhere are page space: points, origin top-left of the page as di
   engine shifts it back (`fixSingleLineAppearance`) and drops `/NeedAppearances` so viewers don't rebuild it.
   The Hebrew font reaches MuPDF's layout through `installLoadFontFunction`, so it must be loaded first.
 - **A redaction rewrites the page's content**; image and vector removal is on only for the Erase tool.
+
+## Usage log (development only)
+
+`debug/pdf-editor-log.ts` records what happens in the editor (tool and zoom changes, line clicks, every edit
+with the page's lines before and after, undo/redo, page operations, errors, a text box closed because the page
+changed) in `localStorage`, capped at 600 events. The toolbar's **Flag** button adds a `flag` event with a
+note. The console exposes it as `window.__pdfEditorLog` (`events()`, `last(n)`, `flags()`, `clear()`), so an
+agent driving the built-in browser reads it with a JavaScript call. `isDevMode()` gates all of it: production
+builds log nothing and show no Flag button.
+
+### The edit box shows the PDF's own font
+
+`PdfEngine.webFont` hands the embedded TrueType/OpenType program to the page, which loads it with `FontFace`
+(`PdfEditorStore.webFontFamily`). Embedded subsets map glyphs by PDF code, so `web-font.ts` replaces the cmap
+with a Unicode one built from `/ToUnicode` (code = glyph for Identity CID fonts; via the font's own (3,0)/(1,0)
+cmap for simple fonts), and adds a minimal `OS/2` table when the subset has none (macOS leaves it out; browsers
+refuse a font without one). Bare CFF and Type 1 programs can't load in a browser; those lines fall back to a
+generic family. Characters the subset lacks fall back the same way, as they do on the page.
 
 ## Not supported
 

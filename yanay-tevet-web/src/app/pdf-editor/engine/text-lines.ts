@@ -183,6 +183,7 @@ export function lineInfo(line: EditableLine, index: number): TextLineInfo {
     size: Math.round(style.size * 10) / 10,
     font: fontChoiceOf(style.font),
     fontName: style.font.getName().replace(/^[A-Z]{6}\+/, ''),
+    pdfFontName: style.font.getName(),
     color: toRgb(style.color),
   };
 }

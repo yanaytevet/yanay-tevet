@@ -56,6 +56,9 @@
         <button type="button" class="btn btn-sm btn-primary" (click)="commitEdit()">
           <ng-icon [svg]="featherCheck"/> Save
         </button>
+        @if (view.substitutionNote) {
+          <p class="basis-full text-caption text-writing-minor px-1 pt-1">{{ view.substitutionNote }}</p>
+        }
       </div>
     </div>
   }

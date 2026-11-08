@@ -47,6 +47,8 @@ interface LineEdit {
   font: FontFamily | 'original';
   bold: boolean;
   italic: boolean;
+  // Set when the editor was opened from a substitution warning: the bundled fonts the line uses.
+  substitutedFonts: string[] | null;
 }
 
 interface TextDraft {
@@ -86,6 +88,9 @@ function distanceToRect(p: Point, r: Rect): number {
 })
 export class PdfPageViewComponent {
   protected readonly store = inject(PdfEditorStore);
+  private readonly log = this.store.log;
+  // The page version an editor or text box was opened on.
+  private openedAtVersion = '';
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -143,6 +148,8 @@ export class PdfPageViewComponent {
 
   // Editing an existing line.
   protected readonly editing = signal<LineEdit | null>(null);
+  // The CSS family of the PDF's own font, once loaded, keyed by PDF font name.
+  private readonly loadedFonts = signal<Record<string, string>>({});
   protected readonly editView = computed(() => {
     const edit = this.editing();
     if (!edit || this.tool() !== 'editText') {
@@ -151,22 +158,28 @@ export class PdfPageViewComponent {
     const z = this.zoom();
     const line = edit.line;
     const family = edit.font === 'original' ? line.font.family : edit.font;
+    const ownFont = edit.font === 'original' ? this.loadedFonts()[line.pdfFontName] : undefined;
     const bold = edit.font === 'original' ? line.font.bold : edit.bold;
     const italic = edit.font === 'original' ? line.font.italic : edit.italic;
     return {
-      left: line.rtl ? null : line.bbox[0] * z - 2,
-      right: line.rtl ? (this.size().width - line.bbox[2]) * z - 2 : null,
+      // Less the input's border and padding, so its text starts where the line's does.
+      left: line.rtl ? null : line.bbox[0] * z - 3,
+      right: line.rtl ? (this.size().width - line.bbox[2]) * z - 3 : null,
       top: line.bbox[1] * z - 2,
       minWidth: (line.bbox[2] - line.bbox[0]) * z + 4,
       height: (line.bbox[3] - line.bbox[1]) * z + 4,
       fontSize: line.size * z,
-      fontFamily: CSS_FONT_FAMILY[family],
-      fontWeight: bold ? 700 : 400,
-      fontStyle: italic ? 'italic' : 'normal',
+      fontFamily: ownFont ? `"${ownFont}", ${CSS_FONT_FAMILY[family]}` : CSS_FONT_FAMILY[family],
+      // The PDF's font is already the right weight and slant; asking for more would fake it on top.
+      fontWeight: bold && !ownFont ? 700 : 400,
+      fontStyle: italic && !ownFont ? 'italic' : 'normal',
       color: rgbToCss(line.color),
       dir: line.rtl ? 'rtl' : 'ltr',
       original: `${line.fontName} · ${line.size}pt`,
       custom: edit.font !== 'original',
+      substitutionNote: edit.substitutedFonts
+        ? `The original font lacks some of these characters, so they're drawn in ${edit.substitutedFonts.join(', ')}. To draw the whole line in one font, pick it here.`
+        : null,
     };
   });
 
@@ -181,6 +194,7 @@ export class PdfPageViewComponent {
     const settings = this.store.addTextSettings();
     const match = draft.match;
     const family = match ? match.font.family : (settings.family === 'match' ? 'sans' : settings.family);
+    const ownFont = match ? this.loadedFonts()[match.pdfFontName] : undefined;
     const size = match ? match.size : settings.size;
     const rtl = startsRtl(draft.text);
     return {
@@ -188,9 +202,9 @@ export class PdfPageViewComponent {
       right: rtl ? (this.size().width - draft.x) * z : null,
       top: draft.y * z,
       fontSize: size * z,
-      fontFamily: CSS_FONT_FAMILY[family],
-      fontWeight: (match ? match.font.bold : settings.bold) ? 700 : 400,
-      fontStyle: (match ? match.font.italic : settings.italic) ? 'italic' : 'normal',
+      fontFamily: ownFont ? `"${ownFont}", ${CSS_FONT_FAMILY[family]}` : CSS_FONT_FAMILY[family],
+      fontWeight: (match ? match.font.bold : settings.bold) && !ownFont ? 700 : 400,
+      fontStyle: (match ? match.font.italic : settings.italic) && !ownFont ? 'italic' : 'normal',
       color: match ? rgbToCss(match.color) : settings.color,
       caption: match ? `Matching ${match.fontName} · ${match.size}pt` : `${family[0].toUpperCase()}${family.slice(1)} · ${size}pt`,
       rtl,
@@ -290,6 +304,21 @@ export class PdfPageViewComponent {
       untracked(() => this.loadOverlays(tool));
     });
 
+    // An open editor holds text from before the page changed (an undo, another edit); saving it would
+    // fail or overwrite the change, so it closes.
+    effect(() => {
+      const version = this.version();
+      untracked(() => {
+        const edit = this.editing();
+        const draft = this.draft();
+        if ((edit || draft) && version !== this.openedAtVersion) {
+          this.log.log('editor-closed-page-changed', {page: this.page(), editing: edit?.line.text ?? null, typed: edit?.text ?? draft?.text ?? null});
+          this.editing.set(null);
+          this.draft.set(null);
+        }
+      });
+    });
+
     this.destroyRef.onDestroy(() => {
       if (this.paintTimer) {
         clearTimeout(this.paintTimer);
@@ -356,8 +385,11 @@ export class PdfPageViewComponent {
   // Editing existing text
 
   protected startEdit(line: TextLineInfo): void {
+    this.log.log('line-click', {page: this.page(), line: {i: line.index, text: line.text, bbox: line.bbox, rtl: line.rtl, font: line.fontName, size: line.size}});
+    this.openedAtVersion = this.version();
+    this.loadFont(line);
     this.draft.set(null);
-    this.editing.set({line, text: line.text, font: 'original', bold: line.font.bold, italic: line.font.italic});
+    this.editing.set({line, text: line.text, font: 'original', bold: line.font.bold, italic: line.font.italic, substitutedFonts: null});
     setTimeout(() => this.lineInput()?.nativeElement.focus());
   }
 
@@ -370,7 +402,18 @@ export class PdfPageViewComponent {
       const line = lines.find(l => distanceToRect(centre, l.bbox) === 0) ?? lines.find(l => distanceToRect(centre, l.bbox) < 4);
       if (line) {
         this.startEdit(line);
-        this.editing.update(e => (e ? {...e, font: line.font.family} : e));
+        this.editing.update(e => (e ? {...e, substitutedFonts: marker.fonts} : e));
+      }
+    });
+  }
+
+  private loadFont(line: TextLineInfo): void {
+    if (this.loadedFonts()[line.pdfFontName]) {
+      return;
+    }
+    void this.store.webFontFamily(this.page(), line.pdfFontName).then(family => {
+      if (family) {
+        this.loadedFonts.update(fonts => ({...fonts, [line.pdfFontName]: family}));
       }
     });
   }
@@ -392,6 +435,8 @@ export class PdfPageViewComponent {
   }
 
   protected cancelEdit(): void {
+    const edit = this.editing();
+    this.log.log('edit-cancel', {page: this.page(), line: edit?.line.text, typed: edit?.text});
     this.editing.set(null);
   }
 
@@ -401,6 +446,7 @@ export class PdfPageViewComponent {
       return;
     }
     if (edit.text === edit.line.text && edit.font === 'original') {
+      this.log.log('edit-unchanged', {page: this.page(), line: edit.line.text});
       this.editing.set(null);
       return;
     }
@@ -443,10 +489,15 @@ export class PdfPageViewComponent {
   }
 
   private startDraft(point: Point): void {
+    this.openedAtVersion = this.version();
     this.editing.set(null);
     const match = this.store.addTextSettings().family === 'match' ? this.nearestLine(point) : null;
     const size = match ? match.size : this.store.addTextSettings().size;
     this.draft.set({x: point[0], y: point[1] - size * 0.6, text: '', match});
+    if (match) {
+      this.loadFont(match);
+    }
+    this.log.log('draft-start', {page: this.page(), point, match: match ? {i: match.index, text: match.text, font: match.fontName, size: match.size} : null});
     setTimeout(() => this.draftInput()?.nativeElement.focus());
   }
 
@@ -501,6 +552,7 @@ export class PdfPageViewComponent {
       event.preventDefault();
       void this.commitDraft();
     } else if (event.key === 'Escape') {
+      this.log.log('draft-cancel', {page: this.page(), typed: this.draft()?.text});
       this.draft.set(null);
     }
   }
@@ -513,6 +565,7 @@ export class PdfPageViewComponent {
     }
     const point = this.toPage(event);
     const tool = this.tool();
+    this.log.log('page-press', {page: this.page(), tool, point});
     if (tool === 'addText') {
       event.preventDefault();
       if (this.draft()) {
@@ -599,6 +652,7 @@ export class PdfPageViewComponent {
 
   protected selectAnnotation(index: number, event: PointerEvent): void {
     event.stopPropagation();
+    this.log.log('annotation-select', {page: this.page(), index});
     this.selectedAnnotation.set(index);
     const annotation = this.annotations().find(a => a.index === index);
     if (annotation?.movable) {

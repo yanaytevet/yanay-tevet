@@ -63,6 +63,14 @@ export class FontRegistry {
     this.fallback.clear();
   }
 
+  // The PDF fonts on a page whose /BaseFont is `name`.
+  fontObjectsNamed(page: PDFPage, name: string): PDFObject[] {
+    return this.fontObjectsOf(page).filter(ref => {
+      const baseFont = ref.resolve().get('BaseFont');
+      return baseFont.isName() && baseFont.asName() === name;
+    });
+  }
+
   private fontObjectsOf(page: PDFPage): PDFObject[] {
     const result: PDFObject[] = [];
     const seen = new Set<number>();
@@ -260,7 +268,9 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
           break;
         }
       }
-      if (glyph && encoder && c.style && !spec.override && v.char.trim() !== '') {
+      // Text an earlier edit already drew in this bundled font is not a substitution.
+      const sameFont = encoder instanceof FallbackFontEncoder && c.style !== null && encoder.drew(c.style.font.getName());
+      if (glyph && encoder && c.style && !spec.override && v.char.trim() !== '' && !sameFont) {
         substituted.add(encoder.label);
       }
     }

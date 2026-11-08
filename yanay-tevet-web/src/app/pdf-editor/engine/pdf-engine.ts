@@ -1,6 +1,6 @@
 import type {PDFDocument, PDFPage, PDFWidget} from 'mupdf';
 import {startsRtl} from './bidi';
-import {FallbackFonts} from './font-encoders';
+import {ExistingFontEncoder, FallbackFonts} from './font-encoders';
 import {mupdf} from './mupdf-runtime';
 import {
   AddTextStyle,
@@ -21,6 +21,7 @@ import {
 } from './pdf-engine.types';
 import {dominantStyle, EditableLine, extractLines, fontChoiceOf, lineInfo, LineChar, toRgb} from './text-lines';
 import {CharToWrite, FontRegistry, redact, writeText} from './text-writer';
+import {webFontFromPdfFont} from './web-font';
 
 const MOVABLE_ANNOTATIONS = new Set(['Stamp', 'Text', 'FreeText', 'Square', 'Circle']);
 const HIDDEN_ANNOTATIONS = new Set(['Popup', 'Link', 'Widget']);
@@ -239,6 +240,18 @@ export class PdfEngine implements PdfEngineApi {
 
   async textLines(page: number): Promise<TextLineInfo[]> {
     return this.lines(page).map((line, i) => lineInfo(line, i));
+  }
+
+  async webFont(page: number, fontName: string): Promise<ArrayBuffer | null> {
+    const pdfPage = this.loadPage(page);
+    for (const ref of this.fonts.fontObjectsNamed(pdfPage, fontName)) {
+      const encoder = ExistingFontEncoder.fromFontObject(ref);
+      const font = webFontFromPdfFont(ref, encoder?.unicodeMap() ?? null);
+      if (font) {
+        return copyBuffer(font);
+      }
+    }
+    return null;
   }
 
   private findLine(page: number, lineIndex: number, expectedText: string): EditableLine {

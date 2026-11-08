@@ -283,6 +283,11 @@ export class ExistingFontEncoder implements CharEncoder {
     return {hex: toHex(code, this.bytes), width: this.widthOf(code, codePoint)};
   }
 
+  // Unicode → the code this font draws it with.
+  unicodeMap(): Map<number, number> {
+    return this.unicodeToCode;
+  }
+
   covers(codePoints: number[]): number {
     return codePoints.filter(cp => this.unicodeToCode.has(cp)).length;
   }
@@ -298,6 +303,14 @@ export class FallbackFontEncoder implements CharEncoder {
   private ref: PDFObject | null = null;
 
   constructor(readonly key: string, readonly label: string, private readonly font: Font, private readonly doc: PDFDocument) {}
+
+  // Whether text extraction reported `name` for text drawn with this font. The built-in fonts go in under
+  // their standard names and come back under their real ones (Times-Roman → NimbusRoman-Regular).
+  drew(name: string): boolean {
+    const own = this.font.getName();
+    const bare = name.replace(/^[A-Z]{6}\+/, '');
+    return bare === own || bare === BUILT_IN_REAL_NAMES[own];
+  }
 
   encode(codePoint: number): GlyphCode | null {
     const gid = this.font.encodeCharacter(codePoint);
@@ -319,6 +332,15 @@ const BASE14_BY_FAMILY: Record<FontFamily, [string, string, string, string]> = {
   sans: ['Helvetica', 'Helvetica-Bold', 'Helvetica-Oblique', 'Helvetica-BoldOblique'],
   serif: ['Times-Roman', 'Times-Bold', 'Times-Italic', 'Times-BoldItalic'],
   mono: ['Courier', 'Courier-Bold', 'Courier-Oblique', 'Courier-BoldOblique'],
+};
+
+const BUILT_IN_REAL_NAMES: Record<string, string> = {
+  'Helvetica': 'NimbusSans-Regular', 'Helvetica-Bold': 'NimbusSans-Bold',
+  'Helvetica-Oblique': 'NimbusSans-Italic', 'Helvetica-BoldOblique': 'NimbusSans-BoldItalic',
+  'Times-Roman': 'NimbusRoman-Regular', 'Times-Bold': 'NimbusRoman-Bold',
+  'Times-Italic': 'NimbusRoman-Italic', 'Times-BoldItalic': 'NimbusRoman-BoldItalic',
+  'Courier': 'NimbusMonoPS-Regular', 'Courier-Bold': 'NimbusMonoPS-Bold',
+  'Courier-Oblique': 'NimbusMonoPS-Italic', 'Courier-BoldOblique': 'NimbusMonoPS-BoldItalic',
 };
 
 const BASE14_LABELS: Record<FontFamily, string> = {sans: 'Sans', serif: 'Serif', mono: 'Mono'};
