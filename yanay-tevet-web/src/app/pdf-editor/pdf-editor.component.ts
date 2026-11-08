@@ -1,6 +1,7 @@
 import {Component, computed, effect, ElementRef, HostListener, inject, signal, untracked, viewChild} from '@angular/core';
 import {
   bootstrapArrowClockwise,
+  bootstrapArrowsMove,
   bootstrapArrowCounterclockwise,
   bootstrapChatSquareText,
   bootstrapCursor,
@@ -61,6 +62,8 @@ export class PdfEditorComponent {
       hint: 'Fill in form fields. Click a note, drawing or signature to move or delete it.'},
     {tool: 'editText', label: 'Edit text', icon: bootstrapCursorText,
       hint: 'Click a line to change or delete it. It keeps its font; characters that font lacks are marked with a warning.'},
+    {tool: 'move', label: 'Move text', icon: bootstrapArrowsMove,
+      hint: 'Drag a line to move it. Drag a box or Shift+click to pick several. Arrow keys nudge (Shift: 10pt).'},
     {tool: 'addText', label: 'Add text', icon: bootstrapFonts, hint: 'Click where the text should start.'},
     {tool: 'erase', label: 'Erase', icon: bootstrapEraser, hint: 'Drag over text or images to remove them from the file.'},
     {tool: 'markup', label: 'Highlight', icon: bootstrapHighlighter, hint: 'Drag across text to mark it.'},
@@ -123,7 +126,7 @@ export class PdfEditorComponent {
     } else if (mod && event.key.toLowerCase() === 'y') {
       event.preventDefault();
       void this.store.redo();
-    } else if (event.key === 'Escape') {
+    } else if (event.key === 'Escape' && this.store.tool() !== 'move') {
       this.store.tool.set('select');
     }
   }

@@ -80,7 +80,7 @@ function along(p: Point, dir: Point): number {
   return p[0] * dir[0] + p[1] * dir[1];
 }
 
-function buildLine(bbox: Rect, dir: Point, chars: Omit<LineChar, 'measuredAdvance' | 'visualIndex'>[]): EditableLine | null {
+function buildLine(bbox: Rect, dir: Point, chars: RawChar[]): EditableLine | null {
   if (chars.every(c => c.char.trim() === '')) {
     return null;
   }
@@ -119,8 +119,79 @@ function buildLine(bbox: Rect, dir: Point, chars: Omit<LineChar, 'measuredAdvanc
   return {bbox, dir, rtl, labelsByShape, visual, logical, text: logical.map(c => c.char).join('')};
 }
 
+type RawChar = Omit<LineChar, 'measuredAdvance' | 'visualIndex'>;
+
+interface RawLine {
+  bbox: Rect;
+  dir: Point;
+  chars: RawChar[];
+  order: number;
+}
+
+function isHorizontal(dir: Point): boolean {
+  return Math.abs(dir[1]) < 0.01 && dir[0] > 0;
+}
+
+function baselineOf(line: RawLine): number {
+  const ys = line.chars.map(c => c.origin[1]).sort((a, b) => a - b);
+  return ys[Math.floor(ys.length / 2)];
+}
+
+function sizeOf(line: RawLine): number {
+  return Math.max(...line.chars.map(c => c.style.size), 1);
+}
+
+// MuPDF splits a line wherever the producer started a new text object, so one sentence can arrive as
+// pieces sitting side by side on one baseline. Editing a piece alone lets a longer edit run over its
+// neighbour; joining them makes the sentence one line. Pieces further apart than about a word gap stay
+// separate (table columns).
+export function joinLinePieces(raw: RawLine[]): RawLine[] {
+  const horizontal = raw.filter(l => isHorizontal(l.dir) && l.chars.length > 0);
+  const others = raw.filter(l => !isHorizontal(l.dir) || l.chars.length === 0);
+  const sorted = [...horizontal].sort((a, b) => baselineOf(a) - baselineOf(b) || a.bbox[0] - b.bbox[0]);
+  const rows: RawLine[][] = [];
+  for (const line of sorted) {
+    const row = rows[rows.length - 1];
+    if (row && Math.abs(baselineOf(row[0]) - baselineOf(line)) < 0.2 * Math.min(sizeOf(row[0]), sizeOf(line))) {
+      row.push(line);
+    } else {
+      rows.push([line]);
+    }
+  }
+  const joined: RawLine[] = [];
+  for (const row of rows) {
+    row.sort((a, b) => a.bbox[0] - b.bbox[0]);
+    let current: RawLine = {...row[0], chars: [...row[0].chars]};
+    for (const next of row.slice(1)) {
+      const size = Math.max(sizeOf(current), sizeOf(next));
+      const gap = next.bbox[0] - current.bbox[2];
+      if (gap > 0.8 * size || gap < -0.5 * size) {
+        joined.push(current);
+        current = {...next, chars: [...next.chars]};
+        continue;
+      }
+      const left = [...current.chars].sort((a, b) => a.origin[0] - b.origin[0]).pop()!;
+      const right = [...next.chars].sort((a, b) => a.origin[0] - b.origin[0])[0];
+      const chars = [...current.chars];
+      // The pieces' word gap has no space character of its own; give it one so the words stay apart.
+      if (gap > 0.15 * size && left.char !== ' ' && right.char !== ' ') {
+        const x = current.bbox[2];
+        chars.push({char: ' ', origin: [x, left.origin[1]], quad: [x, left.quad[1], next.bbox[0], left.quad[3], x, left.quad[5], next.bbox[0], left.quad[7]], style: left.style});
+      }
+      chars.push(...next.chars);
+      current = {
+        bbox: [current.bbox[0], Math.min(current.bbox[1], next.bbox[1]), Math.max(current.bbox[2], next.bbox[2]), Math.max(current.bbox[3], next.bbox[3])],
+        dir: current.dir,
+        chars,
+        order: Math.min(current.order, next.order),
+      };
+    }
+    joined.push(current);
+  }
+  return [...joined, ...others].sort((a, b) => a.order - b.order);
+}
+
 export function extractLines(page: PDFPage): EditableLine[] {
-  const lines: EditableLine[] = [];
   const stext = page.toStructuredText('');
   // One object per distinct style, so styles compare by identity.
   const styles = new Map<string, CharStyle>();
@@ -133,24 +204,29 @@ export function extractLines(page: PDFPage): EditableLine[] {
     }
     return style;
   };
-  let current: {bbox: Rect; dir: Point; chars: Omit<LineChar, 'measuredAdvance' | 'visualIndex'>[]} | null = null;
+  const raw: RawLine[] = [];
+  let current: RawLine | null = null;
   stext.walk({
     beginLine(bbox, _wmode, dir) {
-      current = {bbox: [...bbox] as Rect, dir: [dir[0], dir[1]], chars: []};
+      current = {bbox: [...bbox] as Rect, dir: [dir[0], dir[1]], chars: [], order: raw.length};
     },
     onChar(c, origin, font, size, quad, color) {
       current?.chars.push({char: c, origin: [origin[0], origin[1]], quad: [...quad], style: styleOf(font, size, color)});
     },
     endLine() {
       if (current) {
-        const line = buildLine(current.bbox, current.dir, current.chars);
-        if (line) {
-          lines.push(line);
-        }
+        raw.push(current);
       }
       current = null;
     },
   });
+  const lines: EditableLine[] = [];
+  for (const piece of joinLinePieces(raw)) {
+    const line = buildLine(piece.bbox, piece.dir, piece.chars);
+    if (line) {
+      lines.push(line);
+    }
+  }
   return lines;
 }
 

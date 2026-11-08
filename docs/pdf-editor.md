@@ -30,16 +30,30 @@ Coordinates everywhere are page space: points, origin top-left of the page as di
 
 1. The line comes from structured text; characters are sorted along the baseline (display order), then
    turned into reading order. Each keeps its font, size, colour and its measured advance to the next one.
-2. The new text is diffed against the old: unchanged characters keep their style and original spacing,
-   inserted ones take the style of the character before them.
+2. The new text is diffed against the old (longest common subsequence): unchanged characters keep their
+   style and original spacing, inserted ones take the style of the character before them.
 3. **Fonts are looked up before the redaction**: redacting a line drops fonts nothing draws with any more from
    the page's resources. A font is matched by `BaseFont` == MuPDF's font name, and new characters are encoded
    through the inverse of its `/ToUnicode` (or simple encoding). Subset fonts lack most characters, so any
-   character the original can't draw falls back to a bundled font (Nimbus Sans/Roman/Mono built into MuPDF,
-   Noto Sans/Serif Hebrew from `public/pdf-editor/fonts/`) picked by serif/mono/bold/italic. The UI marks such
+   character the original can't draw falls back to a bundled font picked by serif/mono/bold/italic: Tinos
+   (serif) or Arimo (sans) from `public/pdf-editor/fonts/`, fetched when an edit needs them, which match Times
+   New Roman and Arial glyph for glyph, Hebrew included, so a substituted letter blends in; then the Nimbus
+   fonts built into MuPDF (and for mono text). The UI marks such
    lines; the user can pick a font for the whole line.
 4. The old line is redacted (text only, a band through the middle of the line), and the new glyphs are
    appended as a `q … Q`-wrapped content stream with `TJ` adjustments for the measured spacing.
+
+### Lines and moving
+
+MuPDF starts a new line wherever the producer started a new text object, so one sentence can arrive in
+pieces on one baseline. `joinLinePieces` joins pieces on the same baseline that are less than about a word
+gap apart (adding a space where the gap has none) and leaves wider gaps alone (table columns). Without it,
+a lengthened piece runs over its neighbour, and editing the neighbour then cuts into it.
+
+The Move tool (`PdfEngine.moveLines`) takes every selected line off before writing any back, at the same
+anchor plus the offset, in one journal operation. While dragging, the page shows snapshots cut from the
+rendered page; they stay until the page has re-rendered, so nothing jumps back. Arrow-key nudges collect
+into one move after 700 ms of quiet.
 
 ### Things that bit
 
@@ -51,6 +65,9 @@ Coordinates everywhere are page space: points, origin top-left of the page as di
 - **Hebrew in form fields.** MuPDF lays out a single-line field with non-Latin text one line too low; the
   engine shifts it back (`fixSingleLineAppearance`) and drops `/NeedAppearances` so viewers don't rebuild it.
   The Hebrew font reaches MuPDF's layout through `installLoadFontFunction`, so it must be loaded first.
+- **Subsets often have no space glyph** (and MuPDF reports synthetic spaces for gaps), so spaces come from a
+  bundled font; they still keep the original gap, or a rewritten line comes out narrower. A moved line keeps
+  every original advance.
 - **A redaction rewrites the page's content**; image and vector removal is on only for the Erase tool.
 
 ## Usage log (development only)
@@ -87,4 +104,7 @@ result. Headless Chrome's `--print-to-pdf` makes realistic test files (subset fo
 ## License
 
 MuPDF is AGPL-3.0: once the app is public, its source has to be available to its users. The repo is private
-for now; opening it is the plan (add an AGPL `LICENSE` then). The Noto fonts are OFL (`public/pdf-editor/fonts/OFL.txt`).
+for now; opening it is the plan (add an AGPL `LICENSE` then). Tinos and Arimo are OFL (`public/pdf-editor/fonts/*-OFL.txt`).
+
+The bundled fonts go into the document whole (300–580 KB each); Download and Save pages subset fonts on a
+copy of the saved file (`subsetCopy`), so the open document keeps full fonts and its undo history.

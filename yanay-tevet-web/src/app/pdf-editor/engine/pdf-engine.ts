@@ -1,5 +1,5 @@
 import type {PDFDocument, PDFPage, PDFWidget} from 'mupdf';
-import {startsRtl} from './bidi';
+import {hasRtl, startsRtl} from './bidi';
 import {ExistingFontEncoder, FallbackFonts} from './font-encoders';
 import {mupdf} from './mupdf-runtime';
 import {
@@ -7,6 +7,7 @@ import {
   AnnotationInfo,
   DocState,
   FontChoice,
+  LineRef,
   MarkupType,
   OpenResult,
   PdfEngineApi,
@@ -34,32 +35,58 @@ function keep(c: LineChar, char: string): CharToWrite {
   return {char, style: c.style, source: {visualIndex: c.visualIndex, measuredAdvance: c.measuredAdvance}};
 }
 
-// Maps the new text onto the old line: characters an edit leaves alone keep their style and spacing,
-// inserted ones take the style of the character before them.
+// Maps the new text onto the old line: characters an edit leaves alone (by longest common subsequence)
+// keep their style and spacing; inserted ones take the style of the character before them.
 export function diffChars(old: LineChar[], newText: string): CharToWrite[] {
   const next = Array.from(newText);
-  let prefix = 0;
-  while (prefix < old.length && prefix < next.length && old[prefix].char === next[prefix]) {
-    prefix++;
+  const n = old.length;
+  const m = next.length;
+  const matchOf = new Array<number>(m).fill(-1);
+  if (n * m <= 250_000) {
+    const lengths = new Uint16Array((n + 1) * (m + 1));
+    const at = (i: number, j: number) => i * (m + 1) + j;
+    for (let i = n - 1; i >= 0; i--) {
+      for (let j = m - 1; j >= 0; j--) {
+        lengths[at(i, j)] = old[i].char === next[j]
+          ? lengths[at(i + 1, j + 1)] + 1
+          : Math.max(lengths[at(i + 1, j)], lengths[at(i, j + 1)]);
+      }
+    }
+    let i = 0;
+    let j = 0;
+    while (i < n && j < m) {
+      if (old[i].char === next[j]) {
+        matchOf[j] = i;
+        i++;
+        j++;
+      } else if (lengths[at(i + 1, j)] >= lengths[at(i, j + 1)]) {
+        i++;
+      } else {
+        j++;
+      }
+    }
+  } else {
+    // A very long line: the common prefix and suffix are enough.
+    let prefix = 0;
+    while (prefix < n && prefix < m && old[prefix].char === next[prefix]) {
+      matchOf[prefix] = prefix;
+      prefix++;
+    }
+    let suffix = 0;
+    while (suffix < n - prefix && suffix < m - prefix && old[n - 1 - suffix].char === next[m - 1 - suffix]) {
+      matchOf[m - 1 - suffix] = n - 1 - suffix;
+      suffix++;
+    }
   }
-  let suffix = 0;
-  while (suffix < old.length - prefix && suffix < next.length - prefix
-    && old[old.length - 1 - suffix].char === next[next.length - 1 - suffix]) {
-    suffix++;
-  }
-  const result: CharToWrite[] = [];
-  for (let i = 0; i < prefix; i++) {
-    result.push(keep(old[i], next[i]));
-  }
-  const styleSource = prefix > 0 ? old[prefix - 1] : old[prefix] ?? old[0];
-  for (let i = prefix; i < next.length - suffix; i++) {
-    result.push(inherit(next[i], styleSource));
-  }
-  for (let i = 0; i < suffix; i++) {
-    const o = old[old.length - suffix + i];
-    result.push(keep(o, next[next.length - suffix + i]));
-  }
-  return result;
+  const firstMatch = matchOf.find(i => i >= 0);
+  let previous: LineChar | undefined = firstMatch !== undefined ? old[firstMatch] : old[0];
+  return next.map((char, j) => {
+    if (matchOf[j] >= 0) {
+      previous = old[matchOf[j]];
+      return keep(previous, char);
+    }
+    return inherit(char, previous);
+  });
 }
 
 function lineRedactionRect(line: EditableLine): Rect {
@@ -103,6 +130,18 @@ function fixSingleLineAppearance(widget: PDFWidget): void {
     .replace(pattern, (_m, before: string, y: string, after: string) => `${before}${(Number(y) + shift).toFixed(3)}${after}`)
     .replace(/(-?[\d.]+) (-?[\d.]+)( -?[\d.]+ -?[\d.]+ re)/g, (_m, x: string, y: string, rest: string) => `${x} ${(Number(y) + shift).toFixed(3)}${rest}`);
   appearance.writeStream(head + moved);
+}
+
+// Where a rewritten line is pinned: its start, or for right-to-left text its end, on the baseline.
+function lineAnchor(line: EditableLine): Point {
+  // Measured from the characters the line keeps: padding spaces trimmed off its ends don't count.
+  const kept = new Set(line.logical.map(c => c.visualIndex));
+  const visualFirst = line.visual.find(c => kept.has(c.visualIndex)) ?? line.visual[0];
+  const visualLast = [...line.visual].reverse().find(c => kept.has(c.visualIndex)) ?? line.visual[line.visual.length - 1];
+  const lastAdvance = Math.hypot(visualLast.quad[2] - visualLast.quad[0], visualLast.quad[3] - visualLast.quad[1]);
+  return line.rtl
+    ? [visualLast.origin[0] + lastAdvance * line.dir[0], visualLast.origin[1] + lastAdvance * line.dir[1]]
+    : visualFirst.origin;
 }
 
 function widgetKind(widget: PDFWidget): WidgetKind {
@@ -254,6 +293,24 @@ export class PdfEngine implements PdfEngineApi {
     return null;
   }
 
+  // The bundled fonts an edit will need: one per style whose own font lacks one of its characters.
+  private fallbackNeeds(page: number, chars: CharToWrite[]): FontChoice[] {
+    const pdfPage = this.loadPage(page);
+    const needs = new Map<string, FontChoice>();
+    for (const c of chars) {
+      if (c.char.trim() === '') {
+        continue;
+      }
+      const codePoint = c.char.codePointAt(0)!;
+      const own = c.style ? this.fonts.existingFor(page, pdfPage, c.style.font, [codePoint]) : null;
+      if (!own?.encode(codePoint)) {
+        const choice = c.style ? fontChoiceOf(c.style.font) : {family: 'sans' as const, bold: false, italic: false};
+        needs.set(`${choice.family}|${choice.bold}|${choice.italic}`, choice);
+      }
+    }
+    return [...needs.values()];
+  }
+
   private findLine(page: number, lineIndex: number, expectedText: string): EditableLine {
     const line = this.lines(page)[lineIndex];
     if (!line || line.text !== expectedText) {
@@ -265,15 +322,10 @@ export class PdfEngine implements PdfEngineApi {
   async editLine(page: number, lineIndex: number, expectedText: string, newText: string, fontOverride: FontChoice | null): Promise<TextWriteResult> {
     const line = this.findLine(page, lineIndex, expectedText);
     const style = dominantStyle(line);
-    const choices: FontChoice[] = fontOverride ? [fontOverride] : [...new Set(line.logical.map(c => c.style))].map(s => fontChoiceOf(s.font));
-    await this.fallbackFonts.prepare(newText, choices);
+    const chars = diffChars(line.logical, newText);
+    await this.fallbackFonts.prepare(fontOverride ? [fontOverride] : this.fallbackNeeds(page, chars));
 
-    const visualFirst = line.visual[0];
-    const visualLast = line.visual[line.visual.length - 1];
-    const lastAdvance = Math.hypot(visualLast.quad[2] - visualLast.quad[0], visualLast.quad[3] - visualLast.quad[1]);
-    const anchor: Point = line.rtl
-      ? [visualLast.origin[0] + lastAdvance * line.dir[0], visualLast.origin[1] + lastAdvance * line.dir[1]]
-      : visualFirst.origin;
+    const anchor = lineAnchor(line);
 
     const outcome = this.operation('Edit text', false, () => {
       const pdfPage = this.loadPage(page);
@@ -283,7 +335,7 @@ export class PdfEngine implements PdfEngineApi {
         return {substitutedFonts: [], missingCharacters: []};
       }
       return writeText(this.document, page, pdfPage, this.fonts, {
-        chars: diffChars(line.logical, newText),
+        chars,
         rtl: line.rtl,
         anchor,
         anchorIsEnd: line.rtl,
@@ -295,14 +347,44 @@ export class PdfEngine implements PdfEngineApi {
     return {...outcome, state: await this.state()};
   }
 
+  async moveLines(page: number, lines: LineRef[], offset: Point): Promise<DocState> {
+    const targets = lines.map(ref => this.findLine(page, ref.index, ref.text));
+    await this.fallbackFonts.prepare(this.fallbackNeeds(page, targets.flatMap(t => t.logical.map(c => keep(c, c.char)))));
+    this.operation('Move text', false, () => {
+      const pdfPage = this.loadPage(page);
+      for (const target of targets) {
+        this.fonts.warm(page, pdfPage, target.logical);
+      }
+      // Every line comes off before any goes back, so a line moved onto another's old place survives.
+      for (const target of targets) {
+        redact(pdfPage, lineRedactionRect(target), false);
+      }
+      for (const target of targets) {
+        const anchor = lineAnchor(target);
+        writeText(this.document, page, pdfPage, this.fonts, {
+          chars: target.logical.map(c => keep(c, c.char)),
+          rtl: target.rtl,
+          anchor: [anchor[0] + offset[0], anchor[1] + offset[1]],
+          anchorIsEnd: target.rtl,
+          dir: target.dir,
+          override: null,
+          existingFontsLabelByShape: target.labelsByShape,
+          keepSpacing: true,
+        });
+      }
+    });
+    return this.state();
+  }
+
   async addText(page: number, anchor: Point, rtl: boolean, text: string, style: AddTextStyle): Promise<TextWriteResult> {
     let matched: EditableLine | null = null;
     if (style.kind === 'match') {
       matched = this.lines(page)[style.lineIndex] ?? null;
     }
     const matchedStyle = matched ? dominantStyle(matched) : null;
-    const choice = style.kind === 'custom' ? style.style.font : fontChoiceOf(matchedStyle!.font);
-    await this.fallbackFonts.prepare(text, [choice]);
+    await this.fallbackFonts.prepare(style.kind === 'custom'
+      ? [style.style.font]
+      : this.fallbackNeeds(page, Array.from(text).map(char => ({char, style: matchedStyle, source: null}))));
     const size = style.kind === 'custom' ? style.style.size : matchedStyle!.size;
     const lineHeight = size * 1.25;
     const outcome = this.operation('Add text', false, () => {
@@ -433,8 +515,8 @@ export class PdfEngine implements PdfEngineApi {
   }
 
   async setWidgetValue(page: number, index: number, value: string | boolean): Promise<DocState> {
-    if (typeof value === 'string') {
-      await this.fallbackFonts.prepare(value, [{family: 'sans', bold: false, italic: false}]);
+    if (typeof value === 'string' && hasRtl(value)) {
+      await this.fallbackFonts.prepare([{family: 'sans', bold: false, italic: false}]);
     }
     this.operation('Fill form', false, () => {
       const pdfPage = this.loadPage(page);
@@ -526,7 +608,7 @@ export class PdfEngine implements PdfEngineApi {
     for (const page of pages) {
       graft.graftPage(-1, this.document, page);
     }
-    return copyBuffer(out.saveToBuffer('garbage=compact,compress').asUint8Array());
+    return copyBuffer(subsetCopy(out.saveToBuffer('garbage=compact,compress').asUint8Array()));
   }
 
   async undo(): Promise<DocState> {
@@ -551,7 +633,23 @@ export class PdfEngine implements PdfEngineApi {
   }
 
   async save(): Promise<ArrayBuffer> {
-    return copyBuffer(this.document.saveToBuffer('garbage=compact,compress').asUint8Array());
+    return copyBuffer(subsetCopy(this.document.saveToBuffer('garbage=compact,compress').asUint8Array()));
+  }
+
+}
+
+// Bundled fonts go into the document whole (half a megabyte each). The saved file gets them subset, done on a
+// copy so the open document keeps the full fonts and its undo history.
+function subsetCopy(saved: Uint8Array): Uint8Array {
+  try {
+    const copy = mupdf().Document.openDocument(saved.slice(), 'application/pdf').asPDF();
+    if (!copy) {
+      return saved;
+    }
+    copy.subsetFonts();
+    return copy.saveToBuffer('garbage=compact,compress').asUint8Array();
+  } catch {
+    return saved;
   }
 }
 

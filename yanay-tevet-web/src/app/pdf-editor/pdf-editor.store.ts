@@ -18,7 +18,7 @@ import {
   WidgetInfo,
 } from './engine/pdf-engine.types';
 
-export type PdfTool = 'select' | 'editText' | 'addText' | 'erase' | 'markup' | 'note' | 'draw' | 'sign';
+export type PdfTool = 'select' | 'editText' | 'move' | 'addText' | 'erase' | 'markup' | 'note' | 'draw' | 'sign';
 
 export interface AddTextSettings {
   family: FontFamily | 'match';
@@ -277,6 +277,17 @@ export class PdfEditorStore {
     if (newText.trim() === '') {
       this.substitutions.update(list => list.filter(m => m.page !== page || !overlaps(m.bbox, line.bbox)));
     }
+    return true;
+  }
+
+  async moveLines(page: number, lines: TextLineInfo[], offset: Point): Promise<boolean> {
+    const state = await this.perform(() => this.engine.call('moveLines', page, lines.map(l => ({index: l.index, text: l.text})), offset));
+    if (!state) {
+      return false;
+    }
+    this.applyState(state, page);
+    this.substitutions.update(list => list.filter(m => m.page !== page || !lines.some(l => overlaps(m.bbox, l.bbox))));
+    this.log.log('move-lines', {page, lines: lines.map(l => ({i: l.index, text: l.text, bbox: l.bbox})), offset, linesAfter: await this.linesForLog(page)});
     return true;
   }
 

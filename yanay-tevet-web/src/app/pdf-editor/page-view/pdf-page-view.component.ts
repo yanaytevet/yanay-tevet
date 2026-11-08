@@ -1,6 +1,7 @@
 import {
   afterNextRender,
   Component,
+  HostListener,
   computed,
   DestroyRef,
   effect,
@@ -26,8 +27,8 @@ import {
 import {hexToRgb, PdfEditorStore, rgbToCss, SubstitutionMarker} from '../pdf-editor.store';
 
 export const CSS_FONT_FAMILY: Record<FontFamily, string> = {
-  sans: 'Helvetica, Arial, "Noto Sans Hebrew", sans-serif',
-  serif: '"Times New Roman", Times, "Noto Serif Hebrew", serif',
+  sans: 'Arial, Helvetica, sans-serif',
+  serif: '"Times New Roman", Times, serif',
   mono: '"Courier New", Courier, monospace',
 };
 
@@ -122,7 +123,7 @@ export class PdfPageViewComponent {
   protected readonly height = computed(() => this.size().height * this.zoom());
   private readonly version = computed(() => `${this.store.docVersion()}:${this.store.pageVersions()[this.page()] ?? 0}`);
 
-  protected readonly usesLayer = computed(() => !['select', 'editText'].includes(this.tool()));
+  protected readonly usesLayer = computed(() => !['select', 'editText', 'move'].includes(this.tool()));
   protected readonly layerCursor = computed(() => (this.tool() === 'addText' ? 'text' : this.tool() === 'note' ? 'copy' : 'crosshair'));
 
   protected readonly lineBoxes = computed(() => {
@@ -233,6 +234,33 @@ export class PdfPageViewComponent {
   });
   protected readonly strokeWidth = computed(() => this.store.drawWidth() * this.zoom());
 
+  // Moving lines (move tool).
+  protected readonly selectedLines = signal<number[]>([]);
+  protected readonly moveOffset = signal<Point>([0, 0]);
+  // Snapshots of the selected lines cut from the rendered page: `cover` is where the line was (painted over),
+  // `rect` where the snapshot sits before the drag offset is added.
+  protected readonly ghosts = signal<{index: number; url: string; cover: Rect; rect: Rect}[]>([]);
+  // Between dropping lines and the page catching up: the selection outline waits for the moved lines.
+  private readonly settling = signal(false);
+  private moveGesture: {kind: 'drag'; start: Point} | {kind: 'box'; start: Point; current: Point; additive: boolean} | null = null;
+  private nudgeTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingReselect: {text: string; bbox: Rect}[] = [];
+  private clearGhostsOnPaint = false;
+
+  protected readonly moveView = computed(() => {
+    const z = this.zoom();
+    const selected = new Set(this.selectedLines());
+    const [dx, dy] = this.moveOffset();
+    const pad = 2;
+    const box = (r: Rect) => ({left: (r[0] - pad) * z, top: (r[1] - pad) * z, width: (r[2] - r[0] + 2 * pad) * z, height: (r[3] - r[1] + 2 * pad) * z});
+    return {
+      lines: this.lines().filter(l => l.horizontal).map(line => ({line, selected: selected.has(line.index), ...box(line.bbox)})),
+      selected: this.settling() ? [] : this.lines().filter(l => selected.has(l.index)).map(line => ({index: line.index, ...box([line.bbox[0] + dx, line.bbox[1] + dy, line.bbox[2] + dx, line.bbox[3] + dy])})),
+      ghosts: this.ghosts().map(g => ({index: g.index, url: g.url, cover: box(g.cover), ...box([g.rect[0] + dx, g.rect[1] + dy, g.rect[2] + dx, g.rect[3] + dy])})),
+    };
+  });
+  protected readonly selectionBox = signal<{left: number; top: number; width: number; height: number} | null>(null);
+
   // Annotations and form fields (select tool).
   protected readonly selectedAnnotation = signal<number | null>(null);
   private readonly move = signal<AnnotationMove | null>(null);
@@ -309,6 +337,9 @@ export class PdfPageViewComponent {
     effect(() => {
       const version = this.version();
       untracked(() => {
+        if (this.pendingReselect.length === 0 && version !== this.openedAtVersion) {
+          this.selectedLines.set([]);
+        }
         const edit = this.editing();
         const draft = this.draft();
         if ((edit || draft) && version !== this.openedAtVersion) {
@@ -353,6 +384,10 @@ export class PdfPageViewComponent {
       canvas.height = result.height;
       canvas.getContext('2d')?.putImageData(new ImageData(new Uint8ClampedArray(result.pixels), result.width, result.height), 0, 0);
       this.rendered.set(true);
+      if (this.clearGhostsOnPaint) {
+        this.clearGhostsOnPaint = false;
+        this.ghosts.set([]);
+      }
     } catch {
       // The page went away (a page operation); the next version renders it again.
     }
@@ -361,8 +396,10 @@ export class PdfPageViewComponent {
   private async loadOverlays(tool: string): Promise<void> {
     const page = this.page();
     try {
-      if (tool === 'editText' || tool === 'addText') {
-        this.lines.set(await this.store.textLines(page));
+      if (tool === 'editText' || tool === 'addText' || tool === 'move') {
+        const lines = await this.store.textLines(page);
+        this.lines.set(lines);
+        this.reselectMoved(lines);
       }
       if (tool === 'select') {
         const [annotations, widgets] = await Promise.all([this.store.annotations(page), this.store.widgets(page)]);
@@ -646,6 +683,161 @@ export class PdfPageViewComponent {
       target = [at[0] - width / 2, at[1] - height / 2, at[0] + width / 2, at[1] + height / 2];
     }
     await this.store.addSignature(this.page(), target);
+  }
+
+  // Moving lines
+
+  private lineAt(point: Point): TextLineInfo | null {
+    return this.lines().find(l => l.horizontal && distanceToRect(point, l.bbox) < 2) ?? null;
+  }
+
+  private snapshotGhosts(): void {
+    const canvas = this.canvas()?.nativeElement;
+    if (!canvas || this.ghosts().length > 0) {
+      return;
+    }
+    const scale = canvas.width / this.size().width;
+    const pad = 2;
+    const ghosts = this.lines().filter(l => this.selectedLines().includes(l.index)).map(line => {
+      const rect: Rect = [line.bbox[0] - pad, line.bbox[1] - pad, line.bbox[2] + pad, line.bbox[3] + pad];
+      const crop = document.createElement('canvas');
+      crop.width = Math.max(1, Math.round((rect[2] - rect[0]) * scale));
+      crop.height = Math.max(1, Math.round((rect[3] - rect[1]) * scale));
+      crop.getContext('2d')?.drawImage(canvas, rect[0] * scale, rect[1] * scale, crop.width, crop.height, 0, 0, crop.width, crop.height);
+      const bbox: Rect = [line.bbox[0], line.bbox[1], line.bbox[2], line.bbox[3]];
+      return {index: line.index, url: crop.toDataURL(), cover: bbox, rect: bbox};
+    });
+    this.ghosts.set(ghosts);
+  }
+
+  protected onMoveDown(event: PointerEvent): void {
+    // Until the page has caught up with the last move, a new gesture would start from stale snapshots.
+    if (event.button !== 0 || this.committingMove || this.clearGhostsOnPaint) {
+      return;
+    }
+    const point = this.toPage(event);
+    const line = this.lineAt(point);
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    if (line) {
+      const selected = this.selectedLines();
+      if (event.shiftKey) {
+        this.selectedLines.set(selected.includes(line.index) ? selected.filter(i => i !== line.index) : [...selected, line.index]);
+        return;
+      }
+      if (!selected.includes(line.index)) {
+        this.selectedLines.set([line.index]);
+      }
+      this.moveGesture = {kind: 'drag', start: point};
+    } else {
+      if (!event.shiftKey) {
+        this.selectedLines.set([]);
+      }
+      this.moveGesture = {kind: 'box', start: point, current: point, additive: event.shiftKey};
+    }
+  }
+
+  protected onMovePointer(event: PointerEvent): void {
+    const gesture = this.moveGesture;
+    if (!gesture) {
+      return;
+    }
+    const point = this.toPage(event);
+    if (gesture.kind === 'drag') {
+      this.snapshotGhosts();
+      this.moveOffset.set([point[0] - gesture.start[0], point[1] - gesture.start[1]]);
+    } else {
+      gesture.current = point;
+      const z = this.zoom();
+      const r = normalise(gesture.start, point);
+      this.selectionBox.set({left: r[0] * z, top: r[1] * z, width: (r[2] - r[0]) * z, height: (r[3] - r[1]) * z});
+    }
+  }
+
+  protected async onMoveUp(): Promise<void> {
+    const gesture = this.moveGesture;
+    this.moveGesture = null;
+    if (!gesture) {
+      return;
+    }
+    if (gesture.kind === 'box') {
+      this.selectionBox.set(null);
+      const r = normalise(gesture.start, gesture.current);
+      const inside = this.lines().filter(l => l.horizontal && l.bbox[0] < r[2] && r[0] < l.bbox[2] && l.bbox[1] < r[3] && r[1] < l.bbox[3]).map(l => l.index);
+      this.selectedLines.set(gesture.additive ? [...new Set([...this.selectedLines(), ...inside])] : inside);
+      this.log.log('move-select', {page: this.page(), count: this.selectedLines().length});
+      return;
+    }
+    await this.commitMove();
+  }
+
+  private committingMove = false;
+
+  private async commitMove(): Promise<void> {
+    const [dx, dy] = this.moveOffset();
+    if (Math.hypot(dx, dy) < 0.5) {
+      this.ghosts.set([]);
+      this.moveOffset.set([0, 0]);
+      return;
+    }
+    const lines = this.lines().filter(l => this.selectedLines().includes(l.index));
+    this.pendingReselect = lines.map(l => ({text: l.text, bbox: [l.bbox[0] + dx, l.bbox[1] + dy, l.bbox[2] + dx, l.bbox[3] + dy] as Rect}));
+    this.openedAtVersion = this.version();
+    this.committingMove = true;
+    // The snapshots stay where they were dropped until the page has re-rendered, and the outline waits for
+    // the moved lines to be found again; whichever comes first, nothing jumps back to the old place.
+    this.ghosts.update(ghosts => ghosts.map(g => ({...g, rect: [g.rect[0] + dx, g.rect[1] + dy, g.rect[2] + dx, g.rect[3] + dy] as Rect})));
+    this.moveOffset.set([0, 0]);
+    this.settling.set(true);
+    this.clearGhostsOnPaint = true;
+    const moved = await this.store.moveLines(this.page(), lines, [dx, dy]);
+    this.committingMove = false;
+    if (!moved) {
+      this.clearGhostsOnPaint = false;
+      this.pendingReselect = [];
+      this.settling.set(false);
+      this.ghosts.set([]);
+    }
+  }
+
+  // After a move the lines are extracted afresh; select the moved ones again so they can be nudged further.
+  private reselectMoved(lines: TextLineInfo[]): void {
+    if (this.pendingReselect.length === 0) {
+      return;
+    }
+    const centre = (r: Rect): Point => [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2];
+    const found = this.pendingReselect.map(want => lines.find(l => l.text === want.text
+      && Math.hypot(centre(l.bbox)[0] - centre(want.bbox)[0], centre(l.bbox)[1] - centre(want.bbox)[1]) < 6)?.index)
+      .filter((i): i is number => i !== undefined);
+    this.pendingReselect = [];
+    this.openedAtVersion = this.version();
+    this.selectedLines.set(found);
+    this.settling.set(false);
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  protected onMoveKey(event: KeyboardEvent): void {
+    if (this.tool() !== 'move' || this.selectedLines().length === 0 || this.committingMove || this.clearGhostsOnPaint
+      || (event.target as HTMLElement | null)?.closest('input, textarea, select')) {
+      return;
+    }
+    if (event.key === 'Escape') {
+      this.selectedLines.set([]);
+      return;
+    }
+    const step = event.shiftKey ? 10 : 1;
+    const deltas: Record<string, Point> = {ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step]};
+    const delta = deltas[event.key];
+    if (!delta) {
+      return;
+    }
+    event.preventDefault();
+    this.snapshotGhosts();
+    this.moveOffset.update(([x, y]) => [x + delta[0], y + delta[1]]);
+    if (this.nudgeTimer) {
+      clearTimeout(this.nudgeTimer);
+    }
+    // Nudges collect into one move (and one undo step) once the keys go quiet.
+    this.nudgeTimer = setTimeout(() => void this.commitMove(), 700);
   }
 
   // Annotations

@@ -87,6 +87,12 @@ export interface WidgetInfo {
   readOnly: boolean;
 }
 
+// A line by its index in textLines() and its text, which must still match.
+export interface LineRef {
+  index: number;
+  text: string;
+}
+
 export type AddTextStyle = {kind: 'custom'; style: TextStyle} | {kind: 'match'; lineIndex: number};
 
 export interface PdfEngineApi {
@@ -98,6 +104,7 @@ export interface PdfEngineApi {
   // The embedded font a line uses, as a font file the browser can load, or null when it can't be.
   webFont(page: number, fontName: string): Promise<ArrayBuffer | null>;
   editLine(page: number, lineIndex: number, expectedText: string, newText: string, fontOverride: FontChoice | null): Promise<TextWriteResult>;
+  moveLines(page: number, lines: LineRef[], offset: Point): Promise<DocState>;
   addText(page: number, anchor: Point, rtl: boolean, text: string, style: AddTextStyle): Promise<TextWriteResult>;
   eraseArea(page: number, rect: Rect): Promise<DocState>;
   annotations(page: number): Promise<AnnotationInfo[]>;

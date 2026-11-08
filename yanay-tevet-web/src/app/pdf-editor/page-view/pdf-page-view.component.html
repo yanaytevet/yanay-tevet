@@ -16,6 +16,37 @@
     }
   }
 
+  <!-- Move text: pick lines, drag them -->
+  @if (tool() === 'move') {
+    @let view = moveView();
+    @for (ghost of view.ghosts; track ghost.index) {
+      <div class="paper absolute z-10" [style.left.px]="ghost.cover.left" [style.top.px]="ghost.cover.top"
+           [style.width.px]="ghost.cover.width" [style.height.px]="ghost.cover.height"></div>
+    }
+    @for (ghost of view.ghosts; track ghost.index) {
+      <img class="absolute z-10 pointer-events-none" alt="" [src]="ghost.url" [style.left.px]="ghost.left" [style.top.px]="ghost.top"
+           [style.width.px]="ghost.width" [style.height.px]="ghost.height">
+    }
+    <div class="absolute inset-0 z-20 touch-none cursor-default" role="application" aria-label="Move text"
+         (pointerdown)="onMoveDown($event)" (pointermove)="onMovePointer($event)" (pointerup)="onMoveUp()"
+         (mousedown)="$event.preventDefault()">
+      @for (box of view.lines; track box.line.index) {
+        @if (!box.selected) {
+          <div class="move-target absolute" [style.left.px]="box.left" [style.top.px]="box.top"
+               [style.width.px]="box.width" [style.height.px]="box.height"></div>
+        }
+      }
+      @for (box of view.selected; track box.index) {
+        <div class="move-selected absolute pointer-events-none" [style.left.px]="box.left" [style.top.px]="box.top"
+             [style.width.px]="box.width" [style.height.px]="box.height"></div>
+      }
+      @if (selectionBox(); as box) {
+        <div class="drag-box absolute pointer-events-none" [style.left.px]="box.left" [style.top.px]="box.top"
+             [style.width.px]="box.width" [style.height.px]="box.height"></div>
+      }
+    </div>
+  }
+
   @for (item of markers(); track item.marker.id) {
     <button type="button" class="absolute z-20 grid place-items-center size-5 rounded-full bg-warning text-on-accent shadow-1"
             [style.left.px]="item.left" [style.top.px]="item.top" [attr.aria-label]="item.label" [title]="item.label"

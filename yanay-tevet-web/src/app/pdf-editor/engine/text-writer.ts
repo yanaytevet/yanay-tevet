@@ -24,6 +24,8 @@ export interface WriteSpec {
   override: TextStyle | null;
   // See EditableLine.labelsByShape.
   existingFontsLabelByShape: boolean;
+  // Keep every original character's spacing, whatever font draws it (moving a line unchanged).
+  keepSpacing?: boolean;
 }
 
 export interface WriteOutcome {
@@ -227,6 +229,7 @@ interface PlacedGlyph {
   size: number;
   color: number[];
   advance: number;
+  char: string;
 }
 
 export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, registry: FontRegistry, spec: WriteSpec): WriteOutcome {
@@ -280,15 +283,18 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
       }
       continue;
     }
-    glyphs.push({encoder, glyph, size, color, advance: (glyph.width / 1000) * size, source: c.source});
+    glyphs.push({encoder, glyph, size, color, advance: (glyph.width / 1000) * size, source: c.source, char: v.char});
   }
 
-  // Keep a character's original advance only when its original neighbour still follows it.
+  // Keep a character's original advance when its original neighbour still follows it, unless a substitute
+  // font now draws a visibly different glyph there. Spaces always keep it: many subsets have no space glyph,
+  // and a substitute's narrower space would pull the words together.
+  const faithful = (g: PlacedGlyph): boolean => spec.keepSpacing || !g.encoder.substitute || g.char.trim() === '';
   for (let i = 0; i < glyphs.length - 1; i++) {
     const here = glyphs[i].source;
     const next = glyphs[i + 1].source;
     if (here && next && here.measuredAdvance !== null && next.visualIndex === here.visualIndex + 1
-      && !glyphs[i].encoder.substitute && !glyphs[i + 1].encoder.substitute) {
+      && faithful(glyphs[i]) && faithful(glyphs[i + 1])) {
       glyphs[i].advance = here.measuredAdvance;
     }
   }
