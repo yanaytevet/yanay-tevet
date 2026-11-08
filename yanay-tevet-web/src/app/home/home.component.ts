@@ -28,6 +28,7 @@ export class HomeComponent extends BasePageComponent {
   protected readonly shoppingListsUrl = this.routingService.getShoppingListsUrl();
   protected readonly taskManagementUrl = this.routingService.getTaskManagementUrl();
   protected readonly workoutPlanUrl = this.routingService.getWorkoutPlanUrl();
+  protected readonly pdfEditorUrl = this.routingService.getPdfEditorUrl();
   protected readonly myDashboardUrl = this.routingService.getMyDashboardUrl();
   protected readonly adminUsersUrl = this.routingService.getAdminUsersUrl();
   protected readonly faqUrl = this.routingService.getFaqUrl();
@@ -55,8 +56,9 @@ export class HomeComponent extends BasePageComponent {
   readonly hasShoppingLists = computed(() => this.authService.hasPermission('shopping_lists'));
   readonly hasTaskManagement = computed(() => this.authService.hasPermission('task_management'));
   readonly hasWorkoutPlan = computed(() => this.authService.hasPermission('workout_plan'));
+  readonly hasPdfEditor = computed(() => this.authService.hasPermission('pdf_editor'));
   readonly hasAnyPrivateApp = computed(() =>
     this.hasDreamDiary() || this.hasHomeSweetHome() || this.hasItineraryLists() || this.hasShoppingLists()
-    || this.hasTaskManagement() || this.hasWorkoutPlan()
+    || this.hasTaskManagement() || this.hasWorkoutPlan() || this.hasPdfEditor()
   );
 }

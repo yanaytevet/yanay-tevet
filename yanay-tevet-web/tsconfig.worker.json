@@ -1,0 +1,12 @@
+/* The PDF editor's web worker (src/app/pdf-editor/engine/pdf-editor.worker.ts). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./out-tsc/worker",
+    "lib": ["es2022", "webworker"],
+    "types": []
+  },
+  "include": [
+    "src/**/*.worker.ts"
+  ]
+}

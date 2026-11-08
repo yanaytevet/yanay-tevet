@@ -9,4 +9,5 @@ export enum PermissionsEnum {
   SHOPPING_LISTS = 'shopping_lists',
   TASK_MANAGEMENT = 'task_management',
   WORKOUT_PLAN = 'workout_plan',
+  PDF_EDITOR = 'pdf_editor',
 }

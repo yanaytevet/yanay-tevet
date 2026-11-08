@@ -1,0 +1,4 @@
+/* Paper is white in both themes, like the page it shows (DESIGN.md §1, theme-independent). */
+.paper-thumb {
+  background: #fff;
+}

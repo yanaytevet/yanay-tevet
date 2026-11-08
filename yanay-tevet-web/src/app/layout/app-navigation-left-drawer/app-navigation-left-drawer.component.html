@@ -93,6 +93,14 @@
                 </a>
             }
 
+            @if (hasPdfEditor()) {
+                <a class="nav-item" [routerLink]="pdfEditorUrl" routerLinkActive="nav-item-active"
+                   [attr.data-app]="apps.pdf.key" (click)="layoutService.closeBothDrawers()">
+                    <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.pdf.icon"/></span>
+                    {{ apps.pdf.name }}
+                </a>
+            }
+
             <a class="nav-item" [routerLink]="dreamDiaryUrl" routerLinkActive="nav-item-active"
                [attr.data-app]="apps.dreams.key" (click)="layoutService.closeBothDrawers()">
                 <span class="app-chip size-7 text-body" aria-hidden="true"><ng-icon [svg]="apps.dreams.icon"/></span>

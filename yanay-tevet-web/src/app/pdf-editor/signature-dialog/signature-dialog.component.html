@@ -1,0 +1,57 @@
+<div class="dialog-container">
+  <h2>Your signature</h2>
+  <p class="text-meta text-writing-minor mb-4">Then drag a box on the page, or click, to place it. It stays on this device only.</p>
+
+  @if (saved().length > 0) {
+    <div class="eyebrow mb-2">Saved</div>
+    <div class="flex flex-wrap gap-2 mb-4">
+      @for (signature of saved(); track signature) {
+        <div class="relative group/saved">
+          <button type="button" class="signature-swatch card card-interactive p-2" aria-label="Use this signature" (click)="useSaved(signature)">
+            <img [src]="signature" alt="" class="h-12 max-w-40 object-contain">
+          </button>
+          <button type="button" class="icon-btn icon-btn-danger !size-7 absolute -top-2 -end-2 bg-layer-2 shadow-1"
+                  aria-label="Forget this signature" (click)="removeSaved(signature)">
+            <ng-icon [svg]="featherTrash2" class="text-sm"/>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="segmented mb-3" role="tablist">
+    <button type="button" role="tab" [attr.aria-selected]="mode() === 'draw'" (click)="setMode('draw')">Draw</button>
+    <button type="button" role="tab" [attr.aria-selected]="mode() === 'upload'" (click)="setMode('upload')">Upload an image</button>
+  </div>
+
+  @if (mode() === 'draw') {
+    <div class="relative">
+      <canvas #pad class="signature-pad w-full h-40 rounded-xl border border-line touch-none"
+              (pointerdown)="onDown($event)" (pointermove)="onMove($event)" (pointerup)="onUp()" (pointerleave)="onUp()"></canvas>
+      @if (!hasInk()) {
+        <span class="absolute inset-0 grid place-items-center pointer-events-none text-body signature-hint">Sign here</span>
+      }
+      <button type="button" class="btn btn-sm btn-ghost absolute top-2 end-2" (click)="clear()">Clear</button>
+    </div>
+  } @else {
+    <input type="file" accept="image/png,image/jpeg" class="main-input" aria-label="Signature image" (change)="onUpload($event)">
+    @if (uploaded(); as image) {
+      <div class="signature-pad rounded-xl border border-line mt-3 p-3 grid place-items-center">
+        <img [src]="image" alt="Uploaded signature" class="max-h-32 object-contain">
+      </div>
+    }
+    <p class="text-caption text-writing-minor mt-2">A PNG with a transparent background looks best.</p>
+  }
+
+  <button type="button" class="group/check flex items-center gap-2 mt-3 min-h-8 text-body text-writing" [attr.aria-pressed]="remember()"
+          (click)="toggleRemember()">
+    <app-checkbox-mark [checked]="remember()" size="sm"/>
+    Remember it on this device
+  </button>
+
+  <div class="dialog-buttons-container">
+    <span class="flex-1"></span>
+    <button type="button" class="btn btn-secondary" (click)="emitClose(null)">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="use()">Use signature</button>
+  </div>
+</div>

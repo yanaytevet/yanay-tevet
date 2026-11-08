@@ -1,0 +1,147 @@
+<div class="paper relative shadow-2 border border-line select-none" [style.width.px]="width()" [style.height.px]="height()"
+     (pointerdown)="clearSelection()">
+  <canvas #canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
+  @if (!rendered()) {
+    <div class="absolute inset-x-0 top-24 flex justify-center">
+      <span class="size-5 rounded-full border-2 border-layer-4 border-t-accent animate-spin" aria-hidden="true"></span>
+    </div>
+  }
+
+  <!-- Edit text: every line is a target -->
+  @if (tool() === 'editText') {
+    @for (box of lineBoxes(); track box.line.index) {
+      <button type="button" class="line-target absolute" [attr.aria-label]="'Edit line: ' + box.line.text"
+              [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+              (click)="startEdit(box.line)"></button>
+    }
+  }
+
+  @for (item of markers(); track item.marker.id) {
+    <button type="button" class="absolute z-20 grid place-items-center size-5 rounded-full bg-warning text-on-accent shadow-1"
+            [style.left.px]="item.left" [style.top.px]="item.top" [attr.aria-label]="item.label" [title]="item.label"
+            (click)="editMarker(item.marker)">
+      <ng-icon [svg]="featherAlertTriangle" class="text-xs"/>
+    </button>
+  }
+
+  @if (editView(); as view) {
+    <div class="absolute z-30 flex flex-col" [class.items-end]="view.dir === 'rtl'" [class.items-start]="view.dir === 'ltr'"
+         [style.left.px]="view.left" [style.right.px]="view.right" [style.top.px]="view.top">
+      <input #lineInput type="text" class="paper-input line-input" [dir]="view.dir" [value]="editing()!.text"
+             [style.min-width.px]="view.minWidth" [style.height.px]="view.height" [style.font-size.px]="view.fontSize"
+             [style.font-family]="view.fontFamily" [style.font-weight]="view.fontWeight" [style.font-style]="view.fontStyle"
+             [style.color]="view.color" aria-label="Line text"
+             (input)="setEditText($any($event.target).value)" (keydown)="onEditKey($event)">
+      <div class="edit-toolbar card shadow-2 mt-1 flex flex-wrap items-center gap-1 p-1.5" dir="ltr">
+        <select class="main-input !w-auto !py-1 !text-meta" aria-label="Font" [value]="editing()!.font"
+                (change)="setEditFont($any($event.target).value)">
+          <option value="original">Original ({{ view.original }})</option>
+          <option value="sans">Sans</option>
+          <option value="serif">Serif</option>
+          <option value="mono">Mono</option>
+        </select>
+        @if (view.custom) {
+          <button type="button" class="btn btn-sm btn-ghost font-bold" [attr.aria-pressed]="editing()!.bold"
+                  [class.bg-accent-soft]="editing()!.bold" [class.text-accent]="editing()!.bold" (click)="toggleEditBold()">B</button>
+          <button type="button" class="btn btn-sm btn-ghost italic" [attr.aria-pressed]="editing()!.italic"
+                  [class.bg-accent-soft]="editing()!.italic" [class.text-accent]="editing()!.italic" (click)="toggleEditItalic()">I</button>
+        }
+        <span class="flex-1"></span>
+        <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete line" title="Delete line" (click)="deleteLine()">
+          <ng-icon [svg]="featherTrash2"/>
+        </button>
+        <button type="button" class="icon-btn" aria-label="Cancel" title="Cancel (Esc)" (click)="cancelEdit()">
+          <ng-icon [svg]="featherX"/>
+        </button>
+        <button type="button" class="btn btn-sm btn-primary" (click)="commitEdit()">
+          <ng-icon [svg]="featherCheck"/> Save
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Select tool: annotations and form fields -->
+  @if (tool() === 'select') {
+    @for (box of annotationBoxes(); track box.annotation.index) {
+      <div class="annotation-target absolute" [class.annotation-selected]="box.selected" role="button" tabindex="0"
+           [class.cursor-move]="box.annotation.movable" [attr.aria-label]="box.label" [title]="box.label"
+           [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+           (pointerdown)="selectAnnotation(box.annotation.index, $event)" (pointermove)="onAnnotationMove($event)"
+           (pointerup)="onAnnotationUp()" (keydown.delete)="deleteSelectedAnnotation()" (keydown.backspace)="deleteSelectedAnnotation()">
+        @if (box.selected) {
+          <div class="absolute -top-10 start-0 card shadow-2 flex items-center gap-1 p-1 whitespace-nowrap" (pointerdown)="$event.stopPropagation()">
+            <span class="text-caption text-writing-minor px-1">{{ box.name }}</span>
+            <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete annotation" (click)="deleteSelectedAnnotation()">
+              <ng-icon [svg]="featherTrash2"/>
+            </button>
+          </div>
+        }
+      </div>
+    }
+
+    @for (box of widgetBoxes(); track box.widget.index) {
+      @switch (box.widget.kind) {
+        @case ('text') {
+          @if (box.widget.multiline) {
+            <textarea class="pdf-field absolute" dir="auto" [attr.aria-label]="box.widget.name" [value]="box.widget.value"
+                      [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+                      [style.font-size.px]="box.fontSize"
+                      (change)="commitField(box.widget, $any($event.target).value)"></textarea>
+          } @else {
+            <input type="text" class="pdf-field absolute" dir="auto" [attr.aria-label]="box.widget.name" [value]="box.widget.value"
+                   [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+                   [style.font-size.px]="box.fontSize"
+                   (change)="commitField(box.widget, $any($event.target).value)" (keydown.enter)="$any($event.target).blur()">
+          }
+        }
+        @case ('choice') {
+          <select class="pdf-field pdf-choice absolute" [attr.aria-label]="box.widget.name" [value]="box.widget.value"
+                  [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+                  [style.font-size.px]="box.fontSize" (change)="commitField(box.widget, $any($event.target).value)">
+            @for (option of box.widget.options; track option) {
+              <option [value]="option" [selected]="option === box.widget.value">{{ option }}</option>
+            }
+          </select>
+        }
+        @default {
+          <button type="button" class="pdf-field pdf-toggle absolute" [attr.aria-label]="box.widget.name"
+                  [attr.aria-pressed]="box.widget.checked"
+                  [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
+                  (click)="toggleField(box.widget)"></button>
+        }
+      }
+    }
+  }
+
+  <!-- Tools that draw on the page -->
+  @if (usesLayer()) {
+    <div #layer class="absolute inset-0 z-10 touch-none" [style.cursor]="layerCursor()"
+         (pointerdown)="onLayerDown($event)" (pointermove)="onLayerMove($event)" (pointerup)="onLayerUp($event)"
+         (mousedown)="$event.preventDefault()">
+      @if (dragBox(); as box) {
+        <div class="drag-box absolute" [class.drag-erase]="tool() === 'erase'"
+             [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"></div>
+      }
+      @if (strokePoints(); as points) {
+        <svg class="absolute inset-0 size-full pointer-events-none" aria-hidden="true">
+          <polyline [attr.points]="points" fill="none" [attr.stroke]="store.drawColor()" [attr.stroke-width]="strokeWidth()"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      }
+    </div>
+  }
+
+  @if (draftView(); as view) {
+    <div class="absolute z-30 flex flex-col" [class.items-end]="view.rtl" [class.items-start]="!view.rtl"
+         [style.left.px]="view.left" [style.right.px]="view.right" [style.top.px]="view.top">
+      <textarea #draftInput class="paper-input draft-input" dir="auto" rows="1" [value]="draft()!.text"
+                [style.font-size.px]="view.fontSize" [style.font-family]="view.fontFamily"
+                [style.font-weight]="view.fontWeight" [style.font-style]="view.fontStyle" [style.color]="view.color"
+                aria-label="New text" (input)="setDraftText($any($event.target).value)" (keydown)="onDraftKey($event)"
+                (blur)="onDraftBlur()"></textarea>
+      <div class="draft-caption card text-caption text-writing-minor mt-1 px-2 py-0.5 w-max">
+        {{ view.caption }} · Enter to place, Shift+Enter for a new line
+      </div>
+    </div>
+  }
+</div>

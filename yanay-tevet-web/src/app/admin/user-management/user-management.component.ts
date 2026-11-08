@@ -49,6 +49,7 @@ export class UserManagementComponent extends BasePageComponent {
     {value: PermissionsEnum.SHOPPING_LISTS, label: 'Shopping Lists', description: 'Access to Shopping Lists'},
     {value: PermissionsEnum.TASK_MANAGEMENT, label: 'Task Management', description: 'Access to Task Management'},
     {value: PermissionsEnum.WORKOUT_PLAN, label: 'Workout Plan', description: 'Access to Workout Plan'},
+    {value: PermissionsEnum.PDF_EDITOR, label: 'PDF Editor', description: 'Access to PDF Editor'},
   ];
 
   readonly users = signal<AdminUserOutput[]>([]);

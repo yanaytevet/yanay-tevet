@@ -2,6 +2,7 @@ import {
   bootstrapCake2,
   bootstrapCart3,
   bootstrapCheck2Square,
+  bootstrapFileEarmarkPdf,
   bootstrapHeadphones,
   bootstrapHeartPulse,
   bootstrapHouseHeart,
@@ -22,6 +23,7 @@ export type HubAppKey =
   | 'home'
   | 'japanese'
   | 'genre'
+  | 'pdf'
   | 'dashboard';
 
 export interface HubApp {
@@ -42,6 +44,7 @@ export const HUB_APPS: Record<HubAppKey, HubApp> = {
   home: {key: 'home', name: 'Home Sweet Home', icon: bootstrapHouseHeart, rootSegment: 'home-sweet-home'},
   japanese: {key: 'japanese', name: 'Japanese', icon: bootstrapTranslate, rootSegment: 'japanese'},
   genre: {key: 'genre', name: 'Genre Trainer', icon: bootstrapHeadphones, rootSegment: 'genre-trainer'},
+  pdf: {key: 'pdf', name: 'PDF Editor', icon: bootstrapFileEarmarkPdf, rootSegment: 'pdf-editor'},
   dashboard: {key: 'dashboard', name: 'My Dashboard', icon: bootstrapSpeedometer2, rootSegment: 'my-dashboard'},
 };
 

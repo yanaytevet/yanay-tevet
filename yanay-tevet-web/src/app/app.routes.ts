@@ -222,6 +222,12 @@ export const routes: Routes = [
                 canActivate: [hasPermissionGuard('task_management')],
             },
             {
+                path: 'pdf-editor',
+                loadComponent: () =>
+                    import('./pdf-editor/pdf-editor.component').then(m => m.PdfEditorComponent),
+                canActivate: [hasPermissionGuard('pdf_editor')],
+            },
+            {
                 path: 'workout-plan',
                 loadComponent: () =>
                     import('./workout-plan/routines-list/routines-list.component').then(m => m.RoutinesListComponent),

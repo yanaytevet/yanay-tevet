@@ -41,6 +41,7 @@ export class AppNavigationLeftDrawer implements OnInit {
   protected readonly shoppingListsUrl = this.routingService.getShoppingListsUrl();
   protected readonly taskManagementUrl = this.routingService.getTaskManagementUrl();
   protected readonly workoutPlanUrl = this.routingService.getWorkoutPlanUrl();
+  protected readonly pdfEditorUrl = this.routingService.getPdfEditorUrl();
   protected readonly myDashboardUrl = this.routingService.getMyDashboardUrl();
   protected readonly adminUsersUrl = this.routingService.getAdminUsersUrl();
   protected readonly userSettingsUrl = this.routingService.getUserSettingsUrl();
@@ -66,6 +67,7 @@ export class AppNavigationLeftDrawer implements OnInit {
   public readonly hasShoppingLists = computed(() => this.authService.hasPermission('shopping_lists'));
   public readonly hasTaskManagement = computed(() => this.authService.hasPermission('task_management'));
   public readonly hasWorkoutPlan = computed(() => this.authService.hasPermission('workout_plan'));
+  public readonly hasPdfEditor = computed(() => this.authService.hasPermission('pdf_editor'));
 
   private readonly ABOUT_FOLDED_KEY = 'about_folded';
   public isAboutFolded = signal<boolean>(localStorage.getItem(this.ABOUT_FOLDED_KEY) !== 'false');

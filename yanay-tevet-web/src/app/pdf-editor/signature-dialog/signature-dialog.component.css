@@ -1,0 +1,29 @@
+/* The pad is paper: white with dark ink in both themes, like the page the signature goes on. */
+.signature-pad,
+.signature-swatch {
+  background: #fff;
+}
+
+.signature-hint {
+  color: #8a8680;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 0.375rem;
+  background: var(--color-layer-3);
+}
+
+.segmented button {
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-writing-minor);
+}
+
+.segmented button[aria-selected="true"] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}

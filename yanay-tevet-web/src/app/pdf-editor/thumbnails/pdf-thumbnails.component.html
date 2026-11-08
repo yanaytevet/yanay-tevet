@@ -1,0 +1,42 @@
+<div class="flex items-center gap-1 px-3 py-2 border-b border-line">
+  <span class="eyebrow flex-1">Pages</span>
+  <button type="button" class="icon-btn" aria-label="Insert another PDF after this page" title="Insert another PDF after this page"
+          (click)="chooseInsertPdf()">
+    <ng-icon [svg]="featherFilePlus"/>
+  </button>
+  <button type="button" class="icon-btn" aria-label="Save pages as a new PDF" title="Save pages as a new PDF" (click)="extract()">
+    <ng-icon [svg]="featherScissors"/>
+  </button>
+  <input #pdfInput type="file" accept="application/pdf,.pdf" class="hidden" (change)="onInsertPdf($event)">
+</div>
+
+<div class="flex-1 overflow-y-auto px-3 py-3" cdkDropList (cdkDropListDropped)="onDrop($event)">
+  @for (page of store.pages(); track page.index) {
+    <div class="thumb group/thumb relative mb-3 flex flex-col items-center rounded-md p-1.5" cdkDrag
+         [class.bg-accent-soft]="isCurrent()[page.index]">
+      <button type="button" class="block rounded-sm" [attr.aria-label]="'Go to page ' + (page.index + 1)"
+              [attr.aria-current]="isCurrent()[page.index] ? 'page' : null" (click)="pageSelected.emit(page.index)">
+        <app-pdf-thumbnail [page]="page.index" [size]="page.size"/>
+      </button>
+      <div class="mt-1 flex w-full items-center justify-between gap-0.5">
+        <span class="text-caption tabular-nums text-writing-minor ps-1" [class.text-accent]="isCurrent()[page.index]">{{ page.index + 1 }}</span>
+        <div class="flex items-center can-hover:opacity-0 can-hover:group-hover/thumb:opacity-100 can-hover:group-focus-within/thumb:opacity-100">
+          <button type="button" class="icon-btn !size-7" aria-label="Rotate left" title="Rotate left" (click)="store.rotatePage(page.index, -90)">
+            <ng-icon [svg]="featherRotateCcw" class="text-sm"/>
+          </button>
+          <button type="button" class="icon-btn !size-7" aria-label="Rotate right" title="Rotate right" (click)="store.rotatePage(page.index, 90)">
+            <ng-icon [svg]="featherRotateCw" class="text-sm"/>
+          </button>
+          <button type="button" class="icon-btn !size-7" aria-label="Insert a blank page after" title="Insert a blank page after"
+                  (click)="store.insertBlankPage(page.index + 1)">
+            <ng-icon [svg]="featherPlus" class="text-sm"/>
+          </button>
+          <button type="button" class="icon-btn icon-btn-danger !size-7" aria-label="Delete page" title="Delete page"
+                  (click)="store.deletePage(page.index)">
+            <ng-icon [svg]="featherTrash2" class="text-sm"/>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

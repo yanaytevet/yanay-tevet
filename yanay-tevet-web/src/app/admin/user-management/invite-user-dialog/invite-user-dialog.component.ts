@@ -32,6 +32,7 @@ export class InviteUserDialogComponent extends BaseDialogComponent<void, boolean
     {value: PermissionsEnum.SHOPPING_LISTS, label: 'Shopping Lists'},
     {value: PermissionsEnum.TASK_MANAGEMENT, label: 'Task Management'},
     {value: PermissionsEnum.WORKOUT_PLAN, label: 'Workout Plan'},
+    {value: PermissionsEnum.PDF_EDITOR, label: 'PDF Editor'},
   ];
 
   readonly emailCtrl = new FormControl<string>('', {nonNullable: true});

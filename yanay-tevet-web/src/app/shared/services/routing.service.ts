@@ -145,6 +145,15 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getGenreTrainerUrl());
   }
 
+  // PDF Editor
+  getPdfEditorUrl(): UrlTree {
+    return this.router.createUrlTree(['/pdf-editor']);
+  }
+
+  navigateToPdfEditor(): Promise<boolean> {
+    return this.router.navigateByUrl(this.getPdfEditorUrl());
+  }
+
   // Japanese
   getJapaneseHomeUrl(): UrlTree {
     return this.router.createUrlTree(['/japanese']);

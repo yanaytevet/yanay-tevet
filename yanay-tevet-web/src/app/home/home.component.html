@@ -52,6 +52,10 @@
               <app-hub-tile [app]="apps.dreams" [url]="dreamDiaryUrl"
                             description="Log and explore your dreams"/>
             }
+            @if (hasPdfEditor()) {
+              <app-hub-tile [app]="apps.pdf" [url]="pdfEditorUrl"
+                            description="Edit text, fill forms, sign and rearrange pages — files never leave your browser"/>
+            }
           </div>
         </div>
       }

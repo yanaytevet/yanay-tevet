@@ -77,6 +77,7 @@ text on the page and card backgrounds. The registry is `src/app/shared/apps/hub-
 | Home Sweet Home, apartment hunt, villa, renters CRM (`home`) | `bootstrapHouseHeart` | `#8a5a2b` | `#d9a46c` |
 | Japanese (`japanese`) | `bootstrapTranslate` | `#3b4fb8` | `#98a6ff` |
 | Genre trainer (`genre`) | `bootstrapHeadphones` | `#a3238f` | `#ee82dc` |
+| PDF editor (`pdf`) | `bootstrapFileEarmarkPdf` | `#7a6200` | `#e0c04a` |
 | My dashboard (`dashboard`) | `bootstrapSpeedometer2` | `#4d5a6a` | `#aab6c4` |
 
 A new app gets a key, an icon and a pair in the same style (light fill ≥ 4.5:1 against white, dark fill

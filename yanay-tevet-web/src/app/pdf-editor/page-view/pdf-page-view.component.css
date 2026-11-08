@@ -1,0 +1,90 @@
+/* The page is paper: white with dark text in both themes, like the PDF it shows. Inputs drawn over it
+   take the same paper colours so what you type looks like the page (DESIGN.md §1, theme-independent). */
+.paper {
+  background: #fff;
+}
+
+.paper-input {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--color-accent);
+  border-radius: 2px;
+  outline: 2px solid var(--color-accent-soft);
+  padding: 0 2px;
+  line-height: 1.25;
+  white-space: pre;
+}
+
+.line-input {
+  field-sizing: content;
+}
+
+.draft-input {
+  resize: none;
+  field-sizing: content;
+  min-width: 6ch;
+  overflow: hidden;
+}
+
+.edit-toolbar {
+  width: max-content;
+  max-width: min(28rem, 90vw);
+}
+
+.line-target {
+  border-radius: 2px;
+  cursor: text;
+}
+
+.line-target:hover, .line-target:focus-visible {
+  background: var(--color-accent-soft);
+  outline: 1px solid var(--color-accent);
+  outline-offset: 0;
+}
+
+.annotation-target {
+  border-radius: 2px;
+}
+
+.annotation-target:hover {
+  outline: 1px dashed var(--color-accent);
+}
+
+.annotation-selected {
+  outline: 2px solid var(--color-accent);
+}
+
+/* A form field shows the PDF's own rendering of its value until you focus it. */
+.pdf-field {
+  background: var(--color-accent-soft);
+  border: 0;
+  border-bottom: 1px solid var(--color-accent);
+  color: transparent;
+  padding: 0 3px;
+  border-radius: 2px;
+}
+
+.pdf-field:not(.pdf-toggle):focus {
+  background: #fff;
+  color: #111;
+  outline: 2px solid var(--color-accent);
+}
+
+.pdf-choice {
+  appearance: none;
+  cursor: pointer;
+}
+
+.pdf-toggle {
+  cursor: pointer;
+}
+
+.drag-box {
+  background: var(--color-accent-soft);
+  border: 1px dashed var(--color-accent);
+}
+
+.drag-erase {
+  background: var(--color-danger-soft);
+  border-color: var(--color-danger);
+}

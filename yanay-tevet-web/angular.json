@@ -49,8 +49,14 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "mupdf{.js,-wasm.js,-wasm.wasm}",
+                "input": "node_modules/mupdf/dist",
+                "output": "pdf-editor/mupdf"
               }
             ],
+            "webWorkerTsConfig": "tsconfig.worker.json",
             "styles": [
               "src/styles.css",
               "src/app/common/dialogs/dialogs-style.css",
