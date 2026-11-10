@@ -52,6 +52,11 @@ export interface TextLineInfo {
   fontName: string;
   // The font's name as the PDF has it (with its subset tag); identifies it for webFont().
   pdfFontName: string;
+  // From the first character's start to the last one's end, padding spaces left out: how wide the edit box's
+  // text must come out to sit over the line.
+  textWidth: number;
+  // Where the text sits: the baseline's y (for horizontal lines).
+  baseline: number;
   color: RgbColor;
 }
 
@@ -104,6 +109,12 @@ export interface PdfEngineApi {
   // The embedded font a line uses, as a font file the browser can load, or null when it can't be.
   webFont(page: number, fontName: string): Promise<ArrayBuffer | null>;
   editLine(page: number, lineIndex: number, expectedText: string, newText: string, fontOverride: FontChoice | null): Promise<TextWriteResult>;
+  // The fonts (as the PDF names them, subset tag removed) that, installed on this computer, would draw an
+  // edit's new characters exactly: the line's own fonts that lack some of them, not handed over yet.
+  localFontsWanted(page: number, lineIndex: number, expectedText: string, newText: string): Promise<string[]>;
+  // The installed copy of a PDF font, for edits to use; false if the file doesn't hold the face
+  // `postscriptName` or its licence forbids embedding.
+  addLocalFont(pdfFontName: string, postscriptName: string, data: ArrayBuffer): Promise<boolean>;
   moveLines(page: number, lines: LineRef[], offset: Point): Promise<DocState>;
   addText(page: number, anchor: Point, rtl: boolean, text: string, style: AddTextStyle): Promise<TextWriteResult>;
   eraseArea(page: number, rect: Rect): Promise<DocState>;

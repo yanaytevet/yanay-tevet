@@ -1,5 +1,6 @@
 import type {Font, PDFPage} from 'mupdf';
 import {bracketMismatches, hasBrackets, isMostlyRtl, visualToLogical} from './bidi';
+import type {TextExtent} from './decorations';
 import {FontChoice, FontFamily, Point, Rect, RgbColor, TextLineInfo} from './pdf-engine.types';
 
 export interface CharStyle {
@@ -36,9 +37,9 @@ export interface EditableLine {
   text: string;
 }
 
-const SERIF_NAME = /Times|Georgia|Serif|Garamond|Roman|Cambria|Book|Minion|Palatino|David|Frank|Narkis|Miriam Fixed/i;
+const SERIF_NAME = /Times|Georgia|Serif|Garamond|Roman|Cambria|Book|Minion|Palatino|David|Frank|Narkis|Miriam Fixed|Mincho|Ming|Song/i;
 const MONO_NAME = /Courier|Mono|Consol|Menlo|Monaco|Fixed/i;
-const SANS_NAME = /Arial|Helvetica|Sans|Verdana|Tahoma|Calibri|Segoe|Roboto|Inter|Open|Lato|Gisha|Rubik|Heebo|Assistant|Futura|Avenir|Gill|Trebuchet|Lucida/i;
+const SANS_NAME = /Arial|Helvetica|Sans|Verdana|Tahoma|Calibri|Segoe|Roboto|Inter|Open|Lato|Gisha|Rubik|Heebo|Assistant|Futura|Avenir|Gill|Trebuchet|Lucida|Gothic|Kaku|Meiryo/i;
 
 export function fontChoiceOf(font: Font): FontChoice {
   const name = font.getName();
@@ -141,6 +142,41 @@ function sizeOf(line: RawLine): number {
   return Math.max(...line.chars.map(c => c.style.size), 1);
 }
 
+function advanceOf(c: RawChar): number {
+  return Math.hypot(c.quad[2] - c.quad[0], c.quad[3] - c.quad[1]);
+}
+
+// MuPDF can put text that only shares a baseline into one line: a browser's print header has the date at the
+// left margin and the title in the middle, hundreds of points apart. Treated as one line, an edit or a move
+// rewrites both and closes the gap. Wherever the ink stops for more than the line's own spacing could explain,
+// the line becomes separate pieces.
+export function splitAtGaps(line: RawLine): RawLine[] {
+  if (line.chars.length < 2) {
+    return [line];
+  }
+  const sorted = [...line.chars].sort((a, b) => along(a.origin, line.dir) - along(b.origin, line.dir));
+  const groups: RawChar[][] = [[]];
+  let inkEnd: number | null = null;
+  for (const c of sorted) {
+    const start = along(c.origin, line.dir);
+    if (c.char.trim() !== '') {
+      if (inkEnd !== null && start - inkEnd > 1.5 * c.style.size) {
+        groups.push([]);
+      }
+      inkEnd = start + advanceOf(c);
+    }
+    groups[groups.length - 1].push(c);
+  }
+  if (groups.length === 1) {
+    return [line];
+  }
+  return groups.map(chars => {
+    const xs = chars.flatMap(c => [c.quad[0], c.quad[2], c.quad[4], c.quad[6]]);
+    const ys = chars.flatMap(c => [c.quad[1], c.quad[3], c.quad[5], c.quad[7]]);
+    return {bbox: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], dir: line.dir, chars, order: line.order};
+  });
+}
+
 // MuPDF splits a line wherever the producer started a new text object, so one sentence can arrive as
 // pieces sitting side by side on one baseline. Editing a piece alone lets a longer edit run over its
 // neighbour; joining them makes the sentence one line. Pieces further apart than about a word gap stay
@@ -221,7 +257,7 @@ export function extractLines(page: PDFPage): EditableLine[] {
     },
   });
   const lines: EditableLine[] = [];
-  for (const piece of joinLinePieces(raw)) {
+  for (const piece of joinLinePieces(raw.flatMap(splitAtGaps))) {
     const line = buildLine(piece.bbox, piece.dir, piece.chars);
     if (line) {
       lines.push(line);
@@ -248,6 +284,26 @@ export function dominantStyle(line: EditableLine): CharStyle {
   return best;
 }
 
+function textWidth(line: EditableLine): number {
+  const kept = new Set(line.logical.map(c => c.visualIndex));
+  const chars = line.visual.filter(c => kept.has(c.visualIndex));
+  if (chars.length === 0) {
+    return 0;
+  }
+  const last = chars[chars.length - 1];
+  return along(last.origin, line.dir) + advanceOf(last) - along(chars[0].origin, line.dir);
+}
+
+// Where a horizontal line's text sits, padding spaces left out; null for other directions.
+export function textExtent(line: EditableLine): TextExtent | null {
+  if (Math.abs(line.dir[1]) > 0.01 || line.dir[0] <= 0 || line.logical.length === 0) {
+    return null;
+  }
+  const kept = new Set(line.logical.map(c => c.visualIndex));
+  const first = line.visual.find(c => kept.has(c.visualIndex))!;
+  return {left: first.origin[0], right: first.origin[0] + textWidth(line), baseline: first.origin[1], size: dominantStyle(line).size};
+}
+
 export function lineInfo(line: EditableLine, index: number): TextLineInfo {
   const style = dominantStyle(line);
   return {
@@ -260,6 +316,8 @@ export function lineInfo(line: EditableLine, index: number): TextLineInfo {
     font: fontChoiceOf(style.font),
     fontName: style.font.getName().replace(/^[A-Z]{6}\+/, ''),
     pdfFontName: style.font.getName(),
+    textWidth: Math.round(textWidth(line) * 100) / 100,
+    baseline: Math.round((line.logical[0]?.origin[1] ?? line.bbox[3]) * 100) / 100,
     color: toRgb(style.color),
   };
 }

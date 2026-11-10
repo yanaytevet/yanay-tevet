@@ -1,5 +1,5 @@
-<div class="paper relative shadow-2 border border-line select-none" [style.width.px]="width()" [style.height.px]="height()"
-     (pointerdown)="clearSelection()">
+<div class="paper page-sheet relative shadow-2 select-none" [style.width.px]="width()" [style.height.px]="height()"
+     (pointerdown)="clearSelection($event)" (dblclick)="onPaperDoubleClick($event)">
   <canvas #canvas class="absolute inset-0 size-full" aria-hidden="true"></canvas>
   @if (!rendered()) {
     <div class="absolute inset-x-0 top-24 flex justify-center">
@@ -16,8 +16,8 @@
     }
   }
 
-  <!-- Move text: pick lines, drag them -->
-  @if (tool() === 'move') {
+  <!-- Move text, and the same on text in Fill & select: pick lines, drag them -->
+  @if (linesMovable()) {
     @let view = moveView();
     @for (ghost of view.ghosts; track ghost.index) {
       <div class="paper absolute z-10" [style.left.px]="ghost.cover.left" [style.top.px]="ghost.cover.top"
@@ -27,7 +27,7 @@
       <img class="absolute z-10 pointer-events-none" alt="" [src]="ghost.url" [style.left.px]="ghost.left" [style.top.px]="ghost.top"
            [style.width.px]="ghost.width" [style.height.px]="ghost.height">
     }
-    <div class="absolute inset-0 z-20 touch-none cursor-default" role="application" aria-label="Move text"
+    <div class="absolute inset-0 z-20 touch-none cursor-default" role="application" [attr.aria-label]="tool() === 'move' ? 'Move text' : 'Page'"
          (pointerdown)="onMoveDown($event)" (pointermove)="onMovePointer($event)" (pointerup)="onMoveUp()"
          (mousedown)="$event.preventDefault()">
       @for (box of view.lines; track box.line.index) {
@@ -58,11 +58,14 @@
   @if (editView(); as view) {
     <div class="absolute z-30 flex flex-col" [class.items-end]="view.dir === 'rtl'" [class.items-start]="view.dir === 'ltr'"
          [style.left.px]="view.left" [style.right.px]="view.right" [style.top.px]="view.top">
-      <input #lineInput type="text" class="paper-input line-input" [dir]="view.dir" [value]="editing()!.text"
+      <input #lineInput type="text" class="paper-input line-input" [class.line-input-saving]="view.saving" [readOnly]="view.saving"
+             [dir]="view.dir" [value]="editing()!.text"
              [style.min-width.px]="view.minWidth" [style.height.px]="view.height" [style.font-size.px]="view.fontSize"
              [style.font-family]="view.fontFamily" [style.font-weight]="view.fontWeight" [style.font-style]="view.fontStyle"
+             [style.word-spacing.px]="view.wordSpacing" [style.letter-spacing.px]="view.letterSpacing"
              [style.color]="view.color" aria-label="Line text"
              (input)="setEditText($any($event.target).value)" (keydown)="onEditKey($event)">
+      @if (!view.saving) {
       <div class="edit-toolbar card shadow-2 mt-1 flex flex-wrap items-center gap-1 p-1.5" dir="ltr">
         <select class="main-input !w-auto !py-1 !text-meta" aria-label="Font" [value]="editing()!.font"
                 (change)="setEditFont($any($event.target).value)">
@@ -84,13 +87,25 @@
         <button type="button" class="icon-btn" aria-label="Cancel" title="Cancel (Esc)" (click)="cancelEdit()">
           <ng-icon [svg]="featherX"/>
         </button>
-        <button type="button" class="btn btn-sm btn-primary" (click)="commitEdit()">
-          <ng-icon [svg]="featherCheck"/> Save
-        </button>
+        @if (!view.localFontOffer) {
+          <button type="button" class="btn btn-sm btn-primary" (click)="commitEdit()">
+            <ng-icon [svg]="featherCheck"/> Save
+          </button>
+        }
         @if (view.substitutionNote) {
           <p class="basis-full text-caption text-writing-minor px-1 pt-1">{{ view.substitutionNote }}</p>
         }
+        @if (view.localFontOffer) {
+          <div class="basis-full flex flex-col gap-2 px-1 pt-1">
+            <p class="text-caption text-writing-minor max-w-80">{{ view.localFontOffer }}</p>
+            <div class="flex gap-1 justify-end">
+              <button type="button" class="btn btn-sm btn-ghost" (click)="useLookAlikes()">Use a look-alike</button>
+              <button type="button" class="btn btn-sm btn-primary" (click)="useLocalFonts()">Use my fonts</button>
+            </div>
+          </div>
+        }
       </div>
+      }
     </div>
   }
 

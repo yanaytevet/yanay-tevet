@@ -50,6 +50,8 @@ interface LineEdit {
   italic: boolean;
   // Set when the editor was opened from a substitution warning: the bundled fonts the line uses.
   substitutedFonts: string[] | null;
+  // Fonts on this computer that would draw the new characters exactly, offered before saving.
+  localFontOffer?: string[];
 }
 
 interface TextDraft {
@@ -124,6 +126,8 @@ export class PdfPageViewComponent {
   private readonly version = computed(() => `${this.store.docVersion()}:${this.store.pageVersions()[this.page()] ?? 0}`);
 
   protected readonly usesLayer = computed(() => !['select', 'editText', 'move'].includes(this.tool()));
+  // Fill & select shares Move text's line layer: click a line to select it, drag to move it.
+  protected readonly linesMovable = computed(() => this.tool() === 'move' || this.tool() === 'select');
   protected readonly layerCursor = computed(() => (this.tool() === 'addText' ? 'text' : this.tool() === 'note' ? 'copy' : 'crosshair'));
 
   protected readonly lineBoxes = computed(() => {
@@ -149,11 +153,14 @@ export class PdfPageViewComponent {
 
   // Editing an existing line.
   protected readonly editing = signal<LineEdit | null>(null);
+  // A saved edit's box stays, read-only, until the page has re-rendered with the new line, so the old line
+  // doesn't flash back in between. Holds the version the page had when the edit was saved.
+  protected readonly editSavedAt = signal<string | null>(null);
   // The CSS family of the PDF's own font, once loaded, keyed by PDF font name.
   private readonly loadedFonts = signal<Record<string, string>>({});
   protected readonly editView = computed(() => {
     const edit = this.editing();
-    if (!edit || this.tool() !== 'editText') {
+    if (!edit || (this.tool() !== 'editText' && this.tool() !== 'select')) {
       return null;
     }
     const z = this.zoom();
@@ -162,20 +169,32 @@ export class PdfPageViewComponent {
     const ownFont = edit.font === 'original' ? this.loadedFonts()[line.pdfFontName] : undefined;
     const bold = edit.font === 'original' ? line.font.bold : edit.bold;
     const italic = edit.font === 'original' ? line.font.italic : edit.italic;
+    const fontFamily = ownFont ? `"${ownFont}", ${CSS_FONT_FAMILY[family]}` : CSS_FONT_FAMILY[family];
+    const fontWeight = bold && !ownFont ? 700 : 400;
+    const fontStyle = italic && !ownFont ? 'italic' : 'normal';
+    const font = `${fontStyle} ${fontWeight} ${line.size * z}px ${fontFamily}`;
+    const spacing = edit.font === 'original' ? this.matchingSpacing(line, font, z) : {word: 0, letter: 0};
+    const height = (line.bbox[3] - line.bbox[1]) * z + 4;
     return {
       // Less the input's border and padding, so its text starts where the line's does.
       left: line.rtl ? null : line.bbox[0] * z - 3,
       right: line.rtl ? (this.size().width - line.bbox[2]) * z - 3 : null,
-      top: line.bbox[1] * z - 2,
+      top: this.boxTopForBaseline(line, font, height, z),
       minWidth: (line.bbox[2] - line.bbox[0]) * z + 4,
-      height: (line.bbox[3] - line.bbox[1]) * z + 4,
+      height,
       fontSize: line.size * z,
-      fontFamily: ownFont ? `"${ownFont}", ${CSS_FONT_FAMILY[family]}` : CSS_FONT_FAMILY[family],
+      fontFamily,
       // The PDF's font is already the right weight and slant; asking for more would fake it on top.
-      fontWeight: bold && !ownFont ? 700 : 400,
-      fontStyle: italic && !ownFont ? 'italic' : 'normal',
+      fontWeight,
+      fontStyle,
+      wordSpacing: spacing.word,
+      letterSpacing: spacing.letter,
       color: rgbToCss(line.color),
       dir: line.rtl ? 'rtl' : 'ltr',
+      saving: this.editSavedAt() !== null,
+      localFontOffer: edit.localFontOffer
+        ? `Some of these characters aren't in this PDF's copy of ${edit.localFontOffer.map(n => n.replace(',', ' ')).join(', ')}. Use the copy installed on this computer, so they match exactly? Your browser will ask once.`
+        : null,
       original: `${line.fontName} · ${line.size}pt`,
       custom: edit.font !== 'original',
       substitutionNote: edit.substitutedFonts
@@ -183,6 +202,49 @@ export class PdfPageViewComponent {
         : null,
     };
   });
+
+  private measureContext: CanvasRenderingContext2D | null = null;
+
+  // The PDF spaces a line its own way (justified, kerned, positioned glyph by glyph), so the browser's layout of
+  // the same text in the same font can come out wider or narrower, and the line would jump as the edit box
+  // opens. The difference is spread over the spaces (or, without any, the characters) so the box's text ends
+  // where the line does.
+  private matchingSpacing(line: TextLineInfo, font: string, z: number): {word: number; letter: number} {
+    this.measureContext ??= document.createElement('canvas').getContext('2d');
+    const context = this.measureContext;
+    const characters = Array.from(line.text).length;
+    if (!context || characters < 2 || line.textWidth <= 0) {
+      return {word: 0, letter: 0};
+    }
+    context.font = font;
+    const difference = line.textWidth * z - context.measureText(line.text).width;
+    const spaces = Array.from(line.text).filter(c => c === ' ').length;
+    const limit = line.size * z * 0.5;
+    if (spaces > 0) {
+      const word = difference / spaces;
+      return Math.abs(word) <= limit ? {word, letter: 0} : {word: 0, letter: 0};
+    }
+    const letter = difference / characters;
+    return Math.abs(letter) <= limit ? {word: 0, letter} : {word: 0, letter: 0};
+  }
+
+  // Where the edit box goes so its text's baseline lands on the line's. An input centres its text, so the
+  // baseline sits half the leftover height plus the font's ascent below the top of its content (inside a 1px
+  // border; .paper-input has no vertical padding).
+  private boxTopForBaseline(line: TextLineInfo, font: string, height: number, z: number): number {
+    this.measureContext ??= document.createElement('canvas').getContext('2d');
+    const context = this.measureContext;
+    if (!context) {
+      return line.bbox[1] * z - 2;
+    }
+    context.font = font;
+    const metrics = context.measureText(line.text);
+    const ascent = metrics.fontBoundingBoxAscent;
+    const descent = metrics.fontBoundingBoxDescent;
+    const border = 1;
+    const content = height - 2 * border;
+    return line.baseline * z - border - (content - (ascent + descent)) / 2 - ascent;
+  }
 
   // A new text box.
   protected readonly draft = signal<TextDraft | null>(null);
@@ -340,7 +402,7 @@ export class PdfPageViewComponent {
         if (this.pendingReselect.length === 0 && version !== this.openedAtVersion) {
           this.selectedLines.set([]);
         }
-        const edit = this.editing();
+        const edit = this.editSavedAt() === null ? this.editing() : null;
         const draft = this.draft();
         if ((edit || draft) && version !== this.openedAtVersion) {
           this.log.log('editor-closed-page-changed', {page: this.page(), editing: edit?.line.text ?? null, typed: edit?.text ?? draft?.text ?? null});
@@ -388,6 +450,10 @@ export class PdfPageViewComponent {
         this.clearGhostsOnPaint = false;
         this.ghosts.set([]);
       }
+      const savedAt = this.editSavedAt();
+      if (savedAt !== null && version !== savedAt) {
+        this.closeSavedEdit();
+      }
     } catch {
       // The page went away (a page operation); the next version renders it again.
     }
@@ -396,7 +462,7 @@ export class PdfPageViewComponent {
   private async loadOverlays(tool: string): Promise<void> {
     const page = this.page();
     try {
-      if (tool === 'editText' || tool === 'addText' || tool === 'move') {
+      if (tool === 'editText' || tool === 'addText' || tool === 'move' || tool === 'select') {
         const lines = await this.store.textLines(page);
         this.lines.set(lines);
         this.reselectMoved(lines);
@@ -422,26 +488,49 @@ export class PdfPageViewComponent {
   // Editing existing text
 
   protected startEdit(line: TextLineInfo): void {
+    if (this.editSavedAt() !== null) {
+      return;
+    }
     this.log.log('line-click', {page: this.page(), line: {i: line.index, text: line.text, bbox: line.bbox, rtl: line.rtl, font: line.fontName, size: line.size}});
     this.openedAtVersion = this.version();
     this.loadFont(line);
     this.draft.set(null);
+    this.selectedLines.set([]);
     this.editing.set({line, text: line.text, font: 'original', bold: line.font.bold, italic: line.font.italic, substitutedFonts: null});
     setTimeout(() => this.lineInput()?.nativeElement.focus());
   }
 
   protected editMarker(marker: SubstitutionMarker): void {
-    this.store.tool.set('editText');
-    setTimeout(async () => {
-      const lines = await this.store.textLines(this.page());
-      this.lines.set(lines);
-      const centre: Point = [(marker.bbox[0] + marker.bbox[2]) / 2, (marker.bbox[1] + marker.bbox[3]) / 2];
-      const line = lines.find(l => distanceToRect(centre, l.bbox) === 0) ?? lines.find(l => distanceToRect(centre, l.bbox) < 4);
-      if (line) {
-        this.startEdit(line);
-        this.editing.update(e => (e ? {...e, substitutedFonts: marker.fonts} : e));
-      }
-    });
+    const centre: Point = [(marker.bbox[0] + marker.bbox[2]) / 2, (marker.bbox[1] + marker.bbox[3]) / 2];
+    void this.editLineAt(centre, marker.fonts);
+  }
+
+  // Fill & select's shortcut: double-click text to edit it right there, staying in Fill & select. Fields and
+  // annotations keep their own clicks.
+  protected onPaperDoubleClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (this.tool() !== 'select' || target.closest('.annotation-target, .pdf-field, .line-input, .edit-toolbar')) {
+      return;
+    }
+    void this.editLineAt(this.toPage(event), null);
+  }
+
+  // Opens the line at `point` for editing, if there is one: in place in Fill & select, otherwise in Edit text.
+  private async editLineAt(point: Point, substitutedFonts: string[] | null): Promise<void> {
+    const lines = await this.store.textLines(this.page());
+    const line = lines.find(l => distanceToRect(point, l.bbox) === 0) ?? lines.find(l => distanceToRect(point, l.bbox) < 4);
+    if (!line) {
+      return;
+    }
+    window.getSelection()?.removeAllRanges();
+    if (this.tool() !== 'select') {
+      this.store.tool.set('editText');
+    }
+    this.lines.set(lines);
+    this.startEdit(line);
+    if (substitutedFonts) {
+      this.editing.update(e => (e ? {...e, substitutedFonts} : e));
+    }
   }
 
   private loadFont(line: TextLineInfo): void {
@@ -472,14 +561,17 @@ export class PdfPageViewComponent {
   }
 
   protected cancelEdit(): void {
+    if (this.editSavedAt() !== null) {
+      return;
+    }
     const edit = this.editing();
     this.log.log('edit-cancel', {page: this.page(), line: edit?.line.text, typed: edit?.text});
     this.editing.set(null);
   }
 
-  protected async commitEdit(): Promise<void> {
+  protected async commitEdit(fontsSettled = false): Promise<void> {
     const edit = this.editing();
-    if (!edit) {
+    if (!edit || this.editSavedAt() !== null || edit.localFontOffer) {
       return;
     }
     if (edit.text === edit.line.text && edit.font === 'original') {
@@ -487,18 +579,61 @@ export class PdfPageViewComponent {
       this.editing.set(null);
       return;
     }
+    if (!fontsSettled && edit.font === 'original' && !this.store.localFontsDeclined()) {
+      const wanted = await this.store.localFontsWanted(this.page(), edit.line, edit.text);
+      if (wanted.length > 0) {
+        const permission = await this.store.localFontPermission();
+        if (permission === 'prompt') {
+          // Chrome asks only from a click, so the question goes in the box first.
+          this.editing.update(e => (e ? {...e, localFontOffer: wanted} : e));
+          return;
+        }
+        if (permission === 'granted') {
+          await this.store.provideLocalFonts(wanted);
+        }
+      }
+    }
     const override = edit.font === 'original' ? null : {family: edit.font, bold: edit.bold, italic: edit.italic};
+    this.editSavedAt.set(this.version());
+    const saved = await this.store.editLine(this.page(), edit.line, edit.text, override);
+    if (!saved) {
+      this.closeSavedEdit();
+    }
+  }
+
+  protected async useLocalFonts(): Promise<void> {
+    const offer = this.editing()?.localFontOffer;
+    if (!offer) {
+      return;
+    }
+    await this.store.provideLocalFonts(offer);
+    this.editing.update(e => (e ? {...e, localFontOffer: undefined} : e));
+    await this.commitEdit(true);
+  }
+
+  protected async useLookAlikes(): Promise<void> {
+    this.store.declineLocalFonts();
+    this.editing.update(e => (e ? {...e, localFontOffer: undefined} : e));
+    await this.commitEdit(true);
+  }
+
+  private closeSavedEdit(): void {
+    this.editSavedAt.set(null);
     this.editing.set(null);
-    await this.store.editLine(this.page(), edit.line, edit.text, override);
   }
 
   protected async deleteLine(): Promise<void> {
     const edit = this.editing();
-    if (!edit) {
+    if (!edit || this.editSavedAt() !== null) {
       return;
     }
-    this.editing.set(null);
-    await this.store.editLine(this.page(), edit.line, '', null);
+    // An empty box keeps covering the line until the page re-renders without it.
+    this.editing.set({...edit, text: ''});
+    this.editSavedAt.set(this.version());
+    const saved = await this.store.editLine(this.page(), edit.line, '', null);
+    if (!saved) {
+      this.closeSavedEdit();
+    }
   }
 
   protected onEditKey(event: KeyboardEvent): void {
@@ -715,6 +850,11 @@ export class PdfPageViewComponent {
     if (event.button !== 0 || this.committingMove || this.clearGhostsOnPaint) {
       return;
     }
+    // A line edited in place in Fill & select is saved by clicking anywhere else, as in a text editor.
+    if (this.tool() === 'select' && this.editing() && this.editSavedAt() === null) {
+      void this.commitEdit();
+      return;
+    }
     const point = this.toPage(event);
     const line = this.lineAt(point);
     (event.target as HTMLElement).setPointerCapture(event.pointerId);
@@ -816,7 +956,7 @@ export class PdfPageViewComponent {
 
   @HostListener('window:keydown', ['$event'])
   protected onMoveKey(event: KeyboardEvent): void {
-    if (this.tool() !== 'move' || this.selectedLines().length === 0 || this.committingMove || this.clearGhostsOnPaint
+    if (!this.linesMovable() || this.selectedLines().length === 0 || this.committingMove || this.clearGhostsOnPaint
       || (event.target as HTMLElement | null)?.closest('input, textarea, select')) {
       return;
     }
@@ -884,8 +1024,12 @@ export class PdfPageViewComponent {
     }
   }
 
-  protected clearSelection(): void {
+  protected clearSelection(event: PointerEvent): void {
     this.selectedAnnotation.set(null);
+    // Picking a form field or an annotation in Fill & select lets go of the selected text.
+    if ((event.target as HTMLElement).closest('.pdf-field, .annotation-target')) {
+      this.selectedLines.set([]);
+    }
   }
 
   // Form fields

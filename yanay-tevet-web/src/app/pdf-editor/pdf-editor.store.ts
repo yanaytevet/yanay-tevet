@@ -1,6 +1,7 @@
 import {computed, DestroyRef, effect, inject, Injectable, signal} from '@angular/core';
 import {DialogService} from '../common/dialogs/dialogs.service';
 import {PdfEditorLog} from './debug/pdf-editor-log';
+import {fontKey} from './engine/font-names';
 import {PdfEngineClient} from './engine/pdf-engine-client';
 import {
   AddTextStyle,
@@ -19,6 +20,19 @@ import {
 } from './engine/pdf-engine.types';
 
 export type PdfTool = 'select' | 'editText' | 'move' | 'addText' | 'erase' | 'markup' | 'note' | 'draw' | 'sign';
+
+export type LocalFontPermission = 'granted' | 'denied' | 'prompt';
+
+// Chrome and Edge's Local Font Access API (not in TypeScript's DOM types yet).
+interface LocalFontData {
+  postscriptName: string;
+  fullName: string;
+  blob(): Promise<Blob>;
+}
+
+type QueryLocalFonts = () => Promise<LocalFontData[]>;
+
+const LOCAL_FONTS_KEY = 'pdf_editor_local_fonts';
 
 export interface AddTextSettings {
   family: FontFamily | 'match';
@@ -206,6 +220,77 @@ export class PdfEditorStore {
 
   // A CSS font-family for a PDF font, loaded from the font embedded in the file; null if the browser can't
   // use it, and the edit box falls back to a generic family.
+  // Fonts installed on this computer, for characters a PDF's own copy of a font lacks: the same font draws
+  // them exactly. Chrome and Edge only; the user allows it once.
+  readonly localFontsSupported = typeof window !== 'undefined' && 'queryLocalFonts' in window;
+
+  localFontsDeclined(): boolean {
+    try {
+      return sessionStorage.getItem(LOCAL_FONTS_KEY) === 'declined';
+    } catch {
+      return false;
+    }
+  }
+
+  declineLocalFonts(): void {
+    this.log.log('local-fonts-declined', {});
+    // For this visit only: a misclick shouldn't hide the offer for good.
+    try {
+      sessionStorage.setItem(LOCAL_FONTS_KEY, 'declined');
+    } catch {
+      // Storage blocked: the offer comes back on the next edit, which is harmless.
+    }
+  }
+
+  async localFontPermission(): Promise<LocalFontPermission> {
+    try {
+      const status = await navigator.permissions.query({name: 'local-fonts' as PermissionName});
+      return status.state;
+    } catch {
+      return 'prompt';
+    }
+  }
+
+  async localFontsWanted(page: number, line: TextLineInfo, newText: string): Promise<string[]> {
+    if (!this.localFontsSupported) {
+      return [];
+    }
+    try {
+      return await this.engine.call('localFontsWanted', page, line.index, line.text, newText);
+    } catch {
+      return [];
+    }
+  }
+
+  // Hands the installed copies of the PDF fonts `names` to the engine; asks for permission if it hasn't been
+  // given, so call it from a click. Fonts are matched by fontKey(), since a PDF may name a font differently
+  // from the font itself. Returns the fonts the engine took.
+  async provideLocalFonts(names: string[]): Promise<string[]> {
+    const query = (window as unknown as {queryLocalFonts?: QueryLocalFonts}).queryLocalFonts;
+    if (!query || names.length === 0) {
+      return [];
+    }
+    const provided: string[] = [];
+    try {
+      const installed = await query.call(window);
+      for (const name of names) {
+        const key = fontKey(name);
+        const font = installed.find(f => fontKey(f.postscriptName) === key) ?? installed.find(f => fontKey(f.fullName) === key);
+        if (!font) {
+          continue;
+        }
+        const data = await (await font.blob()).arrayBuffer();
+        if (await this.engine.call('addLocalFont', name, font.postscriptName, data)) {
+          provided.push(name);
+        }
+      }
+    } catch (error) {
+      this.log.log('local-fonts-error', {message: error instanceof Error ? error.message : String(error)});
+    }
+    this.log.log('local-fonts', {wanted: names, provided});
+    return provided;
+  }
+
   webFontFamily(page: number, pdfFontName: string): Promise<string | null> {
     let family = this.webFonts.get(pdfFontName);
     if (!family) {

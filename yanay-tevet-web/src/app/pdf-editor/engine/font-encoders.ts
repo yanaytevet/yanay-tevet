@@ -1,4 +1,5 @@
 import type {Font, PDFDocument, PDFObject} from 'mupdf';
+import {fontKey} from './font-names';
 import {mupdf} from './mupdf-runtime';
 import {FontChoice, FontFamily} from './pdf-engine.types';
 
@@ -214,7 +215,9 @@ export class ExistingFontEncoder implements CharEncoder {
     private readonly widthOf: (code: number, codePoint: number) => number,
   ) {}
 
-  static fromFontObject(ref: PDFObject): ExistingFontEncoder | null {
+  // `learned`: for a CID font with no /ToUnicode (Japanese from macOS, say), which character each code drew
+  // on the document's pages, as MuPDF read it through the font's character collection.
+  static fromFontObject(ref: PDFObject, learned: () => Map<number, number> | null = () => null): ExistingFontEncoder | null {
     const dict = ref.resolve();
     const subtype = dict.get('Subtype').isName() ? dict.get('Subtype').asName() : '';
     const baseFont = dict.get('BaseFont').isName() ? dict.get('BaseFont').asName() : '';
@@ -223,14 +226,21 @@ export class ExistingFontEncoder implements CharEncoder {
 
     if (subtype === 'Type0') {
       const encoding = dict.get('Encoding');
-      if (!encoding.isName() || !['Identity-H', 'Identity-V'].includes(encoding.asName()) || !toUnicode.isStream()) {
+      if (!encoding.isName() || !['Identity-H', 'Identity-V'].includes(encoding.asName())) {
         return null;
       }
-      const cmap = parseToUnicodeCMap(toUnicode.readStream().asString(), 2);
+      let unicodeToCode: Map<number, number> | null;
+      if (toUnicode.isStream()) {
+        unicodeToCode = ExistingFontEncoder.invert(parseToUnicodeCMap(toUnicode.readStream().asString(), 2).codeToUnicode);
+      } else {
+        unicodeToCode = learned();
+      }
+      if (!unicodeToCode || unicodeToCode.size === 0) {
+        return null;
+      }
       const descendant = dict.get('DescendantFonts').get(0).resolve();
       const {widths, defaultWidth} = cidWidths(descendant);
-      return new ExistingFontEncoder(key, baseFont, ref, 2, ExistingFontEncoder.invert(cmap.codeToUnicode),
-        code => widths.get(code) ?? defaultWidth);
+      return new ExistingFontEncoder(key, baseFont, ref, 2, unicodeToCode, code => widths.get(code) ?? defaultWidth);
     }
 
     if (subtype !== 'TrueType' && subtype !== 'Type1' && subtype !== 'MMType1') {
@@ -315,6 +325,21 @@ export class FallbackFontEncoder implements CharEncoder {
     return name === own || name === BUILT_IN_REAL_NAMES[own];
   }
 
+  // Whether this is the bundled font picked to match the original family (Arimo for Arial and Helvetica,
+  // Tinos and Frank Ruhl Libre for Times), so characters it fills in blend in and need no warning.
+  standsInFor(originalName: string): boolean {
+    if (this.key.startsWith('local:')) {
+      return this.key === `local:${fontKey(originalName)}`;
+    }
+    if (this.key.startsWith('fallback:Arimo')) {
+      return /Arial|Helvetica|Arimo|Liberation ?Sans/i.test(originalName);
+    }
+    if (this.key.startsWith('fallback:Tinos') || this.key.startsWith('fallback:FrankRuhlLibre')) {
+      return /Times|Tinos|Liberation ?Serif/i.test(originalName);
+    }
+    return false;
+  }
+
   encode(codePoint: number): GlyphCode | null {
     const gid = this.font.encodeCharacter(codePoint);
     if (gid <= 0) {
@@ -359,6 +384,36 @@ function fileFor(choice: FontChoice): string {
   return `${family}-${style}.ttf`;
 }
 
+export function stripSubsetTag(name: string): string {
+  return name.replace(/^[A-Z]{6}\+/, '');
+}
+
+export type Script = 'latin' | 'hebrew' | 'japanese';
+
+export function isJapaneseCodePoint(cp: number): boolean {
+  return (cp >= 0x3000 && cp <= 0x30ff) || (cp >= 0x31f0 && cp <= 0x31ff) || (cp >= 0x3400 && cp <= 0x4dbf)
+    || (cp >= 0x4e00 && cp <= 0x9fff) || (cp >= 0xf900 && cp <= 0xfaff) || (cp >= 0xff00 && cp <= 0xffef);
+}
+
+export function scriptOf(cp: number): Script {
+  if (isHebrewCodePoint(cp)) {
+    return 'hebrew';
+  }
+  return isJapaneseCodePoint(cp) ? 'japanese' : 'latin';
+}
+
+// Noto Sans JP and Noto Serif JP, cut to Regular and Bold from Google's variable fonts.
+function japaneseFileFor(choice: FontChoice): string {
+  return `Noto${choice.family === 'serif' ? 'Serif' : 'Sans'}JP-${choice.bold ? 'Bold' : 'Regular'}.ttf`;
+}
+
+function fileForScript(script: Script, choice: FontChoice): string {
+  if (script === 'hebrew') {
+    return hebrewFileFor(choice);
+  }
+  return script === 'japanese' ? japaneseFileFor(choice) : fileFor(choice);
+}
+
 function hebrewFileFor(choice: FontChoice): string {
   if (choice.family === 'serif') {
     return `FrankRuhlLibre-${choice.bold ? 'Bold' : 'Regular'}.ttf`;
@@ -376,11 +431,13 @@ const FILE_LABELS: Record<string, string> = {
   Tinos: 'Tinos (Times New Roman look-alike)',
   Arimo: 'Arimo (Arial look-alike)',
   FrankRuhlLibre: 'Frank Ruhl Libre (Hebrew serif)',
+  NotoSansJP: 'Noto Sans JP',
+  NotoSerifJP: 'Noto Serif JP',
 };
 
 export interface FallbackNeed {
   choice: FontChoice;
-  hebrew: boolean;
+  script: Script;
 }
 
 export interface FallbackCandidate {
@@ -397,12 +454,22 @@ export function isHebrewCodePoint(cp: number): boolean {
 // The bundled fonts: the look-alikes (fetched when an edit needs them), then MuPDF's built-in Nimbus fonts.
 export class FallbackFonts {
   private readonly fonts = new Map<string, Font>();
+  // Fonts installed on the user's computer, handed over by the page, by fontKey().
+  private readonly local = new Map<string, Font>();
 
   constructor(private readonly loadFontFile: (name: string) => Promise<ArrayBuffer>) {}
 
+  addLocal(pdfFontName: string, font: Font): void {
+    this.local.set(fontKey(pdfFontName), font);
+  }
+
+  hasLocal(pdfFontName: string): boolean {
+    return this.local.has(fontKey(pdfFontName));
+  }
+
   async prepare(needs: FallbackNeed[]): Promise<void> {
     for (const need of needs) {
-      const file = need.hebrew ? hebrewFileFor(need.choice) : fileFor(need.choice);
+      const file = fileForScript(need.script, need.choice);
       if (!this.fonts.has(file)) {
         const data = await this.loadFontFile(file);
         this.fonts.set(file, new (mupdf().Font)(file.replace('.ttf', ''), new Uint8Array(data)));
@@ -418,13 +485,24 @@ export class FallbackFonts {
     return {key: `fallback:${file}`, label: FILE_LABELS[file.split('-')[0]], font, hebrewScale: scaled ? (HEBREW_SCALE[file] ?? 1) : 1};
   }
 
-  // The bundled fonts to try for a character, best match first.
-  candidates(codePoint: number, choice: FontChoice): FallbackCandidate[] {
+  // The fonts to try for a character the original can't draw, best match first: the same font installed on
+  // this computer, then the bundled look-alike for its script, then MuPDF's built-in fonts.
+  candidates(codePoint: number, choice: FontChoice, originalName: string | null): FallbackCandidate[] {
     const result: FallbackCandidate[] = [];
-    if (isHebrewCodePoint(codePoint)) {
+    const installed = originalName ? this.local.get(fontKey(originalName)) : undefined;
+    if (installed && originalName) {
+      result.push({key: `local:${fontKey(originalName)}`, label: `${stripSubsetTag(originalName)} (this computer)`, font: installed, hebrewScale: 1});
+    }
+    const script = scriptOf(codePoint);
+    if (script === 'hebrew') {
       const hebrew = this.entry(hebrewFileFor(choice), true);
       if (hebrew) {
         result.push(hebrew);
+      }
+    } else if (script === 'japanese') {
+      const japanese = this.entry(japaneseFileFor(choice), false);
+      if (japanese) {
+        result.push(japanese);
       }
     } else if (choice.family !== 'mono') {
       const latin = this.entry(fileFor(choice), false);
@@ -450,6 +528,10 @@ export class FallbackFonts {
     if (script === 'Hebrew') {
       return this.fonts.get(hebrewFileFor({family: 'sans', bold, italic: false}))
         ?? this.fonts.get(hebrewFileFor({family: 'sans', bold: false, italic: false})) ?? null;
+    }
+    if (script === 'Han' || script === 'Hiragana' || script === 'Katakana') {
+      return this.fonts.get(japaneseFileFor({family: 'sans', bold, italic: false}))
+        ?? this.fonts.get(japaneseFileFor({family: 'sans', bold: false, italic: false})) ?? null;
     }
     return null;
   }

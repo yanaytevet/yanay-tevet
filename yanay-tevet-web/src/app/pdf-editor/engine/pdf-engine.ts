@@ -1,6 +1,7 @@
 import type {PDFDocument, PDFPage, PDFWidget} from 'mupdf';
 import {hasRtl, startsRtl} from './bidi';
-import {ExistingFontEncoder, FallbackFonts, FallbackNeed, isHebrewCodePoint} from './font-encoders';
+import {ExistingFontEncoder, FallbackFonts, FallbackNeed, Script, scriptOf, stripSubsetTag} from './font-encoders';
+import {fontFace} from './font-files';
 import {mupdf} from './mupdf-runtime';
 import {
   AddTextStyle,
@@ -20,7 +21,8 @@ import {
   WidgetInfo,
   WidgetKind,
 } from './pdf-engine.types';
-import {dominantStyle, EditableLine, extractLines, fontChoiceOf, lineInfo, LineChar, toRgb} from './text-lines';
+import {Decoration, decorationsOf, pageBars, redrawDecorations, removeDecorations} from './decorations';
+import {dominantStyle, EditableLine, extractLines, fontChoiceOf, lineInfo, LineChar, textExtent, toRgb} from './text-lines';
 import {CharToWrite, FontRegistry, redact, writeText} from './text-writer';
 import {webFontFromPdfFont} from './web-font';
 
@@ -132,13 +134,14 @@ function fixSingleLineAppearance(widget: PDFWidget): void {
   appearance.writeStream(head + moved);
 }
 
-// Every character drawn in one chosen bundled font: its Latin look-alike, and its Hebrew one when needed.
+// Every character drawn in one chosen bundled font: its Latin look-alike, and its Hebrew or Japanese one when
+// the text has those.
 function needsFor(choice: FontChoice, text: string): FallbackNeed[] {
-  const needs: FallbackNeed[] = [{choice, hebrew: false}];
-  if (Array.from(text).some(c => isHebrewCodePoint(c.codePointAt(0)!))) {
-    needs.push({choice, hebrew: true});
+  const scripts = new Set<Script>(['latin']);
+  for (const c of text) {
+    scripts.add(scriptOf(c.codePointAt(0)!));
   }
-  return needs;
+  return [...scripts].map(script => ({choice, script}));
 }
 
 // Where a rewritten line is pinned: its start, or for right-to-left text its end, on the baseline.
@@ -314,8 +317,8 @@ export class PdfEngine implements PdfEngineApi {
       const own = c.style ? this.fonts.existingFor(page, pdfPage, c.style.font, [codePoint]) : null;
       if (!own?.encode(codePoint)) {
         const choice = c.style ? fontChoiceOf(c.style.font) : {family: 'sans' as const, bold: false, italic: false};
-        const hebrew = isHebrewCodePoint(codePoint);
-        needs.set(`${choice.family}|${choice.bold}|${choice.italic}|${hebrew}`, {choice, hebrew});
+        const script = scriptOf(codePoint);
+        needs.set(`${choice.family}|${choice.bold}|${choice.italic}|${script}`, {choice, script});
       }
     }
     return [...needs.values()];
@@ -340,11 +343,14 @@ export class PdfEngine implements PdfEngineApi {
     const outcome = this.operation('Edit text', false, () => {
       const pdfPage = this.loadPage(page);
       this.fonts.warm(page, pdfPage, line.logical);
+      const before = textExtent(line);
+      const decorations = before ? decorationsOf(before, pageBars(pdfPage)) : [];
       redact(pdfPage, lineRedactionRect(line), false);
+      removeDecorations(pdfPage, decorations);
       if (newText.trim() === '') {
-        return {substitutedFonts: [], missingCharacters: []};
+        return {substitutedFonts: [], missingCharacters: [], extent: null};
       }
-      return writeText(this.document, page, pdfPage, this.fonts, {
+      const written = writeText(this.document, page, pdfPage, this.fonts, {
         chars,
         rtl: line.rtl,
         anchor,
@@ -353,8 +359,40 @@ export class PdfEngine implements PdfEngineApi {
         override: fontOverride ? {font: fontOverride, size: style.size, color: toRgb(style.color)} : null,
         existingFontsLabelByShape: line.labelsByShape,
       });
+      if (before && written.extent) {
+        redrawDecorations(this.document, pdfPage, decorations, before, {...before, left: written.extent[0], right: written.extent[1]});
+      }
+      return written;
     });
-    return {...outcome, state: await this.state()};
+    return {substitutedFonts: outcome.substitutedFonts, missingCharacters: outcome.missingCharacters, state: await this.state()};
+  }
+
+  async localFontsWanted(page: number, lineIndex: number, expectedText: string, newText: string): Promise<string[]> {
+    const line = this.findLine(page, lineIndex, expectedText);
+    const pdfPage = this.loadPage(page);
+    const names = new Set<string>();
+    for (const c of diffChars(line.logical, newText)) {
+      if (c.char.trim() === '' || !c.style) {
+        continue;
+      }
+      const codePoint = c.char.codePointAt(0)!;
+      const own = this.fonts.existingFor(page, pdfPage, c.style.font, [codePoint]);
+      const name = stripSubsetTag(c.style.font.getName());
+      if (!own?.encode(codePoint) && !this.fallbackFonts.hasLocal(name)) {
+        names.add(name);
+      }
+    }
+    return [...names];
+  }
+
+  async addLocalFont(pdfFontName: string, postscriptName: string, data: ArrayBuffer): Promise<boolean> {
+    const bytes = new Uint8Array(data);
+    const face = fontFace(bytes, postscriptName);
+    if (face === null) {
+      return false;
+    }
+    this.fallbackFonts.addLocal(pdfFontName, new (mupdf().Font)(postscriptName, bytes, face));
+    return true;
   }
 
   async moveLines(page: number, lines: LineRef[], offset: Point): Promise<DocState> {
@@ -365,22 +403,44 @@ export class PdfEngine implements PdfEngineApi {
       for (const target of targets) {
         this.fonts.warm(page, pdfPage, target.logical);
       }
+      // Underlines and strike-throughs go with their lines.
+      const bars = pageBars(pdfPage);
+      const decorations = new Map<EditableLine, Decoration[]>();
+      for (const target of targets) {
+        const extent = textExtent(target);
+        decorations.set(target, extent ? decorationsOf(extent, bars) : []);
+      }
       // Every line comes off before any goes back, so a line moved onto another's old place survives.
       for (const target of targets) {
         redact(pdfPage, lineRedactionRect(target), false);
       }
+      removeDecorations(pdfPage, [...decorations.values()].flat());
       for (const target of targets) {
-        const anchor = lineAnchor(target);
+        // Glyph for glyph as the line is drawn now: same order, every one exactly as far from the next.
+        const drawn = [...target.logical].sort((a, b) => a.visualIndex - b.visualIndex);
+        const along = (c: LineChar) => c.origin[0] * target.dir[0] + c.origin[1] * target.dir[1];
+        const chars: CharToWrite[] = drawn.map((c, i) => ({
+          char: c.char,
+          visualChar: target.visual[c.visualIndex].char,
+          style: c.style,
+          source: {visualIndex: i, measuredAdvance: i + 1 < drawn.length ? along(drawn[i + 1]) - along(c) : null},
+        }));
         writeText(this.document, page, pdfPage, this.fonts, {
-          chars: target.logical.map(c => keep(c, c.char)),
+          chars,
           rtl: target.rtl,
-          anchor: [anchor[0] + offset[0], anchor[1] + offset[1]],
-          anchorIsEnd: target.rtl,
+          anchor: [drawn[0].origin[0] + offset[0], drawn[0].origin[1] + offset[1]],
+          anchorIsEnd: false,
           dir: target.dir,
           override: null,
           existingFontsLabelByShape: target.labelsByShape,
           keepSpacing: true,
+          visualOrder: true,
         });
+        const extent = textExtent(target);
+        if (extent) {
+          const moved = {...extent, left: extent.left + offset[0], right: extent.right + offset[0], baseline: extent.baseline + offset[1]};
+          redrawDecorations(this.document, pdfPage, decorations.get(target) ?? [], extent, moved);
+        }
       }
     });
     return this.state();
@@ -394,7 +454,7 @@ export class PdfEngine implements PdfEngineApi {
     const matchedStyle = matched ? dominantStyle(matched) : null;
     await this.fallbackFonts.prepare(style.kind === 'custom'
       ? needsFor(style.style.font, text)
-      : this.fallbackNeeds(page, Array.from(text).map(char => ({char, style: matchedStyle, source: null}))));
+      : this.fallbackNeeds(page, Array.from(text).map((char): CharToWrite => ({char, style: matchedStyle, source: null}))));
     const size = style.kind === 'custom' ? style.style.size : matchedStyle!.size;
     const lineHeight = size * 1.25;
     const outcome = this.operation('Add text', false, () => {
@@ -407,7 +467,7 @@ export class PdfEngine implements PdfEngineApi {
         }
         const lineRtl = startsRtl(lineText) || (rtl && !/\p{L}/u.test(lineText));
         const result = writeText(this.document, page, pdfPage, this.fonts, {
-          chars: Array.from(lineText).map(char => ({char, style: matchedStyle, source: null})),
+          chars: Array.from(lineText).map((char): CharToWrite => ({char, style: matchedStyle, source: null})),
           rtl: lineRtl,
           anchor: [anchor[0], anchor[1] + i * lineHeight],
           anchorIsEnd: rtl,
@@ -526,7 +586,7 @@ export class PdfEngine implements PdfEngineApi {
 
   async setWidgetValue(page: number, index: number, value: string | boolean): Promise<DocState> {
     if (typeof value === 'string' && hasRtl(value)) {
-      await this.fallbackFonts.prepare([{choice: {family: 'sans', bold: false, italic: false}, hebrew: true}]);
+      await this.fallbackFonts.prepare([{choice: {family: 'sans', bold: false, italic: false}, script: 'hebrew'}]);
     }
     this.operation('Fill form', false, () => {
       const pdfPage = this.loadPage(page);
@@ -643,7 +703,10 @@ export class PdfEngine implements PdfEngineApi {
   }
 
   async save(): Promise<ArrayBuffer> {
-    return copyBuffer(subsetCopy(this.document.saveToBuffer('garbage=compact,compress').asUint8Array()));
+    // No garbage collection on the open document: compacting it renumbers objects in place, and after an edit
+    // that lost an image's soft mask (a signature disappeared from the saved file, and from the page). The copy
+    // is compacted instead.
+    return copyBuffer(subsetCopy(this.document.saveToBuffer('compress').asUint8Array()));
   }
 
 }

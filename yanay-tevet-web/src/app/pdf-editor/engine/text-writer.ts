@@ -1,4 +1,4 @@
-import type {Font, PDFDocument, PDFObject, PDFPage} from 'mupdf';
+import type {Font, PDFDocument, PDFObject, PDFPage, Text} from 'mupdf';
 import {logicalToVisual} from './bidi';
 import {CharEncoder, ExistingFontEncoder, FallbackFontEncoder, FallbackFonts, GlyphCode} from './font-encoders';
 import {mupdf} from './mupdf-runtime';
@@ -9,6 +9,8 @@ import {CharStyle, fontChoiceOf} from './text-lines';
 // is the original character it keeps, if any, so unchanged text keeps its original spacing.
 export interface CharToWrite {
   char: string;
+  // With WriteSpec.visualOrder: the character as it is drawn (its mirrored form in right-to-left text).
+  visualChar?: string;
   style: CharStyle | null;
   source: {visualIndex: number; measuredAdvance: number | null} | null;
 }
@@ -26,11 +28,16 @@ export interface WriteSpec {
   existingFontsLabelByShape: boolean;
   // Keep every original character's spacing, whatever font draws it (moving a line unchanged).
   keepSpacing?: boolean;
+  // `chars` are already in display order and stay in it: a line moved as it is keeps its layout even where
+  // re-running the bidi algorithm over its text would order it differently from how its producer did.
+  visualOrder?: boolean;
 }
 
 export interface WriteOutcome {
   substitutedFonts: string[];
   missingCharacters: string[];
+  // Where the written text starts and ends along the line (x, for horizontal text), or null if nothing was.
+  extent: [number, number] | null;
 }
 
 function fmt(n: number): string {
@@ -38,7 +45,7 @@ function fmt(n: number): string {
   return s === '-0' ? '0' : s;
 }
 
-function colorOperator(color: number[]): string {
+export function colorOperator(color: number[]): string {
   const values = color.map(fmt).join(' ');
   if (color.length === 1) {
     return `${values} g`;
@@ -53,6 +60,8 @@ function colorOperator(color: number[]): string {
 export class FontRegistry {
   private existing = new Map<string, ExistingFontEncoder[]>();
   private fallback = new Map<string, FallbackFontEncoder>();
+  // Font name → character → code, read off the document's pages (see ExistingFontEncoder.fromFontObject).
+  private learnedGlyphs: Map<string, Map<number, number>> | null = null;
 
   constructor(private readonly doc: PDFDocument, readonly fallbackFonts: FallbackFonts) {}
 
@@ -63,6 +72,42 @@ export class FontRegistry {
   resetAll(): void {
     this.existing.clear();
     this.fallback.clear();
+    this.learnedGlyphs = null;
+  }
+
+  // Which code drew which character, for fonts without a /ToUnicode: MuPDF reads their text through the
+  // font's character collection (Adobe-Japan1 for Japanese), and with Identity-H the glyph it reports is the
+  // code in the content stream. Read once from the first pages, where the document's text is.
+  private learned(name: string): Map<number, number> | null {
+    if (!this.learnedGlyphs) {
+      const learned = new Map<string, Map<number, number>>();
+      const record = (text: Text) => text.walk({
+        showGlyph(font: Font, _trm: unknown, glyph: number, unicode: number) {
+          if (unicode > 0 && glyph >= 0) {
+            const map = learned.get(font.getName()) ?? new Map<number, number>();
+            if (!map.has(unicode)) {
+              map.set(unicode, glyph);
+            }
+            learned.set(font.getName(), map);
+          }
+        },
+      } as never);
+      const m = mupdf();
+      const device = new m.Device({
+        fillText: (text: Text) => record(text),
+        strokeText: (text: Text) => record(text),
+        clipText: (text: Text) => record(text),
+        clipStrokeText: (text: Text) => record(text),
+        ignoreText: (text: Text) => record(text),
+      } as never);
+      const pages = Math.min(this.doc.countPages(), 60);
+      for (let i = 0; i < pages; i++) {
+        this.doc.loadPage(i).run(device, m.Matrix.identity);
+      }
+      device.close();
+      this.learnedGlyphs = learned;
+    }
+    return this.learnedGlyphs.get(name) ?? null;
   }
 
   // The PDF fonts on a page whose /BaseFont is `name`.
@@ -114,7 +159,7 @@ export class FontRegistry {
       for (const ref of this.fontObjectsOf(page)) {
         const baseFont = ref.resolve().get('BaseFont');
         if (baseFont.isName() && baseFont.asName() === name) {
-          const encoder = ExistingFontEncoder.fromFontObject(ref);
+          const encoder = ExistingFontEncoder.fromFontObject(ref, () => this.learned(name));
           if (encoder) {
             candidates.push(encoder);
           }
@@ -147,8 +192,8 @@ export class FontRegistry {
     }
   }
 
-  fallbackEncoders(codePoint: number, choice: FontChoice): FallbackFontEncoder[] {
-    return this.fallbackFonts.candidates(codePoint, choice).map(({key, label, font, hebrewScale}) => {
+  fallbackEncoders(codePoint: number, choice: FontChoice, originalName: string | null): FallbackFontEncoder[] {
+    return this.fallbackFonts.candidates(codePoint, choice, originalName).map(({key, label, font, hebrewScale}) => {
       let encoder = this.fallback.get(key);
       if (!encoder) {
         encoder = new FallbackFontEncoder(key, label, font, this.doc, hebrewScale);
@@ -236,7 +281,9 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
   const substituted = new Set<string>();
   const missing = new Set<string>();
   const text = spec.chars.map(c => c.char).join('');
-  const visual = logicalToVisual(text, spec.rtl);
+  const visual = spec.visualOrder
+    ? spec.chars.map((c, logicalIndex) => ({char: c.visualChar ?? c.char, logicalIndex}))
+    : logicalToVisual(text, spec.rtl);
 
   // Characters per original font, to pick the right subset among same-named fonts.
   const codePointsByFont = new Map<Font, number[]>();
@@ -264,16 +311,18 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
       encoder = glyph ? existing : null;
     }
     if (!glyph) {
-      for (const fallback of registry.fallbackEncoders(codePoint, choice)) {
+      for (const fallback of registry.fallbackEncoders(codePoint, choice, spec.override ? null : (c.style?.font.getName() ?? null))) {
         glyph = fallback.encode(codePoint);
         if (glyph) {
           encoder = fallback;
           break;
         }
       }
-      // Text an earlier edit already drew in this bundled font is not a substitution.
-      const sameFont = encoder instanceof FallbackFontEncoder && c.style !== null && encoder.drew(c.style.font.getName());
-      if (glyph && encoder && c.style && !spec.override && v.char.trim() !== '' && !sameFont) {
+      // Text an earlier edit already drew in this bundled font is not a substitution, and neither is the
+      // bundled font made to match the original's family.
+      const blends = encoder instanceof FallbackFontEncoder && c.style !== null
+        && (encoder.drew(c.style.font.getName()) || encoder.standsInFor(c.style.font.getName()));
+      if (glyph && encoder && c.style && !spec.override && v.char.trim() !== '' && !blends) {
         substituted.add(encoder.label);
       }
     }
@@ -287,16 +336,51 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
     glyphs.push({encoder, glyph, size: glyphSize, color, advance: (glyph.width / 1000) * glyphSize, source: c.source, char: v.char});
   }
 
+  // Text is never dropped: a line whose characters no font here can draw stays as it was (the caller's journal
+  // operation is abandoned, so the redaction that took it off comes back too).
+  if (missing.size > 0) {
+    const listed = [...missing].slice(0, 8).map(c => `“${c}”`).join(' ') + (missing.size > 8 ? ' …' : '');
+    throw new Error(`No font here can draw ${listed}, so the text was left as it was. `
+      + 'Chinese, Korean and scripts besides Latin, Greek, Cyrillic, Hebrew and Japanese can only be edited with fonts installed on this computer, in Chrome or Edge.');
+  }
+
   // Keep a character's original advance when its original neighbour still follows it, unless a substitute
   // font now draws a visibly different glyph there. Spaces always keep it: many subsets have no space glyph,
   // and a substitute's narrower space would pull the words together.
   const faithful = (g: PlacedGlyph): boolean => spec.keepSpacing || !g.encoder.substitute || g.char.trim() === '';
+  // A word gap is the space as the line was set (justified, or a subset's missing space drawn as a gap), so an
+  // original space keeps it whatever now follows, and a typed space takes the line's usual one.
+  const spaceGaps = glyphs.filter(g => g.char === ' ' && g.source?.measuredAdvance != null).map(g => g.source!.measuredAdvance!).sort((a, b) => a - b);
+  const usualSpace = spaceGaps.length > 0 ? spaceGaps[Math.floor(spaceGaps.length / 2)] : null;
   for (let i = 0; i < glyphs.length - 1; i++) {
     const here = glyphs[i].source;
     const next = glyphs[i + 1].source;
-    if (here && next && here.measuredAdvance !== null && next.visualIndex === here.visualIndex + 1
+    if (glyphs[i].char === ' ') {
+      const gap = here?.measuredAdvance ?? usualSpace;
+      if (gap !== null) {
+        glyphs[i].advance = gap;
+      }
+    } else if (here && next && here.measuredAdvance !== null && next.visualIndex === here.visualIndex + 1
       && faithful(glyphs[i]) && faithful(glyphs[i + 1])) {
       glyphs[i].advance = here.measuredAdvance;
+    }
+  }
+  // Producers often set a gap without a space character ("תשלום:365665109" has 3pt between the colon and the
+  // number). Characters typed into that gap push it along: it goes after them, before the character that
+  // followed it, instead of disappearing.
+  for (let i = 0; i < glyphs.length - 1; i++) {
+    const here = glyphs[i].source;
+    if (!here || here.measuredAdvance === null || glyphs[i].char === ' ' || glyphs[i + 1].source || !faithful(glyphs[i])) {
+      continue;
+    }
+    let j = i + 1;
+    while (j + 1 < glyphs.length && !glyphs[j + 1].source) {
+      j++;
+    }
+    const after = glyphs[j + 1]?.source;
+    const extra = here.measuredAdvance - glyphs[i].advance;
+    if (after && after.visualIndex === here.visualIndex + 1 && Math.abs(extra) > 0.01 && glyphs[j].char !== ' ') {
+      glyphs[j].advance += extra;
     }
   }
 
@@ -307,6 +391,7 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
 
   const toUser = mupdf().Matrix.invert(page.getTransform());
   const parts: string[] = [];
+  const startX = x;
   let i = 0;
   while (i < glyphs.length) {
     const run: typeof glyphs = [glyphs[i]];
@@ -334,5 +419,5 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
   if (parts.length > 0) {
     appendContent(doc, page, `q\n${parts.join('\n')}\nQ\n`);
   }
-  return {substitutedFonts: [...substituted], missingCharacters: [...missing]};
+  return {substitutedFonts: [...substituted], missingCharacters: [...missing], extent: glyphs.length > 0 ? [startX, x] : null};
 }

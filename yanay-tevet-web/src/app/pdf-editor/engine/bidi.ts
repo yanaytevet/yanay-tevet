@@ -83,19 +83,83 @@ export interface LogicalChar {
   char: string;
 }
 
-// PDFs store glyphs in display order. Turns display order (left to right) into reading order. With
-// `mirror`, brackets inside right-to-left text are swapped (see EditableLine.labelsByShape).
-export function visualToLogical(visualChars: string[], rtl: boolean, mirror: boolean): LogicalChar[] {
+// Number separators (UAX #9 classes CS and ES) join digits only between them; at a token's edge they belong
+// to the text around it. Currency and percent signs (ET) stay with the number they touch.
+const SEPARATOR = /[.,:/+\-\u00A0]/;
+const TERMINATOR = /[\p{Sc}%\u2030\u00B0#]/u;
+
+// Reverses each left-to-right token on its own: in right-to-left text, numbers apart from each other (by a
+// space or a dash) are separate runs, and a colon or comma at a number's edge goes with the Hebrew beside it.
+function reverseTokens(order: number[], chars: string[]): Set<number> {
+  const covered = new Set<number>();
+  const joins = (c: string) => isLtrOrDigit(c) || SEPARATOR.test(c) || TERMINATOR.test(c);
+  let i = 0;
+  while (i < order.length) {
+    if (!joins(chars[order[i]])) {
+      i++;
+      continue;
+    }
+    let end = i;
+    while (end + 1 < order.length && joins(chars[order[end + 1]])) {
+      end++;
+    }
+    const next = end + 1;
+    let first = i;
+    let last = end;
+    while (first <= last && SEPARATOR.test(chars[order[first]])) {
+      first++;
+    }
+    while (last >= first && SEPARATOR.test(chars[order[last]])) {
+      last--;
+    }
+    if (first <= last && order.slice(first, last + 1).some(k => isLtrOrDigit(chars[k]))) {
+      const run = order.slice(first, last + 1).reverse();
+      order.splice(first, run.length, ...run);
+      for (let k = first; k <= last; k++) {
+        covered.add(k);
+      }
+    }
+    i = next;
+  }
+  return covered;
+}
+
+function readingOrder(visualChars: string[], rtl: boolean, strategy: 'runs' | 'tokens'): {order: number[]; rtlPositions: (position: number) => boolean} {
   const order = visualChars.map((_, i) => i);
-  let rtlPositions: (position: number) => boolean;
   if (rtl) {
     order.reverse();
-    const ltrRuns = reverseRuns(order, visualChars, isLtrOrDigit);
-    rtlPositions = position => !ltrRuns.has(position);
-  } else {
-    const rtlRuns = reverseRuns(order, visualChars, isRtlChar);
-    rtlPositions = position => rtlRuns.has(position);
+    const ltrRuns = strategy === 'runs' ? reverseRuns(order, visualChars, isLtrOrDigit) : reverseTokens(order, visualChars);
+    return {order, rtlPositions: position => !ltrRuns.has(position)};
   }
+  const rtlRuns = reverseRuns(order, visualChars, isRtlChar);
+  return {order, rtlPositions: position => rtlRuns.has(position)};
+}
+
+const BRACKET = /[()[\]{}<>]/g;
+
+// Whether the bidi algorithm lays `logical` out as `visualChars` (brackets aside: which way they face depends
+// on the font's convention, settled separately).
+function displaysAs(logical: string, rtl: boolean, visualChars: string[]): boolean {
+  const shown = logicalToVisual(logical, rtl).map(v => v.char).join('').replace(BRACKET, '|');
+  return shown === visualChars.join('').replace(BRACKET, '|');
+}
+
+// PDFs store glyphs in display order. Turns display order (left to right) into reading order. With
+// `mirror`, brackets inside right-to-left text are swapped (see EditableLine.labelsByShape).
+//
+// Reading order is guessed, then checked: the bidi algorithm must display the guess the way the line is
+// drawn, or the edit box shows the line differently and an edit rewrites it differently. The first guess keeps
+// a left-to-right run with its inner spaces together (a Latin phrase in Hebrew); the second takes numbers
+// apart ("2,559.00 ₪1" is two runs in right-to-left text, and so is "04–6954611").
+export function visualToLogical(visualChars: string[], rtl: boolean, mirror: boolean): LogicalChar[] {
+  let chosen = readingOrder(visualChars, rtl, 'runs');
+  if (rtl && !displaysAs(chosen.order.map(i => visualChars[i]).join(''), rtl, visualChars)) {
+    const tokens = readingOrder(visualChars, rtl, 'tokens');
+    if (displaysAs(tokens.order.map(i => visualChars[i]).join(''), rtl, visualChars)) {
+      chosen = tokens;
+    }
+  }
+  const {order, rtlPositions} = chosen;
   return order.map((visualIndex, position) => {
     const c = visualChars[visualIndex];
     return {visualIndex, char: mirror && rtlPositions(position) ? (MIRRORED[c] ?? c) : c};

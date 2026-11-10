@@ -1,4 +1,4 @@
-import {Component, computed, effect, ElementRef, HostListener, inject, signal, untracked, viewChild} from '@angular/core';
+import {afterNextRender, Component, computed, effect, ElementRef, HostListener, inject, Injector, signal, untracked, viewChild} from '@angular/core';
 import {
   bootstrapArrowClockwise,
   bootstrapArrowsMove,
@@ -33,6 +33,8 @@ interface ToolDef {
 }
 
 const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.8, 1, 1.25, 1.5, 2, 3, 4];
+const MIN_ZOOM = ZOOM_STEPS[0];
+const MAX_ZOOM = ZOOM_STEPS[ZOOM_STEPS.length - 1];
 
 @Component({
   selector: 'app-pdf-editor',
@@ -58,8 +60,8 @@ export class PdfEditorComponent {
   protected readonly logEnabled = this.store.log.enabled;
 
   protected readonly tools: ToolDef[] = [
-    {tool: 'select', label: 'Select', icon: bootstrapCursor,
-      hint: 'Fill in form fields. Click a note, drawing or signature to move or delete it.'},
+    {tool: 'select', label: 'Fill & select', icon: bootstrapCursor,
+      hint: 'Fill in form fields. Click a note, drawing or signature to move or delete it. Drag text to move it, double-click it to edit it.'},
     {tool: 'editText', label: 'Edit text', icon: bootstrapCursorText,
       hint: 'Click a line to change or delete it. It keeps its font; characters that font lacks are marked with a warning.'},
     {tool: 'move', label: 'Move text', icon: bootstrapArrowsMove,
@@ -97,6 +99,7 @@ export class PdfEditorComponent {
 
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
+  private readonly injector = inject(Injector);
 
   constructor() {
     // Fit the width when a document opens.
@@ -120,7 +123,16 @@ export class PdfEditorComponent {
       }
       return;
     }
-    if (mod && event.key.toLowerCase() === 'z') {
+    if (mod && (event.key === '=' || event.key === '+')) {
+      event.preventDefault();
+      this.zoomBy(1);
+    } else if (mod && event.key === '-') {
+      event.preventDefault();
+      this.zoomBy(-1);
+    } else if (mod && event.key === '0') {
+      event.preventDefault();
+      this.fitWidth();
+    } else if (mod && event.key.toLowerCase() === 'z') {
       event.preventDefault();
       void (event.shiftKey ? this.store.redo() : this.store.undo());
     } else if (mod && event.key.toLowerCase() === 'y') {
@@ -234,6 +246,45 @@ export class PdfEditorComponent {
       this.fitMode = false;
       this.store.zoom.set(next);
     }
+  }
+
+  // Cmd/Ctrl + scroll, and a trackpad pinch (which browsers send as a wheel with Ctrl), zoom the pages
+  // around the pointer instead of the whole browser page.
+  protected onWheel(event: WheelEvent): void {
+    if (!(event.ctrlKey || event.metaKey) || !this.store.state()) {
+      return;
+    }
+    event.preventDefault();
+    const perPixel = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 0.05 : 0.002;
+    this.zoomAround(this.store.zoom() * Math.exp(-event.deltaY * perPixel), event.clientX, event.clientY);
+  }
+
+  private zoomAround(target: number, clientX: number, clientY: number): void {
+    const scroller = this.scroller()?.nativeElement;
+    const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, target));
+    if (!scroller || Math.abs(zoom - this.store.zoom()) < 0.0005) {
+      return;
+    }
+    // The page under the pointer, and where on it the pointer is, as a fraction of its size.
+    const pages = [...scroller.querySelectorAll<HTMLElement>('[data-page]')];
+    const page = pages.find(p => {
+      const r = p.getBoundingClientRect();
+      return clientY >= r.top && clientY <= r.bottom;
+    }) ?? pages[0];
+    const before = page?.getBoundingClientRect();
+    this.fitMode = false;
+    this.store.zoom.set(zoom);
+    if (!page || !before) {
+      return;
+    }
+    const fx = (clientX - before.left) / before.width;
+    const fy = (clientY - before.top) / before.height;
+    // Once the pages have their new size, the same spot goes back under the pointer.
+    afterNextRender(() => {
+      const after = page.getBoundingClientRect();
+      scroller.scrollLeft += after.left + fx * after.width - clientX;
+      scroller.scrollTop += after.top + fy * after.height - clientY;
+    }, {injector: this.injector});
   }
 
   protected fitWidth(): void {
