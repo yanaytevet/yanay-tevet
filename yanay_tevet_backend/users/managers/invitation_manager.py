@@ -12,6 +12,7 @@ from users.enums.invitation_status import InvitationStatus
 from users.enums.permissions import Permissions
 from users.models.invitation import Invitation
 from users.models.user import User
+from workout_plan.models.workout_plan_membership import WorkoutPlanMembership
 from users.schemas.invitation_schema import InvitationMembership
 
 
@@ -162,6 +163,13 @@ class InvitationManager:
                 # get_or_create, not update_or_create: never demote someone who is already a member (e.g. the owner).
                 await SpecialDateCalendarMembership.objects.aget_or_create(
                     calendar_id=membership.object_id,
+                    user_id=user.id,
+                    defaults={'role': membership.role},
+                )
+            case InvitationMembershipType.WORKOUT_PLAN:
+                # get_or_create: never demote the owner if they are invited to their own plan.
+                await WorkoutPlanMembership.objects.aget_or_create(
+                    plan_id=membership.object_id,
                     user_id=user.id,
                     defaults={'role': membership.role},
                 )

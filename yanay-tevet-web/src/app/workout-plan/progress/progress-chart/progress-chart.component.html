@@ -1,0 +1,53 @@
+<div class="relative" dir="ltr">
+    <svg [attr.viewBox]="'0 0 ' + width() + ' ' + height" [attr.height]="height" class="w-full touch-pan-y select-none" role="img"
+         (pointermove)="onPointer($event)" (pointerdown)="onPointer($event)" (pointerleave)="hoverIndex.set(null)">
+        @for (line of gridLines(); track $index) {
+            <line [attr.x1]="pad.left" [attr.x2]="width() - pad.right" [attr.y1]="line.y" [attr.y2]="line.y"
+                  class="stroke-line-subtle" stroke-width="1"/>
+            <text [attr.x]="pad.left - 8" [attr.y]="line.y" text-anchor="end" dominant-baseline="middle"
+                  class="fill-writing-least text-caption tabular-nums">{{ line.label }}</text>
+        }
+        @for (label of xLabels(); track $index) {
+            <text [attr.x]="label.x" [attr.y]="height - 6" [attr.text-anchor]="label.anchor"
+                  class="fill-writing-least text-caption">{{ label.label }}</text>
+        }
+        @if (tooltip(); as tip) {
+            <line [attr.x1]="tip.x" [attr.x2]="tip.x" [attr.y1]="pad.top" [attr.y2]="height - pad.bottom"
+                  class="stroke-line" stroke-width="1"/>
+        }
+        @for (item of plotted(); track $index) {
+            <path [attr.d]="item.path" fill="none" class="stroke-accent" stroke-width="2" stroke-linejoin="round"
+                  stroke-linecap="round" [attr.stroke-dasharray]="item.series.dashed ? '6 5' : null"/>
+            @for (point of item.points; track $index) {
+                @if (point) {
+                    <circle [attr.cx]="point.x" [attr.cy]="point.y" r="4" class="fill-layer-2 stroke-accent" stroke-width="2"/>
+                }
+            }
+            @if (item.last && plotted().length > 1) {
+                <text [attr.x]="item.last.x - 8" [attr.y]="item.last.y - 10" text-anchor="end"
+                      class="fill-writing-minor text-caption font-semibold">{{ item.series.label }}</text>
+            }
+        }
+        @if (tooltip(); as tip) {
+            @for (dot of tip.dots; track $index) {
+                <circle [attr.cx]="dot.x" [attr.cy]="dot.y" r="6" class="fill-accent stroke-layer-2" stroke-width="2"/>
+            }
+        }
+    </svg>
+    @if (tooltip(); as tip) {
+        <div class="absolute top-0 card shadow-2 px-3 py-2 pointer-events-none min-w-28"
+             [style.left.%]="tip.alignEnd ? null : tip.leftPercent"
+             [style.right.%]="tip.alignEnd ? 100 - tip.leftPercent : null"
+             [class.ms-2]="!tip.alignEnd" [class.me-2]="tip.alignEnd">
+            <div class="text-caption text-writing-minor">{{ tip.date }}</div>
+            @for (row of tip.rows; track $index) {
+                <div class="flex items-center gap-2 text-body text-writing tabular-nums whitespace-nowrap">
+                    @if (tip.rows.length > 1) {
+                        <span class="text-caption text-writing-minor w-6">{{ row.label }}</span>
+                    }
+                    {{ row.value }}
+                </div>
+            }
+        </div>
+    }
+</div>

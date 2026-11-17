@@ -29,9 +29,8 @@ from itinerary_lists.models.itinerary_list_membership import ItineraryListMember
 from itinerary_lists.enums.list_role import ListRole
 from itinerary_lists.enums.list_status import ListStatus
 from itinerary_lists.enums.item_status import ItemStatus
-from workout_plan.models.workout_routine import WorkoutRoutine
-from workout_plan.models.workout_exercise import WorkoutExercise
-from workout_plan.enums.measurement_type import MeasurementType
+from workout_plan.models import Exercise, PlanDay, PlanExercise, SetLog, WorkoutPlan, WorkoutPlanMembership, WorkoutSession
+from workout_plan.enums.workout_plan_role import WorkoutPlanRole
 from special_dates.models.special_date_calendar import SpecialDateCalendar
 from special_dates.models.special_date import SpecialDate
 from special_dates.models.special_date_calendar_membership import SpecialDateCalendarMembership
@@ -92,11 +91,27 @@ if not ItineraryList.objects.filter(owner=user).exists():
     for order, (name, status) in enumerate([('Tent', ItemStatus.IN_THE_CAR), ('Sleeping bags', ItemStatus.READY), ('Gas canister', ItemStatus.NEED_TO_BUY), ('Head torches', ItemStatus.IN_THE_HOUSE)]):
         ItineraryItem.objects.create(itinerary_list=camping, created_by=user, name=name, status=status, order=order)
 
-if not WorkoutRoutine.objects.filter(user=user).exists():
-    legs = WorkoutRoutine.objects.create(user=user, name='Leg day', order=1)
-    WorkoutExercise.objects.create(routine=legs, name='Squats', measurement_type=MeasurementType.REPS, notes='Keep the knees out', order=1)
-    WorkoutExercise.objects.create(routine=legs, name='Plank', measurement_type=MeasurementType.TIME, order=2)
-    WorkoutRoutine.objects.create(user=user, name='Upper body', order=2)
+if not WorkoutPlan.objects.filter(owner=user).exists():
+    catalog = {e.catalog_key: e for e in Exercise.objects.filter(owner__isnull=True)}
+    plan = WorkoutPlan.objects.create(owner=user, name='Gym plan', pool_length_m=25)
+    WorkoutPlanMembership.objects.create(plan=plan, user=user, role=WorkoutPlanRole.OWNER)
+    every_day = PlanDay.objects.create(plan=plan, is_every_day=True, name='', order=0)
+    swim = PlanExercise.objects.create(day=every_day, exercise=catalog['swimming'], order=0, target_sets=1, target_laps=40)
+    PlanExercise.objects.create(day=every_day, exercise=catalog['crunch'], order=1, target_sets=3, target_reps=15)
+    day_a = PlanDay.objects.create(plan=plan, name='Day A - back and biceps', order=0)
+    pulldown = PlanExercise.objects.create(day=day_a, exercise=catalog['lat_pulldown'], order=0, target_sets=4, target_reps=12, notes='Heavy weight, go to failure')
+    PlanExercise.objects.create(day=day_a, exercise=catalog['dumbbell_curl'], order=1, target_sets=4, target_reps=12)
+    PlanExercise.objects.create(day=day_a, exercise=catalog['pull_up'], order=2, target_sets=3, notes='As many as possible')
+    day_b = PlanDay.objects.create(plan=plan, name='Day B - chest and triceps', order=1)
+    PlanExercise.objects.create(day=day_b, exercise=catalog['bench_press'], order=0, target_sets=4, target_reps=12)
+    PlanExercise.objects.create(day=day_b, exercise=catalog['dips'], order=1, target_sets=3)
+    # Four past Day A workouts, so the progress page has a line to draw.
+    for weeks_ago, weight, laps in ((4, 35, 30), (3, 37.5, 34), (2, 40, 36), (1, 42.5, 40)):
+        started = timezone.now() - datetime.timedelta(weeks=weeks_ago)
+        session = WorkoutSession.objects.create(user=user, plan=plan, day=day_a, plan_name=plan.name, day_name=day_a.name, pool_length_m=25, started_at=started, finished_at=started + datetime.timedelta(hours=1))
+        SetLog.objects.create(session=session, exercise=catalog['swimming'], plan_exercise=swim, set_number=1, laps=laps, duration_seconds=laps * 40)
+        for number, reps in enumerate((12, 12, 10, 8), start=1):
+            SetLog.objects.create(session=session, exercise=catalog['lat_pulldown'], plan_exercise=pulldown, set_number=number, reps=reps, weight_kg=weight)
 
 if not SpecialDate.objects.filter(created_by=user).exists():
     # The app creates a default calendar on first visit, so reuse one if it is there.

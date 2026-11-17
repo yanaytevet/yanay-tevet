@@ -43,6 +43,7 @@ starting it.
 | The new-version banner and the reload after a missing lazy chunk | `docs/frontend.md`, *New-version refresh* |
 | Genre trainer — track generators, the Tone.js player | `docs/genre-trainer.md` |
 | PDF editor — the MuPDF worker, text editing, fonts, Hebrew | `docs/pdf-editor.md` |
+| Workout plan — plans, the exercise catalog, logging, progress, Hebrew | `docs/workout-plan.md` |
 | Production — Railway hosting, deploys, env vars, prod shell, DNS | `docs/deployment.md` |
 
 ---

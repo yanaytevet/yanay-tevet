@@ -4,7 +4,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 
 from mcp_server.config import MCP_PATH, MCP_SCOPE, get_public_base_url, mcp_resource_url
 from mcp_server.mcp.token_verifier import DjangoTokenVerifier
-from mcp_server.mcp.tools import shopping_list_tools, task_tools
+from mcp_server.mcp.tools import shopping_list_tools, task_tools, workout_plan_tools
 
 INSTRUCTIONS = (
     "Tools for the user's personal Yanay Tevet workspace. "
@@ -12,7 +12,12 @@ INSTRUCTIONS = (
     'get_task_project to see its tasks, then create_tasks / update_task / delete_task / reorder_tasks. '
     'Shopping lists: call list_shopping_lists to find a list id, get_shopping_list to see its items, '
     'then add_shopping_items / update_shopping_items / delete_shopping_items. '
-    'All changes show up in the web app immediately and are visible to everyone the project or list '
+    'Workout plans: call list_workout_exercises to find exercise ids (create_workout_exercise for missing '
+    'ones), then create_workout_plan with its days and every-day exercises; list_workout_plans / '
+    'get_workout_plan to read one, add_workout_plan_day / add_workout_plan_exercises / '
+    'update_workout_plan_exercises / remove_workout_plan_exercises to change it; list_workout_progress and '
+    'get_workout_progress for the trainee\'s own progress. Workouts are logged in the app, not here. '
+    'All changes show up in the web app immediately and are visible to everyone the project, list or plan '
     'is shared with.'
 )
 
@@ -41,4 +46,5 @@ def build_mcp_server() -> FastMCP:
     )
     task_tools.register(mcp)
     shopping_list_tools.register(mcp)
+    workout_plan_tools.register(mcp)
     return mcp

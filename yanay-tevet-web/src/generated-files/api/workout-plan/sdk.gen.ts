@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateWorkoutExerciseViewData, CreateWorkoutExerciseViewResponses, CreateWorkoutRoutineViewData, CreateWorkoutRoutineViewResponses, DeleteWorkoutExerciseViewData, DeleteWorkoutExerciseViewResponses, DeleteWorkoutRoutineViewData, DeleteWorkoutRoutineViewResponses, GetWorkoutExerciseViewData, GetWorkoutExerciseViewResponses, GetWorkoutRoutineViewData, GetWorkoutRoutineViewResponses, PaginateWorkoutExercisesViewData, PaginateWorkoutExercisesViewResponses, PaginateWorkoutRoutinesViewData, PaginateWorkoutRoutinesViewResponses, UpdateWorkoutExerciseViewData, UpdateWorkoutExerciseViewResponses, UpdateWorkoutRoutineViewData, UpdateWorkoutRoutineViewResponses } from './types.gen';
+import type { CreateExerciseViewData, CreateExerciseViewResponses, CreatePlanDayViewData, CreatePlanDayViewResponses, CreatePlanExerciseViewData, CreatePlanExerciseViewResponses, CreateWorkoutPlanViewData, CreateWorkoutPlanViewResponses, DeleteExerciseViewData, DeleteExerciseViewResponses, DeletePlanDayViewData, DeletePlanDayViewResponses, DeletePlanExerciseViewData, DeletePlanExerciseViewResponses, DeleteSetLogViewData, DeleteSetLogViewResponses, DeleteWorkoutPlanViewData, DeleteWorkoutPlanViewResponses, DeleteWorkoutSessionViewData, DeleteWorkoutSessionViewResponses, GetExerciseProgressViewData, GetExerciseProgressViewResponses, GetProgressSummaryViewData, GetProgressSummaryViewResponses, GetWorkoutPlanViewData, GetWorkoutPlanViewResponses, GetWorkoutPreferencesViewData, GetWorkoutPreferencesViewResponses, GetWorkoutSessionViewData, GetWorkoutSessionViewResponses, ListExercisesViewData, ListExercisesViewResponses, ListWorkoutPlanMembersViewData, ListWorkoutPlanMembersViewResponses, LogSetViewData, LogSetViewResponses, PaginateWorkoutPlansViewData, PaginateWorkoutPlansViewResponses, PaginateWorkoutSessionsViewData, PaginateWorkoutSessionsViewResponses, ReorderPlanDaysViewData, ReorderPlanDaysViewResponses, ReorderPlanExercisesViewData, ReorderPlanExercisesViewResponses, ShareWorkoutPlanViewData, ShareWorkoutPlanViewResponses, StartWorkoutSessionViewData, StartWorkoutSessionViewResponses, UnshareWorkoutPlanViewData, UnshareWorkoutPlanViewResponses, UpdateExerciseViewData, UpdateExerciseViewResponses, UpdatePlanDayViewData, UpdatePlanDayViewResponses, UpdatePlanExerciseViewData, UpdatePlanExerciseViewResponses, UpdateSetLogViewData, UpdateSetLogViewResponses, UpdateWorkoutPlanViewData, UpdateWorkoutPlanViewResponses, UpdateWorkoutPreferencesViewData, UpdateWorkoutPreferencesViewResponses, UpdateWorkoutSessionViewData, UpdateWorkoutSessionViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -19,74 +19,18 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 /**
- * Pagination
- */
-export const paginateWorkoutRoutinesView = <ThrowOnError extends boolean = false>(options?: Options<PaginateWorkoutRoutinesViewData, ThrowOnError>) => (options?.client ?? client).get<PaginateWorkoutRoutinesViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/routines/',
-    ...options
-});
-
-/**
- * Post
- */
-export const createWorkoutRoutineView = <ThrowOnError extends boolean = false>(options: Options<CreateWorkoutRoutineViewData, ThrowOnError>) => (options.client ?? client).post<CreateWorkoutRoutineViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/routines/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Delete
- */
-export const deleteWorkoutRoutineView = <ThrowOnError extends boolean = false>(options: Options<DeleteWorkoutRoutineViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteWorkoutRoutineViewResponses, unknown, ThrowOnError>({
-    url: '/api/workout-plan/routines/{object_id}/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * Get
  */
-export const getWorkoutRoutineView = <ThrowOnError extends boolean = false>(options: Options<GetWorkoutRoutineViewData, ThrowOnError>) => (options.client ?? client).get<GetWorkoutRoutineViewResponses, unknown, ThrowOnError>({
+export const listExercisesView = <ThrowOnError extends boolean = false>(options?: Options<ListExercisesViewData, ThrowOnError>) => (options?.client ?? client).get<ListExercisesViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/workout-plan/routines/{object_id}/',
-    ...options
-});
-
-/**
- * Patch
- */
-export const updateWorkoutRoutineView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutRoutineViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateWorkoutRoutineViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/routines/{object_id}/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Pagination
- */
-export const paginateWorkoutExercisesView = <ThrowOnError extends boolean = false>(options: Options<PaginateWorkoutExercisesViewData, ThrowOnError>) => (options.client ?? client).get<PaginateWorkoutExercisesViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/routines/{routine_id}/exercises/',
+    url: '/api/workout-plan/exercises/',
     ...options
 });
 
 /**
  * Post
  */
-export const createWorkoutExerciseView = <ThrowOnError extends boolean = false>(options: Options<CreateWorkoutExerciseViewData, ThrowOnError>) => (options.client ?? client).post<CreateWorkoutExerciseViewResponses, unknown, ThrowOnError>({
+export const createExerciseView = <ThrowOnError extends boolean = false>(options: Options<CreateExerciseViewData, ThrowOnError>) => (options.client ?? client).post<CreateExerciseViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
     url: '/api/workout-plan/exercises/',
     ...options,
@@ -99,8 +43,55 @@ export const createWorkoutExerciseView = <ThrowOnError extends boolean = false>(
 /**
  * Delete
  */
-export const deleteWorkoutExerciseView = <ThrowOnError extends boolean = false>(options: Options<DeleteWorkoutExerciseViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteWorkoutExerciseViewResponses, unknown, ThrowOnError>({
+export const deleteExerciseView = <ThrowOnError extends boolean = false>(options: Options<DeleteExerciseViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteExerciseViewResponses, unknown, ThrowOnError>({
     url: '/api/workout-plan/exercises/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Patch
+ */
+export const updateExerciseView = <ThrowOnError extends boolean = false>(options: Options<UpdateExerciseViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateExerciseViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/exercises/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Pagination
+ */
+export const paginateWorkoutPlansView = <ThrowOnError extends boolean = false>(options?: Options<PaginateWorkoutPlansViewData, ThrowOnError>) => (options?.client ?? client).get<PaginateWorkoutPlansViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const createWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<CreateWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).post<CreateWorkoutPlanViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deleteWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<DeleteWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteWorkoutPlanViewResponses, unknown, ThrowOnError>({
+    url: '/api/workout-plan/plans/{object_id}/',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -111,18 +102,289 @@ export const deleteWorkoutExerciseView = <ThrowOnError extends boolean = false>(
 /**
  * Get
  */
-export const getWorkoutExerciseView = <ThrowOnError extends boolean = false>(options: Options<GetWorkoutExerciseViewData, ThrowOnError>) => (options.client ?? client).get<GetWorkoutExerciseViewResponses, unknown, ThrowOnError>({
+export const getWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<GetWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).get<GetWorkoutPlanViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/workout-plan/exercises/{object_id}/',
+    url: '/api/workout-plan/plans/{object_id}/',
     ...options
 });
 
 /**
  * Patch
  */
-export const updateWorkoutExerciseView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutExerciseViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateWorkoutExerciseViewResponses, unknown, ThrowOnError>({
+export const updateWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateWorkoutPlanViewResponses, unknown, ThrowOnError>({
     responseType: 'json',
-    url: '/api/workout-plan/exercises/{object_id}/',
+    url: '/api/workout-plan/plans/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const shareWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<ShareWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).post<ShareWorkoutPlanViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/{object_id}/share/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const unshareWorkoutPlanView = <ThrowOnError extends boolean = false>(options: Options<UnshareWorkoutPlanViewData, ThrowOnError>) => (options.client ?? client).post<UnshareWorkoutPlanViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/{object_id}/unshare/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get
+ */
+export const listWorkoutPlanMembersView = <ThrowOnError extends boolean = false>(options: Options<ListWorkoutPlanMembersViewData, ThrowOnError>) => (options.client ?? client).get<ListWorkoutPlanMembersViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/{object_id}/members/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const reorderPlanDaysView = <ThrowOnError extends boolean = false>(options: Options<ReorderPlanDaysViewData, ThrowOnError>) => (options.client ?? client).post<ReorderPlanDaysViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plans/{plan_id}/reorder-days/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const createPlanDayView = <ThrowOnError extends boolean = false>(options: Options<CreatePlanDayViewData, ThrowOnError>) => (options.client ?? client).post<CreatePlanDayViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/days/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deletePlanDayView = <ThrowOnError extends boolean = false>(options: Options<DeletePlanDayViewData, ThrowOnError>) => (options.client ?? client).delete<DeletePlanDayViewResponses, unknown, ThrowOnError>({
+    url: '/api/workout-plan/days/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Patch
+ */
+export const updatePlanDayView = <ThrowOnError extends boolean = false>(options: Options<UpdatePlanDayViewData, ThrowOnError>) => (options.client ?? client).patch<UpdatePlanDayViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/days/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const reorderPlanExercisesView = <ThrowOnError extends boolean = false>(options: Options<ReorderPlanExercisesViewData, ThrowOnError>) => (options.client ?? client).post<ReorderPlanExercisesViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/days/{day_id}/reorder-exercises/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const createPlanExerciseView = <ThrowOnError extends boolean = false>(options: Options<CreatePlanExerciseViewData, ThrowOnError>) => (options.client ?? client).post<CreatePlanExerciseViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plan-exercises/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deletePlanExerciseView = <ThrowOnError extends boolean = false>(options: Options<DeletePlanExerciseViewData, ThrowOnError>) => (options.client ?? client).delete<DeletePlanExerciseViewResponses, unknown, ThrowOnError>({
+    url: '/api/workout-plan/plan-exercises/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Patch
+ */
+export const updatePlanExerciseView = <ThrowOnError extends boolean = false>(options: Options<UpdatePlanExerciseViewData, ThrowOnError>) => (options.client ?? client).patch<UpdatePlanExerciseViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/plan-exercises/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Pagination
+ */
+export const paginateWorkoutSessionsView = <ThrowOnError extends boolean = false>(options?: Options<PaginateWorkoutSessionsViewData, ThrowOnError>) => (options?.client ?? client).get<PaginateWorkoutSessionsViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/sessions/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const startWorkoutSessionView = <ThrowOnError extends boolean = false>(options: Options<StartWorkoutSessionViewData, ThrowOnError>) => (options.client ?? client).post<StartWorkoutSessionViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/sessions/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deleteWorkoutSessionView = <ThrowOnError extends boolean = false>(options: Options<DeleteWorkoutSessionViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteWorkoutSessionViewResponses, unknown, ThrowOnError>({
+    url: '/api/workout-plan/sessions/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get
+ */
+export const getWorkoutSessionView = <ThrowOnError extends boolean = false>(options: Options<GetWorkoutSessionViewData, ThrowOnError>) => (options.client ?? client).get<GetWorkoutSessionViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/sessions/{object_id}/',
+    ...options
+});
+
+/**
+ * Patch
+ */
+export const updateWorkoutSessionView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutSessionViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateWorkoutSessionViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/sessions/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Post
+ */
+export const logSetView = <ThrowOnError extends boolean = false>(options: Options<LogSetViewData, ThrowOnError>) => (options.client ?? client).post<LogSetViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/set-logs/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Delete
+ */
+export const deleteSetLogView = <ThrowOnError extends boolean = false>(options: Options<DeleteSetLogViewData, ThrowOnError>) => (options.client ?? client).delete<DeleteSetLogViewResponses, unknown, ThrowOnError>({
+    url: '/api/workout-plan/set-logs/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Patch
+ */
+export const updateSetLogView = <ThrowOnError extends boolean = false>(options: Options<UpdateSetLogViewData, ThrowOnError>) => (options.client ?? client).patch<UpdateSetLogViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/set-logs/{object_id}/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get
+ */
+export const getProgressSummaryView = <ThrowOnError extends boolean = false>(options?: Options<GetProgressSummaryViewData, ThrowOnError>) => (options?.client ?? client).get<GetProgressSummaryViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/progress/',
+    ...options
+});
+
+/**
+ * Get
+ */
+export const getExerciseProgressView = <ThrowOnError extends boolean = false>(options: Options<GetExerciseProgressViewData, ThrowOnError>) => (options.client ?? client).get<GetExerciseProgressViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/progress/exercises/{exercise_id}/',
+    ...options
+});
+
+/**
+ * Get
+ */
+export const getWorkoutPreferencesView = <ThrowOnError extends boolean = false>(options?: Options<GetWorkoutPreferencesViewData, ThrowOnError>) => (options?.client ?? client).get<GetWorkoutPreferencesViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/preferences/',
+    ...options
+});
+
+/**
+ * Post
+ */
+export const updateWorkoutPreferencesView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutPreferencesViewData, ThrowOnError>) => (options.client ?? client).post<UpdateWorkoutPreferencesViewResponses, unknown, ThrowOnError>({
+    responseType: 'json',
+    url: '/api/workout-plan/preferences/',
     ...options,
     headers: {
         'Content-Type': 'application/json',

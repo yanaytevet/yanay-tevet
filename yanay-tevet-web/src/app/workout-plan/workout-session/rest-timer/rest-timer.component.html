@@ -1,0 +1,29 @@
+@if (timer.isRunning() || timer.justFinished()) {
+    <div class="fixed bottom-4 inset-x-4 z-30 flex justify-center pointer-events-none" [attr.dir]="i18n.dir()">
+        <div class="card shadow-3 w-full max-w-md pointer-events-auto overflow-hidden" role="timer" aria-live="polite">
+            @if (timer.isRunning()) {
+                <div class="h-1 bg-layer-4">
+                    <div class="h-full bg-accent transition-[width] duration-200" [style.width]="progressPercent()"></div>
+                </div>
+                <div class="flex items-center gap-2 p-3">
+                    <div class="flex-1 min-w-0">
+                        <div class="eyebrow">{{ i18n.t().rest }}</div>
+                        <div class="text-display font-bold text-writing tabular-nums" dir="ltr">{{ remainingText() }}</div>
+                    </div>
+                    <button type="button" class="btn btn-secondary tabular-nums" dir="ltr" (click)="timer.adjust(-15)">−15</button>
+                    <button type="button" class="btn btn-secondary tabular-nums" dir="ltr" (click)="timer.adjust(15)">+15</button>
+                    <button type="button" class="icon-btn" [attr.aria-label]="i18n.t().skip" (click)="timer.stop()">
+                        <ng-icon [svg]="featherX" class="text-xl"/>
+                    </button>
+                </div>
+            } @else {
+                <div class="flex items-center gap-2 p-4 bg-success-soft">
+                    <span class="flex-1 text-ui font-semibold text-success">{{ i18n.t().restDone }}</span>
+                    <button type="button" class="icon-btn" [attr.aria-label]="i18n.t().skip" (click)="timer.stop()">
+                        <ng-icon [svg]="featherX" class="text-xl"/>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}

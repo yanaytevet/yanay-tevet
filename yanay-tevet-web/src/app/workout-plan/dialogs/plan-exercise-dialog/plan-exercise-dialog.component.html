@@ -1,0 +1,72 @@
+<div class="dialog-container flex flex-col gap-4" [attr.dir]="i18n.dir()">
+    <div>
+        <h2 dir="auto">{{ data.exercise | exerciseName: i18n.language() }}</h2>
+        <p class="text-meta text-writing-minor">
+            {{ i18n.t().muscle[data.exercise.muscle_group] }} · {{ i18n.t().tracking[tracking] }}@if (data.exercise.per_side) { · {{ i18n.t().perSide }}}
+        </p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+        <div class="flex flex-col gap-1">
+            <span class="input-label">{{ i18n.t().sets }}</span>
+            <input class="main-input tabular-nums" type="number" inputmode="numeric" min="1" [value]="sets()" (input)="onInput('sets', $event)"/>
+        </div>
+        @switch (tracking) {
+            @case ('weight_reps') {
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().reps }}</span>
+                    <input class="main-input tabular-nums" type="number" inputmode="numeric" min="0" [value]="reps()"
+                           [attr.placeholder]="i18n.t().repsMax" (input)="onInput('reps', $event)"/>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().weightKg }}</span>
+                    <input class="main-input tabular-nums" type="number" inputmode="decimal" min="0" step="0.5" [value]="weight()"
+                           (input)="onInput('weight', $event)"/>
+                </div>
+            }
+            @case ('reps') {
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().reps }}</span>
+                    <input class="main-input tabular-nums" type="number" inputmode="numeric" min="0" [value]="reps()"
+                           [attr.placeholder]="i18n.t().repsMax" (input)="onInput('reps', $event)"/>
+                </div>
+            }
+            @case ('time') {
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().time }} (m:ss)</span>
+                    <input class="main-input tabular-nums" inputmode="numeric" dir="ltr" placeholder="1:00" [value]="duration()"
+                           (input)="onInput('duration', $event)"/>
+                </div>
+            }
+            @case ('distance') {
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().distance }} ({{ i18n.t().distanceKm }})</span>
+                    <input class="main-input tabular-nums" type="number" inputmode="decimal" min="0" step="0.1" [value]="distance()"
+                           (input)="onInput('distance', $event)"/>
+                </div>
+            }
+            @case ('laps') {
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().laps }}</span>
+                    <input class="main-input tabular-nums" type="number" inputmode="numeric" min="0" [value]="laps()"
+                           (input)="onInput('laps', $event)"/>
+                </div>
+            }
+        }
+        <div class="flex flex-col gap-1">
+            <span class="input-label">{{ i18n.t().restSeconds }}</span>
+            <input class="main-input tabular-nums" type="number" inputmode="numeric" min="0" step="5" [value]="rest()"
+                   (input)="onInput('rest', $event)"/>
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-1">
+        <span class="input-label">{{ i18n.t().notes }}</span>
+        <textarea class="main-input" rows="2" dir="auto" [value]="notes()" (input)="onInput('notes', $event)"></textarea>
+    </div>
+
+    <div class="dialog-buttons-container">
+        <button type="button" class="btn btn-secondary" (click)="emitClose(null)">{{ i18n.t().cancel }}</button>
+        <button type="button" class="btn btn-primary" (click)="save()">{{ data.entry ? i18n.t().save : i18n.t().add }}</button>
+    </div>
+</div>

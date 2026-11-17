@@ -13,3 +13,4 @@ class InvitationMembershipType(BaseEnum):
     ITINERARY_LIST = 'itinerary_list'
     SHOPPING_LIST = 'shopping_list'
     SPECIAL_DATE_CALENDAR = 'special_date_calendar'
+    WORKOUT_PLAN = 'workout_plan'

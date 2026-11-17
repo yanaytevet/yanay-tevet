@@ -5,9 +5,100 @@ export type ClientOptions = {
 };
 
 /**
- * PaginateWorkoutRoutinesFilterSchema
+ * EmptySchema
  */
-export type PaginateWorkoutRoutinesFilterSchema = {
+export type EmptySchema = {
+    [key: string]: unknown;
+};
+
+/**
+ * ExerciseListSchema
+ */
+export type ExerciseListSchema = {
+    /**
+     * Exercises
+     */
+    exercises: Array<ExerciseSchema>;
+};
+
+/**
+ * ExerciseSchema
+ */
+export type ExerciseSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name En
+     */
+    name_en: string;
+    /**
+     * Name He
+     */
+    name_he: string;
+    muscle_group: MuscleGroup;
+    tracking_type: TrackingType;
+    /**
+     * Per Side
+     */
+    per_side: boolean;
+    /**
+     * Is Custom
+     */
+    is_custom: boolean;
+    /**
+     * Owner Id
+     */
+    owner_id: number | null;
+};
+
+/**
+ * MuscleGroup
+ */
+export type MuscleGroup = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'forearms' | 'legs' | 'glutes' | 'calves' | 'abs' | 'cardio' | 'full_body' | 'other';
+
+/**
+ * TrackingType
+ *
+ * What a set of an exercise records. Fixed so every exercise has one obvious progress metric.
+ */
+export type TrackingType = 'reps' | 'weight_reps' | 'time' | 'distance' | 'laps';
+
+/**
+ * ExerciseWritableSchema
+ */
+export type ExerciseWritableSchema = {
+    /**
+     * Name En
+     */
+    name_en?: string | null;
+    /**
+     * Name He
+     */
+    name_he?: string | null;
+    muscle_group?: MuscleGroup | null;
+    tracking_type?: TrackingType | null;
+    /**
+     * Per Side
+     */
+    per_side?: boolean | null;
+};
+
+/**
+ * ItemByIdPath
+ */
+export type ItemByIdPath = {
+    /**
+     * Object Id
+     */
+    object_id: number;
+};
+
+/**
+ * PaginateWorkoutPlansFilterSchema
+ */
+export type PaginateWorkoutPlansFilterSchema = {
     [key: string]: unknown;
 };
 
@@ -34,16 +125,9 @@ export type PaginationQueryParams = {
 };
 
 /**
- * EmptySchema
+ * PaginationOutput[WorkoutPlanSchema]
  */
-export type EmptySchema = {
-    [key: string]: unknown;
-};
-
-/**
- * PaginationOutput[WorkoutRoutineSchema]
- */
-export type PaginationOutputWorkoutRoutineSchema = {
+export type PaginationOutputWorkoutPlanSchema = {
     /**
      * Total Amount
      */
@@ -63,13 +147,13 @@ export type PaginationOutputWorkoutRoutineSchema = {
     /**
      * Data
      */
-    data: Array<WorkoutRoutineSchema>;
+    data: Array<WorkoutPlanSchema>;
 };
 
 /**
- * WorkoutRoutineSchema
+ * WorkoutPlanSchema
  */
-export type WorkoutRoutineSchema = {
+export type WorkoutPlanSchema = {
     /**
      * Id
      */
@@ -79,13 +163,21 @@ export type WorkoutRoutineSchema = {
      */
     name: string;
     /**
-     * Order
+     * Pool Length M
      */
-    order: number;
+    pool_length_m: number;
     /**
-     * Exercise Count
+     * Owner Id
      */
-    exercise_count: number;
+    owner_id: number;
+    /**
+     * Day Names
+     */
+    day_names: Array<string>;
+    /**
+     * Member Count
+     */
+    member_count: number;
     /**
      * Created At
      */
@@ -97,9 +189,271 @@ export type WorkoutRoutineSchema = {
 };
 
 /**
- * CreateWorkoutRoutineSchema
+ * PlanDaySchema
  */
-export type CreateWorkoutRoutineSchema = {
+export type PlanDaySchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Plan Id
+     */
+    plan_id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Is Every Day
+     */
+    is_every_day: boolean;
+    /**
+     * Order
+     */
+    order: number;
+    /**
+     * Exercises
+     */
+    exercises: Array<PlanExerciseSchema>;
+};
+
+/**
+ * PlanExerciseSchema
+ */
+export type PlanExerciseSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Day Id
+     */
+    day_id: number;
+    exercise: ExerciseSchema;
+    /**
+     * Order
+     */
+    order: number;
+    /**
+     * Target Sets
+     */
+    target_sets: number;
+    /**
+     * Target Reps
+     */
+    target_reps: number | null;
+    /**
+     * Target Weight Kg
+     */
+    target_weight_kg: number | null;
+    /**
+     * Target Seconds
+     */
+    target_seconds: number | null;
+    /**
+     * Target Distance Km
+     */
+    target_distance_km: number | null;
+    /**
+     * Target Laps
+     */
+    target_laps: number | null;
+    /**
+     * Rest Seconds
+     */
+    rest_seconds: number;
+    /**
+     * Notes
+     */
+    notes: string;
+};
+
+/**
+ * WorkoutPlanDetailSchema
+ */
+export type WorkoutPlanDetailSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Pool Length M
+     */
+    pool_length_m: number;
+    /**
+     * Owner Id
+     */
+    owner_id: number;
+    /**
+     * Member Count
+     */
+    member_count: number;
+    every_day: PlanDaySchema | null;
+    /**
+     * Days
+     */
+    days: Array<PlanDaySchema>;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CreateWorkoutPlanSchema
+ */
+export type CreateWorkoutPlanSchema = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Pool Length M
+     */
+    pool_length_m?: number | null;
+};
+
+/**
+ * UpdateWorkoutPlanSchema
+ */
+export type UpdateWorkoutPlanSchema = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Pool Length M
+     */
+    pool_length_m?: number | null;
+};
+
+/**
+ * ShareWorkoutPlanSchema
+ */
+export type ShareWorkoutPlanSchema = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+};
+
+/**
+ * UnshareWorkoutPlanSchema
+ */
+export type UnshareWorkoutPlanSchema = {
+    /**
+     * Identifier
+     */
+    identifier: string;
+};
+
+/**
+ * PendingInvitationSchema
+ */
+export type PendingInvitationSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Email
+     */
+    email: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * WorkoutPlanMembersSchema
+ */
+export type WorkoutPlanMembersSchema = {
+    /**
+     * Members
+     */
+    members: Array<WorkoutPlanMembershipSchema>;
+    /**
+     * Pending Invitations
+     */
+    pending_invitations: Array<PendingInvitationSchema>;
+};
+
+/**
+ * WorkoutPlanMembershipSchema
+ */
+export type WorkoutPlanMembershipSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * User Id
+     */
+    user_id: number;
+    /**
+     * Username
+     */
+    username: string;
+    /**
+     * Full Name
+     */
+    full_name: string;
+    role: WorkoutPlanRole;
+};
+
+/**
+ * WorkoutPlanRole
+ */
+export type WorkoutPlanRole = 'owner' | 'collaborator';
+
+/**
+ * ReorderPlanDaysPath
+ */
+export type ReorderPlanDaysPath = {
+    /**
+     * Plan Id
+     */
+    plan_id: number;
+};
+
+/**
+ * ReorderResultSchema
+ */
+export type ReorderResultSchema = {
+    /**
+     * Success
+     */
+    success: boolean;
+};
+
+/**
+ * ReorderSchema
+ */
+export type ReorderSchema = {
+    /**
+     * Ordered Ids
+     */
+    ordered_ids: Array<number>;
+};
+
+/**
+ * CreatePlanDaySchema
+ */
+export type CreatePlanDaySchema = {
+    /**
+     * Plan Id
+     */
+    plan_id: number;
     /**
      * Name
      */
@@ -107,359 +461,562 @@ export type CreateWorkoutRoutineSchema = {
 };
 
 /**
- * ItemByIdPath
+ * UpdatePlanDaySchema
  */
-export type ItemByIdPath = {
-    /**
-     * Object Id
-     */
-    object_id: number;
-};
-
-/**
- * UpdateWorkoutRoutineSchema
- */
-export type UpdateWorkoutRoutineSchema = {
+export type UpdatePlanDaySchema = {
     /**
      * Name
      */
-    name?: string | null;
+    name: string;
+};
+
+/**
+ * ReorderPlanExercisesPath
+ */
+export type ReorderPlanExercisesPath = {
     /**
-     * Order
+     * Day Id
      */
-    order?: number | null;
+    day_id: number;
 };
 
 /**
- * PaginateWorkoutExercisesFilterSchema
+ * CreatePlanExerciseSchema
  */
-export type PaginateWorkoutExercisesFilterSchema = {
-    [key: string]: unknown;
-};
-
-/**
- * ExercisesByRoutinePath
- */
-export type ExercisesByRoutinePath = {
+export type CreatePlanExerciseSchema = {
     /**
-     * Routine Id
+     * Target Sets
      */
-    routine_id: number;
+    target_sets?: number | null;
+    /**
+     * Target Reps
+     */
+    target_reps?: number | null;
+    /**
+     * Target Weight Kg
+     */
+    target_weight_kg?: number | null;
+    /**
+     * Target Seconds
+     */
+    target_seconds?: number | null;
+    /**
+     * Target Distance Km
+     */
+    target_distance_km?: number | null;
+    /**
+     * Target Laps
+     */
+    target_laps?: number | null;
+    /**
+     * Rest Seconds
+     */
+    rest_seconds?: number | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+    /**
+     * Day Id
+     */
+    day_id: number;
+    /**
+     * Exercise Id
+     */
+    exercise_id: number;
 };
 
 /**
- * ExerciseSetSchema
+ * PlanExerciseTargetsSchema
+ *
+ * The editable part of a plan exercise. A target sent as null clears it; one left out is kept.
  */
-export type ExerciseSetSchema = {
+export type PlanExerciseTargetsSchema = {
+    /**
+     * Target Sets
+     */
+    target_sets?: number | null;
+    /**
+     * Target Reps
+     */
+    target_reps?: number | null;
+    /**
+     * Target Weight Kg
+     */
+    target_weight_kg?: number | null;
+    /**
+     * Target Seconds
+     */
+    target_seconds?: number | null;
+    /**
+     * Target Distance Km
+     */
+    target_distance_km?: number | null;
+    /**
+     * Target Laps
+     */
+    target_laps?: number | null;
+    /**
+     * Rest Seconds
+     */
+    rest_seconds?: number | null;
+    /**
+     * Notes
+     */
+    notes?: string | null;
+};
+
+/**
+ * PaginateWorkoutSessionsFilterSchema
+ */
+export type PaginateWorkoutSessionsFilterSchema = {
+    /**
+     * Plan Id
+     */
+    plan_id?: number | null;
+};
+
+/**
+ * PaginationOutput[WorkoutSessionSchema]
+ */
+export type PaginationOutputWorkoutSessionSchema = {
+    /**
+     * Total Amount
+     */
+    total_amount: number;
+    /**
+     * Pages Amount
+     */
+    pages_amount: number;
+    /**
+     * Page
+     */
+    page: number;
+    /**
+     * Page Size
+     */
+    page_size: number;
+    /**
+     * Data
+     */
+    data: Array<WorkoutSessionSchema>;
+};
+
+/**
+ * WorkoutSessionSchema
+ */
+export type WorkoutSessionSchema = {
     /**
      * Id
      */
     id: number;
     /**
-     * Order
+     * Plan Id
      */
-    order: number;
+    plan_id: number | null;
+    /**
+     * Day Id
+     */
+    day_id: number | null;
+    /**
+     * Plan Name
+     */
+    plan_name: string;
+    /**
+     * Day Name
+     */
+    day_name: string;
+    /**
+     * Pool Length M
+     */
+    pool_length_m: number;
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Finished At
+     */
+    finished_at: string | null;
+    /**
+     * Set Count
+     */
+    set_count: number;
+    /**
+     * Exercise Count
+     */
+    exercise_count: number;
+};
+
+/**
+ * SetLogSchema
+ */
+export type SetLogSchema = {
+    /**
+     * Id
+     */
+    id: number;
+    /**
+     * Session Id
+     */
+    session_id: number;
+    /**
+     * Exercise Id
+     */
+    exercise_id: number;
+    /**
+     * Plan Exercise Id
+     */
+    plan_exercise_id: number | null;
+    /**
+     * Set Number
+     */
+    set_number: number;
+    side: SetSide;
     /**
      * Reps
      */
     reps: number | null;
     /**
+     * Weight Kg
+     */
+    weight_kg: number | null;
+    /**
      * Duration Seconds
      */
     duration_seconds: number | null;
+    /**
+     * Distance Km
+     */
+    distance_km: number | null;
+    /**
+     * Laps
+     */
+    laps: number | null;
+    /**
+     * Created At
+     */
+    created_at: string;
 };
 
 /**
- * MeasurementType
+ * SetSide
  */
-export type MeasurementType = 'reps' | 'time';
+export type SetSide = 'both' | 'left' | 'right';
 
 /**
- * PaginationOutput[WorkoutExerciseSchema]
+ * WorkoutSessionDetailSchema
  */
-export type PaginationOutputWorkoutExerciseSchema = {
-    /**
-     * Total Amount
-     */
-    total_amount: number;
-    /**
-     * Pages Amount
-     */
-    pages_amount: number;
-    /**
-     * Page
-     */
-    page: number;
-    /**
-     * Page Size
-     */
-    page_size: number;
-    /**
-     * Data
-     */
-    data: Array<WorkoutExerciseSchema>;
-};
-
-/**
- * WorkoutExerciseSchema
- */
-export type WorkoutExerciseSchema = {
+export type WorkoutSessionDetailSchema = {
     /**
      * Id
      */
     id: number;
     /**
-     * Routine Id
+     * Plan Id
      */
-    routine_id: number;
+    plan_id: number | null;
     /**
-     * Name
+     * Day Id
      */
-    name: string;
-    measurement_type: MeasurementType;
+    day_id: number | null;
     /**
-     * Notes
+     * Plan Name
      */
-    notes: string;
+    plan_name: string;
     /**
-     * Order
+     * Day Name
      */
-    order: number;
+    day_name: string;
     /**
-     * Sets
+     * Pool Length M
      */
-    sets: Array<ExerciseSetSchema>;
+    pool_length_m: number;
     /**
-     * Created At
+     * Started At
      */
-    created_at: string;
+    started_at: string;
     /**
-     * Updated At
+     * Finished At
      */
-    updated_at: string;
+    finished_at: string | null;
+    /**
+     * Plan Exercises
+     */
+    plan_exercises: Array<PlanExerciseSchema>;
+    /**
+     * Set Logs
+     */
+    set_logs: Array<SetLogSchema>;
+    /**
+     * Extra Exercises
+     */
+    extra_exercises: Array<ExerciseSchema>;
+    /**
+     * Previous Logs
+     */
+    previous_logs: Array<SetLogSchema>;
 };
 
 /**
- * CreateWorkoutExerciseSchema
+ * StartWorkoutSessionSchema
+ *
+ * A day of a plan, or only a plan (just the every-day section), or neither (a free workout).
  */
-export type CreateWorkoutExerciseSchema = {
+export type StartWorkoutSessionSchema = {
     /**
-     * Name
+     * Plan Id
      */
-    name: string;
-    measurement_type?: MeasurementType | null;
+    plan_id?: number | null;
     /**
-     * Notes
+     * Day Id
      */
-    notes?: string | null;
-    /**
-     * Sets
-     */
-    sets?: Array<ExerciseSetWritableSchema> | null;
-    /**
-     * Routine Id
-     */
-    routine_id: number;
+    day_id?: number | null;
 };
 
 /**
- * ExerciseSetWritableSchema
+ * UpdateWorkoutSessionSchema
  */
-export type ExerciseSetWritableSchema = {
+export type UpdateWorkoutSessionSchema = {
+    /**
+     * Finished
+     */
+    finished: boolean;
+};
+
+/**
+ * LogSetSchema
+ */
+export type LogSetSchema = {
     /**
      * Reps
      */
     reps?: number | null;
     /**
+     * Weight Kg
+     */
+    weight_kg?: number | null;
+    /**
      * Duration Seconds
      */
     duration_seconds?: number | null;
+    /**
+     * Distance Km
+     */
+    distance_km?: number | null;
+    /**
+     * Laps
+     */
+    laps?: number | null;
+    /**
+     * Session Id
+     */
+    session_id: number;
+    /**
+     * Exercise Id
+     */
+    exercise_id: number;
+    /**
+     * Plan Exercise Id
+     */
+    plan_exercise_id?: number | null;
+    /**
+     * Set Number
+     */
+    set_number: number;
+    side?: SetSide;
 };
 
 /**
- * WorkoutExerciseWritableSchema
+ * SetLogValuesSchema
+ *
+ * What was done in a set. A value sent as null clears it; one left out is kept.
  */
-export type WorkoutExerciseWritableSchema = {
+export type SetLogValuesSchema = {
     /**
-     * Name
+     * Reps
      */
-    name?: string | null;
-    measurement_type?: MeasurementType | null;
+    reps?: number | null;
     /**
-     * Notes
+     * Weight Kg
      */
-    notes?: string | null;
+    weight_kg?: number | null;
     /**
-     * Sets
+     * Duration Seconds
      */
-    sets?: Array<ExerciseSetWritableSchema> | null;
+    duration_seconds?: number | null;
+    /**
+     * Distance Km
+     */
+    distance_km?: number | null;
+    /**
+     * Laps
+     */
+    laps?: number | null;
 };
 
-export type PaginateWorkoutRoutinesViewData = {
+/**
+ * ExerciseHistorySummarySchema
+ */
+export type ExerciseHistorySummarySchema = {
+    exercise: ExerciseSchema;
+    /**
+     * Session Count
+     */
+    session_count: number;
+    /**
+     * Last Date
+     */
+    last_date: string;
+};
+
+/**
+ * ProgressSummarySchema
+ */
+export type ProgressSummarySchema = {
+    /**
+     * Exercises
+     */
+    exercises: Array<ExerciseHistorySummarySchema>;
+};
+
+/**
+ * ExerciseProgressPath
+ */
+export type ExerciseProgressPath = {
+    /**
+     * Exercise Id
+     */
+    exercise_id: number;
+};
+
+/**
+ * ExerciseProgressSchema
+ */
+export type ExerciseProgressSchema = {
+    exercise: ExerciseSchema;
+    /**
+     * Points
+     */
+    points: Array<ProgressPointSchema>;
+};
+
+/**
+ * ProgressPointSchema
+ *
+ * One session's numbers for an exercise. Only the ones that fit its tracking type are filled.
+ */
+export type ProgressPointSchema = {
+    /**
+     * Session Id
+     */
+    session_id: number;
+    /**
+     * Date
+     */
+    date: string;
+    /**
+     * Top Weight Kg
+     */
+    top_weight_kg?: number | null;
+    /**
+     * Top Weight Left Kg
+     */
+    top_weight_left_kg?: number | null;
+    /**
+     * Top Weight Right Kg
+     */
+    top_weight_right_kg?: number | null;
+    /**
+     * Volume Kg
+     */
+    volume_kg?: number | null;
+    /**
+     * Max Reps
+     */
+    max_reps?: number | null;
+    /**
+     * Total Reps
+     */
+    total_reps?: number | null;
+    /**
+     * Max Seconds
+     */
+    max_seconds?: number | null;
+    /**
+     * Total Seconds
+     */
+    total_seconds?: number | null;
+    /**
+     * Distance Km
+     */
+    distance_km?: number | null;
+    /**
+     * Laps
+     */
+    laps?: number | null;
+    /**
+     * Pace Seconds Per Km
+     */
+    pace_seconds_per_km?: number | null;
+    /**
+     * Pace Seconds Per 100M
+     */
+    pace_seconds_per_100m?: number | null;
+};
+
+/**
+ * WorkoutLanguage
+ */
+export type WorkoutLanguage = 'en' | 'he';
+
+/**
+ * WorkoutPreferencesSchema
+ */
+export type WorkoutPreferencesSchema = {
+    language: WorkoutLanguage | null;
+};
+
+/**
+ * UpdateWorkoutPreferencesSchema
+ */
+export type UpdateWorkoutPreferencesSchema = {
+    language: WorkoutLanguage;
+};
+
+export type ListExercisesViewData = {
     body?: never;
-    path?: never;
-    query?: {
-        /**
-         * Page
-         */
-        page?: number;
-        /**
-         * Page Size
-         */
-        page_size?: number;
-        /**
-         * Order By
-         */
-        order_by?: Array<string> | null;
-        /**
-         * Dict Filter
-         */
-        dict_filter?: string | null;
-    };
-    url: '/api/workout-plan/routines/';
-};
-
-export type PaginateWorkoutRoutinesViewResponses = {
-    /**
-     * OK
-     */
-    200: PaginationOutputWorkoutRoutineSchema;
-};
-
-export type PaginateWorkoutRoutinesViewResponse = PaginateWorkoutRoutinesViewResponses[keyof PaginateWorkoutRoutinesViewResponses];
-
-export type CreateWorkoutRoutineViewData = {
-    body: CreateWorkoutRoutineSchema;
-    path?: never;
-    query?: never;
-    url: '/api/workout-plan/routines/';
-};
-
-export type CreateWorkoutRoutineViewResponses = {
-    /**
-     * OK
-     */
-    200: WorkoutRoutineSchema;
-};
-
-export type CreateWorkoutRoutineViewResponse = CreateWorkoutRoutineViewResponses[keyof CreateWorkoutRoutineViewResponses];
-
-export type DeleteWorkoutRoutineViewData = {
-    body?: EmptySchema | null;
-    path: {
-        /**
-         * Object Id
-         */
-        object_id: number;
-    };
-    query?: never;
-    url: '/api/workout-plan/routines/{object_id}/';
-};
-
-export type DeleteWorkoutRoutineViewResponses = {
-    /**
-     * OK
-     */
-    200: unknown;
-};
-
-export type GetWorkoutRoutineViewData = {
-    body?: never;
-    path: {
-        /**
-         * Object Id
-         */
-        object_id: number;
-    };
-    query?: never;
-    url: '/api/workout-plan/routines/{object_id}/';
-};
-
-export type GetWorkoutRoutineViewResponses = {
-    /**
-     * OK
-     */
-    200: WorkoutRoutineSchema;
-};
-
-export type GetWorkoutRoutineViewResponse = GetWorkoutRoutineViewResponses[keyof GetWorkoutRoutineViewResponses];
-
-export type UpdateWorkoutRoutineViewData = {
-    body: UpdateWorkoutRoutineSchema;
-    path: {
-        /**
-         * Object Id
-         */
-        object_id: number;
-    };
-    query?: never;
-    url: '/api/workout-plan/routines/{object_id}/';
-};
-
-export type UpdateWorkoutRoutineViewResponses = {
-    /**
-     * OK
-     */
-    200: WorkoutRoutineSchema;
-};
-
-export type UpdateWorkoutRoutineViewResponse = UpdateWorkoutRoutineViewResponses[keyof UpdateWorkoutRoutineViewResponses];
-
-export type PaginateWorkoutExercisesViewData = {
-    body?: never;
-    path: {
-        /**
-         * Routine Id
-         */
-        routine_id: number;
-    };
-    query?: {
-        /**
-         * Page
-         */
-        page?: number;
-        /**
-         * Page Size
-         */
-        page_size?: number;
-        /**
-         * Order By
-         */
-        order_by?: Array<string> | null;
-        /**
-         * Dict Filter
-         */
-        dict_filter?: string | null;
-    };
-    url: '/api/workout-plan/routines/{routine_id}/exercises/';
-};
-
-export type PaginateWorkoutExercisesViewResponses = {
-    /**
-     * OK
-     */
-    200: PaginationOutputWorkoutExerciseSchema;
-};
-
-export type PaginateWorkoutExercisesViewResponse = PaginateWorkoutExercisesViewResponses[keyof PaginateWorkoutExercisesViewResponses];
-
-export type CreateWorkoutExerciseViewData = {
-    body: CreateWorkoutExerciseSchema;
     path?: never;
     query?: never;
     url: '/api/workout-plan/exercises/';
 };
 
-export type CreateWorkoutExerciseViewResponses = {
+export type ListExercisesViewResponses = {
     /**
      * OK
      */
-    200: WorkoutExerciseSchema;
+    200: ExerciseListSchema;
 };
 
-export type CreateWorkoutExerciseViewResponse = CreateWorkoutExerciseViewResponses[keyof CreateWorkoutExerciseViewResponses];
+export type ListExercisesViewResponse = ListExercisesViewResponses[keyof ListExercisesViewResponses];
 
-export type DeleteWorkoutExerciseViewData = {
+export type CreateExerciseViewData = {
+    body: ExerciseWritableSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/exercises/';
+};
+
+export type CreateExerciseViewResponses = {
+    /**
+     * OK
+     */
+    200: ExerciseSchema;
+};
+
+export type CreateExerciseViewResponse = CreateExerciseViewResponses[keyof CreateExerciseViewResponses];
+
+export type DeleteExerciseViewData = {
     body?: EmptySchema | null;
     path: {
         /**
@@ -471,14 +1028,103 @@ export type DeleteWorkoutExerciseViewData = {
     url: '/api/workout-plan/exercises/{object_id}/';
 };
 
-export type DeleteWorkoutExerciseViewResponses = {
+export type DeleteExerciseViewResponses = {
     /**
      * OK
      */
     200: unknown;
 };
 
-export type GetWorkoutExerciseViewData = {
+export type UpdateExerciseViewData = {
+    body: ExerciseWritableSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/exercises/{object_id}/';
+};
+
+export type UpdateExerciseViewResponses = {
+    /**
+     * OK
+     */
+    200: ExerciseSchema;
+};
+
+export type UpdateExerciseViewResponse = UpdateExerciseViewResponses[keyof UpdateExerciseViewResponses];
+
+export type PaginateWorkoutPlansViewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Order By
+         */
+        order_by?: Array<string> | null;
+        /**
+         * Dict Filter
+         */
+        dict_filter?: string | null;
+    };
+    url: '/api/workout-plan/plans/';
+};
+
+export type PaginateWorkoutPlansViewResponses = {
+    /**
+     * OK
+     */
+    200: PaginationOutputWorkoutPlanSchema;
+};
+
+export type PaginateWorkoutPlansViewResponse = PaginateWorkoutPlansViewResponses[keyof PaginateWorkoutPlansViewResponses];
+
+export type CreateWorkoutPlanViewData = {
+    body: CreateWorkoutPlanSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/plans/';
+};
+
+export type CreateWorkoutPlanViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPlanDetailSchema;
+};
+
+export type CreateWorkoutPlanViewResponse = CreateWorkoutPlanViewResponses[keyof CreateWorkoutPlanViewResponses];
+
+export type DeleteWorkoutPlanViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plans/{object_id}/';
+};
+
+export type DeleteWorkoutPlanViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetWorkoutPlanViewData = {
     body?: never;
     path: {
         /**
@@ -487,20 +1133,20 @@ export type GetWorkoutExerciseViewData = {
         object_id: number;
     };
     query?: never;
-    url: '/api/workout-plan/exercises/{object_id}/';
+    url: '/api/workout-plan/plans/{object_id}/';
 };
 
-export type GetWorkoutExerciseViewResponses = {
+export type GetWorkoutPlanViewResponses = {
     /**
      * OK
      */
-    200: WorkoutExerciseSchema;
+    200: WorkoutPlanDetailSchema;
 };
 
-export type GetWorkoutExerciseViewResponse = GetWorkoutExerciseViewResponses[keyof GetWorkoutExerciseViewResponses];
+export type GetWorkoutPlanViewResponse = GetWorkoutPlanViewResponses[keyof GetWorkoutPlanViewResponses];
 
-export type UpdateWorkoutExerciseViewData = {
-    body: WorkoutExerciseWritableSchema;
+export type UpdateWorkoutPlanViewData = {
+    body: UpdateWorkoutPlanSchema;
     path: {
         /**
          * Object Id
@@ -508,14 +1154,470 @@ export type UpdateWorkoutExerciseViewData = {
         object_id: number;
     };
     query?: never;
-    url: '/api/workout-plan/exercises/{object_id}/';
+    url: '/api/workout-plan/plans/{object_id}/';
 };
 
-export type UpdateWorkoutExerciseViewResponses = {
+export type UpdateWorkoutPlanViewResponses = {
     /**
      * OK
      */
-    200: WorkoutExerciseSchema;
+    200: WorkoutPlanDetailSchema;
 };
 
-export type UpdateWorkoutExerciseViewResponse = UpdateWorkoutExerciseViewResponses[keyof UpdateWorkoutExerciseViewResponses];
+export type UpdateWorkoutPlanViewResponse = UpdateWorkoutPlanViewResponses[keyof UpdateWorkoutPlanViewResponses];
+
+export type ShareWorkoutPlanViewData = {
+    body: ShareWorkoutPlanSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plans/{object_id}/share/';
+};
+
+export type ShareWorkoutPlanViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPlanSchema;
+};
+
+export type ShareWorkoutPlanViewResponse = ShareWorkoutPlanViewResponses[keyof ShareWorkoutPlanViewResponses];
+
+export type UnshareWorkoutPlanViewData = {
+    body: UnshareWorkoutPlanSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plans/{object_id}/unshare/';
+};
+
+export type UnshareWorkoutPlanViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPlanSchema;
+};
+
+export type UnshareWorkoutPlanViewResponse = UnshareWorkoutPlanViewResponses[keyof UnshareWorkoutPlanViewResponses];
+
+export type ListWorkoutPlanMembersViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plans/{object_id}/members/';
+};
+
+export type ListWorkoutPlanMembersViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPlanMembersSchema;
+};
+
+export type ListWorkoutPlanMembersViewResponse = ListWorkoutPlanMembersViewResponses[keyof ListWorkoutPlanMembersViewResponses];
+
+export type ReorderPlanDaysViewData = {
+    body: ReorderSchema;
+    path: {
+        /**
+         * Plan Id
+         */
+        plan_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plans/{plan_id}/reorder-days/';
+};
+
+export type ReorderPlanDaysViewResponses = {
+    /**
+     * OK
+     */
+    200: ReorderResultSchema;
+};
+
+export type ReorderPlanDaysViewResponse = ReorderPlanDaysViewResponses[keyof ReorderPlanDaysViewResponses];
+
+export type CreatePlanDayViewData = {
+    body: CreatePlanDaySchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/days/';
+};
+
+export type CreatePlanDayViewResponses = {
+    /**
+     * OK
+     */
+    200: PlanDaySchema;
+};
+
+export type CreatePlanDayViewResponse = CreatePlanDayViewResponses[keyof CreatePlanDayViewResponses];
+
+export type DeletePlanDayViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/days/{object_id}/';
+};
+
+export type DeletePlanDayViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type UpdatePlanDayViewData = {
+    body: UpdatePlanDaySchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/days/{object_id}/';
+};
+
+export type UpdatePlanDayViewResponses = {
+    /**
+     * OK
+     */
+    200: PlanDaySchema;
+};
+
+export type UpdatePlanDayViewResponse = UpdatePlanDayViewResponses[keyof UpdatePlanDayViewResponses];
+
+export type ReorderPlanExercisesViewData = {
+    body: ReorderSchema;
+    path: {
+        /**
+         * Day Id
+         */
+        day_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/days/{day_id}/reorder-exercises/';
+};
+
+export type ReorderPlanExercisesViewResponses = {
+    /**
+     * OK
+     */
+    200: ReorderResultSchema;
+};
+
+export type ReorderPlanExercisesViewResponse = ReorderPlanExercisesViewResponses[keyof ReorderPlanExercisesViewResponses];
+
+export type CreatePlanExerciseViewData = {
+    body: CreatePlanExerciseSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/plan-exercises/';
+};
+
+export type CreatePlanExerciseViewResponses = {
+    /**
+     * OK
+     */
+    200: PlanExerciseSchema;
+};
+
+export type CreatePlanExerciseViewResponse = CreatePlanExerciseViewResponses[keyof CreatePlanExerciseViewResponses];
+
+export type DeletePlanExerciseViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plan-exercises/{object_id}/';
+};
+
+export type DeletePlanExerciseViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type UpdatePlanExerciseViewData = {
+    body: PlanExerciseTargetsSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/plan-exercises/{object_id}/';
+};
+
+export type UpdatePlanExerciseViewResponses = {
+    /**
+     * OK
+     */
+    200: PlanExerciseSchema;
+};
+
+export type UpdatePlanExerciseViewResponse = UpdatePlanExerciseViewResponses[keyof UpdatePlanExerciseViewResponses];
+
+export type PaginateWorkoutSessionsViewData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Page Size
+         */
+        page_size?: number;
+        /**
+         * Order By
+         */
+        order_by?: Array<string> | null;
+        /**
+         * Dict Filter
+         */
+        dict_filter?: string | null;
+        /**
+         * Plan Id
+         */
+        plan_id?: number | null;
+    };
+    url: '/api/workout-plan/sessions/';
+};
+
+export type PaginateWorkoutSessionsViewResponses = {
+    /**
+     * OK
+     */
+    200: PaginationOutputWorkoutSessionSchema;
+};
+
+export type PaginateWorkoutSessionsViewResponse = PaginateWorkoutSessionsViewResponses[keyof PaginateWorkoutSessionsViewResponses];
+
+export type StartWorkoutSessionViewData = {
+    body: StartWorkoutSessionSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/sessions/';
+};
+
+export type StartWorkoutSessionViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutSessionDetailSchema;
+};
+
+export type StartWorkoutSessionViewResponse = StartWorkoutSessionViewResponses[keyof StartWorkoutSessionViewResponses];
+
+export type DeleteWorkoutSessionViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/sessions/{object_id}/';
+};
+
+export type DeleteWorkoutSessionViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type GetWorkoutSessionViewData = {
+    body?: never;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/sessions/{object_id}/';
+};
+
+export type GetWorkoutSessionViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutSessionDetailSchema;
+};
+
+export type GetWorkoutSessionViewResponse = GetWorkoutSessionViewResponses[keyof GetWorkoutSessionViewResponses];
+
+export type UpdateWorkoutSessionViewData = {
+    body: UpdateWorkoutSessionSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/sessions/{object_id}/';
+};
+
+export type UpdateWorkoutSessionViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutSessionDetailSchema;
+};
+
+export type UpdateWorkoutSessionViewResponse = UpdateWorkoutSessionViewResponses[keyof UpdateWorkoutSessionViewResponses];
+
+export type LogSetViewData = {
+    body: LogSetSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/set-logs/';
+};
+
+export type LogSetViewResponses = {
+    /**
+     * OK
+     */
+    200: SetLogSchema;
+};
+
+export type LogSetViewResponse = LogSetViewResponses[keyof LogSetViewResponses];
+
+export type DeleteSetLogViewData = {
+    body?: EmptySchema | null;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/set-logs/{object_id}/';
+};
+
+export type DeleteSetLogViewResponses = {
+    /**
+     * OK
+     */
+    200: unknown;
+};
+
+export type UpdateSetLogViewData = {
+    body: SetLogValuesSchema;
+    path: {
+        /**
+         * Object Id
+         */
+        object_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/set-logs/{object_id}/';
+};
+
+export type UpdateSetLogViewResponses = {
+    /**
+     * OK
+     */
+    200: SetLogSchema;
+};
+
+export type UpdateSetLogViewResponse = UpdateSetLogViewResponses[keyof UpdateSetLogViewResponses];
+
+export type GetProgressSummaryViewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/progress/';
+};
+
+export type GetProgressSummaryViewResponses = {
+    /**
+     * OK
+     */
+    200: ProgressSummarySchema;
+};
+
+export type GetProgressSummaryViewResponse = GetProgressSummaryViewResponses[keyof GetProgressSummaryViewResponses];
+
+export type GetExerciseProgressViewData = {
+    body?: never;
+    path: {
+        /**
+         * Exercise Id
+         */
+        exercise_id: number;
+    };
+    query?: never;
+    url: '/api/workout-plan/progress/exercises/{exercise_id}/';
+};
+
+export type GetExerciseProgressViewResponses = {
+    /**
+     * OK
+     */
+    200: ExerciseProgressSchema;
+};
+
+export type GetExerciseProgressViewResponse = GetExerciseProgressViewResponses[keyof GetExerciseProgressViewResponses];
+
+export type GetWorkoutPreferencesViewData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/preferences/';
+};
+
+export type GetWorkoutPreferencesViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPreferencesSchema;
+};
+
+export type GetWorkoutPreferencesViewResponse = GetWorkoutPreferencesViewResponses[keyof GetWorkoutPreferencesViewResponses];
+
+export type UpdateWorkoutPreferencesViewData = {
+    body: UpdateWorkoutPreferencesSchema;
+    path?: never;
+    query?: never;
+    url: '/api/workout-plan/preferences/';
+};
+
+export type UpdateWorkoutPreferencesViewResponses = {
+    /**
+     * OK
+     */
+    200: WorkoutPreferencesSchema;
+};
+
+export type UpdateWorkoutPreferencesViewResponse = UpdateWorkoutPreferencesViewResponses[keyof UpdateWorkoutPreferencesViewResponses];

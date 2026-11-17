@@ -1,0 +1,72 @@
+<div class="page-narrow" [attr.dir]="i18n.dir()">
+    <a [routerLink]="plansUrl"
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="backIcon()"/>
+        {{ i18n.t().backToPlans }}
+    </a>
+    <app-page-header [title]="i18n.t().progress" [subtitle]="i18n.t().progressSubtitle"/>
+
+    @if (isLoading()) {
+        <app-loading-state [label]="i18n.t().loadingProgress"/>
+    } @else if (summary().length === 0) {
+        <app-empty-state [title]="i18n.t().emptyProgressTitle" [text]="i18n.t().emptyProgressText"/>
+    } @else {
+        <div class="flex flex-wrap gap-1.5 mb-4">
+            @for (item of summary(); track item.exercise.id) {
+                <a class="chip" [class.chip-selected]="item.exercise.id === selectedId()" [routerLink]="exerciseUrls()[item.exercise.id]"
+                   replaceUrl dir="auto">{{ item.exercise | exerciseName: i18n.language() }}</a>
+            }
+        </div>
+
+        @if (progress(); as progress) {
+            <div class="card p-5 sm:p-6 mb-6">
+                <div class="flex flex-wrap items-start gap-3 mb-4">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-section font-bold text-writing" dir="auto">{{ progress.exercise | exerciseName: i18n.language() }}</div>
+                        <div class="text-meta text-writing-minor">
+                            {{ i18n.t().muscle[progress.exercise.muscle_group] }} · {{ progress.points.length }} {{ i18n.t().sessionsLogged }}
+                        </div>
+                    </div>
+                    @if (metrics().length > 1) {
+                        <div class="flex rounded-md bg-layer-3 p-0.5" role="tablist">
+                            @for (m of metrics(); track m) {
+                                <button type="button" role="tab" class="px-3 py-1 rounded text-meta font-medium"
+                                        [class.bg-layer-2]="m === activeMetric()" [class.shadow-1]="m === activeMetric()"
+                                        [class.text-writing]="m === activeMetric()" [class.text-writing-minor]="m !== activeMetric()"
+                                        [attr.aria-selected]="m === activeMetric()" (click)="metric.set(m)">{{ specs()[m].label }}</button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                @if (headline(); as headline) {
+                    <div class="flex items-baseline gap-3 mb-4">
+                        <span class="text-display font-bold text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ headline.value }}</span>
+                        @if (headline.delta) {
+                            <span class="chip tabular-nums" [attr.dir]="i18n.dir()" [class.chip-success]="headline.better" [class.chip-warning]="!headline.better">{{ headline.delta }}</span>
+                            <span class="text-caption text-writing-minor">{{ i18n.t().sinceFirst }}</span>
+                        }
+                    </div>
+                }
+
+                @if (chart(); as chart) {
+                    <app-progress-chart [dates]="chart.dates" [series]="chart.series" [axisValues]="chart.axisValues"
+                                        [axisLabels]="chart.axisLabels"/>
+                } @else {
+                    <p class="text-meta text-writing-minor">{{ i18n.t().noHistory }}</p>
+                }
+            </div>
+
+            <div class="eyebrow mb-2">{{ i18n.t().history }}</div>
+            <div class="card divide-y divide-line-subtle">
+                @for (row of rows(); track row.sessionId) {
+                    <a [routerLink]="sessionUrls()[row.sessionId]"
+                       class="flex items-center gap-3 p-4 hover:bg-layer-overlay first:rounded-t-xl last:rounded-b-xl">
+                        <span class="flex-1 text-meta text-writing-minor">{{ row.date }}</span>
+                        <span class="text-body text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ row.value }}</span>
+                    </a>
+                }
+            </div>
+        }
+    }
+</div>

@@ -230,25 +230,25 @@ export const routes: Routes = [
             {
                 path: 'workout-plan',
                 loadComponent: () =>
-                    import('./workout-plan/routines-list/routines-list.component').then(m => m.RoutinesListComponent),
+                    import('./workout-plan/plans-list/plans-list.component').then(m => m.PlansListComponent),
                 canActivate: [hasPermissionGuard('workout_plan')],
             },
             {
-                path: 'workout-plan/routines/new',
+                path: 'workout-plan/plans/:id',
                 loadComponent: () =>
-                    import('./workout-plan/routine-form/routine-form.component').then(m => m.RoutineFormComponent),
+                    import('./workout-plan/plan-detail/plan-detail.component').then(m => m.PlanDetailComponent),
                 canActivate: [hasPermissionGuard('workout_plan')],
             },
             {
-                path: 'workout-plan/routines/:id/edit',
+                path: 'workout-plan/sessions/:id',
                 loadComponent: () =>
-                    import('./workout-plan/routine-form/routine-form.component').then(m => m.RoutineFormComponent),
+                    import('./workout-plan/workout-session/workout-session.component').then(m => m.WorkoutSessionComponent),
                 canActivate: [hasPermissionGuard('workout_plan')],
             },
             {
-                path: 'workout-plan/routines/:id',
+                path: 'workout-plan/progress',
                 loadComponent: () =>
-                    import('./workout-plan/routine-detail/routine-detail.component').then(m => m.RoutineDetailComponent),
+                    import('./workout-plan/progress/progress.component').then(m => m.ProgressComponent),
                 canActivate: [hasPermissionGuard('workout_plan')],
             },
         ],

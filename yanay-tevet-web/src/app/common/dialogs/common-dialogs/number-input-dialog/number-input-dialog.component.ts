@@ -6,6 +6,7 @@ import {ConfirmationButtonComponent} from '../../confirmation-button/confirmatio
 
 export interface NumberInputDialogInput {
   title: string;
+  dir?: 'ltr' | 'rtl';
   text: string;
   label: string;
   defaultValue?: number;

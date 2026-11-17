@@ -1,0 +1,88 @@
+<div class="dialog-container flex flex-col gap-4 max-h-[85vh]" [attr.dir]="i18n.dir()">
+    <h2>{{ isCreating() ? i18n.t().newExercise : i18n.t().exerciseLibrary }}</h2>
+
+    @if (!isCreating()) {
+        <div class="relative">
+            <ng-icon [svg]="featherSearch" class="absolute start-3 top-1/2 -translate-y-1/2 text-base text-writing-least"/>
+            <input class="main-input w-full ps-9" type="search" dir="auto" [value]="search()"
+                   [attr.placeholder]="i18n.t().searchExercises" (input)="onSearch($event)"/>
+        </div>
+        <div class="flex gap-1.5 overflow-x-auto pb-1 shrink-0">
+            <button type="button" class="chip shrink-0" [class.chip-selected]="group() === null"
+                    (click)="group.set(null)">{{ i18n.t().allGroups }}</button>
+            @for (g of groups(); track g) {
+                <button type="button" class="chip shrink-0" [class.chip-selected]="group() === g"
+                        (click)="group.set(g)">{{ i18n.t().muscle[g] }}</button>
+            }
+        </div>
+        <div class="flex-1 overflow-y-auto -mx-2 min-h-40">
+            @for (exercise of filtered(); track exercise.id) {
+                <button type="button" class="w-full flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-layer-overlay text-start"
+                        (click)="pick(exercise)">
+                    <span class="flex-1 min-w-0">
+                        <span class="block text-ui text-writing truncate" dir="auto">{{ exercise | exerciseName: i18n.language() }}</span>
+                        <span class="block text-caption text-writing-minor">
+                            {{ i18n.t().muscle[exercise.muscle_group] }} · {{ i18n.t().tracking[exercise.tracking_type] }}@if (exercise.per_side) { · {{ i18n.t().perSide }}}
+                        </span>
+                    </span>
+                    @if (exercise.is_custom) {
+                        <span class="chip chip-accent shrink-0">{{ i18n.t().custom }}</span>
+                    }
+                </button>
+            } @empty {
+                <p class="text-meta text-writing-minor px-2 py-4">{{ i18n.t().noMatches }}</p>
+            }
+        </div>
+        <div class="dialog-buttons-container">
+            <button type="button" class="btn btn-secondary" (click)="emitClose(null)">{{ i18n.t().cancel }}</button>
+            <button type="button" class="btn btn-secondary" (click)="startCreating()">
+                <ng-icon [svg]="featherPlus"/>
+                {{ i18n.t().newExercise }}
+            </button>
+        </div>
+    } @else {
+        <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-1">
+                <span class="input-label">{{ i18n.t().nameHebrew }}</span>
+                <input class="main-input" dir="rtl" [value]="newNameHe()" (input)="onText('he', $event)"/>
+            </div>
+            <div class="flex flex-col gap-1">
+                <span class="input-label">{{ i18n.t().nameEnglish }}</span>
+                <input class="main-input" dir="ltr" [value]="newNameEn()" (input)="onText('en', $event)"/>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().muscleGroup }}</span>
+                    <select class="main-input" (change)="onGroup($event)">
+                        @for (g of muscleGroups; track g) {
+                            <option [value]="g" [selected]="g === newGroup()">{{ i18n.t().muscle[g] }}</option>
+                        }
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <span class="input-label">{{ i18n.t().tracks }}</span>
+                    <select class="main-input" (change)="onTracking($event)">
+                        @for (type of trackingTypes; track type) {
+                            <option [value]="type" [selected]="type === newTracking()">{{ i18n.t().tracking[type] }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="group/check flex items-start gap-3 text-start py-1" role="checkbox"
+                    [attr.aria-checked]="newPerSide()" (click)="newPerSide.set(!newPerSide())">
+                <app-checkbox-mark [checked]="newPerSide()"/>
+                <span>
+                    <span class="block text-body text-writing">{{ i18n.t().perSide }}</span>
+                    <span class="block text-caption text-writing-minor">{{ i18n.t().perSideHint }}</span>
+                </span>
+            </button>
+            @if (error()) {
+                <p class="text-caption text-danger">{{ error() }}</p>
+            }
+        </div>
+        <div class="dialog-buttons-container">
+            <button type="button" class="btn btn-secondary" (click)="isCreating.set(false)">{{ i18n.t().cancel }}</button>
+            <button type="button" class="btn btn-primary" (click)="create()">{{ i18n.t().createExercise }}</button>
+        </div>
+    }
+</div>

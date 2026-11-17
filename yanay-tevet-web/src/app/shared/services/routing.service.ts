@@ -429,27 +429,29 @@ export class RoutingService {
     return this.router.navigateByUrl(this.getWorkoutPlanUrl());
   }
 
-  getWorkoutPlanNewRoutineUrl(): UrlTree {
-    return this.router.createUrlTree(['/workout-plan/routines/new']);
+  getWorkoutPlanDetailUrl(planId: number): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/plans', planId]);
   }
 
-  navigateToWorkoutPlanNewRoutine(): Promise<boolean> {
-    return this.router.navigateByUrl(this.getWorkoutPlanNewRoutineUrl());
+  navigateToWorkoutPlanDetail(planId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutPlanDetailUrl(planId));
   }
 
-  getWorkoutRoutineUrl(routineId: number): UrlTree {
-    return this.router.createUrlTree(['/workout-plan/routines', routineId]);
+  getWorkoutSessionUrl(sessionId: number): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/sessions', sessionId]);
   }
 
-  navigateToWorkoutRoutine(routineId: number): Promise<boolean> {
-    return this.router.navigateByUrl(this.getWorkoutRoutineUrl(routineId));
+  navigateToWorkoutSession(sessionId: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutSessionUrl(sessionId));
   }
 
-  getWorkoutRoutineEditUrl(routineId: number): UrlTree {
-    return this.router.createUrlTree(['/workout-plan/routines', routineId, 'edit']);
+  getWorkoutProgressUrl(exerciseId?: number): UrlTree {
+    return this.router.createUrlTree(['/workout-plan/progress'], {
+      queryParams: exerciseId !== undefined ? {exercise: exerciseId} : {},
+    });
   }
 
-  navigateToWorkoutRoutineEdit(routineId: number): Promise<boolean> {
-    return this.router.navigateByUrl(this.getWorkoutRoutineEditUrl(routineId));
+  navigateToWorkoutProgress(exerciseId?: number): Promise<boolean> {
+    return this.router.navigateByUrl(this.getWorkoutProgressUrl(exerciseId));
   }
 }

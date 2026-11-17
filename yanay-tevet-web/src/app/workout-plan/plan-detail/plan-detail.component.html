@@ -1,0 +1,142 @@
+<div class="page-narrow" [attr.dir]="i18n.dir()">
+    <a [routerLink]="plansUrl"
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="backIcon()"/>
+        {{ i18n.t().backToPlans }}
+    </a>
+
+    @if (isLoading()) {
+        <app-loading-state [label]="i18n.t().loadingPlan"/>
+    } @else if (loadError()) {
+        <app-error-state [text]="i18n.t().planNotFound" [backUrl]="plansUrl" [backLabel]="i18n.t().backToPlans"/>
+    } @else if (plan(); as plan) {
+        <app-page-header [title]="plan.name" [subtitle]="subtitle()">
+            @if (isEditing()) {
+                <button type="button" class="btn btn-primary" (click)="isEditing.set(false)">
+                    <ng-icon [svg]="featherCheck"/>
+                    {{ i18n.t().doneEditing }}
+                </button>
+            } @else {
+                <button type="button" class="btn btn-secondary" (click)="isEditing.set(true)">
+                    <ng-icon [svg]="featherEdit"/>
+                    {{ i18n.t().edit }}
+                </button>
+            }
+            <button type="button" class="btn btn-secondary" (click)="openShareDialog()">
+                <ng-icon [svg]="featherShare2"/>
+                {{ i18n.t().share }}
+            </button>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().planSettings"/>
+        </app-page-header>
+
+        <ng-template #exerciseRows let-day>
+            @if (day.exercises.length === 0) {
+                <p class="px-4 pb-4 text-meta text-writing-least">{{ i18n.t().noExercisesYet }}</p>
+            } @else {
+                <div class="divide-y divide-line-subtle border-t border-line-subtle">
+                    @for (entry of day.exercises; track entry.id; let first = $first; let last = $last) {
+                        <div class="flex items-center gap-3 px-4 py-3">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-ui text-writing" dir="auto">{{ entry.exercise | exerciseName: i18n.language() }}</div>
+                                <div class="text-meta text-writing-minor tabular-nums">
+                                    {{ summaries()[entry.id] }}@if (entry.exercise.per_side) { · {{ i18n.t().perSide }}}
+                                </div>
+                                @if (entry.notes) {
+                                    <div class="text-caption text-writing-minor mt-0.5" dir="auto">{{ entry.notes }}</div>
+                                }
+                            </div>
+                            @if (isEditing()) {
+                                <div class="flex items-center shrink-0">
+                                    <button type="button" class="icon-btn" [disabled]="first" [attr.aria-label]="i18n.t().moveUp"
+                                            (click)="moveExercise(day, entry, -1)"><ng-icon [svg]="featherArrowUp" class="text-base"/></button>
+                                    <button type="button" class="icon-btn" [disabled]="last" [attr.aria-label]="i18n.t().moveDown"
+                                            (click)="moveExercise(day, entry, 1)"><ng-icon [svg]="featherArrowDown" class="text-base"/></button>
+                                    <button type="button" class="icon-btn" [attr.aria-label]="i18n.t().editExercise"
+                                            (click)="editExercise(entry)"><ng-icon [svg]="featherEdit" class="text-base"/></button>
+                                    <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="i18n.t().removeExercise"
+                                            (click)="removeExercise(entry)"><ng-icon [svg]="featherTrash2" class="text-base"/></button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            @if (isEditing()) {
+                <div class="px-4 pb-4 pt-1">
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="addExercise(day)">
+                        <ng-icon [svg]="featherPlus"/>
+                        {{ i18n.t().addExercise }}
+                    </button>
+                </div>
+            }
+        </ng-template>
+
+        @if (plan.every_day; as everyDay) {
+            @if (everyDay.exercises.length > 0 || isEditing()) {
+                <div class="card mb-6">
+                    <div class="flex items-start gap-3 p-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="eyebrow">{{ i18n.t().everyDay }}</div>
+                            <div class="text-caption text-writing-minor mt-1">{{ i18n.t().everyDayHint }}</div>
+                        </div>
+                    </div>
+                    <ng-container [ngTemplateOutlet]="exerciseRows" [ngTemplateOutletContext]="{$implicit: everyDay}"/>
+                </div>
+            }
+        }
+
+        @if (plan.days.length === 0 && !isEditing()) {
+            <app-empty-state [title]="i18n.t().noDaysTitle" [text]="i18n.t().noDaysText">
+                <button type="button" class="btn btn-primary" (click)="isEditing.set(true); addDay()">
+                    <ng-icon [svg]="featherPlus"/>
+                    {{ i18n.t().addDay }}
+                </button>
+            </app-empty-state>
+        }
+
+        <div class="flex flex-col gap-3">
+            @for (day of plan.days; track day.id; let first = $first; let last = $last) {
+                <div class="card">
+                    <div class="flex items-center gap-3 p-4">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-lead font-semibold text-writing" dir="auto">{{ day.name }}</div>
+                            @if (dayMuscles()[day.id]) {
+                                <div class="text-meta text-writing-minor">{{ dayMuscles()[day.id] }}</div>
+                            }
+                        </div>
+                        @if (isEditing()) {
+                            <div class="flex items-center shrink-0">
+                                <button type="button" class="icon-btn" [disabled]="first" [attr.aria-label]="i18n.t().moveUp"
+                                        (click)="moveDay(day, -1)"><ng-icon [svg]="featherArrowUp" class="text-base"/></button>
+                                <button type="button" class="icon-btn" [disabled]="last" [attr.aria-label]="i18n.t().moveDown"
+                                        (click)="moveDay(day, 1)"><ng-icon [svg]="featherArrowDown" class="text-base"/></button>
+                                <button type="button" class="icon-btn" [attr.aria-label]="i18n.t().renameDay"
+                                        (click)="renameDay(day)"><ng-icon [svg]="featherEdit" class="text-base"/></button>
+                                <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="i18n.t().deleteDay"
+                                        (click)="deleteDay(day)"><ng-icon [svg]="featherTrash2" class="text-base"/></button>
+                            </div>
+                        } @else {
+                            <button type="button" class="btn btn-secondary shrink-0" (click)="start(day)">
+                                <ng-icon [svg]="featherPlay"/>
+                                {{ i18n.t().startWorkout }}
+                            </button>
+                        }
+                    </div>
+                    <ng-container [ngTemplateOutlet]="exerciseRows" [ngTemplateOutletContext]="{$implicit: day}"/>
+                </div>
+            }
+        </div>
+
+        @if (isEditing()) {
+            <button type="button" class="btn btn-secondary mt-3" (click)="addDay()">
+                <ng-icon [svg]="featherPlus"/>
+                {{ i18n.t().addDay }}
+            </button>
+        } @else if (plan.every_day && plan.every_day.exercises.length > 0) {
+            <button type="button" class="btn btn-ghost mt-3" (click)="start(null)">
+                <ng-icon [svg]="featherPlay"/>
+                {{ i18n.t().everyDay }}
+            </button>
+        }
+    }
+</div>

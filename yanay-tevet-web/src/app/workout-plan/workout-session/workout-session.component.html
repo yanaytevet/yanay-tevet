@@ -1,0 +1,172 @@
+<div class="page-narrow pb-32" [attr.dir]="i18n.dir()">
+    <a [routerLink]="backUrl()"
+       class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
+        <ng-icon [svg]="backIcon()"/>
+        {{ i18n.t().backToPlan }}
+    </a>
+
+    @if (isLoading()) {
+        <app-loading-state [label]="i18n.t().loadingWorkout"/>
+    } @else if (loadError()) {
+        <app-error-state [text]="i18n.t().planNotFound" [backUrl]="plansUrl" [backLabel]="i18n.t().backToPlans"/>
+    } @else if (session(); as session) {
+        <app-page-header [title]="title()" [subtitle]="subtitle()">
+            @if (!isFinished()) {
+                <button type="button" class="btn btn-secondary" (click)="startRest()">
+                    <ng-icon [svg]="featherClock"/>
+                    {{ i18n.t().rest }}
+                </button>
+            } @else {
+                <span class="chip chip-success">{{ i18n.t().finished }}</span>
+            }
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().deleteWorkout"/>
+        </app-page-header>
+
+        @if (isFinished() && summary().length > 0) {
+            <div class="card p-5 sm:p-6 mb-6">
+                <div class="eyebrow mb-3">{{ i18n.t().progress }}</div>
+                <div class="divide-y divide-line-subtle">
+                    @for (line of summary(); track line.key) {
+                        <a class="flex items-center gap-3 py-2.5 hover:bg-layer-overlay -mx-2 px-2 rounded-md"
+                           [routerLink]="progressUrls()[line.key]">
+                            <span class="flex-1 min-w-0 text-ui text-writing truncate" dir="auto">{{ line.exercise | exerciseName: i18n.language() }}</span>
+                            <span class="text-body text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ line.value }}</span>
+                            @if (line.direction !== 'new') {
+                                <span class="chip tabular-nums min-w-12 justify-center" dir="ltr"
+                                      [class.chip-success]="line.direction === 'up'"
+                                      [class.chip-warning]="line.direction === 'down'">{{ line.delta }}</span>
+                            } @else {
+                                <span class="chip chip-info min-w-12 justify-center">{{ i18n.t().firstTime }}</span>
+                            }
+                            <ng-icon [svg]="featherBarChart2" class="text-base text-writing-minor"/>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+
+        <ng-template #exerciseCard let-card>
+            <div class="card">
+                <div class="flex items-start gap-3 p-4 pb-2">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-ui font-semibold text-writing" dir="auto">{{ card.exercise | exerciseName: i18n.language() }}</div>
+                        <div class="text-meta text-writing-minor tabular-nums">
+                            {{ card.summary || i18n.t().tracking[card.exercise.tracking_type] }}@if (card.entry) { · {{ i18n.t().rest }} {{ card.restSeconds }}s}
+                        </div>
+                        @if (card.notes) {
+                            <div class="text-caption text-writing-minor mt-0.5" dir="auto">{{ card.notes }}</div>
+                        }
+                    </div>
+                    <span class="chip tabular-nums shrink-0" [class.chip-success]="card.doneCount === card.rows.length">
+                        {{ card.doneCount }}/{{ card.rows.length }}
+                    </span>
+                </div>
+
+                <div class="px-2 pb-2">
+                    @for (row of card.rows; track row.key) {
+                        <div class="flex items-center gap-2 px-2 py-1.5 rounded-md" [class.bg-success-soft]="row.log">
+                            <span class="w-10 shrink-0 text-meta font-semibold text-writing-minor tabular-nums">{{ row.label }}</span>
+                            <span class="hidden @sm:block w-28 shrink-0 text-caption text-writing-least truncate tabular-nums" [attr.dir]="i18n.dir()"
+                                  [attr.title]="i18n.t().previous">{{ row.previousText }}</span>
+                            <div class="flex-1 flex items-center gap-2 min-w-0" dir="ltr">
+                                @for (field of card.fields; track field) {
+                                    <div class="flex-1 min-w-0 relative">
+                                        @switch (field) {
+                                            @case ('weight') {
+                                                <input class="main-input w-full text-center tabular-nums pe-7" type="text" inputmode="decimal" dir="ltr"
+                                                       [value]="drafts()[row.key]?.weight ?? row.values.weight ?? ''"
+                                                       [attr.placeholder]="row.placeholder.weight ?? ''" [attr.aria-label]="i18n.t().weightKg"
+                                                       (input)="onDraft(row, 'weight', $event)" (change)="saveEdit(card, row)"/>
+                                                <span class="absolute end-2 top-1/2 -translate-y-1/2 text-caption text-writing-least pointer-events-none">{{ i18n.t().weightKg }}</span>
+                                            }
+                                            @case ('reps') {
+                                                <input class="main-input w-full text-center tabular-nums pe-7" type="text" inputmode="numeric" dir="ltr"
+                                                       [value]="drafts()[row.key]?.reps ?? row.values.reps ?? ''"
+                                                       [attr.placeholder]="row.placeholder.reps ?? ''" [attr.aria-label]="i18n.t().reps"
+                                                       (input)="onDraft(row, 'reps', $event)" (change)="saveEdit(card, row)"/>
+                                                <span class="absolute end-2 top-1/2 -translate-y-1/2 text-caption text-writing-least pointer-events-none">×</span>
+                                            }
+                                            @case ('duration') {
+                                                <input class="main-input w-full text-center tabular-nums" type="text" inputmode="numeric" dir="ltr"
+                                                       [value]="drafts()[row.key]?.duration ?? row.values.duration ?? ''"
+                                                       [attr.placeholder]="row.placeholder.duration ?? 'm:ss'" [attr.aria-label]="i18n.t().time"
+                                                       (input)="onDraft(row, 'duration', $event)" (change)="saveEdit(card, row)"/>
+                                            }
+                                            @case ('distance') {
+                                                <input class="main-input w-full text-center tabular-nums pe-8" type="text" inputmode="decimal" dir="ltr"
+                                                       [value]="drafts()[row.key]?.distance ?? row.values.distance ?? ''"
+                                                       [attr.placeholder]="row.placeholder.distance ?? ''" [attr.aria-label]="i18n.t().distance"
+                                                       (input)="onDraft(row, 'distance', $event)" (change)="saveEdit(card, row)"/>
+                                                <span class="absolute end-2 top-1/2 -translate-y-1/2 text-caption text-writing-least pointer-events-none">{{ i18n.t().distanceKm }}</span>
+                                            }
+                                            @case ('laps') {
+                                                <input class="main-input w-full text-center tabular-nums" type="text" inputmode="numeric" dir="ltr"
+                                                       [value]="drafts()[row.key]?.laps ?? row.values.laps ?? ''"
+                                                       [attr.placeholder]="row.placeholder.laps ?? ''" [attr.aria-label]="i18n.t().laps"
+                                                       (input)="onDraft(row, 'laps', $event)" (change)="saveEdit(card, row)"/>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <button type="button" class="group/check size-11 shrink-0 flex items-center justify-center rounded-md hover:bg-layer-overlay"
+                                    role="checkbox" [attr.aria-checked]="!!row.log" [attr.aria-label]="i18n.t().set + ' ' + row.label"
+                                    [disabled]="busyKeys()[row.key]" (click)="toggle(card, row)">
+                                <span class="size-8 rounded-full flex items-center justify-center border-2"
+                                      [class.bg-success]="row.log" [class.border-success]="row.log" [class.text-on-accent]="row.log"
+                                      [class.border-line]="!row.log" [class.text-writing-least]="!row.log">
+                                    <ng-icon [svg]="featherCheck" class="text-base"/>
+                                </span>
+                            </button>
+                        </div>
+                    }
+                    <button type="button" class="btn btn-ghost btn-sm mt-1" (click)="addSet(card)">
+                        <ng-icon [svg]="featherPlus"/>
+                        {{ i18n.t().addSet }}
+                    </button>
+                </div>
+            </div>
+        </ng-template>
+
+        @if (everyDayCards().length > 0) {
+            <div class="eyebrow mb-2">{{ i18n.t().everyDay }}</div>
+            <div class="flex flex-col gap-3 mb-6">
+                @for (card of everyDayCards(); track card.key) {
+                    <ng-container [ngTemplateOutlet]="exerciseCard" [ngTemplateOutletContext]="{$implicit: card}"/>
+                }
+            </div>
+        }
+        @if (dayCards().length > 0) {
+            @if (session.day_name) {
+                <div class="eyebrow mb-2" dir="auto">{{ session.day_name }}</div>
+            }
+            <div class="flex flex-col gap-3 mb-6">
+                @for (card of dayCards(); track card.key) {
+                    <ng-container [ngTemplateOutlet]="exerciseCard" [ngTemplateOutletContext]="{$implicit: card}"/>
+                }
+            </div>
+        }
+        @if (extraCards().length > 0) {
+            <div class="eyebrow mb-2">{{ i18n.t().extraExercises }}</div>
+            <div class="flex flex-col gap-3 mb-6">
+                @for (card of extraCards(); track card.key) {
+                    <ng-container [ngTemplateOutlet]="exerciseCard" [ngTemplateOutletContext]="{$implicit: card}"/>
+                }
+            </div>
+        }
+
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="button" class="btn btn-secondary" (click)="addExercise()">
+                <ng-icon [svg]="featherPlus"/>
+                {{ i18n.t().addExercise }}
+            </button>
+            @if (!isFinished()) {
+                <button type="button" class="btn btn-primary ms-auto" (click)="setFinished(true)">
+                    <ng-icon [svg]="featherCheck"/>
+                    {{ i18n.t().finishWorkout }}
+                </button>
+            }
+        </div>
+    }
+</div>
+<app-rest-timer/>
