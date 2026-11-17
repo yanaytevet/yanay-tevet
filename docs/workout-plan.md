@@ -21,9 +21,9 @@ permission; sharing a plan grants it.
 - **Progress** (`WorkoutProgressManager`): per session, the heaviest set (per side too) and volume for weights,
   best/total reps, longest/total time, distance and pace. The frontend draws it with its own SVG chart
   (`progress/progress-chart/`), no chart library.
-- **Language.** The app has its own English/Hebrew strings (`shared/workout-strings.ts`) and RTL, stored per user
-  in `WorkoutPreferences`; until set, the browser language decides. Exercise names come from the
-  `exerciseName` pipe.
+- **Language.** The app has its own English/Hebrew strings (`shared/workout-strings.ts`) and RTL, in the site
+  language (`docs/frontend.md`, *Language*); its in-app switches change that site setting. Exercise names come
+  from the `exerciseName` pipe.
 - **Claude** builds and edits plans and reads progress through `mcp/tools/workout_plan_tools.py`; it does not log
   workouts. `create_workout_plan` validates every exercise id before writing anything.
 - `workout_plan/enums/measurement_type.py` is dead code kept only because migration 0001 imports it.

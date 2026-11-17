@@ -965,25 +965,6 @@ export type ProgressPointSchema = {
     pace_seconds_per_100m?: number | null;
 };
 
-/**
- * WorkoutLanguage
- */
-export type WorkoutLanguage = 'en' | 'he';
-
-/**
- * WorkoutPreferencesSchema
- */
-export type WorkoutPreferencesSchema = {
-    language: WorkoutLanguage | null;
-};
-
-/**
- * UpdateWorkoutPreferencesSchema
- */
-export type UpdateWorkoutPreferencesSchema = {
-    language: WorkoutLanguage;
-};
-
 export type ListExercisesViewData = {
     body?: never;
     path?: never;
@@ -1589,35 +1570,3 @@ export type GetExerciseProgressViewResponses = {
 };
 
 export type GetExerciseProgressViewResponse = GetExerciseProgressViewResponses[keyof GetExerciseProgressViewResponses];
-
-export type GetWorkoutPreferencesViewData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/workout-plan/preferences/';
-};
-
-export type GetWorkoutPreferencesViewResponses = {
-    /**
-     * OK
-     */
-    200: WorkoutPreferencesSchema;
-};
-
-export type GetWorkoutPreferencesViewResponse = GetWorkoutPreferencesViewResponses[keyof GetWorkoutPreferencesViewResponses];
-
-export type UpdateWorkoutPreferencesViewData = {
-    body: UpdateWorkoutPreferencesSchema;
-    path?: never;
-    query?: never;
-    url: '/api/workout-plan/preferences/';
-};
-
-export type UpdateWorkoutPreferencesViewResponses = {
-    /**
-     * OK
-     */
-    200: WorkoutPreferencesSchema;
-};
-
-export type UpdateWorkoutPreferencesViewResponse = UpdateWorkoutPreferencesViewResponses[keyof UpdateWorkoutPreferencesViewResponses];

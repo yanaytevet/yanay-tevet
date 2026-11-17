@@ -33,13 +33,13 @@
       <a routerLink="/faq"
          routerLinkActive="!text-writing !bg-layer-overlay"
          class="p-2 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors flex items-center justify-center no-underline"
-         title="FAQ"
-         aria-label="FAQ">
+         [title]="t().faq"
+         [attr.aria-label]="t().faq">
         <ng-icon [svg]="bootstrapQuestionCircle" class="h-5 w-5"></ng-icon>
       </a>
       @if (!authService.isLoggedIn()) {
         <a routerLink="/login" data-app="hub" class="btn btn-primary btn-sm ms-1 no-underline">
-          Sign in
+          {{ t().signIn }}
         </a>
       } @else if (layoutService.isRightDrawerVisible()) {
         <button

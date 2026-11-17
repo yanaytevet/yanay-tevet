@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, computed, inject, signal} from '@angular/core';
+import {AfterViewInit, Component, computed, effect, inject, signal} from '@angular/core';
 import {SUPPORT_EMAIL} from '../common/constants/app-constants';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute} from '@angular/router';
@@ -12,6 +12,9 @@ import {changePasswordView} from '../../generated-files/auth';
 import {getMcpConnectionInfoView, McpConnectionInfo} from '../../generated-files/api/mcp';
 import {interval} from 'rxjs';
 import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
+import {Language} from '../../generated-files/api/users';
+import {CHROME_STRINGS} from '../shared/i18n/chrome-strings';
+import {LanguageService} from '../shared/i18n/language.service';
 
 interface TimezoneOption {
   name: string;
@@ -29,6 +32,12 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
   private readonly layoutHandle = inject(LayoutHandle);
   private readonly route = inject(ActivatedRoute);
   readonly authService = inject(AuthenticationService);
+  protected readonly languageService = inject(LanguageService);
+  protected readonly t = computed(() => CHROME_STRINGS[this.languageService.language()]);
+  protected readonly languages: {value: Language; label: string}[] = [
+    {value: 'en', label: 'English'},
+    {value: 'he', label: 'עברית'},
+  ];
   private readonly dialogService = inject(DialogService);
   private readonly filesUploadService = inject(FilesUploadService);
 
@@ -105,13 +114,22 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
 
   readonly passwordRules = computed(() => {
     const p = this.newPassword();
+    const rules = this.t().passwordRules;
     return [
-      {label: 'At least 8 characters', met: p.length >= 8},
-      {label: 'An uppercase letter', met: /[A-Z]/.test(p)},
-      {label: 'A lowercase letter', met: /[a-z]/.test(p)},
-      {label: 'A digit', met: /\d/.test(p)},
+      {label: rules.length, met: p.length >= 8},
+      {label: rules.upper, met: /[A-Z]/.test(p)},
+      {label: rules.lower, met: /[a-z]/.test(p)},
+      {label: rules.digit, met: /\d/.test(p)},
     ];
   });
+
+  async setLanguage(language: Language): Promise<void> {
+    try {
+      await this.languageService.set(language);
+    } catch (err) {
+      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+    }
+  }
 
   readonly newPasswordValid = computed(() =>
     this.newPassword().length > 0 && this.passwordRules().every(r => r.met)
@@ -139,7 +157,7 @@ export class UserSettingsPage extends BasePageComponent implements AfterViewInit
 
   constructor() {
     super();
-    this.layoutHandle.registerBreadcrumb([{label: 'Account Settings'}]);
+    effect(() => this.layoutHandle.registerBreadcrumb([{label: this.t().accountSettings}]));
     const user = this.authService.user();
     if (user) {
       this.firstName.set(user.first_name);

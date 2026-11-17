@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Manager
 
 from common.db_fields.list_field_with_choices import ListFieldWithChoices
+from users.enums.language import Language
 from users.enums.permissions import Permissions
 from users.enums.subscription_type import SubscriptionType
 
@@ -26,6 +27,8 @@ class User(AbstractUser):
     )
     pic_url = models.CharField(max_length=255, blank=True, null=True)
     timezone = models.CharField(max_length=64, blank=True, null=True, default=None)
+    # None until the user picks one; the web app then follows the browser's language.
+    language = models.CharField(max_length=4, choices=Language.choices(), blank=True, null=True, default=None)
     is_unsubscribed = models.BooleanField(default=False, blank=True)
     subscription_type = models.CharField(
         max_length=20, choices=SubscriptionType.choices(), default=SubscriptionType.BASIC, blank=True

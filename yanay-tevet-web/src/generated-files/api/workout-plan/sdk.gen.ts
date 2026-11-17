@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateExerciseViewData, CreateExerciseViewResponses, CreatePlanDayViewData, CreatePlanDayViewResponses, CreatePlanExerciseViewData, CreatePlanExerciseViewResponses, CreateWorkoutPlanViewData, CreateWorkoutPlanViewResponses, DeleteExerciseViewData, DeleteExerciseViewResponses, DeletePlanDayViewData, DeletePlanDayViewResponses, DeletePlanExerciseViewData, DeletePlanExerciseViewResponses, DeleteSetLogViewData, DeleteSetLogViewResponses, DeleteWorkoutPlanViewData, DeleteWorkoutPlanViewResponses, DeleteWorkoutSessionViewData, DeleteWorkoutSessionViewResponses, GetExerciseProgressViewData, GetExerciseProgressViewResponses, GetProgressSummaryViewData, GetProgressSummaryViewResponses, GetWorkoutPlanViewData, GetWorkoutPlanViewResponses, GetWorkoutPreferencesViewData, GetWorkoutPreferencesViewResponses, GetWorkoutSessionViewData, GetWorkoutSessionViewResponses, ListExercisesViewData, ListExercisesViewResponses, ListWorkoutPlanMembersViewData, ListWorkoutPlanMembersViewResponses, LogSetViewData, LogSetViewResponses, PaginateWorkoutPlansViewData, PaginateWorkoutPlansViewResponses, PaginateWorkoutSessionsViewData, PaginateWorkoutSessionsViewResponses, ReorderPlanDaysViewData, ReorderPlanDaysViewResponses, ReorderPlanExercisesViewData, ReorderPlanExercisesViewResponses, ShareWorkoutPlanViewData, ShareWorkoutPlanViewResponses, StartWorkoutSessionViewData, StartWorkoutSessionViewResponses, UnshareWorkoutPlanViewData, UnshareWorkoutPlanViewResponses, UpdateExerciseViewData, UpdateExerciseViewResponses, UpdatePlanDayViewData, UpdatePlanDayViewResponses, UpdatePlanExerciseViewData, UpdatePlanExerciseViewResponses, UpdateSetLogViewData, UpdateSetLogViewResponses, UpdateWorkoutPlanViewData, UpdateWorkoutPlanViewResponses, UpdateWorkoutPreferencesViewData, UpdateWorkoutPreferencesViewResponses, UpdateWorkoutSessionViewData, UpdateWorkoutSessionViewResponses } from './types.gen';
+import type { CreateExerciseViewData, CreateExerciseViewResponses, CreatePlanDayViewData, CreatePlanDayViewResponses, CreatePlanExerciseViewData, CreatePlanExerciseViewResponses, CreateWorkoutPlanViewData, CreateWorkoutPlanViewResponses, DeleteExerciseViewData, DeleteExerciseViewResponses, DeletePlanDayViewData, DeletePlanDayViewResponses, DeletePlanExerciseViewData, DeletePlanExerciseViewResponses, DeleteSetLogViewData, DeleteSetLogViewResponses, DeleteWorkoutPlanViewData, DeleteWorkoutPlanViewResponses, DeleteWorkoutSessionViewData, DeleteWorkoutSessionViewResponses, GetExerciseProgressViewData, GetExerciseProgressViewResponses, GetProgressSummaryViewData, GetProgressSummaryViewResponses, GetWorkoutPlanViewData, GetWorkoutPlanViewResponses, GetWorkoutSessionViewData, GetWorkoutSessionViewResponses, ListExercisesViewData, ListExercisesViewResponses, ListWorkoutPlanMembersViewData, ListWorkoutPlanMembersViewResponses, LogSetViewData, LogSetViewResponses, PaginateWorkoutPlansViewData, PaginateWorkoutPlansViewResponses, PaginateWorkoutSessionsViewData, PaginateWorkoutSessionsViewResponses, ReorderPlanDaysViewData, ReorderPlanDaysViewResponses, ReorderPlanExercisesViewData, ReorderPlanExercisesViewResponses, ShareWorkoutPlanViewData, ShareWorkoutPlanViewResponses, StartWorkoutSessionViewData, StartWorkoutSessionViewResponses, UnshareWorkoutPlanViewData, UnshareWorkoutPlanViewResponses, UpdateExerciseViewData, UpdateExerciseViewResponses, UpdatePlanDayViewData, UpdatePlanDayViewResponses, UpdatePlanExerciseViewData, UpdatePlanExerciseViewResponses, UpdateSetLogViewData, UpdateSetLogViewResponses, UpdateWorkoutPlanViewData, UpdateWorkoutPlanViewResponses, UpdateWorkoutSessionViewData, UpdateWorkoutSessionViewResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -368,26 +368,4 @@ export const getExerciseProgressView = <ThrowOnError extends boolean = false>(op
     responseType: 'json',
     url: '/api/workout-plan/progress/exercises/{exercise_id}/',
     ...options
-});
-
-/**
- * Get
- */
-export const getWorkoutPreferencesView = <ThrowOnError extends boolean = false>(options?: Options<GetWorkoutPreferencesViewData, ThrowOnError>) => (options?.client ?? client).get<GetWorkoutPreferencesViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/preferences/',
-    ...options
-});
-
-/**
- * Post
- */
-export const updateWorkoutPreferencesView = <ThrowOnError extends boolean = false>(options: Options<UpdateWorkoutPreferencesViewData, ThrowOnError>) => (options.client ?? client).post<UpdateWorkoutPreferencesViewResponses, unknown, ThrowOnError>({
-    responseType: 'json',
-    url: '/api/workout-plan/preferences/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
 });

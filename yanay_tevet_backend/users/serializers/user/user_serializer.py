@@ -1,6 +1,7 @@
 from ninja import Schema
 
 from common.simple_api.serializers.serializer import Serializer
+from users.enums.language import Language
 from users.enums.permissions import Permissions
 from users.managers.user_subscription_limits_manager import UserSubscriptionLimitsManager
 from users.models import User
@@ -15,6 +16,7 @@ class UserSchema(Schema):
     last_name: str
     pic_url: str | None
     timezone: str | None
+    language: Language | None
     full_name: str
     is_admin: bool
     initials: str
@@ -34,6 +36,7 @@ class UserSerializer(Serializer[UserSchema]):
             last_name=obj.last_name,
             pic_url=obj.pic_url,
             timezone=obj.timezone,
+            language=Language(obj.language) if obj.language else None,
             full_name=obj.get_full_name(),
             is_admin=obj.is_admin(),
             initials=obj.get_initials(),

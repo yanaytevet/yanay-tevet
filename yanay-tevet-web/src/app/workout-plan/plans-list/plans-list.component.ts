@@ -49,7 +49,6 @@ export class PlansListComponent {
   protected readonly featherBarChart2 = featherBarChart2;
 
   constructor() {
-    void this.i18n.load();
     void this.load();
   }
 

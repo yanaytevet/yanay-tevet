@@ -20,8 +20,6 @@ from workout_plan.views.plan_views.paginate_workout_plans_view import PaginateWo
 from workout_plan.views.plan_views.share_workout_plan_view import ShareWorkoutPlanView
 from workout_plan.views.plan_views.unshare_workout_plan_view import UnshareWorkoutPlanView
 from workout_plan.views.plan_views.update_workout_plan_view import UpdateWorkoutPlanView
-from workout_plan.views.preferences_views.get_workout_preferences_view import GetWorkoutPreferencesView
-from workout_plan.views.preferences_views.update_workout_preferences_view import UpdateWorkoutPreferencesView
 from workout_plan.views.progress_views.get_exercise_progress_view import GetExerciseProgressView
 from workout_plan.views.progress_views.get_progress_summary_view import GetProgressSummaryView
 from workout_plan.views.session_views.delete_workout_session_view import DeleteWorkoutSessionView
@@ -73,8 +71,6 @@ LogSetView.register_post(router, 'set-logs/')
 UpdateSetLogView.register_patch_by_id(router, prefix='set-logs')
 DeleteSetLogView.register_delete_by_id(router, prefix='set-logs')
 
-# --- Progress and preferences ---
+# --- Progress ---
 GetProgressSummaryView.register_get(router, 'progress/')
 GetExerciseProgressView.register_get(router, 'progress/exercises/{int:exercise_id}/')
-GetWorkoutPreferencesView.register_get(router, 'preferences/')
-UpdateWorkoutPreferencesView.register_post(router, 'preferences/')

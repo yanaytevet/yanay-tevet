@@ -1,60 +1,60 @@
 @if (authService.isLoggedIn()) {
 
-  <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
+  <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-6" [attr.dir]="languageService.dir()">
     <div class="mx-auto w-full max-w-4xl">
 
       <div class="text-center mb-8">
         <h1 class="text-display font-bold text-writing mb-2">
-          Welcome to Yanay Tevet's Platform
+          {{ t().welcome }}
         </h1>
         <p class="text-ui text-writing-minor">
-          This is where I build stuff.
+          {{ t().welcomeSub }}
         </p>
       </div>
 
       <div class="mb-8">
-        <div class="eyebrow mb-3">Public apps</div>
+        <div class="eyebrow mb-3">{{ t().publicApps }}</div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <app-hub-tile [app]="apps.genre" [url]="genreTrainerUrl"
-                        description="Train your ear on electronic music genres"/>
-          <app-hub-tile [app]="apps.japanese" [url]="japaneseUrl"
-                        description="Explore Japanese through a network of sentences, words, kanji, and rules"/>
-          <app-hub-tile [app]="apps.dates" [url]="specialDatesUrl"
-                        description="Birthdays, anniversaries and memorials — in Hebrew and Gregorian dates"/>
+          <app-hub-tile [app]="apps().genre" [url]="genreTrainerUrl"
+                        [description]="t().descriptions.genre"/>
+          <app-hub-tile [app]="apps().japanese" [url]="japaneseUrl"
+                        [description]="t().descriptions.japanese"/>
+          <app-hub-tile [app]="apps().dates" [url]="specialDatesUrl"
+                        [description]="t().descriptions.dates"/>
         </div>
       </div>
 
       @if (hasAnyPrivateApp()) {
         <div class="mb-8">
-          <div class="eyebrow mb-3">Your apps</div>
+          <div class="eyebrow mb-3">{{ t().yourApps }}</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             @if (hasTaskManagement()) {
-              <app-hub-tile [app]="apps.tasks" [url]="taskManagementUrl"
-                            description="Projects, tasks and subtasks with due dates, priorities and sharing"/>
+              <app-hub-tile [app]="apps().tasks" [url]="taskManagementUrl"
+                            [description]="t().descriptions.tasks"/>
             }
             @if (hasShoppingLists()) {
-              <app-hub-tile [app]="apps.shopping" [url]="shoppingListsUrl"
-                            description="Shared grocery lists — check items off and re-add them from history"/>
+              <app-hub-tile [app]="apps().shopping" [url]="shoppingListsUrl"
+                            [description]="t().descriptions.shopping"/>
             }
             @if (hasItineraryLists()) {
-              <app-hub-tile [app]="apps.itinerary" [url]="itineraryListsUrl"
-                            description="Reusable packing and prep lists you activate when you head out"/>
+              <app-hub-tile [app]="apps().itinerary" [url]="itineraryListsUrl"
+                            [description]="t().descriptions.itinerary"/>
             }
             @if (hasHomeSweetHome()) {
-              <app-hub-tile [app]="apps.home" [url]="homeSweetHomeUrl()"
-                            description="Find your next place — hunt apartments, track villas, and manage renters"/>
+              <app-hub-tile [app]="apps().home" [url]="homeSweetHomeUrl()"
+                            [description]="t().descriptions.home"/>
             }
             @if (hasWorkoutPlan()) {
-              <app-hub-tile [app]="apps.workout" [url]="workoutPlanUrl"
-                            description="Routines of exercises with the sets, reps and times you're training"/>
+              <app-hub-tile [app]="apps().workout" [url]="workoutPlanUrl"
+                            [description]="t().descriptions.workout"/>
             }
             @if (hasDreamDiary()) {
-              <app-hub-tile [app]="apps.dreams" [url]="dreamDiaryUrl"
-                            description="Log and explore your dreams"/>
+              <app-hub-tile [app]="apps().dreams" [url]="dreamDiaryUrl"
+                            [description]="t().descriptions.dreams"/>
             }
             @if (hasPdfEditor()) {
-              <app-hub-tile [app]="apps.pdf" [url]="pdfEditorUrl"
-                            description="Edit text, fill forms, sign and rearrange pages — files never leave your browser"/>
+              <app-hub-tile [app]="apps().pdf" [url]="pdfEditorUrl"
+                            [description]="t().descriptions.pdf"/>
             }
           </div>
         </div>
@@ -62,26 +62,26 @@
 
       @if (authService.user()?.is_admin) {
         <div class="mb-8">
-          <div class="eyebrow mb-3">Admin</div>
+          <div class="eyebrow mb-3">{{ t().admin }}</div>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <app-hub-tile [app]="apps.dashboard" [url]="myDashboardUrl"
-                          description="Live status from the services I depend on"/>
-            <app-hub-tile [app]="userManagementApp" [url]="adminUsersUrl"
-                          description="View users and grant or revoke permissions"/>
+            <app-hub-tile [app]="apps().dashboard" [url]="myDashboardUrl"
+                          [description]="t().descriptions.dashboard"/>
+            <app-hub-tile [app]="userManagementApp()" [url]="adminUsersUrl"
+                          [description]="t().descriptions.userManagement"/>
           </div>
         </div>
       }
 
       <div class="mt-12 pt-6 border-t border-line text-center">
-        <p class="eyebrow mb-3">Learn more</p>
+        <p class="eyebrow mb-3">{{ t().learnMore }}</p>
         <div class="flex items-center justify-center gap-3 text-meta flex-wrap">
-          <a [routerLink]="faqUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">FAQ</a>
+          <a [routerLink]="faqUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">{{ t().faq }}</a>
           <span class="text-writing-least" aria-hidden="true">·</span>
-          <a [routerLink]="contactUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Contact</a>
+          <a [routerLink]="contactUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">{{ t().contact }}</a>
           <span class="text-writing-least" aria-hidden="true">·</span>
-          <a [routerLink]="privacyUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Privacy</a>
+          <a [routerLink]="privacyUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">{{ t().privacy }}</a>
           <span class="text-writing-least" aria-hidden="true">·</span>
-          <a [routerLink]="termsUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">Terms</a>
+          <a [routerLink]="termsUrl" class="text-writing-minor hover:text-writing transition-colors no-underline">{{ t().terms }}</a>
         </div>
       </div>
 
@@ -90,28 +90,28 @@
 
 } @else {
 
-  <div class="hero-section">
+  <div class="hero-section" [attr.dir]="languageService.dir()">
     <div class="hero-glow"></div>
     <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
 
       <h1 class="hero-heading">Yanay Tevet</h1>
 
-      <p class="hero-sub">My projects — some public, some not.</p>
+      <p class="hero-sub">{{ t().heroSub }}</p>
 
       <div class="flex items-center gap-3 mt-10">
-        <a routerLink="/login" class="btn btn-primary px-5 py-2.5 text-ui no-underline">Sign in</a>
-        <a [routerLink]="faqUrl" class="btn btn-secondary px-5 py-2.5 text-ui no-underline">Learn more</a>
+        <a routerLink="/login" class="btn btn-primary px-5 py-2.5 text-ui no-underline">{{ t().signIn }}</a>
+        <a [routerLink]="faqUrl" class="btn btn-secondary px-5 py-2.5 text-ui no-underline">{{ t().learnMore }}</a>
       </div>
 
       <div class="mt-12 w-full max-w-sm">
-        <div class="eyebrow mb-3 text-start">Try for free</div>
+        <div class="eyebrow mb-3 text-start">{{ t().tryForFree }}</div>
         <div class="grid grid-cols-1 gap-3">
-          <app-hub-tile [app]="apps.genre" [url]="genreTrainerUrl"
-                        description="Train your ear on electronic music genres"/>
-          <app-hub-tile [app]="apps.japanese" [url]="japaneseUrl"
-                        description="Explore Japanese through a network of nodes"/>
-          <app-hub-tile [app]="apps.dates" [url]="specialDatesUrl"
-                        description="Birthdays and anniversaries in Hebrew and Gregorian dates"/>
+          <app-hub-tile [app]="apps().genre" [url]="genreTrainerUrl"
+                        [description]="t().descriptions.genre"/>
+          <app-hub-tile [app]="apps().japanese" [url]="japaneseUrl"
+                        [description]="t().descriptions.japaneseShort"/>
+          <app-hub-tile [app]="apps().dates" [url]="specialDatesUrl"
+                        [description]="t().descriptions.datesShort"/>
         </div>
       </div>
 

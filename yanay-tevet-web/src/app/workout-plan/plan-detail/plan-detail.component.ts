@@ -126,7 +126,6 @@ export class PlanDetailComponent {
   protected readonly featherTrash2 = featherTrash2;
 
   constructor() {
-    void this.i18n.load();
     this.route.paramMap.subscribe(params => void this.load(Number(params.get('id'))));
   }
 

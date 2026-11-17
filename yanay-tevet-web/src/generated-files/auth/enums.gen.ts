@@ -1,3 +1,8 @@
+export enum LanguageEnum {
+  EN = 'en',
+  HE = 'he',
+}
+
 export enum PermissionsEnum {
   ADMIN = 'admin',
   EDITOR = 'editor',

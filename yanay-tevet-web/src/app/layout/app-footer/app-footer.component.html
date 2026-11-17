@@ -1,4 +1,4 @@
-<footer class="border-t border-line-subtle px-2 py-2">
+<footer class="border-t border-line-subtle px-2 py-2" [attr.dir]="languageService.dir()">
   <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
 
     <span class="hidden sm:inline text-caption text-writing-least shrink-0">© {{ year }} Yanay Tevet</span>
@@ -6,15 +6,15 @@
     <nav class="flex items-center gap-3">
       <a routerLink="/faq"
          class="text-caption text-writing-least hover:text-writing-minor transition-colors no-underline">
-        FAQ
+        {{ t().faq }}
       </a>
       <a routerLink="/terms"
          class="text-caption text-writing-least hover:text-writing-minor transition-colors no-underline">
-        Terms &amp; Conditions
+        {{ t().termsAndConditions }}
       </a>
       <a routerLink="/privacy"
          class="text-caption text-writing-least hover:text-writing-minor transition-colors no-underline">
-        Privacy Policy
+        {{ t().privacyPolicy }}
       </a>
     </nav>
 

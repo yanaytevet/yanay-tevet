@@ -1,4 +1,4 @@
-import {Component, effect, inject, viewChild, ViewContainerRef} from '@angular/core';
+import {Component, computed, effect, inject, viewChild, ViewContainerRef} from '@angular/core';
 import {RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {RoutingService} from '../shared/services/routing.service';
 import {bootstrapArrowLeft, bootstrapList, bootstrapQuestionCircle} from '@ng-icons/bootstrap-icons';
@@ -10,6 +10,8 @@ import {AppNavigationLeftDrawer} from './app-navigation-left-drawer/app-navigati
 import {AppFooterComponent} from './app-footer/app-footer.component';
 import {NgClass} from '@angular/common';
 import {BreadcrumbComponent} from './breadcrumb/breadcrumb.component';
+import {CHROME_STRINGS} from '../shared/i18n/chrome-strings';
+import {LanguageService} from '../shared/i18n/language.service';
 
 @Component({
   selector: 'app-layout',
@@ -30,6 +32,8 @@ export class LayoutComponent {
   public authService = inject(AuthenticationService);
   public routingService = inject(RoutingService);
   public layoutService = inject(LayoutService);
+  protected readonly languageService = inject(LanguageService);
+  protected readonly t = computed(() => CHROME_STRINGS[this.languageService.language()]);
 
   private readonly drawerHost = viewChild('drawerHost', {
     read: ViewContainerRef,

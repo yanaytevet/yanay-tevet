@@ -112,6 +112,16 @@ export class MyComponent {
 
 Size comes from the text size: `text-sm` ≈ 14px, `text-base` ≈ 16px, `text-xl` ≈ 20px.
 
+## Language
+
+The site language (English or Hebrew) is `User.language`, set from Account settings and read through
+`LanguageService` (`shared/i18n/`): the account's choice, else the last choice in this browser, else the
+browser's language. Only translated parts follow it: the chrome (top bar, drawer, footer, home, settings;
+strings in `shared/i18n/chrome-strings.ts`, app names in `hub-apps.ts`'s `nameHe`) and apps with their own
+strings (Workout Plan). Untranslated apps stay English, so `dir` is set on each translated component's root,
+never on `<html>`. To translate an app: a strings file with an `en` and `he` record, a computed `t` from
+`LanguageService.language()`, `[attr.dir]` on the page root, and user text wrapped in `<bdi>`.
+
 ## New-version refresh
 
 `VersionCheckService` spots a new deploy by comparing the hashed `main-*.js` / `styles-*.css` names this

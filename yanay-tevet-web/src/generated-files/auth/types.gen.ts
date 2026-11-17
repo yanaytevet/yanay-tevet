@@ -31,6 +31,11 @@ export type AuthSchema = {
 };
 
 /**
+ * Language
+ */
+export type Language = 'en' | 'he';
+
+/**
  * Permissions
  */
 export type Permissions = 'admin' | 'editor' | 'dream_diary' | 'apartment_hunt' | 'renters_crm' | 'villa_villekulla' | 'itinerary_lists' | 'shopping_lists' | 'task_management' | 'workout_plan' | 'pdf_editor';
@@ -77,6 +82,7 @@ export type UserSchema = {
      * Timezone
      */
     timezone: string | null;
+    language: Language | null;
     /**
      * Full Name
      */

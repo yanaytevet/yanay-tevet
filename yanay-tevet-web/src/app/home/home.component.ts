@@ -4,7 +4,9 @@ import {bootstrapPeople} from '@ng-icons/bootstrap-icons';
 import {RoutingService} from '../shared/services/routing.service';
 import {BasePageComponent} from '../common/components/base-page-component';
 import {AuthenticationService} from '../common/authentication/authentication.service';
-import {HUB_APPS} from '../shared/apps/hub-apps';
+import {localizedHubApps} from '../shared/apps/hub-apps';
+import {CHROME_STRINGS} from '../shared/i18n/chrome-strings';
+import {LanguageService} from '../shared/i18n/language.service';
 import {HubTileApp, HubTileComponent} from './hub-tile/hub-tile.component';
 
 @Component({
@@ -17,8 +19,12 @@ export class HomeComponent extends BasePageComponent {
   readonly routingService = inject(RoutingService);
   readonly authService = inject(AuthenticationService);
 
-  protected readonly apps = HUB_APPS;
-  protected readonly userManagementApp: HubTileApp = {name: 'User Management', icon: bootstrapPeople, key: null};
+  protected readonly languageService = inject(LanguageService);
+  protected readonly apps = computed(() => localizedHubApps(this.languageService.language()));
+  protected readonly t = computed(() => CHROME_STRINGS[this.languageService.language()]);
+  protected readonly userManagementApp = computed<HubTileApp>(
+    () => ({name: this.t().userManagement, icon: bootstrapPeople, key: null}),
+  );
 
   protected readonly genreTrainerUrl = this.routingService.getGenreTrainerUrl();
   protected readonly japaneseUrl = this.routingService.getJapaneseHomeUrl();

@@ -226,7 +226,6 @@ export class WorkoutSessionComponent {
   private readonly pendingSaves = new Map<string, Promise<void>>();
 
   constructor() {
-    void this.i18n.load();
     this.route.paramMap.subscribe(params => void this.load(Number(params.get('id'))));
     void this.keepScreenOn();
     inject(DestroyRef).onDestroy(() => void this.wakeLock?.release());

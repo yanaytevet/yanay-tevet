@@ -165,7 +165,6 @@ export class ProgressComponent {
   });
 
   constructor() {
-    void this.i18n.load();
     this.route.queryParamMap.subscribe(params => {
       const id = Number(params.get('exercise'));
       void this.load(Number.isNaN(id) || id <= 0 ? null : id);

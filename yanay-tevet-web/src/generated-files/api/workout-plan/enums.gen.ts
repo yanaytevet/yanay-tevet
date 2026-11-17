@@ -32,8 +32,3 @@ export enum SetSideEnum {
   LEFT = 'left',
   RIGHT = 'right',
 }
-
-export enum WorkoutLanguageEnum {
-  EN = 'en',
-  HE = 'he',
-}
