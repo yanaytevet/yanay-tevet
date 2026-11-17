@@ -144,7 +144,7 @@ tracking — use the role, never `text-[13px]`:
 Every app page starts with it: the app chip (the current app's icon on `bg-accent-soft`, in `text-accent`),
 the title (`text-title` 700), an optional one-line subtitle (`text-meta text-writing-minor`), and the page's
 actions projected on the right. Below `sm` the actions wrap under the title. `[icon]` overrides the app icon
-for a sub-page; `dir="auto"` on title and subtitle handles Hebrew names.
+for a sub-page; title and subtitle are wrapped in `<bdi>`, so a Hebrew name reads right-to-left without leaving the page's alignment.
 
 ```html
 <app-page-header title="Projects" subtitle="4 projects · 12 open tasks">
@@ -237,7 +237,7 @@ button is the only solid red in the app. No red text buttons at rest, no rows fu
 ## 8. Right-to-left
 
 Hebrew pages set `dir="rtl"` on their root and use logical utilities (`ps-`, `pe-`, `ms-`, `me-`, `start-`,
-`end-`, `text-start`). User-entered names get `dir="auto"`. Shared components (page header, empty state,
+`end-`, `text-start`). User-entered text shown in a layout gets wrapped in `<bdi>` (it reads in its own direction but keeps the page's alignment); `dir="auto"` is only for inputs, where it should follow what is typed. Shared components (page header, empty state,
 confirmation dialog) take or inherit `dir`, so a Hebrew page never shows an LTR dialog.
 
 ## 9. Do and don't

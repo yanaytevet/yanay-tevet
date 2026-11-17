@@ -19,7 +19,7 @@
             } @else {
                 <span class="chip chip-success">{{ i18n.t().finished }}</span>
             }
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().deleteWorkout"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().moreActions"/>
         </app-page-header>
 
         @if (isFinished() && summary().length > 0) {
@@ -29,7 +29,7 @@
                     @for (line of summary(); track line.key) {
                         <a class="flex items-center gap-3 py-2.5 hover:bg-layer-overlay -mx-2 px-2 rounded-md"
                            [routerLink]="progressUrls()[line.key]">
-                            <span class="flex-1 min-w-0 text-ui text-writing truncate" dir="auto">{{ line.exercise | exerciseName: i18n.language() }}</span>
+                            <span class="flex-1 min-w-0 text-ui text-writing truncate"><bdi>{{ line.exercise | exerciseName: i18n.language() }}</bdi></span>
                             <span class="text-body text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ line.value }}</span>
                             @if (line.direction !== 'new') {
                                 <span class="chip tabular-nums min-w-12 justify-center" dir="ltr"
@@ -49,12 +49,12 @@
             <div class="card">
                 <div class="flex items-start gap-3 p-4 pb-2">
                     <div class="flex-1 min-w-0">
-                        <div class="text-ui font-semibold text-writing" dir="auto">{{ card.exercise | exerciseName: i18n.language() }}</div>
+                        <div class="text-ui font-semibold text-writing"><bdi>{{ card.exercise | exerciseName: i18n.language() }}</bdi></div>
                         <div class="text-meta text-writing-minor tabular-nums">
                             {{ card.summary || i18n.t().tracking[card.exercise.tracking_type] }}@if (card.entry) { · {{ i18n.t().rest }} {{ card.restSeconds }}s}
                         </div>
                         @if (card.notes) {
-                            <div class="text-caption text-writing-minor mt-0.5" dir="auto">{{ card.notes }}</div>
+                            <div class="text-caption text-writing-minor mt-0.5"><bdi>{{ card.notes }}</bdi></div>
                         }
                     </div>
                     <span class="chip tabular-nums shrink-0" [class.chip-success]="card.doneCount === card.rows.length">
@@ -138,7 +138,7 @@
         }
         @if (dayCards().length > 0) {
             @if (session.day_name) {
-                <div class="eyebrow mb-2" dir="auto">{{ session.day_name }}</div>
+                <div class="eyebrow mb-2"><bdi>{{ session.day_name }}</bdi></div>
             }
             <div class="flex flex-col gap-3 mb-6">
                 @for (card of dayCards(); track card.key) {

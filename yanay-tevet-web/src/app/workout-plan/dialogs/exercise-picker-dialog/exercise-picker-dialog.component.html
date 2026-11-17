@@ -20,7 +20,7 @@
                 <button type="button" class="w-full flex items-center gap-3 px-2 py-2.5 rounded-md hover:bg-layer-overlay text-start"
                         (click)="pick(exercise)">
                     <span class="flex-1 min-w-0">
-                        <span class="block text-ui text-writing truncate" dir="auto">{{ exercise | exerciseName: i18n.language() }}</span>
+                        <span class="block text-ui text-writing truncate"><bdi>{{ exercise | exerciseName: i18n.language() }}</bdi></span>
                         <span class="block text-caption text-writing-minor">
                             {{ i18n.t().muscle[exercise.muscle_group] }} · {{ i18n.t().tracking[exercise.tracking_type] }}@if (exercise.per_side) { · {{ i18n.t().perSide }}}
                         </span>

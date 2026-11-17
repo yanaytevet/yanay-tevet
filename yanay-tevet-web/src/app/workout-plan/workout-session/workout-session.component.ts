@@ -8,6 +8,7 @@ import {
   featherBarChart2,
   featherCheck,
   featherClock,
+  featherGlobe,
   featherMoreHorizontal,
   featherPlus,
   featherTrash2,
@@ -204,7 +205,9 @@ export class WorkoutSessionComponent {
 
   readonly menuItems = computed<MenuItem[]>(() => {
     const t = this.i18n.t();
-    const items: MenuItem[] = [];
+    const items: MenuItem[] = [
+      {display: t.languageToggle, icon: featherGlobe, callback: () => void this.i18n.toggle()},
+    ];
     if (this.isFinished()) {
       items.push({display: t.reopenWorkout, icon: featherClock, callback: () => void this.setFinished(false)});
     }

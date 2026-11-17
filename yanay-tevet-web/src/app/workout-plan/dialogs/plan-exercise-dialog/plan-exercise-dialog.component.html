@@ -1,6 +1,6 @@
 <div class="dialog-container flex flex-col gap-4" [attr.dir]="i18n.dir()">
     <div>
-        <h2 dir="auto">{{ data.exercise | exerciseName: i18n.language() }}</h2>
+        <h2><bdi>{{ data.exercise | exerciseName: i18n.language() }}</bdi></h2>
         <p class="text-meta text-writing-minor">
             {{ i18n.t().muscle[data.exercise.muscle_group] }} · {{ i18n.t().tracking[tracking] }}@if (data.exercise.per_side) { · {{ i18n.t().perSide }}}
         </p>

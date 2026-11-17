@@ -9,6 +9,7 @@ import {
   featherArrowUp,
   featherCheck,
   featherEdit,
+  featherGlobe,
   featherMoreHorizontal,
   featherPlay,
   featherPlus,
@@ -104,6 +105,7 @@ export class PlanDetailComponent {
   readonly menuItems = computed<MenuItem[]>(() => {
     const t = this.i18n.t();
     const items: MenuItem[] = [
+      {display: t.languageToggle, icon: featherGlobe, callback: () => void this.i18n.toggle()},
       {display: t.renamePlan, icon: featherEdit, callback: () => void this.renamePlan()},
       {display: t.poolLength, icon: featherEdit, callback: () => void this.changePoolLength()},
     ];

@@ -18,6 +18,7 @@ export interface WorkoutStrings {
   backToPlans: string;
   backToPlan: string;
   languageToggle: string;
+  moreActions: string;
   progress: string;
   history: string;
   days: string;
@@ -139,6 +140,7 @@ export const WORKOUT_STRINGS: Record<WorkoutLanguage, WorkoutStrings> = {
     backToPlans: 'All plans',
     backToPlan: 'Back to plan',
     languageToggle: 'עברית',
+    moreActions: 'More actions',
     progress: 'Progress',
     history: 'History',
     days: 'days',
@@ -264,6 +266,7 @@ export const WORKOUT_STRINGS: Record<WorkoutLanguage, WorkoutStrings> = {
     backToPlans: 'כל התוכניות',
     backToPlan: 'חזרה לתוכנית',
     languageToggle: 'English',
+    moreActions: 'פעולות נוספות',
     progress: 'התקדמות',
     history: 'היסטוריה',
     days: 'ימים',

@@ -4,7 +4,9 @@
         <ng-icon [svg]="backIcon()"/>
         {{ i18n.t().backToPlans }}
     </a>
-    <app-page-header [title]="i18n.t().progress" [subtitle]="i18n.t().progressSubtitle"/>
+    <app-page-header [title]="i18n.t().progress" [subtitle]="i18n.t().progressSubtitle">
+        <button type="button" class="btn btn-ghost" (click)="i18n.toggle()">{{ i18n.t().languageToggle }}</button>
+    </app-page-header>
 
     @if (isLoading()) {
         <app-loading-state [label]="i18n.t().loadingProgress"/>
@@ -14,7 +16,7 @@
         <div class="flex flex-wrap gap-1.5 mb-4">
             @for (item of summary(); track item.exercise.id) {
                 <a class="chip" [class.chip-selected]="item.exercise.id === selectedId()" [routerLink]="exerciseUrls()[item.exercise.id]"
-                   replaceUrl dir="auto">{{ item.exercise | exerciseName: i18n.language() }}</a>
+                   replaceUrl><bdi>{{ item.exercise | exerciseName: i18n.language() }}</bdi></a>
             }
         </div>
 
@@ -22,7 +24,7 @@
             <div class="card p-5 sm:p-6 mb-6">
                 <div class="flex flex-wrap items-start gap-3 mb-4">
                     <div class="flex-1 min-w-0">
-                        <div class="text-section font-bold text-writing" dir="auto">{{ progress.exercise | exerciseName: i18n.language() }}</div>
+                        <div class="text-section font-bold text-writing"><bdi>{{ progress.exercise | exerciseName: i18n.language() }}</bdi></div>
                         <div class="text-meta text-writing-minor">
                             {{ i18n.t().muscle[progress.exercise.muscle_group] }} · {{ progress.points.length }} {{ i18n.t().sessionsLogged }}
                         </div>

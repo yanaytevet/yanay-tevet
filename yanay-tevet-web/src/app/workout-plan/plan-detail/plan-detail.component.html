@@ -26,7 +26,7 @@
                 <ng-icon [svg]="featherShare2"/>
                 {{ i18n.t().share }}
             </button>
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().planSettings"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="menuItems()" [ariaLabel]="i18n.t().moreActions"/>
         </app-page-header>
 
         <ng-template #exerciseRows let-day>
@@ -37,12 +37,12 @@
                     @for (entry of day.exercises; track entry.id; let first = $first; let last = $last) {
                         <div class="flex items-center gap-3 px-4 py-3">
                             <div class="flex-1 min-w-0">
-                                <div class="text-ui text-writing" dir="auto">{{ entry.exercise | exerciseName: i18n.language() }}</div>
+                                <div class="text-ui text-writing"><bdi>{{ entry.exercise | exerciseName: i18n.language() }}</bdi></div>
                                 <div class="text-meta text-writing-minor tabular-nums">
                                     {{ summaries()[entry.id] }}@if (entry.exercise.per_side) { · {{ i18n.t().perSide }}}
                                 </div>
                                 @if (entry.notes) {
-                                    <div class="text-caption text-writing-minor mt-0.5" dir="auto">{{ entry.notes }}</div>
+                                    <div class="text-caption text-writing-minor mt-0.5"><bdi>{{ entry.notes }}</bdi></div>
                                 }
                             </div>
                             @if (isEditing()) {
@@ -99,7 +99,7 @@
                 <div class="card">
                     <div class="flex items-center gap-3 p-4">
                         <div class="flex-1 min-w-0">
-                            <div class="text-lead font-semibold text-writing" dir="auto">{{ day.name }}</div>
+                            <div class="text-lead font-semibold text-writing"><bdi>{{ day.name }}</bdi></div>
                             @if (dayMuscles()[day.id]) {
                                 <div class="text-meta text-writing-minor">{{ dayMuscles()[day.id] }}</div>
                             }

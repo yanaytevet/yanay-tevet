@@ -25,13 +25,13 @@
             @for (plan of plans(); track plan.id) {
                 <a [routerLink]="planUrls()[plan.id]" class="card card-interactive p-4 flex flex-col gap-1">
                     <div class="flex items-center gap-2">
-                        <span class="text-ui font-semibold text-writing truncate" dir="auto">{{ plan.name }}</span>
+                        <span class="text-ui font-semibold text-writing truncate"><bdi>{{ plan.name }}</bdi></span>
                         @if (plan.member_count > 1) {
                             <span class="chip shrink-0">{{ i18n.t().sharedWith }}</span>
                         }
                     </div>
-                    <div class="text-meta text-writing-minor truncate" dir="auto">
-                        {{ plan.day_names.length }} {{ i18n.t().days }}@if (planDaySummaries()[plan.id]) { · {{ planDaySummaries()[plan.id] }}}
+                    <div class="text-meta text-writing-minor truncate">
+                        {{ plan.day_names.length }} {{ i18n.t().days }}@if (planDaySummaries()[plan.id]) { · <bdi>{{ planDaySummaries()[plan.id] }}</bdi>}
                     </div>
                 </a>
             }
@@ -44,7 +44,7 @@
                     <a [routerLink]="sessionUrls()[session.id]"
                        class="flex items-center gap-3 p-4 hover:bg-layer-overlay first:rounded-t-xl last:rounded-b-xl">
                         <span class="text-meta text-writing-minor tabular-nums w-24 shrink-0">{{ sessionDates()[session.id] }}</span>
-                        <span class="text-ui text-writing truncate flex-1" dir="auto">{{ session.day_name || session.plan_name || i18n.t().freeWorkout }}</span>
+                        <span class="text-ui text-writing truncate flex-1"><bdi>{{ session.day_name || session.plan_name || i18n.t().freeWorkout }}</bdi></span>
                         <span class="text-caption text-writing-minor shrink-0">{{ session.set_count }} {{ i18n.t().setsDone }}</span>
                     </a>
                 }
