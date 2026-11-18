@@ -15,7 +15,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
-import {CURRENCY_LABELS, CURRENCY_ORDER} from '../renters-crm.constants';
+import {CURRENCY_ORDER} from '../renters-crm.constants';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {RENTERS_CRM_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-renters-project-form',
@@ -28,6 +30,7 @@ export class RentersProjectFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(RENTERS_CRM_STRINGS);
 
   readonly projectId = signal<number | null>(null);
   readonly backUrl = computed(() => {
@@ -37,7 +40,7 @@ export class RentersProjectFormComponent {
   readonly isEditMode = computed(() => this.projectId() !== null);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
 
   readonly nameCtrl = new FormControl<string>('', {nonNullable: true});
   readonly descriptionCtrl = new FormControl<string>('', {nonNullable: true});
@@ -48,7 +51,6 @@ export class RentersProjectFormComponent {
   readonly canSave = computed(() => !!this.nameValue()?.trim() && !this.isSaving() && !this.isLoading());
 
   readonly currencyOptions = CURRENCY_ORDER;
-  readonly currencyLabels = CURRENCY_LABELS;
 
   protected readonly featherArrowLeft = featherArrowLeft;
 
@@ -67,7 +69,7 @@ export class RentersProjectFormComponent {
 
   private async loadProject(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const res = await getRentalProjectView({path: {object_id: id}});
       this.nameCtrl.setValue(res.data.name);
@@ -75,7 +77,7 @@ export class RentersProjectFormComponent {
       this.currencyCtrl.setValue(res.data.currency);
       this.initialAskedRentCtrl.setValue(res.data.initial_asked_rent);
     } catch {
-      this.loadError.set('Could not load this project. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -103,9 +105,10 @@ export class RentersProjectFormComponent {
         await this.routingService.navigateToRentersCrmProject(res.data.id);
       }
     } catch (err) {
+      const t = this.t();
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to save project: ${err}`,
+        title: t.common.error,
+        text: fill(t.projectForm.saveFailed, {error: `${err}`}),
       });
     } finally {
       this.isSaving.set(false);

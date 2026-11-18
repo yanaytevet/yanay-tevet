@@ -1,0 +1,96 @@
+import {ProjectRole} from '../../../generated-files/api/villa-villekulla';
+
+// Strings for Home Sweet Home's sub-nav and the Villa Villekulla booking app. This file is the contract: every
+// other language's file is typed against it.
+const roles: Record<ProjectRole, string> = {
+  collaborator: 'Friend',
+  owner: 'Co-admin',
+};
+
+export const en = {
+  nav: {
+    apartmentHunt: 'Apartment Hunt',
+    villaVillekulla: 'Villa Villekulla',
+    rentersCrm: 'Renters CRM',
+  },
+  common: {
+    close: 'Close',
+    cancel: 'Cancel',
+    save: 'Save',
+    error: 'Error',
+  },
+  list: {
+    title: 'Villa Villekulla',
+    subtitle: 'Properties you can book.',
+    newProperty: 'New property',
+    loading: 'Loading properties',
+    emptyAdminTitle: 'Create your first property',
+    emptyAdminText: 'Add a property, then invite friends to book its unit.',
+    emptyGuestTitle: 'Ask the host for an invite',
+    emptyGuestText: 'Once the host invites you, the property’s booking calendar shows up here.',
+    createTitle: 'Create property',
+    createText: 'Name this property. You can invite friends to book its unit once it exists.',
+    propertyName: 'Property name',
+    defaultName: 'Villa Villekulla',
+    create: 'Create',
+  },
+  calendar: {
+    allProperties: 'All properties',
+    loading: 'Loading calendar',
+    loadError: 'Could not load this property. You may not have access to it.',
+    invite: 'Invite',
+    noUnitTitle: 'Nothing to book here yet',
+    noUnitText: 'Once the host sets up a unit for this property, its booking calendar shows up here.',
+    subtitle: 'Pick a free day to book {unit}.',
+    previousMonth: 'Previous month',
+    nextMonth: 'Next month',
+    yourBooking: 'Your booking',
+    booked: 'Booked',
+    you: 'You',
+    takenText: 'These dates are taken ({dates}).',
+  },
+  bookingDialog: {
+    title: 'Book the unit',
+    intro: 'Pick your check-in and check-out dates. The night you check out is free for the next guest.',
+    checkIn: 'Check-in',
+    checkOut: 'Check-out',
+    bookingFor: 'Booking for',
+    youSuffix: '{name} (you)',
+    note: 'Note (optional)',
+    notePlaceholder: 'e.g. visiting with the kids',
+    errorOrder: 'Check-out must be after check-in.',
+    errorConflict: 'Some of those nights are already booked.',
+    book: 'Book',
+    bookFailed: 'Could not book',
+  },
+  bookingDetails: {
+    title: 'Booking',
+    bookedFor: 'Booked for',
+    createdBy: 'by {name}',
+    note: 'Note',
+    notePlaceholder: 'Add a note',
+    cancelBooking: 'Cancel booking',
+    cancelConfirmText: 'Cancel the booking for {dates}?',
+    keep: 'Keep',
+    saveFailed: 'Could not save',
+  },
+  invite: {
+    title: 'Invite people',
+    intro: 'Friends can view the calendar and book the unit. Co-admins can also manage bookings and invite others.',
+    identifier: 'Username or email',
+    identifierPlaceholder: 'username or email',
+    role: 'Role',
+    roles,
+    invite: 'Invite',
+    peopleWithAccess: 'People with access',
+    loading: 'Loading people',
+    remove: 'Remove {name}',
+    pending: 'Pending invitations',
+    invited: 'Invited',
+    done: 'Done',
+    inviteFailed: 'Could not invite',
+    removeFailed: 'Could not remove',
+  },
+};
+
+export type HomeSweetHomeStrings = typeof en;

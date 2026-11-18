@@ -7,7 +7,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
-import {CURRENCY_LABELS, PROJECT_STATUS_LABELS} from '../apartment-hunt.constants';
+import {injectStrings, plural} from '../../shared/i18n/strings';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {APARTMENT_HUNT_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-apartment-hunt-projects-list',
@@ -17,15 +19,21 @@ import {CURRENCY_LABELS, PROJECT_STATUS_LABELS} from '../apartment-hunt.constant
 })
 export class ProjectsListComponent {
   private readonly routingService = inject(RoutingService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(APARTMENT_HUNT_STRINGS);
 
   readonly projects = signal<RentalProjectSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
 
-  readonly currencyLabels = CURRENCY_LABELS;
-  readonly statusLabels = PROJECT_STATUS_LABELS;
 
   readonly statusFinished = computed(() => {
     return Object.fromEntries(this.projects().map(p => [p.id, p.status === 'finished']));
+  });
+
+  readonly memberCounts = computed<Record<number, string>>(() => {
+    const language = this.languageService.language();
+    const forms = this.t().common.members;
+    return Object.fromEntries(this.projects().map(p => [p.id, plural(language, p.member_count, forms)]));
   });
 
   readonly projectUrls = computed(() =>

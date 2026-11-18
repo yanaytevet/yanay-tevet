@@ -1,7 +1,7 @@
 @if (prospect(); as prospect) {
     <div class="grid grid-cols-1 @md:grid-cols-2 @lg:grid-cols-3 gap-x-6 gap-y-3 text-meta">
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Liked</div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().common.liked }}</div>
             <div class="flex items-center gap-0.5">
                 @for (lvl of starLevels; track lvl) {
                     @if (prospect.liked_level !== null && lvl <= prospect.liked_level) {
@@ -11,51 +11,48 @@
                     }
                 }
                 @if (prospect.liked_level === null) {
-                    <span class="text-writing-minor ms-1">Not rated</span>
+                    <span class="text-writing-minor ms-1">{{ t().common.notRated }}</span>
                 }
             </div>
         </div>
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Full address</div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().common.fullAddress }}</div>
             <div class="text-writing" dir="auto">{{ prospect.full_address || '—' }}</div>
         </div>
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Rooms · Floor · Size</div>
-            <div class="text-writing">
-                {{ prospect.rooms ?? '—' }} rooms · floor {{ prospect.floor ?? '—' }} · {{ prospect.size_sqm ?? '—' }} m²
-            </div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().panel.roomsFloorSize }}</div>
+            <div class="text-writing">{{ roomsFloorSize() }}</div>
         </div>
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Tax benefit (monthly)</div>
-            <div class="text-writing">
-                {{ prospect.monthly_tax_benefit !== null ? currencySymbol() + prospect.monthly_tax_benefit : '—' }}
-            </div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().common.taxBenefit }}</div>
+            <div class="text-writing">{{ taxBenefit() }}</div>
         </div>
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Agency</div>
-            <div class="text-writing">
-                {{ prospect.via_agency ? 'Via agency' : 'No agency' }}{{ prospect.agency_fee !== null ? ' · fee ' + currencySymbol() + prospect.agency_fee : '' }}
-            </div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().panel.agency }}</div>
+            <div class="text-writing">{{ agency() }}</div>
         </div>
         <div>
-            <div class="eyebrow text-writing-least mb-0.5">Available from</div>
-            <div class="text-writing">{{ prospect.available_from ? (prospect.available_from | date:'mediumDate') : '—' }}</div>
+            <div class="eyebrow text-writing-least mb-0.5">{{ t().common.availableFrom }}</div>
+            <div class="text-writing">{{ availableFrom() }}</div>
         </div>
         @if (prospect.listing_url) {
             <div class="@lg:col-span-3">
-                <div class="eyebrow text-writing-least mb-0.5">Listing</div>
+                <div class="eyebrow text-writing-least mb-0.5">{{ t().panel.listing }}</div>
                 <a [href]="prospect.listing_url" target="_blank" rel="noopener"
-                   class="text-accent hover:underline break-all">{{ prospect.listing_url }}</a>
+                   class="text-accent hover:underline break-all" dir="ltr">{{ prospect.listing_url }}</a>
             </div>
         }
         @if (prospect.contacts.length > 0) {
             <div class="@lg:col-span-3">
-                <div class="eyebrow text-writing-least mb-1">Contacts</div>
+                <div class="eyebrow text-writing-least mb-1">{{ t().common.contacts }}</div>
                 <div class="flex flex-col gap-1">
                     @for (contact of prospect.contacts; track contact.id) {
                         <div class="text-writing" dir="auto">
-                            <span class="text-writing-minor">{{ contactMethodLabels[contact.method] }}:</span>
-                            {{ contact.value }}{{ contact.label ? ' (' + contact.label + ')' : '' }}
+                            <span class="text-writing-minor">{{ contactMethodLabels()[contact.id] }}</span>
+                            <bdi>{{ contact.value }}</bdi>
+                            @if (contact.label) {
+                                (<bdi>{{ contact.label }}</bdi>)
+                            }
                         </div>
                     }
                 </div>
@@ -63,17 +60,17 @@
         }
         @if (prospect.notes) {
             <div class="@lg:col-span-3">
-                <div class="eyebrow text-writing-least mb-0.5">Notes</div>
+                <div class="eyebrow text-writing-least mb-0.5">{{ t().common.notes }}</div>
                 <div class="text-writing whitespace-pre-line" dir="auto">{{ prospect.notes }}</div>
             </div>
         }
         @if (prospect.images.length > 0) {
             <div class="@lg:col-span-3">
-                <div class="eyebrow text-writing-least mb-1">Photos</div>
+                <div class="eyebrow text-writing-least mb-1">{{ t().common.photos }}</div>
                 <div class="grid grid-cols-2 @sm:grid-cols-3 @lg:grid-cols-4 gap-2">
                     @for (image of prospect.images; track image.id) {
                         <a [href]="image.image_url" target="_blank" rel="noopener">
-                            <img [src]="image.image_url" alt="apartment photo"
+                            <img [src]="image.image_url" [alt]="t().common.photoAlt"
                                  class="w-full h-28 object-cover rounded-lg border border-line" />
                         </a>
                     }

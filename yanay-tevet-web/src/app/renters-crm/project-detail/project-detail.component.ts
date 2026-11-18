@@ -1,5 +1,4 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {DatePipe} from '@angular/common';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
@@ -31,14 +30,10 @@ import {
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
-import {
-  CURRENCY_LABELS,
-  CURRENCY_SYMBOLS,
-  FAMILY_STATUS_LABELS,
-  PROJECT_STATUS_LABELS,
-  RENTER_STATUS_LABELS,
-  RENTER_STATUS_ORDER,
-} from '../renters-crm.constants';
+import {moneyFormat, RENTER_STATUS_ORDER} from '../renters-crm.constants';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {RENTERS_CRM_STRINGS} from '../i18n';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {MenuButtonComponent, MenuItem, SEPARATOR} from '../../common/components/menu-button/menu-button.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
@@ -51,7 +46,7 @@ import {RenterDetailsPanelComponent} from '../renter-details-panel/renter-detail
   selector: 'app-renters-project-detail',
   standalone: true,
   imports: [
-    NgIcon, DatePipe, RenterDetailsPanelComponent, RouterLink, MenuButtonComponent,
+    NgIcon, RenterDetailsPanelComponent, RouterLink, MenuButtonComponent,
     PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
   ],
   providers: [provideIcons({
@@ -67,12 +62,14 @@ export class RentersProjectDetailComponent {
   readonly allProjectsUrl = this.routingService.getRentersCrmUrl();
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(RENTERS_CRM_STRINGS);
 
   readonly projectId = signal<number | null>(null);
   readonly project = signal<RentalProjectSchema | null>(null);
   readonly renters = signal<RenterProspectSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly isUpdatingStatus = signal<boolean>(false);
   readonly expandedIds = signal<Set<number>>(new Set());
   readonly savingFieldId = signal<number | null>(null);
@@ -93,20 +90,38 @@ export class RentersProjectDetailComponent {
     if (project === null) {
       return null;
     }
-    const parts = [CURRENCY_LABELS[project.currency]];
+    const t = this.t();
+    const language = this.languageService.language();
+    const parts = [t.currencies[project.currency]];
     if (project.initial_asked_rent !== null) {
-      parts.push(`Asking ${CURRENCY_SYMBOLS[project.currency]}${project.initial_asked_rent}/mo`);
+      parts.push(fill(t.common.askingRent, {amount: moneyFormat(language, project.currency).format(project.initial_asked_rent)}));
     }
-    parts.push(`Owner: ${project.owner_username}`);
-    parts.push(`${project.member_count} member${project.member_count === 1 ? '' : 's'}`);
+    parts.push(fill(t.detail.owner, {name: project.owner_username}));
+    parts.push(plural(language, project.member_count, t.common.members));
     return parts.join(' · ');
+  });
+
+  // Agreed rent and visit time per renter, in the site language's format.
+  readonly rentLabels = computed<Record<number, string | null>>(() => {
+    const project = this.project();
+    if (project === null) {
+      return {};
+    }
+    const money = moneyFormat(this.languageService.language(), project.currency);
+    return Object.fromEntries(this.renters().map(r => [r.id, r.agreed_rent === null ? null : money.format(r.agreed_rent)]));
+  });
+
+  readonly visitLabels = computed<Record<number, string>>(() => {
+    const format = new Intl.DateTimeFormat(this.languageService.language(), {dateStyle: 'short', timeStyle: 'short'});
+    return Object.fromEntries(this.renters().map(r => [r.id, r.visit_time ? format.format(new Date(r.visit_time)) : '—']));
   });
 
   // Share and Edit sit in the header; finishing and deleting live behind "more".
   readonly overflowActions = computed<MenuItem[]>(() => {
+    const t = this.t().detail;
     const actions: MenuItem[] = [
       {
-        display: this.isFinished() ? 'Reopen' : 'Finish',
+        display: this.isFinished() ? t.reopen : t.finish,
         icon: this.isFinished() ? featherRotateCcw : featherCheckCircle,
         disabled: this.isUpdatingStatus(),
         callback: () => void this.toggleFinished(),
@@ -114,16 +129,12 @@ export class RentersProjectDetailComponent {
     ];
     if (this.isOwner()) {
       actions.push(SEPARATOR);
-      actions.push({display: 'Delete project', icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
+      actions.push({display: t.deleteProject, icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
     }
     return actions;
   });
 
-  readonly currencySymbols = CURRENCY_SYMBOLS;
-  readonly projectStatusLabels = PROJECT_STATUS_LABELS;
-  readonly renterStatusLabels = RENTER_STATUS_LABELS;
   readonly statusOptions = RENTER_STATUS_ORDER;
-  readonly familyStatusLabels = FAMILY_STATUS_LABELS;
 
   protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherChevronRight = featherChevronRight;
@@ -148,7 +159,7 @@ export class RentersProjectDetailComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const [projectRes, rentersRes] = await Promise.all([
         getRentalProjectView({path: {object_id: id}}),
@@ -157,7 +168,7 @@ export class RentersProjectDetailComponent {
       this.project.set(projectRes.data);
       this.renters.set(rentersRes.data.data);
     } catch {
-      this.loadError.set('Could not load this project. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -181,7 +192,7 @@ export class RentersProjectDetailComponent {
       const res = await updateRenterProspectView({body: {status: value as RenterStatus}, path: {object_id: renter.id}});
       this.renters.update(prev => prev.map(r => (r.id === renter.id ? res.data : r)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().common.error, text: `${err}`});
     } finally {
       this.savingFieldId.set(null);
     }
@@ -200,13 +211,12 @@ export class RentersProjectDetailComponent {
       return;
     }
     const finished = this.isFinished();
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: finished ? 'Reopen project' : 'Finish project',
-      text: finished
-        ? 'Reopen this project and mark it active again?'
-        : 'Mark this project as finished? You can reopen it later.',
-      confirmActionName: finished ? 'Reopen' : 'Finish',
-      cancelActionName: 'Cancel',
+      title: finished ? t.detail.reopenTitle : t.detail.finishTitle,
+      text: finished ? t.detail.reopenText : t.detail.finishText,
+      confirmActionName: finished ? t.detail.reopen : t.detail.finish,
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -218,7 +228,7 @@ export class RentersProjectDetailComponent {
         : await finishRentalProjectView({body: {}, path: {object_id: id}});
       this.project.set(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     } finally {
       this.isUpdatingStatus.set(false);
     }
@@ -229,11 +239,12 @@ export class RentersProjectDetailComponent {
     if (id === null) {
       return;
     }
+    const t = this.t().detail;
     await this.dialogService.open(ShareDialogComponent, {
       objectId: id,
       isOwner: this.isOwner(),
-      title: 'Share project',
-      subtitle: 'People you add can view and edit this project\'s renters.',
+      title: t.shareTitle,
+      subtitle: t.shareSubtitle,
       listMembers: async (objectId: number) => {
         const data = (await listProjectMembersView({path: {object_id: objectId}})).data;
         return {members: data.members, pendingInvitations: data.pending_invitations};
@@ -254,13 +265,14 @@ export class RentersProjectDetailComponent {
     if (project === null) {
       return;
     }
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromTextConfirmationDialog({
-      title: 'Delete project',
-      text: 'This permanently deletes the project and all of its renters. This cannot be undone.',
-      label: 'Project name',
+      title: t.detail.deleteProject,
+      text: t.detail.deleteProjectText,
+      label: t.detail.projectName,
       validationText: project.name,
-      confirmActionName: 'Delete project',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.deleteProject,
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -269,7 +281,7 @@ export class RentersProjectDetailComponent {
       await deleteRentalProjectView({path: {object_id: project.id}});
       await this.routingService.navigateToRentersCrm();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     }
   }
 
@@ -288,12 +300,13 @@ export class RentersProjectDetailComponent {
   }
 
   async deleteRenter(renter: RenterProspectSchema): Promise<void> {
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete renter',
-      text: `Delete "${renter.name || 'this renter'}"?`,
-      confirmActionName: 'Delete',
+      title: t.detail.deleteRenter,
+      text: fill(t.detail.deleteRenterText, {name: renter.name || t.detail.thisRenter}),
+      confirmActionName: t.common.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -302,7 +315,7 @@ export class RentersProjectDetailComponent {
       await deleteRenterProspectView({path: {object_id: renter.id}});
       this.renters.update(prev => prev.filter(r => r.id !== renter.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     }
   }
 }

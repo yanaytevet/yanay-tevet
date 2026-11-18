@@ -2,145 +2,145 @@
 
     <a [routerLink]="backUrl()"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        Back to project
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().common.backToProject }}
     </a>
 
-    <app-page-header [title]="isEditMode() ? 'Edit apartment' : 'New apartment'"
-                     subtitle="Track the details and where this apartment stands."/>
+    <app-page-header [title]="isEditMode() ? t().prospectForm.editTitle : t().prospectForm.newTitle"
+                     [subtitle]="t().prospectForm.subtitle"/>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading apartment"/>
+        <app-loading-state [label]="t().prospectForm.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="backUrl()" backLabel="Back to project"/>
+        <app-error-state [text]="t().prospectForm.loadError" [backUrl]="backUrl()" [backLabel]="t().common.backToProject"/>
     } @else {
         <div class="card p-5 sm:p-6">
 
             <!-- Basics -->
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
                 <div class="flex flex-col gap-1.5 @md:col-span-2">
-                    <span class="input-label">Title</span>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Sunny 3-room on Allenby"
+                    <span class="input-label">{{ t().prospectForm.title }}</span>
+                    <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().prospectForm.titlePlaceholder"
                            [formControl]="form.controls.title" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Status</span>
+                    <span class="input-label">{{ t().common.status }}</span>
                     <select class="main-input w-full" [formControl]="form.controls.status">
                         @for (status of statusOptions; track status) {
-                            <option [value]="status">{{ statusLabels[status] }}</option>
+                            <option [value]="status">{{ t().prospectStatuses[status] }}</option>
                         }
                     </select>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">How much we want it</span>
+                    <span class="input-label">{{ t().prospectForm.howMuch }}</span>
                     <select class="main-input w-full" [formControl]="form.controls.liked_level">
-                        <option [ngValue]="null">Not rated</option>
+                        <option [ngValue]="null">{{ t().common.notRated }}</option>
                         @for (level of likedLevels; track level) {
-                            <option [ngValue]="level">{{ level }} / 5</option>
+                            <option [ngValue]="level">{{ likedLabels()[level] }}</option>
                         }
                     </select>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Town</span>
+                    <span class="input-label">{{ t().prospectForm.town }}</span>
                     <input type="text" dir="auto" class="main-input w-full" [formControl]="form.controls.town" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Full address</span>
+                    <span class="input-label">{{ t().common.fullAddress }}</span>
                     <input type="text" dir="auto" class="main-input w-full" [formControl]="form.controls.full_address" />
                 </div>
             </div>
 
             <!-- Costs -->
-            <div class="eyebrow mt-6 mb-3">Costs (monthly unless noted)</div>
+            <div class="eyebrow mt-6 mb-3">{{ t().prospectForm.costs }}</div>
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Monthly rent</span>
+                    <span class="input-label">{{ t().prospectForm.monthlyRent }}</span>
                     <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.monthly_rent" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Tax benefit (monthly)</span>
+                    <span class="input-label">{{ t().common.taxBenefit }}</span>
                     <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.monthly_tax_benefit" />
                 </div>
                 <div class="flex items-center gap-2 pt-1">
                     <input type="checkbox" id="via_agency" class="h-4 w-4" [formControl]="form.controls.via_agency" />
-                    <span class="text-body text-writing">Via agency</span>
+                    <span class="text-body text-writing">{{ t().prospectForm.viaAgency }}</span>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Agency fee (one-off)</span>
+                    <span class="input-label">{{ t().prospectForm.agencyFee }}</span>
                     <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.agency_fee" />
                 </div>
             </div>
 
             <!-- Details -->
-            <div class="eyebrow mt-6 mb-3">Details</div>
+            <div class="eyebrow mt-6 mb-3">{{ t().prospectForm.details }}</div>
             <div class="grid grid-cols-1 @md:grid-cols-3 gap-4">
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Rooms</span>
+                    <span class="input-label">{{ t().prospectForm.rooms }}</span>
                     <input type="number" min="0" step="0.5" dir="auto" class="main-input w-full" [formControl]="form.controls.rooms" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Floor</span>
+                    <span class="input-label">{{ t().prospectForm.floor }}</span>
                     <input type="number" dir="auto" class="main-input w-full" [formControl]="form.controls.floor" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Size (m²)</span>
+                    <span class="input-label">{{ t().prospectForm.size }}</span>
                     <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.size_sqm" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Available from</span>
+                    <span class="input-label">{{ t().common.availableFrom }}</span>
                     <input type="date" dir="auto" class="main-input w-full" [formControl]="form.controls.available_from" />
                 </div>
                 <div class="flex items-center gap-2 pt-6">
                     <input type="checkbox" id="mamad" class="h-4 w-4" [formControl]="form.controls.has_protected_room" />
-                    <span class="text-body text-writing">Protected room (mamad)</span>
+                    <span class="text-body text-writing">{{ t().prospectForm.protectedRoom }}</span>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 gap-4 mt-4">
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Listing URL</span>
+                    <span class="input-label">{{ t().prospectForm.listingUrl }}</span>
                     <input type="text" dir="auto" class="main-input w-full" placeholder="https://..." [formControl]="form.controls.listing_url" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Notes</span>
+                    <span class="input-label">{{ t().common.notes }}</span>
                     <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
                 </div>
             </div>
 
             <!-- Contacts -->
             <div class="flex items-center gap-2 mt-6 mb-3">
-                <span class="eyebrow">Contacts</span>
-                <button type="button" class="icon-btn" aria-label="Add contact" title="Add contact" (click)="addContact()">
+                <span class="eyebrow">{{ t().common.contacts }}</span>
+                <button type="button" class="icon-btn" [attr.aria-label]="t().prospectForm.addContact" [title]="t().prospectForm.addContact" (click)="addContact()">
                     <ng-icon [svg]="featherPlus"/>
                 </button>
             </div>
             @if (contacts().length === 0) {
-                <p class="text-meta text-writing-minor mb-2">Add the landlord, the agent or whoever listed it.</p>
+                <p class="text-meta text-writing-minor mb-2">{{ t().prospectForm.contactsHint }}</p>
             }
             <div class="flex flex-col gap-3 @md:gap-2">
                 @for (contact of contacts(); track contact) {
                     <div class="rounded-lg border border-line p-3 flex flex-col gap-2 @md:grid @md:grid-cols-[150px_1fr_1fr_auto] @md:items-center @md:gap-2 @md:border-0 @md:rounded-none @md:p-0">
                         <select class="main-input w-full" [formControl]="contact.controls.method">
                             @for (method of contactMethodOptions; track method) {
-                                <option [value]="method">{{ contactMethodLabels[method] }}</option>
+                                <option [value]="method">{{ t().contactMethods[method] }}</option>
                             }
                         </select>
-                        <input type="text" dir="auto" class="main-input w-full" placeholder="phone / link / name"
+                        <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().prospectForm.contactValuePlaceholder"
                                [formControl]="contact.controls.value" />
-                        <input type="text" dir="auto" class="main-input w-full" placeholder="label (e.g. landlord)"
+                        <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().prospectForm.contactLabelPlaceholder"
                                [formControl]="contact.controls.label" />
                         <div class="@md:hidden">
                             <button type="button" class="btn btn-secondary w-full" (click)="removeContact(contact)">
                                 <ng-icon [svg]="featherTrash2"/>
-                                Remove contact
+                                {{ t().prospectForm.removeContact }}
                             </button>
                         </div>
                         <div class="hidden @md:block @md:shrink-0">
-                            <button type="button" class="icon-btn icon-btn-danger" aria-label="Remove contact" title="Remove contact"
+                            <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().prospectForm.removeContact" [title]="t().prospectForm.removeContact"
                                     (click)="removeContact(contact)">
                                 <ng-icon [svg]="featherTrash2"/>
                             </button>
@@ -151,28 +151,28 @@
 
             <!-- Photos -->
             <div class="flex items-center justify-between mt-6 mb-3">
-                <span class="eyebrow">Photos</span>
+                <span class="eyebrow">{{ t().common.photos }}</span>
                 @if (isEditMode()) {
                     <button type="button" class="btn btn-secondary btn-sm"
                             [disabled]="isUploading()" (click)="uploadImage()">
                         <ng-icon [svg]="featherUpload"/>
-                        {{ isUploading() ? 'Uploading…' : 'Upload' }}
+                        {{ isUploading() ? t().prospectForm.uploading : t().prospectForm.upload }}
                     </button>
                 }
             </div>
             @if (!isEditMode()) {
-                <p class="text-meta text-writing-minor">Save the apartment first, then you can add photos.</p>
+                <p class="text-meta text-writing-minor">{{ t().prospectForm.photosSaveFirst }}</p>
             } @else if (images().length === 0) {
-                <p class="text-meta text-writing-minor">Upload photos to remember what you saw.</p>
+                <p class="text-meta text-writing-minor">{{ t().prospectForm.photosEmpty }}</p>
             } @else {
                 <div class="grid grid-cols-2 @md:grid-cols-3 gap-3">
                     @for (image of images(); track image.id) {
                         <div class="relative group">
-                            <img [src]="image.image_url" alt="apartment photo"
+                            <img [src]="image.image_url" [alt]="t().common.photoAlt"
                                  class="w-full h-32 object-cover rounded-lg border border-line" />
                             <button type="button"
                                     class="icon-btn icon-btn-danger absolute top-1.5 end-1.5 rounded-full bg-layer-2 shadow-1"
-                                    aria-label="Delete photo" title="Delete photo"
+                                    [attr.aria-label]="t().prospectForm.deletePhoto" [title]="t().prospectForm.deletePhoto"
                                     (click)="deleteImage(image)">
                                 <ng-icon [svg]="featherX"/>
                             </button>
@@ -183,9 +183,9 @@
 
             <!-- Actions -->
             <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-line-subtle">
-                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">{{ t().common.cancel }}</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
-                    {{ isSaving() ? 'Saving…' : (isEditMode() ? 'Save changes' : 'Create apartment') }}
+                    {{ isSaving() ? t().common.saving : (isEditMode() ? t().common.saveChanges : t().prospectForm.create) }}
                 </button>
             </div>
         </div>

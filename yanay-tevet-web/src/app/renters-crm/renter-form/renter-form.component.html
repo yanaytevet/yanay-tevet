@@ -2,89 +2,89 @@
 
     <a [routerLink]="backUrl()"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        Back to project
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().common.backToProject }}
     </a>
 
-    <app-page-header [title]="isEditMode() ? 'Edit renter' : 'New renter'"
-                     subtitle="Track who came to see the apartment and where they stand."/>
+    <app-page-header [title]="isEditMode() ? t().renterForm.editTitle : t().renterForm.newTitle"
+                     [subtitle]="t().renterForm.subtitle"/>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading renter"/>
+        <app-loading-state [label]="t().renterForm.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="backUrl()" backLabel="Back to project"/>
+        <app-error-state [text]="t().renterForm.loadError" [backUrl]="backUrl()" [backLabel]="t().common.backToProject"/>
     } @else {
         <div class="card p-5 sm:p-6">
 
             <!-- Basics -->
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4 mb-2">
                 <div class="flex flex-col gap-1.5 @md:col-span-2">
-                    <span class="input-label">Name <span class="text-writing-least">*</span></span>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Dana & Yossi"
+                    <span class="input-label">{{ t().common.name }} <span class="text-writing-least">*</span></span>
+                    <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().renterForm.namePlaceholder"
                            [formControl]="form.controls.name" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Status</span>
+                    <span class="input-label">{{ t().common.status }}</span>
                     <select class="main-input w-full" [formControl]="form.controls.status">
                         @for (status of statusOptions; track status) {
-                            <option [value]="status">{{ statusLabels[status] }}</option>
+                            <option [value]="status">{{ t().renterStatuses[status] }}</option>
                         }
                     </select>
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Family status</span>
+                    <span class="input-label">{{ t().common.familyStatus }}</span>
                     <select class="main-input w-full" [formControl]="form.controls.family_status">
                         @for (family of familyStatusOptions; track family) {
-                            <option [value]="family">{{ familyStatusLabels[family] }}</option>
+                            <option [value]="family">{{ t().familyStatuses[family] }}</option>
                         }
                     </select>
                 </div>
             </div>
 
             <!-- Visit -->
-            <div class="eyebrow mt-6 mb-3">Visit</div>
+            <div class="eyebrow mt-6 mb-3">{{ t().renterForm.visit }}</div>
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Time of visit</span>
+                    <span class="input-label">{{ t().common.timeOfVisit }}</span>
                     <input type="datetime-local" dir="auto" class="main-input w-full" [formControl]="form.controls.visit_time" />
                 </div>
                 <div class="flex items-center gap-2 pt-6">
                     <input type="checkbox" id="saw_apartment" class="h-4 w-4" [formControl]="form.controls.saw_apartment" />
-                    <span class="text-body text-writing">Saw the apartment</span>
+                    <span class="text-body text-writing">{{ t().renterForm.sawApartment }}</span>
                 </div>
             </div>
 
             <!-- Preferences -->
-            <div class="eyebrow mt-6 mb-3">Preferences</div>
+            <div class="eyebrow mt-6 mb-3">{{ t().renterForm.preferences }}</div>
             <div class="grid grid-cols-1 @md:grid-cols-2 gap-4">
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="has_animals" class="h-4 w-4" [formControl]="form.controls.has_animals" />
-                    <span class="text-body text-writing">Has animals</span>
+                    <span class="text-body text-writing">{{ t().renterForm.hasAnimals }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="long_term" class="h-4 w-4" [formControl]="form.controls.long_term" />
-                    <span class="text-body text-writing">Long term</span>
+                    <span class="text-body text-writing">{{ t().renterForm.longTerm }}</span>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Agreed rent (monthly)</span>
+                    <span class="input-label">{{ t().common.agreedRent }}</span>
                     <input type="number" min="0" dir="auto" class="main-input w-full" [formControl]="form.controls.agreed_rent" />
                 </div>
             </div>
 
             <div class="grid grid-cols-1 gap-4 mt-4">
                 <div class="flex flex-col gap-1.5">
-                    <span class="input-label">Notes</span>
+                    <span class="input-label">{{ t().common.notes }}</span>
                     <textarea dir="auto" class="main-input w-full leading-relaxed" rows="4" [formControl]="form.controls.notes"></textarea>
                 </div>
             </div>
 
             <!-- Actions -->
             <div class="flex items-center justify-end gap-2 pt-6 mt-6 border-t border-line-subtle">
-                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">{{ t().common.cancel }}</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
-                    {{ isSaving() ? 'Saving…' : (isEditMode() ? 'Save changes' : 'Create renter') }}
+                    {{ isSaving() ? t().common.saving : (isEditMode() ? t().common.saveChanges : t().renterForm.create) }}
                 </button>
             </div>
         </div>

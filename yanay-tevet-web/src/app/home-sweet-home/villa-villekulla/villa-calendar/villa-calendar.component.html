@@ -3,42 +3,42 @@
     @if (showBack()) {
         <a [routerLink]="allPropertiesUrl"
            class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-            <ng-icon [svg]="featherArrowLeft"/>
-            All properties
+            <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+            {{ t().calendar.allProperties }}
         </a>
     }
 
     @if (isLoading()) {
-        <app-loading-state label="Loading calendar"/>
+        <app-loading-state [label]="t().calendar.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="showBack() ? allPropertiesUrl : null" backLabel="All properties"/>
+        <app-error-state [text]="t().calendar.loadError" [backUrl]="showBack() ? allPropertiesUrl : null" [backLabel]="t().calendar.allProperties"/>
     } @else if (project(); as project) {
         <app-page-header [title]="project.name" [subtitle]="subtitle()">
             @if (canManageAll()) {
                 <button type="button" class="btn btn-secondary btn-sm" (click)="openInvite()">
                     <ng-icon [svg]="featherUserPlus"/>
-                    Invite
+                    {{ t().calendar.invite }}
                 </button>
             }
         </app-page-header>
 
         @if (unit() === null) {
-            <app-empty-state title="Nothing to book here yet"
-                             text="Once the host sets up a unit for this property, its booking calendar shows up here."/>
+            <app-empty-state [title]="t().calendar.noUnitTitle"
+                             [text]="t().calendar.noUnitText"/>
         } @else {
             <div class="card p-4">
                 <div class="flex items-center justify-between mb-4">
-                    <button type="button" class="icon-btn" aria-label="Previous month" (click)="prevMonth()">
-                        <ng-icon [svg]="featherChevronLeft" class="text-xl"/>
+                    <button type="button" class="icon-btn" [attr.aria-label]="t().calendar.previousMonth" (click)="prevMonth()">
+                        <ng-icon [svg]="featherChevronLeft" class="text-xl rtl:-scale-x-100"/>
                     </button>
                     <span class="text-ui font-semibold text-writing">{{ monthLabel() }}</span>
-                    <button type="button" class="icon-btn" aria-label="Next month" (click)="nextMonth()">
-                        <ng-icon [svg]="featherChevronRight" class="text-xl"/>
+                    <button type="button" class="icon-btn" [attr.aria-label]="t().calendar.nextMonth" (click)="nextMonth()">
+                        <ng-icon [svg]="featherChevronRight" class="text-xl rtl:-scale-x-100"/>
                     </button>
                 </div>
 
                 <div class="grid grid-cols-7 gap-1 mb-1">
-                    @for (label of weekdayLabels; track label) {
+                    @for (label of weekdayLabels(); track $index) {
                         <div class="eyebrow text-center text-writing-least py-1">{{ label }}</div>
                     }
                 </div>
@@ -57,7 +57,7 @@
                                 <span class="mt-auto text-label leading-tight font-medium truncate w-full"
                                       [class.text-accent]="cell.mine"
                                       [class.text-writing-minor]="!cell.mine">
-                                    {{ cell.label }}
+                                    <bdi>{{ cell.label }}</bdi>
                                 </span>
                             }
                         </button>
@@ -67,11 +67,11 @@
                 <div class="flex items-center gap-4 mt-4 text-label text-writing-minor">
                     <div class="flex items-center gap-1.5">
                         <span class="inline-block size-3 rounded bg-accent-soft border border-accent/40" aria-hidden="true"></span>
-                        Your booking
+                        {{ t().calendar.yourBooking }}
                     </div>
                     <div class="flex items-center gap-1.5">
                         <span class="inline-block size-3 rounded bg-layer-4 border border-line" aria-hidden="true"></span>
-                        Booked
+                        {{ t().calendar.booked }}
                     </div>
                 </div>
             </div>

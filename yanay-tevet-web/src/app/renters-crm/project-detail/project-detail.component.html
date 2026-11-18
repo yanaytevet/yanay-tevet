@@ -2,29 +2,29 @@
 
     <a [routerLink]="allProjectsUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        All projects
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().detail.allProjects }}
     </a>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading project"/>
+        <app-loading-state [label]="t().detail.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="allProjectsUrl" backLabel="Back to projects"/>
+        <app-error-state [text]="t().common.loadProjectError" [backUrl]="allProjectsUrl" [backLabel]="t().detail.backToProjects"/>
     } @else if (project(); as project) {
 
         <app-page-header [title]="project.name" [subtitle]="headerSubtitle()">
             @if (isFinished()) {
-                <span class="chip">{{ projectStatusLabels[project.status] }}</span>
+                <span class="chip">{{ t().projectStatuses[project.status] }}</span>
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
                 <ng-icon [svg]="featherShare2"/>
-                Share
+                {{ t().detail.share }}
             </button>
             <button type="button" class="btn btn-secondary btn-sm" (click)="editProject()">
                 <ng-icon [svg]="featherEdit"/>
-                Edit
+                {{ t().common.edit }}
             </button>
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More project actions"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" [ariaLabel]="t().detail.moreActions"/>
         </app-page-header>
 
         @if (project.description) {
@@ -33,20 +33,20 @@
 
         <div class="flex items-center justify-between gap-2 mb-3">
             <h2 class="text-section font-bold text-writing">
-                Renters <span class="font-medium text-writing-minor tabular-nums">({{ renters().length }})</span>
+                {{ t().detail.renters }} <span class="font-medium text-writing-minor tabular-nums">({{ renters().length }})</span>
             </h2>
             <button type="button" class="btn btn-primary shrink-0" (click)="addRenter()">
                 <ng-icon [svg]="featherPlus"/>
-                Add renter
+                {{ t().detail.addRenter }}
             </button>
         </div>
 
         @if (renters().length === 0) {
-            <app-empty-state title="Add the first renter"
-                             text="Note who came to see the apartment — when they visited, their family, and where they stand.">
+            <app-empty-state [title]="t().detail.emptyTitle"
+                             [text]="t().detail.emptyText">
                 <button type="button" class="btn btn-primary" (click)="addRenter()">
                     <ng-icon [svg]="featherPlus"/>
-                    Add renter
+                    {{ t().detail.addRenter }}
                 </button>
             </app-empty-state>
         } @else {
@@ -56,13 +56,13 @@
                 <table class="w-full text-meta min-w-[680px]">
                     <thead>
                         <tr class="text-start text-writing-minor border-b border-line">
-                            <th class="font-semibold px-4 py-3">Renter</th>
-                            <th class="font-semibold px-4 py-3">Status</th>
-                            <th class="font-semibold px-4 py-3">Family</th>
-                            <th class="font-semibold px-4 py-3 whitespace-nowrap">Visit</th>
-                            <th class="font-semibold px-4 py-3 text-end">Agreed rent</th>
-                            <th class="font-semibold px-4 py-3 text-center">Saw</th>
-                            <th class="font-semibold px-4 py-3 text-end">Actions</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.renter }}</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.status }}</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.family }}</th>
+                            <th class="font-semibold px-4 py-3 whitespace-nowrap">{{ t().detail.columns.visit }}</th>
+                            <th class="font-semibold px-4 py-3 text-end">{{ t().detail.columns.agreedRent }}</th>
+                            <th class="font-semibold px-4 py-3 text-center">{{ t().detail.columns.saw }}</th>
+                            <th class="font-semibold px-4 py-3 text-end">{{ t().detail.columns.actions }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line-subtle">
@@ -73,48 +73,48 @@
                                             class="flex items-center gap-2 text-start w-full rounded-md"
                                             [attr.aria-expanded]="expandedMap()[renter.id]"
                                             (click)="toggleExpand(renter)">
-                                        <ng-icon [svg]="featherChevronRight"
-                                                 class="shrink-0 text-writing-minor transition-transform"
-                                                 [class.rotate-90]="expandedMap()[renter.id]"/>
+                                        <span class="inline-flex shrink-0 rtl:-scale-x-100">
+                                            <ng-icon [svg]="featherChevronRight"
+                                                     class="text-writing-minor transition-transform"
+                                                     [class.rotate-90]="expandedMap()[renter.id]"/>
+                                        </span>
                                         <span class="min-w-0">
                                             <span class="font-medium text-writing block truncate max-w-[200px]" dir="auto">
-                                                {{ renter.name || 'Unnamed' }}
+                                                {{ renter.name || t().common.unnamed }}
                                             </span>
                                             <span class="text-label text-writing-minor">
-                                                @if (renter.has_animals) { animals }
+                                                @if (renter.has_animals) { {{ t().detail.animals }} }
                                                 @if (renter.has_animals && renter.long_term) { · }
-                                                @if (renter.long_term) { long term }
+                                                @if (renter.long_term) { {{ t().detail.longTerm }} }
                                             </span>
                                         </span>
                                     </button>
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-caption py-1 px-2 w-[160px]"
-                                            aria-label="Status"
+                                            [attr.aria-label]="t().common.status"
                                             [disabled]="savingFieldId() === renter.id"
                                             (change)="onStatusChange(renter, $any($event.target).value)">
                                         @for (status of statusOptions; track status) {
-                                            <option [value]="status" [selected]="status === renter.status">{{ renterStatusLabels[status] }}</option>
+                                            <option [value]="status" [selected]="status === renter.status">{{ t().renterStatuses[status] }}</option>
                                         }
                                     </select>
                                 </td>
-                                <td class="px-4 py-3 text-writing-minor">{{ familyStatusLabels[renter.family_status] }}</td>
+                                <td class="px-4 py-3 text-writing-minor">{{ t().familyStatuses[renter.family_status] }}</td>
                                 <td class="px-4 py-3 text-writing-minor whitespace-nowrap">
-                                    {{ renter.visit_time ? (renter.visit_time | date:'short') : '—' }}
+                                    {{ visitLabels()[renter.id] }}
                                 </td>
                                 <td class="px-4 py-3 text-end text-writing whitespace-nowrap tabular-nums">
-                                    @if (renter.agreed_rent !== null) {
-                                        {{ currencySymbols[project.currency] }}{{ renter.agreed_rent }}
-                                    } @else { — }
+                                    {{ rentLabels()[renter.id] ?? '—' }}
                                 </td>
-                                <td class="px-4 py-3 text-center text-writing-minor">{{ renter.saw_apartment ? 'Yes' : '—' }}</td>
+                                <td class="px-4 py-3 text-center text-writing-minor">{{ renter.saw_apartment ? t().detail.yes : '—' }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button type="button" class="icon-btn" aria-label="Edit renter" title="Edit"
+                                        <button type="button" class="icon-btn" [attr.aria-label]="t().detail.editRenter" [title]="t().common.edit"
                                                 (click)="editRenter(renter)">
                                             <ng-icon [svg]="featherEdit"/>
                                         </button>
-                                        <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete renter" title="Delete"
+                                        <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().detail.deleteRenter" [title]="t().common.delete"
                                                 (click)="deleteRenter(renter)">
                                             <ng-icon [svg]="featherTrash2"/>
                                         </button>
@@ -126,12 +126,12 @@
                                     <td colspan="7" class="px-4 py-4">
                                         <app-renter-details-panel
                                             [renter]="renter"
-                                            [currencySymbol]="currencySymbols[project.currency]"></app-renter-details-panel>
+                                            [currency]="project.currency"></app-renter-details-panel>
                                         <div class="mt-3">
                                             <button type="button" class="text-caption text-writing hover:underline flex items-center gap-1"
                                                     (click)="editRenter(renter)">
                                                 <ng-icon [svg]="featherEdit"/>
-                                                Edit full details
+                                                {{ t().detail.editFullDetails }}
                                             </button>
                                         </div>
                                     </td>
@@ -150,28 +150,30 @@
                             <button type="button" class="flex items-start gap-2 text-start flex-1 min-w-0 rounded-md"
                                     [attr.aria-expanded]="expandedMap()[renter.id]"
                                     (click)="toggleExpand(renter)">
-                                <ng-icon [svg]="featherChevronRight"
-                                         class="shrink-0 mt-1 text-writing-minor transition-transform"
-                                         [class.rotate-90]="expandedMap()[renter.id]"/>
+                                <span class="inline-flex shrink-0 mt-1 rtl:-scale-x-100">
+                                    <ng-icon [svg]="featherChevronRight"
+                                             class="text-writing-minor transition-transform"
+                                             [class.rotate-90]="expandedMap()[renter.id]"/>
+                                </span>
                                 <span class="min-w-0">
                                     <span class="text-ui font-semibold text-writing block break-words" dir="auto">
-                                        {{ renter.name || 'Unnamed' }}
+                                        {{ renter.name || t().common.unnamed }}
                                     </span>
                                     <span class="text-caption text-writing-minor">
-                                        {{ familyStatusLabels[renter.family_status] }}
-                                        @if (renter.agreed_rent !== null) {
-                                            · {{ currencySymbols[project.currency] }}{{ renter.agreed_rent }}
+                                        {{ t().familyStatuses[renter.family_status] }}
+                                        @if (rentLabels()[renter.id]; as rent) {
+                                            · {{ rent }}
                                         }
-                                        @if (renter.saw_apartment) { · saw }
+                                        @if (renter.saw_apartment) { · {{ t().detail.saw }} }
                                     </span>
                                 </span>
                             </button>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn" aria-label="Edit renter"
+                                <button type="button" class="icon-btn" [attr.aria-label]="t().detail.editRenter"
                                         (click)="editRenter(renter)">
                                     <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete renter"
+                                <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().detail.deleteRenter"
                                         (click)="deleteRenter(renter)">
                                     <ng-icon [svg]="featherTrash2"/>
                                 </button>
@@ -179,13 +181,13 @@
                         </div>
 
                         <div class="mt-3 flex flex-col gap-1">
-                            <span class="eyebrow">Status</span>
+                            <span class="eyebrow">{{ t().common.status }}</span>
                             <select class="main-input text-meta"
-                                    aria-label="Status"
+                                    [attr.aria-label]="t().common.status"
                                     [disabled]="savingFieldId() === renter.id"
                                     (change)="onStatusChange(renter, $any($event.target).value)">
                                 @for (status of statusOptions; track status) {
-                                    <option [value]="status" [selected]="status === renter.status">{{ renterStatusLabels[status] }}</option>
+                                    <option [value]="status" [selected]="status === renter.status">{{ t().renterStatuses[status] }}</option>
                                 }
                             </select>
                         </div>
@@ -194,7 +196,7 @@
                             <div class="mt-4 pt-4 border-t border-line-subtle">
                                 <app-renter-details-panel
                                     [renter]="renter"
-                                    [currencySymbol]="currencySymbols[project.currency]"></app-renter-details-panel>
+                                    [currency]="project.currency"></app-renter-details-panel>
                             </div>
                         }
                     </div>

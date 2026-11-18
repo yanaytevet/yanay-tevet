@@ -21,12 +21,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
-import {
-  CONTACT_METHOD_LABELS,
-  CONTACT_METHOD_ORDER,
-  PROSPECT_STATUS_LABELS,
-  PROSPECT_STATUS_ORDER,
-} from '../apartment-hunt.constants';
+import {CONTACT_METHOD_ORDER, LIKED_LEVELS, PROSPECT_STATUS_ORDER} from '../apartment-hunt.constants';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {APARTMENT_HUNT_STRINGS} from '../i18n';
 
 type ContactGroup = FormGroup<{
   method: FormControl<ContactMethod>;
@@ -46,6 +43,7 @@ export class ProspectFormComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
   private readonly filesUploadService = inject(FilesUploadService);
+  protected readonly t = injectStrings(APARTMENT_HUNT_STRINGS);
 
   readonly projectId = signal<number>(0);
   readonly prospectId = signal<number | null>(null);
@@ -54,7 +52,7 @@ export class ProspectFormComponent {
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
   readonly isUploading = signal<boolean>(false);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly images = signal<ApartmentImageSchema[]>([]);
 
   readonly form = new FormGroup({
@@ -86,10 +84,10 @@ export class ProspectFormComponent {
   });
 
   readonly statusOptions = PROSPECT_STATUS_ORDER;
-  readonly statusLabels = PROSPECT_STATUS_LABELS;
   readonly contactMethodOptions = CONTACT_METHOD_ORDER;
-  readonly contactMethodLabels = CONTACT_METHOD_LABELS;
-  readonly likedLevels = [1, 2, 3, 4, 5];
+  readonly likedLevels = LIKED_LEVELS;
+  readonly likedLabels = computed<Record<number, string>>(() =>
+    Object.fromEntries(LIKED_LEVELS.map(level => [level, fill(this.t().prospectForm.likedValue, {level})])));
 
   protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherPlus = featherPlus;
@@ -122,7 +120,7 @@ export class ProspectFormComponent {
 
   private async loadProspect(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const res = await getApartmentProspectView({path: {object_id: id}});
       const p = res.data;
@@ -147,7 +145,7 @@ export class ProspectFormComponent {
       this.contacts.set(p.contacts.map(c => this.buildContactGroup(c.method, c.value, c.label)));
       this.images.set(p.images);
     } catch {
-      this.loadError.set('Could not load this apartment. It may have been deleted.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -187,7 +185,8 @@ export class ProspectFormComponent {
       }
       await this.routingService.navigateToApartmentHuntProject(this.projectId());
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `Failed to save apartment: ${err}`});
+      const t = this.t();
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: fill(t.prospectForm.saveFailed, {error: `${err}`})});
     } finally {
       this.isSaving.set(false);
     }
@@ -213,7 +212,8 @@ export class ProspectFormComponent {
       );
       this.images.set(updated.images);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `Failed to upload image: ${err}`});
+      const t = this.t();
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: fill(t.prospectForm.uploadFailed, {error: `${err}`})});
     } finally {
       this.isUploading.set(false);
     }
@@ -224,7 +224,8 @@ export class ProspectFormComponent {
       await deleteApartmentImageView({path: {object_id: image.id}});
       this.images.update(prev => prev.filter(i => i.id !== image.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `Failed to delete image: ${err}`});
+      const t = this.t();
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: fill(t.prospectForm.deletePhotoFailed, {error: `${err}`})});
     }
   }
 }

@@ -1,28 +1,28 @@
 <div class="page-wide">
 
-    <app-page-header title="Villa Villekulla" subtitle="Properties you can book.">
+    <app-page-header [title]="t().list.title" [subtitle]="t().list.subtitle">
         @if (isSiteAdmin()) {
             <button type="button" class="btn btn-primary" (click)="createProject()">
                 <ng-icon [svg]="featherPlus"/>
-                New property
+                {{ t().list.newProperty }}
             </button>
         }
     </app-page-header>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading properties"/>
+        <app-loading-state [label]="t().list.loading"/>
     } @else if (projects().length === 0) {
         @if (isSiteAdmin()) {
-            <app-empty-state title="Create your first property"
-                             text="Add a property, then invite friends to book its unit.">
+            <app-empty-state [title]="t().list.emptyAdminTitle"
+                             [text]="t().list.emptyAdminText">
                 <button type="button" class="btn btn-primary" (click)="createProject()">
                     <ng-icon [svg]="featherPlus"/>
-                    New property
+                    {{ t().list.newProperty }}
                 </button>
             </app-empty-state>
         } @else {
-            <app-empty-state title="Ask the host for an invite"
-                             text="Once the host invites you, the property's booking calendar shows up here."/>
+            <app-empty-state [title]="t().list.emptyGuestTitle"
+                             [text]="t().list.emptyGuestText"/>
         }
     } @else {
         <div class="grid grid-cols-1 @md:grid-cols-2 gap-3">
@@ -35,7 +35,7 @@
                             <div class="text-meta text-writing-minor truncate" dir="auto">{{ project.description }}</div>
                         }
                     </div>
-                    <ng-icon [svg]="featherChevronRight" class="text-xl text-writing-least shrink-0" aria-hidden="true"/>
+                    <ng-icon [svg]="featherChevronRight" class="text-xl text-writing-least shrink-0 rtl:-scale-x-100" aria-hidden="true"/>
                 </a>
             }
         </div>

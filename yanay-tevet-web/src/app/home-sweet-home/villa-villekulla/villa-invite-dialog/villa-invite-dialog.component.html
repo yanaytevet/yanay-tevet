@@ -1,22 +1,22 @@
 <div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-1">
-        <h2 class="text-section font-bold text-writing">Invite people</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+        <h2 class="text-section font-bold text-writing">{{ t().invite.title }}</h2>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().common.close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
-    <p class="text-meta text-writing-minor mb-5">Friends can view the calendar and book the unit. Co-admins can also manage bookings and invite others.</p>
+    <p class="text-meta text-writing-minor mb-5">{{ t().invite.intro }}</p>
 
     <div class="flex flex-col gap-2 mb-5">
         <div class="flex flex-col gap-1.5">
-            <span class="input-label">Username or email</span>
-            <input type="text" dir="auto" class="main-input w-full" placeholder="username or email"
+            <span class="input-label">{{ t().invite.identifier }}</span>
+            <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().invite.identifierPlaceholder"
                    [formControl]="identifierCtrl"
                    (keyup.enter)="onInvite()" />
         </div>
         <div class="flex items-center gap-2">
-            <div class="flex rounded-full bg-layer-3 p-0.5" role="group" aria-label="Role">
+            <div class="flex rounded-full bg-layer-3 p-0.5" role="group" [attr.aria-label]="t().invite.role">
                 <button type="button"
                         class="px-3 py-1 text-caption font-semibold rounded-full transition-colors"
                         [attr.aria-pressed]="role() === 'collaborator'"
@@ -24,7 +24,7 @@
                         [class.text-on-accent]="role() === 'collaborator'"
                         [class.text-writing-minor]="role() !== 'collaborator'"
                         (click)="setRole('collaborator')">
-                    Friend
+                    {{ t().invite.roles.collaborator }}
                 </button>
                 <button type="button"
                         class="px-3 py-1 text-caption font-semibold rounded-full transition-colors"
@@ -33,35 +33,35 @@
                         [class.text-on-accent]="role() === 'owner'"
                         [class.text-writing-minor]="role() !== 'owner'"
                         (click)="setRole('owner')">
-                    Co-admin
+                    {{ t().invite.roles.owner }}
                 </button>
             </div>
             <button type="button" class="btn btn-primary ms-auto"
                     [disabled]="isInviting()" (click)="onInvite()">
                 <ng-icon [svg]="featherUserPlus"/>
-                Invite
+                {{ t().invite.invite }}
             </button>
         </div>
     </div>
 
-    <div class="eyebrow mb-2">People with access</div>
+    <div class="eyebrow mb-2">{{ t().invite.peopleWithAccess }}</div>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading people"/>
+        <app-loading-state [label]="t().invite.loading"/>
     } @else {
         <div class="flex flex-col gap-1">
             @for (member of members(); track member.user_id) {
                 <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-layer-3">
                     <div class="min-w-0">
-                        <div class="text-body text-writing truncate">{{ member.full_name || member.username }}</div>
-                        <div class="text-caption text-writing-minor truncate">{{ member.username }}</div>
+                        <div class="text-body text-writing truncate"><bdi>{{ member.full_name || member.username }}</bdi></div>
+                        <div class="text-caption text-writing-minor truncate"><bdi>{{ member.username }}</bdi></div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="chip bg-layer-2">
-                            {{ member.role === 'owner' ? 'Co-admin' : 'Friend' }}
+                            {{ t().invite.roles[member.role] }}
                         </span>
                         <button type="button" class="icon-btn icon-btn-danger"
-                                [attr.aria-label]="'Remove ' + (member.full_name || member.username)"
+                                [attr.aria-label]="removeLabels()[member.user_id]"
                                 [disabled]="removingUserId() === member.user_id"
                                 (click)="onRemove(member)">
                             <ng-icon [svg]="featherX"/>
@@ -72,15 +72,15 @@
         </div>
 
         @if (pendingInvitations().length > 0) {
-            <div class="eyebrow mt-5 mb-2">Pending invitations</div>
+            <div class="eyebrow mt-5 mb-2">{{ t().invite.pending }}</div>
             <div class="flex flex-col gap-1">
                 @for (invitation of pendingInvitations(); track invitation.email) {
                     <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-layer-3">
                         <div class="flex items-center gap-2 min-w-0">
                             <ng-icon [svg]="featherMail" class="h-4 w-4 text-writing-minor shrink-0"></ng-icon>
-                            <div class="text-body text-writing truncate">{{ invitation.email }}</div>
+                            <div class="text-body text-writing truncate"><bdi>{{ invitation.email }}</bdi></div>
                         </div>
-                        <span class="chip bg-layer-2 shrink-0">Invited</span>
+                        <span class="chip bg-layer-2 shrink-0">{{ t().invite.invited }}</span>
                     </div>
                 }
             </div>
@@ -88,6 +88,6 @@
     }
 
     <div class="flex justify-end mt-6">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Done</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().invite.done }}</button>
     </div>
 </div>

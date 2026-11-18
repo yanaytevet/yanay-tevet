@@ -1,29 +1,29 @@
 <div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-1">
-        <h2 class="text-section font-bold text-writing">Book the unit</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+        <h2 class="text-section font-bold text-writing">{{ t().bookingDialog.title }}</h2>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().common.close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
-    <p class="text-meta text-writing-minor mb-5">Pick your check-in and check-out dates. The night you check out is free for the next guest.</p>
+    <p class="text-meta text-writing-minor mb-5">{{ t().bookingDialog.intro }}</p>
 
     <div class="flex gap-3 mb-4">
         <div class="flex-1 flex flex-col gap-1.5">
-            <span class="input-label">Check-in</span>
+            <span class="input-label">{{ t().bookingDialog.checkIn }}</span>
             <input type="date" class="main-input w-full" [formControl]="startCtrl" />
         </div>
         <div class="flex-1 flex flex-col gap-1.5">
-            <span class="input-label">Check-out</span>
+            <span class="input-label">{{ t().bookingDialog.checkOut }}</span>
             <input type="date" class="main-input w-full" [formControl]="endCtrl" />
         </div>
     </div>
 
     @if (showBookFor) {
         <div class="flex flex-col gap-1.5 mb-4">
-            <span class="input-label">Booking for</span>
+            <span class="input-label">{{ t().bookingDialog.bookingFor }}</span>
             <select class="main-input w-full" [formControl]="bookForCtrl">
-                @for (option of bookForOptions; track option.id) {
+                @for (option of bookForOptions(); track option.id) {
                     <option [ngValue]="option.id">{{ option.name }}</option>
                 }
             </select>
@@ -31,9 +31,9 @@
     }
 
     <div class="flex flex-col gap-1.5 mb-4">
-        <span class="input-label">Note (optional)</span>
+        <span class="input-label">{{ t().bookingDialog.note }}</span>
         <textarea class="main-input w-full" rows="2" dir="auto"
-                  placeholder="e.g. visiting with the kids" [formControl]="noteCtrl"></textarea>
+                  [placeholder]="t().bookingDialog.notePlaceholder" [formControl]="noteCtrl"></textarea>
     </div>
 
     @if (errorMsg()) {
@@ -41,7 +41,7 @@
     }
 
     <div class="flex justify-end gap-2">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
-        <button type="button" class="btn btn-primary" [disabled]="isBooking() || errorMsg() !== null" (click)="onBook()">Book</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().common.cancel }}</button>
+        <button type="button" class="btn btn-primary" [disabled]="isBooking() || errorMsg() !== null" (click)="onBook()">{{ t().bookingDialog.book }}</button>
     </div>
 </div>

@@ -16,12 +16,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
-import {
-  FAMILY_STATUS_LABELS,
-  FAMILY_STATUS_ORDER,
-  RENTER_STATUS_LABELS,
-  RENTER_STATUS_ORDER,
-} from '../renters-crm.constants';
+import {FAMILY_STATUS_ORDER, RENTER_STATUS_ORDER} from '../renters-crm.constants';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {RENTERS_CRM_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-renter-form',
@@ -34,6 +31,7 @@ export class RenterFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(RENTERS_CRM_STRINGS);
 
   readonly projectId = signal<number>(0);
   readonly renterId = signal<number | null>(null);
@@ -41,7 +39,7 @@ export class RenterFormComponent {
   readonly isEditMode = computed(() => this.renterId() !== null);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
 
   readonly form = new FormGroup({
     name: new FormControl<string>('', {nonNullable: true}),
@@ -59,9 +57,7 @@ export class RenterFormComponent {
   readonly canSave = computed(() => !!this.nameValue()?.trim() && !this.isSaving() && !this.isLoading());
 
   readonly statusOptions = RENTER_STATUS_ORDER;
-  readonly statusLabels = RENTER_STATUS_LABELS;
   readonly familyStatusOptions = FAMILY_STATUS_ORDER;
-  readonly familyStatusLabels = FAMILY_STATUS_LABELS;
 
   protected readonly featherArrowLeft = featherArrowLeft;
 
@@ -81,7 +77,7 @@ export class RenterFormComponent {
 
   private async loadRenter(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const res = await getRenterProspectView({path: {object_id: id}});
       const r = res.data;
@@ -97,7 +93,7 @@ export class RenterFormComponent {
         notes: r.notes,
       });
     } catch {
-      this.loadError.set('Could not load this renter. It may have been deleted.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -145,7 +141,8 @@ export class RenterFormComponent {
       }
       await this.routingService.navigateToRentersCrmProject(this.projectId());
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `Failed to save renter: ${err}`});
+      const t = this.t();
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: fill(t.renterForm.saveFailed, {error: `${err}`})});
     } finally {
       this.isSaving.set(false);
     }

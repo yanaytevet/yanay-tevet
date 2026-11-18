@@ -1,20 +1,20 @@
 <div class="page-wide">
 
-    <app-page-header title="Apartment Hunt" subtitle="Your rental search projects.">
+    <app-page-header [title]="t().list.title" [subtitle]="t().list.subtitle">
         <button type="button" class="btn btn-primary" (click)="createProject()">
             <ng-icon [svg]="featherPlus"/>
-            New project
+            {{ t().list.newProject }}
         </button>
     </app-page-header>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading projects"/>
+        <app-loading-state [label]="t().list.loading"/>
     } @else if (projects().length === 0) {
-        <app-empty-state title="Start your apartment search"
-                         text="A project holds the apartments you're considering for one search — their status, rent, contacts and photos.">
+        <app-empty-state [title]="t().list.emptyTitle"
+                         [text]="t().list.emptyText">
             <button type="button" class="btn btn-primary" (click)="createProject()">
                 <ng-icon [svg]="featherPlus"/>
-                New project
+                {{ t().list.newProject }}
             </button>
         </app-empty-state>
     } @else {
@@ -24,16 +24,16 @@
                     <div class="flex items-start justify-between gap-3">
                         <div class="text-ui font-semibold text-writing truncate" dir="auto">{{ project.name }}</div>
                         <span class="chip shrink-0 {{ statusFinished()[project.id] ? '' : 'chip-accent' }}">
-                            {{ statusLabels[project.status] }}
+                            {{ t().projectStatuses[project.status] }}
                         </span>
                     </div>
                     @if (project.description) {
                         <p class="text-meta text-writing-minor line-clamp-2 mt-1" dir="auto">{{ project.description }}</p>
                     }
                     <div class="mt-auto pt-3 flex items-center gap-2 text-caption text-writing-minor">
-                        <span>{{ currencyLabels[project.currency] }}</span>
+                        <span>{{ t().currencies[project.currency] }}</span>
                         <span class="text-writing-least" aria-hidden="true">·</span>
-                        <span>{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                        <span>{{ memberCounts()[project.id] }}</span>
                     </div>
                 </a>
             }

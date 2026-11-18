@@ -2,38 +2,38 @@
 
     <div class="flex items-start justify-between mb-4">
         <div>
-            <h2 class="text-section font-bold text-writing">Booking</h2>
-            <p class="text-meta text-writing-minor mt-0.5">{{ booking.start_date }} → {{ booking.end_date }}</p>
+            <h2 class="text-section font-bold text-writing">{{ t().bookingDetails.title }}</h2>
+            <p class="text-meta text-writing-minor mt-0.5">{{ dates() }}</p>
         </div>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().common.close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-xl"/>
         </button>
     </div>
 
     @if (booking.booked_for_name) {
         <div class="text-meta text-writing-minor mb-4">
-            Booked for <span class="text-writing font-medium">{{ booking.booked_for_name }}</span>
+            {{ t().bookingDetails.bookedFor }} <bdi class="text-writing font-medium">{{ booking.booked_for_name }}</bdi>
             @if (bookedByOther) {
-                <span> · by {{ booking.created_by_name }}</span>
+                <span> · <bdi>{{ createdByLabel() }}</bdi></span>
             }
         </div>
     }
 
     <div class="flex flex-col gap-1.5 mb-6">
-        <span class="input-label">Note</span>
+        <span class="input-label">{{ t().bookingDetails.note }}</span>
         <textarea class="main-input w-full" rows="3" dir="auto"
-                  placeholder="Add a note" [formControl]="noteCtrl"></textarea>
+                  [placeholder]="t().bookingDetails.notePlaceholder" [formControl]="noteCtrl"></textarea>
     </div>
 
     <div class="flex items-center justify-between gap-2">
         <button type="button" class="btn btn-secondary hover:text-danger focus-visible:text-danger"
                 [disabled]="isDeleting()" (click)="onCancelBooking()">
             <ng-icon [svg]="featherTrash2"/>
-            Cancel booking
+            {{ t().bookingDetails.cancelBooking }}
         </button>
         <div class="flex gap-2">
-            <button type="button" class="btn btn-secondary" (click)="onClose()">Close</button>
-            <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="onSave()">Save</button>
+            <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().common.close }}</button>
+            <button type="button" class="btn btn-primary" [disabled]="isSaving()" (click)="onSave()">{{ t().common.save }}</button>
         </div>
     </div>
 </div>

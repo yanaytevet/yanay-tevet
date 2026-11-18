@@ -2,29 +2,29 @@
 
     <a [routerLink]="allProjectsUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        All projects
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().detail.allProjects }}
     </a>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading project"/>
+        <app-loading-state [label]="t().detail.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="allProjectsUrl" backLabel="Back to projects"/>
+        <app-error-state [text]="t().common.loadProjectError" [backUrl]="allProjectsUrl" [backLabel]="t().detail.backToProjects"/>
     } @else if (project(); as project) {
 
         <app-page-header [title]="project.name" [subtitle]="headerSubtitle()">
             @if (isFinished()) {
-                <span class="chip">{{ projectStatusLabels[project.status] }}</span>
+                <span class="chip">{{ t().projectStatuses[project.status] }}</span>
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
                 <ng-icon [svg]="featherShare2"/>
-                Share
+                {{ t().detail.share }}
             </button>
             <button type="button" class="btn btn-secondary btn-sm" (click)="editProject()">
                 <ng-icon [svg]="featherEdit"/>
-                Edit
+                {{ t().common.edit }}
             </button>
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More project actions"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" [ariaLabel]="t().detail.moreActions"/>
         </app-page-header>
 
         @if (project.description) {
@@ -33,20 +33,20 @@
 
         <div class="flex items-center justify-between gap-2 mb-3">
             <h2 class="text-section font-bold text-writing">
-                Apartments <span class="font-medium text-writing-minor tabular-nums">({{ prospects().length }})</span>
+                {{ t().detail.apartments }} <span class="font-medium text-writing-minor tabular-nums">({{ prospects().length }})</span>
             </h2>
             <button type="button" class="btn btn-primary shrink-0" (click)="addProspect()">
                 <ng-icon [svg]="featherPlus"/>
-                Add apartment
+                {{ t().detail.addApartment }}
             </button>
         </div>
 
         @if (prospects().length === 0) {
-            <app-empty-state title="Add the first apartment"
-                             text="Track each place you're considering — its status, rent, contacts and photos — and compare them side by side.">
+            <app-empty-state [title]="t().detail.emptyTitle"
+                             [text]="t().detail.emptyText">
                 <button type="button" class="btn btn-primary" (click)="addProspect()">
                     <ng-icon [svg]="featherPlus"/>
-                    Add apartment
+                    {{ t().detail.addApartment }}
                 </button>
             </app-empty-state>
         } @else {
@@ -56,14 +56,14 @@
                 <table class="w-full text-meta min-w-[680px]">
                     <thead>
                         <tr class="text-start text-writing-minor border-b border-line">
-                            <th class="font-semibold px-4 py-3">Apartment</th>
-                            <th class="font-semibold px-4 py-3">Status</th>
-                            <th class="font-semibold px-4 py-3">Town</th>
-                            <th class="font-semibold px-4 py-3 text-end">Rent</th>
-                            <th class="font-semibold px-4 py-3">Liked</th>
-                            <th class="font-semibold px-4 py-3 text-center">Mamad</th>
-                            <th class="font-semibold px-4 py-3 whitespace-nowrap">Updated</th>
-                            <th class="font-semibold px-4 py-3 text-end">Actions</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.apartment }}</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.status }}</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.town }}</th>
+                            <th class="font-semibold px-4 py-3 text-end">{{ t().detail.columns.rent }}</th>
+                            <th class="font-semibold px-4 py-3">{{ t().detail.columns.liked }}</th>
+                            <th class="font-semibold px-4 py-3 text-center">{{ t().detail.columns.mamad }}</th>
+                            <th class="font-semibold px-4 py-3 whitespace-nowrap">{{ t().detail.columns.updated }}</th>
+                            <th class="font-semibold px-4 py-3 text-end">{{ t().detail.columns.actions }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-line-subtle">
@@ -74,55 +74,55 @@
                                             class="flex items-center gap-2 text-start w-full rounded-md"
                                             [attr.aria-expanded]="expandedMap()[prospect.id]"
                                             (click)="toggleExpand(prospect)">
-                                        <ng-icon [svg]="featherChevronRight"
-                                                 class="shrink-0 text-writing-minor transition-transform"
-                                                 [class.rotate-90]="expandedMap()[prospect.id]"/>
+                                        <span class="inline-flex shrink-0 rtl:-scale-x-100">
+                                            <ng-icon [svg]="featherChevronRight"
+                                                     class="text-writing-minor transition-transform"
+                                                     [class.rotate-90]="expandedMap()[prospect.id]"/>
+                                        </span>
                                         <span class="min-w-0">
                                             <span class="font-medium text-writing block truncate max-w-[200px]" dir="auto">
-                                                {{ prospect.title || prospect.full_address || 'Untitled' }}
+                                                {{ prospect.title || prospect.full_address || t().common.untitled }}
                                             </span>
                                             @if (prospect.via_agency) {
-                                                <span class="text-label text-writing-minor">via agency</span>
+                                                <span class="text-label text-writing-minor">{{ t().detail.viaAgency }}</span>
                                             }
                                         </span>
                                     </button>
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-caption py-1 px-2 w-[170px]"
-                                            aria-label="Status"
+                                            [attr.aria-label]="t().common.status"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onStatusChange(prospect, $any($event.target).value)">
                                         @for (status of statusOptions; track status) {
-                                            <option [value]="status" [selected]="status === prospect.status">{{ prospectStatusLabels[status] }}</option>
+                                            <option [value]="status" [selected]="status === prospect.status">{{ t().prospectStatuses[status] }}</option>
                                         }
                                     </select>
                                 </td>
                                 <td class="px-4 py-3 text-writing-minor" dir="auto">{{ prospect.town || '—' }}</td>
                                 <td class="px-4 py-3 text-end text-writing whitespace-nowrap tabular-nums">
-                                    @if (prospect.monthly_rent !== null) {
-                                        {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
-                                    } @else { — }
+                                    {{ rentLabels()[prospect.id] ?? '—' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <select class="main-input text-meta py-1 px-2 w-[112px]"
-                                            aria-label="Liked"
+                                            [attr.aria-label]="t().common.liked"
                                             [disabled]="savingFieldId() === prospect.id"
                                             (change)="onLikedChange(prospect, $any($event.target).value)">
-                                        <option value="" [selected]="prospect.liked_level === null">Not rated</option>
+                                        <option value="" [selected]="prospect.liked_level === null">{{ t().common.notRated }}</option>
                                         @for (opt of likedOptions; track opt.value) {
                                             <option [value]="opt.value" [selected]="opt.value === prospect.liked_level">{{ opt.label }}</option>
                                         }
                                     </select>
                                 </td>
-                                <td class="px-4 py-3 text-center text-writing-minor">{{ prospect.has_protected_room ? 'Yes' : '—' }}</td>
-                                <td class="px-4 py-3 text-writing-minor whitespace-nowrap">{{ prospect.updated_at | date:'mediumDate' }}</td>
+                                <td class="px-4 py-3 text-center text-writing-minor">{{ prospect.has_protected_room ? t().detail.yes : '—' }}</td>
+                                <td class="px-4 py-3 text-writing-minor whitespace-nowrap">{{ updatedLabels()[prospect.id] }}</td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-1">
-                                        <button type="button" class="icon-btn" aria-label="Edit apartment" title="Edit"
+                                        <button type="button" class="icon-btn" [attr.aria-label]="t().detail.editApartment" [title]="t().common.edit"
                                                 (click)="editProspect(prospect)">
                                             <ng-icon [svg]="featherEdit"/>
                                         </button>
-                                        <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete apartment" title="Delete"
+                                        <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().detail.deleteApartment" [title]="t().common.delete"
                                                 (click)="deleteProspect(prospect)">
                                             <ng-icon [svg]="featherTrash2"/>
                                         </button>
@@ -134,12 +134,12 @@
                                     <td colspan="8" class="px-4 py-4">
                                         <app-prospect-details-panel
                                             [prospect]="prospect"
-                                            [currencySymbol]="currencySymbols[project.currency]"></app-prospect-details-panel>
+                                            [currency]="project.currency"></app-prospect-details-panel>
                                         <div class="mt-3">
                                             <button type="button" class="text-caption text-writing hover:underline flex items-center gap-1"
                                                     (click)="editProspect(prospect)">
                                                 <ng-icon [svg]="featherEdit"/>
-                                                Edit full details
+                                                {{ t().detail.editFullDetails }}
                                             </button>
                                         </div>
                                     </td>
@@ -158,28 +158,30 @@
                             <button type="button" class="flex items-start gap-2 text-start flex-1 min-w-0 rounded-md"
                                     [attr.aria-expanded]="expandedMap()[prospect.id]"
                                     (click)="toggleExpand(prospect)">
-                                <ng-icon [svg]="featherChevronRight"
-                                         class="shrink-0 mt-1 text-writing-minor transition-transform"
-                                         [class.rotate-90]="expandedMap()[prospect.id]"/>
+                                <span class="inline-flex shrink-0 mt-1 rtl:-scale-x-100">
+                                    <ng-icon [svg]="featherChevronRight"
+                                             class="text-writing-minor transition-transform"
+                                             [class.rotate-90]="expandedMap()[prospect.id]"/>
+                                </span>
                                 <span class="min-w-0">
                                     <span class="text-ui font-semibold text-writing block break-words" dir="auto">
-                                        {{ prospect.title || prospect.full_address || 'Untitled' }}
+                                        {{ prospect.title || prospect.full_address || t().common.untitled }}
                                     </span>
                                     <span class="text-caption text-writing-minor">
-                                        {{ prospect.town || 'No town' }}
-                                        @if (prospect.monthly_rent !== null) {
-                                            · {{ currencySymbols[project.currency] }}{{ prospect.monthly_rent }}
+                                        <bdi>{{ prospect.town || t().detail.noTown }}</bdi>
+                                        @if (rentLabels()[prospect.id]; as rent) {
+                                            · {{ rent }}
                                         }
-                                        @if (prospect.has_protected_room) { · mamad }
+                                        @if (prospect.has_protected_room) { · {{ t().detail.mamad }} }
                                     </span>
                                 </span>
                             </button>
                             <div class="flex items-center gap-1 shrink-0">
-                                <button type="button" class="icon-btn" aria-label="Edit apartment"
+                                <button type="button" class="icon-btn" [attr.aria-label]="t().detail.editApartment"
                                         (click)="editProspect(prospect)">
                                     <ng-icon [svg]="featherEdit"/>
                                 </button>
-                                <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete apartment"
+                                <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().detail.deleteApartment"
                                         (click)="deleteProspect(prospect)">
                                     <ng-icon [svg]="featherTrash2"/>
                                 </button>
@@ -188,23 +190,23 @@
 
                         <div class="grid grid-cols-2 gap-3 mt-3">
                             <div class="flex flex-col gap-1">
-                                <span class="eyebrow">Status</span>
+                                <span class="eyebrow">{{ t().common.status }}</span>
                                 <select class="main-input text-meta"
-                                        aria-label="Status"
+                                        [attr.aria-label]="t().common.status"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onStatusChange(prospect, $any($event.target).value)">
                                     @for (status of statusOptions; track status) {
-                                        <option [value]="status" [selected]="status === prospect.status">{{ prospectStatusLabels[status] }}</option>
+                                        <option [value]="status" [selected]="status === prospect.status">{{ t().prospectStatuses[status] }}</option>
                                     }
                                 </select>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <span class="eyebrow">Liked</span>
+                                <span class="eyebrow">{{ t().common.liked }}</span>
                                 <select class="main-input text-meta"
-                                        aria-label="Liked"
+                                        [attr.aria-label]="t().common.liked"
                                         [disabled]="savingFieldId() === prospect.id"
                                         (change)="onLikedChange(prospect, $any($event.target).value)">
-                                    <option value="" [selected]="prospect.liked_level === null">Not rated</option>
+                                    <option value="" [selected]="prospect.liked_level === null">{{ t().common.notRated }}</option>
                                     @for (opt of likedOptions; track opt.value) {
                                         <option [value]="opt.value" [selected]="opt.value === prospect.liked_level">{{ opt.label }}</option>
                                     }
@@ -216,7 +218,7 @@
                             <div class="mt-4 pt-4 border-t border-line-subtle">
                                 <app-prospect-details-panel
                                     [prospect]="prospect"
-                                    [currencySymbol]="currencySymbols[project.currency]"></app-prospect-details-panel>
+                                    [currency]="project.currency"></app-prospect-details-panel>
                             </div>
                         }
                     </div>

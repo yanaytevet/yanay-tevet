@@ -1,5 +1,4 @@
 import {Component, computed, inject, signal} from '@angular/core';
-import {DatePipe} from '@angular/common';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {
@@ -31,14 +30,10 @@ import {
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {RoutingService} from '../../shared/services/routing.service';
-import {
-  CURRENCY_LABELS,
-  CURRENCY_SYMBOLS,
-  LIKED_OPTIONS,
-  PROJECT_STATUS_LABELS,
-  PROSPECT_STATUS_LABELS,
-  PROSPECT_STATUS_ORDER,
-} from '../apartment-hunt.constants';
+import {LIKED_OPTIONS, moneyFormat, parseDate, PROSPECT_STATUS_ORDER} from '../apartment-hunt.constants';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {APARTMENT_HUNT_STRINGS} from '../i18n';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
 import {MenuButtonComponent, MenuItem, SEPARATOR} from '../../common/components/menu-button/menu-button.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
@@ -51,7 +46,7 @@ import {ProspectDetailsPanelComponent} from '../prospect-details-panel/prospect-
   selector: 'app-apartment-hunt-project-detail',
   standalone: true,
   imports: [
-    NgIcon, DatePipe, ProspectDetailsPanelComponent, RouterLink, MenuButtonComponent,
+    NgIcon, ProspectDetailsPanelComponent, RouterLink, MenuButtonComponent,
     PageHeaderComponent, EmptyStateComponent, LoadingStateComponent, ErrorStateComponent,
   ],
   providers: [provideIcons({
@@ -67,12 +62,14 @@ export class ProjectDetailComponent {
   readonly allProjectsUrl = this.routingService.getApartmentHuntUrl();
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(APARTMENT_HUNT_STRINGS);
 
   readonly projectId = signal<number | null>(null);
   readonly project = signal<RentalProjectSchema | null>(null);
   readonly prospects = signal<ApartmentProspectSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly isUpdatingStatus = signal<boolean>(false);
   readonly expandedIds = signal<Set<number>>(new Set());
   readonly savingFieldId = signal<number | null>(null);
@@ -93,15 +90,35 @@ export class ProjectDetailComponent {
     if (project === null) {
       return null;
     }
-    const members = `${project.member_count} member${project.member_count === 1 ? '' : 's'}`;
-    return `${CURRENCY_LABELS[project.currency]} · Owner: ${project.owner_username} · ${members}`;
+    const t = this.t();
+    return [
+      t.currencies[project.currency],
+      fill(t.detail.owner, {name: project.owner_username}),
+      plural(this.languageService.language(), project.member_count, t.common.members),
+    ].join(' · ');
+  });
+
+  // Rent and last-update date per apartment, in the site language's format.
+  readonly rentLabels = computed<Record<number, string | null>>(() => {
+    const project = this.project();
+    if (project === null) {
+      return {};
+    }
+    const money = moneyFormat(this.languageService.language(), project.currency);
+    return Object.fromEntries(this.prospects().map(p => [p.id, p.monthly_rent === null ? null : money.format(p.monthly_rent)]));
+  });
+
+  readonly updatedLabels = computed<Record<number, string>>(() => {
+    const format = new Intl.DateTimeFormat(this.languageService.language(), {dateStyle: 'medium'});
+    return Object.fromEntries(this.prospects().map(p => [p.id, format.format(parseDate(p.updated_at))]));
   });
 
   // Share and Edit sit in the header; finishing and deleting live behind "more".
   readonly overflowActions = computed<MenuItem[]>(() => {
+    const t = this.t().detail;
     const actions: MenuItem[] = [
       {
-        display: this.isFinished() ? 'Reopen' : 'Finish',
+        display: this.isFinished() ? t.reopen : t.finish,
         icon: this.isFinished() ? featherRotateCcw : featherCheckCircle,
         disabled: this.isUpdatingStatus(),
         callback: () => void this.toggleFinished(),
@@ -109,14 +126,11 @@ export class ProjectDetailComponent {
     ];
     if (this.isOwner()) {
       actions.push(SEPARATOR);
-      actions.push({display: 'Delete project', icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
+      actions.push({display: t.deleteProject, icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
     }
     return actions;
   });
 
-  readonly currencySymbols = CURRENCY_SYMBOLS;
-  readonly projectStatusLabels = PROJECT_STATUS_LABELS;
-  readonly prospectStatusLabels = PROSPECT_STATUS_LABELS;
   readonly statusOptions = PROSPECT_STATUS_ORDER;
   readonly likedOptions = LIKED_OPTIONS;
 
@@ -143,7 +157,7 @@ export class ProjectDetailComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const [projectRes, prospectsRes] = await Promise.all([
         getRentalProjectView({path: {object_id: id}}),
@@ -152,7 +166,7 @@ export class ProjectDetailComponent {
       this.project.set(projectRes.data);
       this.prospects.set(prospectsRes.data.data);
     } catch {
-      this.loadError.set('Could not load this project. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -187,7 +201,7 @@ export class ProjectDetailComponent {
       const res = await updateApartmentProspectView({body, path: {object_id: prospect.id}});
       this.prospects.update(prev => prev.map(p => (p.id === prospect.id ? res.data : p)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().common.error, text: `${err}`});
     } finally {
       this.savingFieldId.set(null);
     }
@@ -206,13 +220,12 @@ export class ProjectDetailComponent {
       return;
     }
     const finished = this.isFinished();
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: finished ? 'Reopen project' : 'Finish project',
-      text: finished
-        ? 'Reopen this project and mark it active again?'
-        : 'Mark this project as finished? You can reopen it later.',
-      confirmActionName: finished ? 'Reopen' : 'Finish',
-      cancelActionName: 'Cancel',
+      title: finished ? t.detail.reopenTitle : t.detail.finishTitle,
+      text: finished ? t.detail.reopenText : t.detail.finishText,
+      confirmActionName: finished ? t.detail.reopen : t.detail.finish,
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -224,7 +237,7 @@ export class ProjectDetailComponent {
         : await finishRentalProjectView({body: {}, path: {object_id: id}});
       this.project.set(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     } finally {
       this.isUpdatingStatus.set(false);
     }
@@ -235,11 +248,12 @@ export class ProjectDetailComponent {
     if (id === null) {
       return;
     }
+    const t = this.t().detail;
     await this.dialogService.open(ShareDialogComponent, {
       objectId: id,
       isOwner: this.isOwner(),
-      title: 'Share project',
-      subtitle: 'People you add can view and edit this project\'s apartments.',
+      title: t.shareTitle,
+      subtitle: t.shareSubtitle,
       listMembers: async (objectId: number) => {
         const data = (await listProjectMembersView({path: {object_id: objectId}})).data;
         return {members: data.members, pendingInvitations: data.pending_invitations};
@@ -260,13 +274,14 @@ export class ProjectDetailComponent {
     if (project === null) {
       return;
     }
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromTextConfirmationDialog({
-      title: 'Delete project',
-      text: 'This permanently deletes the project and all of its apartments. This cannot be undone.',
-      label: 'Project name',
+      title: t.detail.deleteProject,
+      text: t.detail.deleteProjectText,
+      label: t.detail.projectName,
       validationText: project.name,
-      confirmActionName: 'Delete project',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.deleteProject,
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -275,7 +290,7 @@ export class ProjectDetailComponent {
       await deleteRentalProjectView({path: {object_id: project.id}});
       await this.routingService.navigateToApartmentHunt();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     }
   }
 
@@ -294,12 +309,13 @@ export class ProjectDetailComponent {
   }
 
   async deleteProspect(prospect: ApartmentProspectSchema): Promise<void> {
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete apartment',
-      text: `Delete "${prospect.title || prospect.full_address || 'this apartment'}"?`,
-      confirmActionName: 'Delete',
+      title: t.detail.deleteApartment,
+      text: fill(t.detail.deleteApartmentText, {name: prospect.title || prospect.full_address || t.detail.thisApartment}),
+      confirmActionName: t.common.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.common.cancel,
     });
     if (!confirmed) {
       return;
@@ -308,7 +324,7 @@ export class ProjectDetailComponent {
       await deleteApartmentProspectView({path: {object_id: prospect.id}});
       this.prospects.update(prev => prev.filter(p => p.id !== prospect.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     }
   }
 }

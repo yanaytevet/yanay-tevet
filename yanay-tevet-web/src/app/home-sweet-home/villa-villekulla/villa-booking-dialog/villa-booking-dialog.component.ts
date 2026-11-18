@@ -1,4 +1,4 @@
-import {Component, inject, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherX} from '@ng-icons/feather-icons';
@@ -9,6 +9,8 @@ import {
 } from '../../../../generated-files/api/villa-villekulla';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../../common/dialogs/dialogs.service';
+import {fill, injectStrings} from '../../../shared/i18n/strings';
+import {HOME_SWEET_HOME_STRINGS} from '../../i18n';
 
 export interface VillaBookingDialogData {
   unitId: number;
@@ -46,22 +48,32 @@ function addDays(iso: string, days: number): string {
 })
 export class VillaBookingDialogComponent extends BaseDialogComponent<VillaBookingDialogData, UnitBookingSchema> {
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(HOME_SWEET_HOME_STRINGS);
 
   readonly startCtrl = new FormControl<string>(this.data.defaultStart, {nonNullable: true});
   readonly endCtrl = new FormControl<string>(addDays(this.data.defaultStart, 1), {nonNullable: true});
   readonly noteCtrl = new FormControl<string>('', {nonNullable: true});
   readonly bookForCtrl = new FormControl<number>(this.data.currentUserId, {nonNullable: true});
   readonly isBooking = signal<boolean>(false);
-  readonly errorMsg = signal<string | null>(null);
+  // Which validation message applies; the text itself follows the site language.
+  readonly error = signal<'order' | 'conflict' | null>(null);
+  readonly errorMsg = computed<string | null>(() => {
+    const error = this.error();
+    if (error === null) {
+      return null;
+    }
+    const t = this.t().bookingDialog;
+    return error === 'order' ? t.errorOrder : t.errorConflict;
+  });
 
   // The current user first (the default), then every other project member.
-  readonly bookForOptions: BookForOption[] = [
-    {id: this.data.currentUserId, name: `${this.data.currentUserName} (you)`},
+  readonly bookForOptions = computed<BookForOption[]>(() => [
+    {id: this.data.currentUserId, name: fill(this.t().bookingDialog.youSuffix, {name: this.data.currentUserName})},
     ...this.data.members
       .filter(m => m.user_id !== this.data.currentUserId)
       .map(m => ({id: m.user_id, name: m.full_name || m.username})),
-  ];
-  readonly showBookFor = this.data.canManageAll && this.bookForOptions.length > 1;
+  ]);
+  readonly showBookFor = this.data.canManageAll && this.data.members.some(m => m.user_id !== this.data.currentUserId);
 
   protected readonly featherX = featherX;
 
@@ -76,12 +88,12 @@ export class VillaBookingDialogComponent extends BaseDialogComponent<VillaBookin
     const start = this.startCtrl.value;
     const end = this.endCtrl.value;
     if (!start || !end || end <= start) {
-      this.errorMsg.set('Check-out must be after check-in.');
+      this.error.set('order');
       return;
     }
     // ISO date strings compare chronologically; ranges overlap if each starts before the other ends.
     const conflict = this.data.bookings.some(b => start < b.end_date && end > b.start_date);
-    this.errorMsg.set(conflict ? 'Some of those nights are already booked.' : null);
+    this.error.set(conflict ? 'conflict' : null);
   }
 
   async onBook(): Promise<void> {
@@ -101,7 +113,7 @@ export class VillaBookingDialogComponent extends BaseDialogComponent<VillaBookin
       });
       this.emitClose(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Could not book', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().bookingDialog.bookFailed, text: `${err}`});
     } finally {
       this.isBooking.set(false);
     }

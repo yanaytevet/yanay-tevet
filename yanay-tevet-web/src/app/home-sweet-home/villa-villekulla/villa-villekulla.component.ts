@@ -13,6 +13,8 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {injectStrings} from '../../shared/i18n/strings';
+import {HOME_SWEET_HOME_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-villa-villekulla',
@@ -26,6 +28,7 @@ export class VillaVillekullaComponent {
   private readonly dialogService = inject(DialogService);
   private readonly routingService = inject(RoutingService);
   private readonly router = inject(Router);
+  protected readonly t = injectStrings(HOME_SWEET_HOME_STRINGS);
 
   readonly isLoading = signal<boolean>(true);
   readonly projects = signal<RentalProjectSchema[]>([]);
@@ -59,12 +62,14 @@ export class VillaVillekullaComponent {
   }
 
   async createProject(): Promise<void> {
+    const t = this.t();
     const name = await this.dialogService.getTextFromInputDialog({
-      title: 'Create property',
-      text: 'Name this property. You can invite friends to book its unit once it exists.',
-      label: 'Property name',
-      defaultValue: 'Villa Villekulla',
-      confirmActionName: 'Create',
+      title: t.list.createTitle,
+      text: t.list.createText,
+      label: t.list.propertyName,
+      defaultValue: t.list.defaultName,
+      confirmActionName: t.list.create,
+      cancelActionName: t.common.cancel,
     });
     if (!name) {
       return;
@@ -73,7 +78,7 @@ export class VillaVillekullaComponent {
       const res = await createVillaVillekullaProjectView({body: {name}});
       await this.routingService.navigateToVillaVillekullaProject(res.data.id);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: t.common.error, text: `${err}`});
     }
   }
 }

@@ -1,33 +1,12 @@
-import {ContactMethod, Currency, ProjectStatus, ProspectStatus} from '../../generated-files/api/apartment-hunt';
+import {ContactMethod, Currency, ProspectStatus} from '../../generated-files/api/apartment-hunt';
+import {Language} from '../../generated-files/api/users';
 
-export const CURRENCY_SYMBOLS: Record<Currency, string> = {
-  nis: '₪',
-  usd: '$',
-  eur: '€',
-  gbp: '£',
-};
-
-export const CURRENCY_LABELS: Record<Currency, string> = {
-  nis: 'NIS (₪)',
-  usd: 'USD ($)',
-  eur: 'EUR (€)',
-  gbp: 'GBP (£)',
-};
-
-export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
-  active: 'Active',
-  finished: 'Finished',
-};
-
-export const PROSPECT_STATUS_LABELS: Record<ProspectStatus, string> = {
-  saw: 'Saw',
-  contacted: 'Contacted',
-  waiting_for_invitation: 'Waiting for invitation',
-  saw_waiting_for_them: 'Saw — awaiting them',
-  need_to_decide: 'Need to decide',
-  declined: 'Declined',
-  accepted: 'Accepted',
-  signed: 'Signed',
+// Labels for these live in `i18n/`; this file keeps the order and the ISO codes.
+export const CURRENCY_CODES: Record<Currency, string> = {
+  nis: 'ILS',
+  usd: 'USD',
+  eur: 'EUR',
+  gbp: 'GBP',
 };
 
 export const PROSPECT_STATUS_ORDER: ProspectStatus[] = [
@@ -40,15 +19,6 @@ export const PROSPECT_STATUS_ORDER: ProspectStatus[] = [
   'accepted',
   'signed',
 ];
-
-export const CONTACT_METHOD_LABELS: Record<ContactMethod, string> = {
-  facebook: 'Facebook',
-  whatsapp: 'WhatsApp',
-  phone: 'Phone',
-  email: 'Email',
-  agency: 'Agency',
-  other: 'Other',
-};
 
 export const CONTACT_METHOD_ORDER: ContactMethod[] = [
   'whatsapp',
@@ -71,3 +41,17 @@ export const LIKED_OPTIONS: {value: number; label: string}[] = [
   {value: 5, label: '★★★★★'},
 ];
 
+// An amount in the project's currency, in the site language's format ("₪3,500", "3.500 ₪").
+export function moneyFormat(language: Language, currency: Currency): Intl.NumberFormat {
+  return new Intl.NumberFormat(language, {
+    style: 'currency',
+    currency: CURRENCY_CODES[currency],
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+}
+
+// A 'YYYY-MM-DD' date or an ISO timestamp, as local time ('YYYY-MM-DD' alone would parse as UTC midnight).
+export function parseDate(value: string): Date {
+  return new Date(value.length === 10 ? `${value}T00:00:00` : value);
+}

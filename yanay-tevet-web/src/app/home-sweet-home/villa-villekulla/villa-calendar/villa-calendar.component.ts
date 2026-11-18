@@ -29,6 +29,10 @@ import {PageHeaderComponent} from '../../../common/components/page/page-header/p
 import {EmptyStateComponent} from '../../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../../common/components/page/error-state/error-state.component';
+import {fill, injectStrings} from '../../../shared/i18n/strings';
+import {LanguageService} from '../../../shared/i18n/language.service';
+import {HOME_SWEET_HOME_STRINGS} from '../../i18n';
+import {formatDateRange} from '../villa-dates';
 
 interface DayCell {
   iso: string;
@@ -86,11 +90,13 @@ export class VillaCalendarComponent {
   private readonly authService = inject(AuthenticationService);
   private readonly dialogService = inject(DialogService);
   private readonly routingService = inject(RoutingService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(HOME_SWEET_HOME_STRINGS);
 
   readonly allPropertiesUrl = this.routingService.getVillaVillekullaUrl();
 
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly project = signal<RentalProjectSchema | null>(null);
   readonly unit = signal<UnitSchema | null>(null);
   readonly bookings = signal<UnitBookingSchema[]>([]);
@@ -103,17 +109,22 @@ export class VillaCalendarComponent {
 
   readonly subtitle = computed<string | null>(() => {
     const unit = this.unit();
-    return unit === null ? null : `Pick a free day to book ${unit.name}.`;
+    return unit === null ? null : fill(this.t().calendar.subtitle, {unit: unit.name});
   });
 
   readonly monthLabel = computed<string>(() =>
-    this.viewMonth().toLocaleDateString(undefined, {month: 'long', year: 'numeric'}),
+    new Intl.DateTimeFormat(this.languageService.language(), {month: 'long', year: 'numeric'}).format(this.viewMonth()),
   );
 
-  readonly weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // The grid starts on Sunday; 1 January 2023 was a Sunday.
+  readonly weekdayLabels = computed<string[]>(() => {
+    const format = new Intl.DateTimeFormat(this.languageService.language(), {weekday: 'short'});
+    return Array.from({length: 7}, (_, i) => format.format(new Date(2023, 0, 1 + i)));
+  });
 
   readonly cells = computed<DayCell[]>(() => {
     const month = this.viewMonth();
+    const t = this.t().calendar;
     const userId = this.authService.user()?.id ?? null;
     const bookingByIso = new Map<string, UnitBookingSchema>();
     for (const booking of this.bookings()) {
@@ -146,7 +157,7 @@ export class VillaCalendarComponent {
         booking,
         mine,
         showLabel: isSegmentStart,
-        label: booking === null ? '' : mine ? 'You' : booking.booked_for_name || 'Booked',
+        label: booking === null ? '' : mine ? t.you : booking.booked_for_name || t.booked,
         disabled: isPast && booking === null,
         classes: cellClasses(inMonth, isPast, booking, mine),
       });
@@ -174,7 +185,7 @@ export class VillaCalendarComponent {
 
   private async load(projectId: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const [projectRes, unitsRes, projectsRes] = await Promise.all([
         getRentalProjectView({path: {object_id: projectId}}),
@@ -190,7 +201,7 @@ export class VillaCalendarComponent {
         await this.loadCalendar(unit.id);
       }
     } catch {
-      this.loadError.set('Could not load this property. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -252,7 +263,7 @@ export class VillaCalendarComponent {
         canManageAll: this.canManageAll(),
         members: this.members(),
         currentUserId: currentUser?.id ?? 0,
-        currentUserName: currentUser?.full_name ?? 'You',
+        currentUserName: currentUser?.full_name || this.t().calendar.you,
       },
       45,
     );
@@ -267,10 +278,9 @@ export class VillaCalendarComponent {
       return;
     }
     if (!mine && !this.canManageAll()) {
-      await this.dialogService.showNotificationDialog({
-        title: 'Booked',
-        text: `These dates are taken (${booking.start_date} → ${booking.end_date}).`,
-      });
+      const t = this.t().calendar;
+      const dates = formatDateRange(this.languageService.language(), booking.start_date, booking.end_date);
+      await this.dialogService.showNotificationDialog({title: t.booked, text: fill(t.takenText, {dates})});
       return;
     }
     const changed = await this.dialogService.open<{booking: UnitBookingSchema}, boolean>(
