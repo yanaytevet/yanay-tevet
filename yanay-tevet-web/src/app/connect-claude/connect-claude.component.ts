@@ -2,6 +2,8 @@ import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {getOAuthClientInfoView, OAuthClientInfo, oAuthApproveView} from '../../generated-files/api/mcp';
+import {injectStrings} from '../shared/i18n/strings';
+import {CONNECT_CLAUDE_STRINGS} from './i18n';
 
 const OAUTH_PARAM_KEYS = [
   'client_id', 'redirect_uri', 'scope', 'state',
@@ -17,6 +19,8 @@ export class ConnectClaudeComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   readonly authService = inject(AuthenticationService);
+
+  protected readonly t = injectStrings(CONNECT_CLAUDE_STRINGS);
 
   readonly isSubmitting = signal(false);
   readonly hasValidRequest = signal(true);

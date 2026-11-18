@@ -1,15 +1,15 @@
 <div class="max-w-2xl mx-auto px-6 py-20">
 
   <h1 class="text-hero font-bold text-writing leading-tight mb-3">
-    Contact Me
+    {{ t().title }}
   </h1>
   <p class="text-lead text-writing-minor mb-12">
-    Questions, bug reports, or just saying hi — my inbox is open.
+    {{ t().subtitle }}
   </p>
 
   <div class="card p-6 sm:p-8 flex flex-col gap-4">
     <div class="flex flex-col gap-1">
-      <span class="eyebrow">Email</span>
+      <span class="eyebrow">{{ t().email }}</span>
       <a
         [href]="'mailto:' + supportEmail"
         class="text-heading font-semibold text-accent hover:underline no-underline break-all">
@@ -17,7 +17,7 @@
       </a>
     </div>
     <p class="text-body text-writing-minor leading-relaxed">
-      I'll get back to you when I can. For bugs, a quick description of what happened and how to reproduce it helps a lot.
+      {{ t().body }}
     </p>
   </div>
 

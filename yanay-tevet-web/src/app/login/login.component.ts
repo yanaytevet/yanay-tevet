@@ -4,6 +4,9 @@ import {RoutingService} from '../shared/services/routing.service';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {WebAuthnAuthService} from '../common/services/webauthn-auth.service';
 import {GoogleAuthService} from '../common/services/google-auth.service';
+import {injectStrings} from '../shared/i18n/strings';
+import {LOGIN_STRINGS} from './i18n';
+import {LoginError} from './i18n/en';
 
 @Component({
   selector: 'app-login',
@@ -19,10 +22,12 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
+  protected readonly t = injectStrings(LOGIN_STRINGS);
+
   readonly username = signal('');
   readonly password = signal('');
   readonly showPassword = signal(false);
-  readonly error = signal('');
+  readonly error = signal<LoginError | null>(null);
   readonly usernameFocused = signal(false);
   readonly passwordFocused = signal(false);
   readonly passkeySupported = signal(false);
@@ -44,17 +49,17 @@ export class LoginComponent implements OnInit {
 
   async onGoogleLogin() {
     this.isGoogleLoading.set(true);
-    this.error.set('');
+    this.error.set(null);
     try {
       const code = await this.googleAuthService.signIn();
       await this.authService.loginWithGoogle(code);
       if (this.authService.isLoggedIn()) {
         await this.navigateAfterLogin();
       } else {
-        this.error.set('Google sign-in failed. Please try again.');
+        this.error.set('googleFailed');
       }
     } catch {
-      this.error.set('Google sign-in failed. Please try again.');
+      this.error.set('googleFailed');
     } finally {
       this.isGoogleLoading.set(false);
     }
@@ -66,15 +71,15 @@ export class LoginComponent implements OnInit {
 
   async onSubmit() {
     if (!this.username().trim() || !this.password().trim()) {
-      this.error.set('Please enter your username and password.');
+      this.error.set('missingCredentials');
       return;
     }
-    this.error.set('');
+    this.error.set(null);
     await this.authService.tryLogin(this.username(), this.password());
     if (this.authService.isLoggedIn()) {
       await this.navigateAfterLogin();
     } else {
-      this.error.set('Incorrect username or password. Please try again.');
+      this.error.set('incorrectCredentials');
     }
   }
 

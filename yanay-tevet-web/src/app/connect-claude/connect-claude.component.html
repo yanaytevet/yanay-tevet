@@ -3,32 +3,27 @@
 
     @if (!hasValidRequest()) {
       <div class="flex flex-col gap-2">
-        <h1 class="text-section font-semibold text-writing">Invalid request</h1>
+        <h1 class="text-section font-semibold text-writing">{{ t().invalidTitle }}</h1>
         <p class="text-body text-writing-minor leading-relaxed">
-          This authorization link is invalid or has expired. Please start again from Claude's
-          Connectors settings.
+          {{ t().invalidBody }}
         </p>
       </div>
     } @else if (clientInfo(); as client) {
       <div class="flex flex-col gap-2">
-        <h1 class="text-section font-semibold text-writing">Connect to Claude</h1>
+        <h1 class="text-section font-semibold text-writing">{{ t().title }}</h1>
         <p class="text-body text-writing-minor leading-relaxed">
-          <span class="font-semibold text-writing">{{ client.client_name || 'An app' }}</span> wants to
-          connect to your account. This will let Claude view and change your tasks, shopping lists and workout
-          plans on your behalf — including projects, lists and plans shared with you.
+          {{ t().wantsToConnectBefore }}<span class="font-semibold text-writing"><bdi>{{ client.client_name || t().anApp }}</bdi></span>{{ t().wantsToConnectAfter }}
         </p>
       </div>
 
       <div class="flex flex-col gap-2">
         @if (userLabel()) {
           <div class="px-4 py-3 rounded-lg bg-layer-3 border border-line">
-            <span class="text-meta text-writing-minor">Signed in as </span>
-            <span class="text-meta font-medium text-writing">{{ userLabel() }}</span>
+            <span class="text-meta text-writing-minor">{{ t().signedInAsBefore }}</span><span class="text-meta font-medium text-writing"><bdi>{{ userLabel() }}</bdi></span><span class="text-meta text-writing-minor">{{ t().signedInAsAfter }}</span>
           </div>
         }
         <div class="px-4 py-3 rounded-lg bg-layer-3 border border-line">
-          <span class="text-meta text-writing-minor">Access will be granted to </span>
-          <span class="text-meta font-medium text-writing">{{ client.redirect_host }}</span>
+          <span class="text-meta text-writing-minor">{{ t().accessGrantedBefore }}</span><span class="text-meta font-medium text-writing"><bdi>{{ client.redirect_host }}</bdi></span><span class="text-meta text-writing-minor">{{ t().accessGrantedAfter }}</span>
         </div>
       </div>
 
@@ -38,7 +33,7 @@
           class="btn btn-secondary"
           [disabled]="isSubmitting()"
           (click)="deny()">
-          Deny
+          {{ t().deny }}
         </button>
         <button
           type="button"
@@ -46,14 +41,14 @@
           [disabled]="isSubmitting()"
           (click)="allow()">
           @if (isSubmitting()) {
-            Redirecting…
+            {{ t().redirecting }}
           } @else {
-            Allow
+            {{ t().allow }}
           }
         </button>
       </div>
     } @else {
-      <span class="text-meta text-writing-minor">Loading…</span>
+      <span class="text-meta text-writing-minor">{{ t().loading }}</span>
     }
 
   </div>

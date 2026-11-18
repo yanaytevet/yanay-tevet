@@ -1,19 +1,19 @@
 <div class="max-w-2xl mx-auto px-6 py-20">
 
   <h1 class="text-hero font-bold text-writing leading-tight mb-3">
-    Frequently asked questions
+    {{ t().title }}
   </h1>
   <p class="text-lead text-writing-minor mb-12">
-    What this place is and how to get in.
+    {{ t().subtitle }}
   </p>
 
   <div class="flex flex-col gap-0">
-    @for (item of items; track item.question; let i = $index) {
+    @for (item of items(); track $index; let i = $index) {
 
       <div class="border-b border-line">
         <button
           type="button"
-          class="w-full flex items-center justify-between gap-4 py-5 text-left cursor-pointer bg-transparent border-none"
+          class="w-full flex items-center justify-between gap-4 py-5 text-start cursor-pointer bg-transparent border-none"
           (click)="toggle(i)"
         >
           <span class="text-lead font-500 text-writing leading-snug">{{ item.question }}</span>
@@ -35,10 +35,9 @@
   </div>
 
   <div class="mt-16 pt-8 border-t border-line text-center">
-    <p class="text-ui font-medium text-writing mb-1">Something else on your mind?</p>
+    <p class="text-ui font-medium text-writing mb-1">{{ t().somethingElse }}</p>
     <p class="text-body text-writing-minor">
-      Drop me a line at
-      <a [href]="'mailto:' + supportEmail" class="text-accent hover:underline">{{ supportEmail }}</a>
+      {{ t().dropLineBefore }}<a [href]="'mailto:' + supportEmail" class="text-accent hover:underline">{{ supportEmail }}</a>{{ t().dropLineAfter }}
     </p>
   </div>
 

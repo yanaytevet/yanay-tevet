@@ -1,5 +1,7 @@
-import {Component, signal} from '@angular/core';
+import {Component, computed, signal} from '@angular/core';
 import {SUPPORT_EMAIL} from '../common/constants/app-constants';
+import {injectStrings} from '../shared/i18n/strings';
+import {FAQ_STRINGS} from './i18n';
 
 interface FaqItem {
   question: string;
@@ -13,19 +15,11 @@ interface FaqItem {
   templateUrl: './faq.component.html',
 })
 export class FaqComponent {
+  protected readonly t = injectStrings(FAQ_STRINGS);
   readonly openIndex = signal<number | null>(null);
   readonly supportEmail = SUPPORT_EMAIL;
 
-  readonly items: FaqItem[] = [
-    {
-      question: 'What is this place?',
-      answer: 'A personal platform where I build and host my projects — some are public, some are private. Think of it as my corner of the internet.',
-    },
-    {
-      question: 'How do I sign in?',
-      answer: 'Just hit "Sign in" and use your Google account. That\'s it — no registration, no forms.',
-    },
-  ];
+  readonly items = computed<FaqItem[]>(() => [this.t().whatIsThis, this.t().howToSignIn]);
 
   toggle(index: number): void {
     this.openIndex.set(this.openIndex() === index ? null : index);
