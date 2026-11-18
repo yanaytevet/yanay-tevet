@@ -17,6 +17,7 @@ export class LanguageChooserService {
       title: t.language,
       text: '',
       method: 'buttons',
+      confirmActionName: t.change,
       options: LANGUAGES.map(language => ({display: language.nativeName, value: language.code})),
       defaultValue: this.languageService.language(),
     });

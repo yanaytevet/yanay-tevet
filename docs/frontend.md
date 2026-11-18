@@ -163,6 +163,36 @@ except for something that is physically fixed (a PDF page, a chart axis). Icons 
 forward, chevrons, arrows) get `rtl:-scale-x-100`. User-entered text shown in a layout is wrapped in `<bdi>`;
 inputs that take free text get `dir="auto"`.
 
+### How this was built, and what went wrong
+
+Written for the next app that adds languages (Open Lineups reuses this approach).
+
+- **Mechanism**: no library. Typed TS tables per area beat a JSON-based library here: the compiler is the
+  missing-key check for free, and strings stay greppable next to their components. The cost is that every
+  language ships in each area's chunk (all nine, eagerly); fine at this size, revisit with dynamic `import()`
+  per language if chunks grow.
+- **Generating translations**: one agent per area, each given the same brief (find every string, write `en.ts`,
+  translate, convert physical classes, flip directional icons, then `tsc`/`ngc`/eslint and a grep for leftover
+  English text nodes). Areas were disjoint folders so agents never touched the same file.
+- **Direction**: `<html dir>` from `LanguageService`. The CDK reads the document direction once at startup and
+  its overlay host defaults to `dir="ltr"`; that is why every dialog used to carry its own `dir`. Fix:
+  update the root `Directionality` on language change and pass it as the overlay's `direction`.
+- **Transforms don't flip**: logical properties cover margins and insets, not `translate-x`. A drawer hidden
+  with `-translate-x-full` slides *into* view in RTL; it needs `rtl:translate-x-full` in its closed state.
+  `check:rtl` doesn't catch this — look at every slide-in panel in an RTL language.
+- **Icons**: `rtl:-scale-x-100` on arrows/chevrons. A chevron that is also rotated (expand/collapse) is flipped
+  on a wrapper, or the rotation points the wrong way.
+- **Hard parts that needed real code**: sentences built from fragments (rewritten as full templates with
+  placeholders, `fill`), counts (`plural` with `Intl.PluralRules`; Russian and Arabic need several forms),
+  Hebrew-calendar month names in languages CLDR doesn't name them in (Japanese, Chinese), errors raised in the
+  PDF worker (now carry a code, translated on the page), and stored values that were English labels (the
+  genre trainer's saved focus moved to ids, with a mapping for old values).
+- **Long strings**: German and Russian fit the drawer and buttons at the current widths; Hebrew short
+  weekday names needed `min-w-9 px-2` instead of a fixed `w-9`. CJK rendered fine with the system font stack
+  once `<html lang>` is set (it picks Japanese vs Chinese glyphs).
+- **What's not translated**: text from the backend (error messages, genre profiles, Special Dates' Hebrew
+  error messages) and user content.
+
 ## New-version refresh
 
 `VersionCheckService` spots a new deploy by comparing the hashed `main-*.js` / `styles-*.css` names this

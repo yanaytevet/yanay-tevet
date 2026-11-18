@@ -46,9 +46,14 @@ export class LanguageService {
     if (!this.authService.isLoggedIn()) {
       return;
     }
-    const {data} = await updateMyLanguageView({body: {language}});
+    // The account's language wins over the local choice, so switch it here first: the site changes at once,
+    // and if the save fails it stays changed in this tab (the next load follows the account again).
+    this.authService.auth.update(auth => (auth ? {...auth, user: {...auth.user, language}} : auth));
+    const {data, error} = await updateMyLanguageView({body: {language}});
     if (data) {
       this.authService.auth.update(auth => (auth ? {...auth, user: data} : auth));
+    } else if (error) {
+      throw error;
     }
   }
 

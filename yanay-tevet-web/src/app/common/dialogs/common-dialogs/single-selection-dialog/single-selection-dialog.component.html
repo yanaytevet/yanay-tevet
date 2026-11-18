@@ -1,6 +1,8 @@
 <div class="dialog-container">
     <h2>{{ data.title }}</h2>
-    <p>{{ data.text }}</p>
+    @if (data.text) {
+        <p>{{ data.text }}</p>
+    }
 
     <form [formGroup]="form">
         <div class="mb-4">
