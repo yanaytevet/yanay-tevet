@@ -12,7 +12,7 @@
                         dir="auto"
                         [(ngModel)]="filterText"
                         (ngModelChange)="filterOptions()"
-                        placeholder="Filter options..."
+                        [placeholder]="t().filterOptions"
                         class="main-input"
                         [ngModelOptions]="{standalone: true}"
                     />
@@ -39,11 +39,11 @@
         <button
                 (click)="emitClose(null)"
                 class="btn btn-secondary">
-            {{ data.cancelActionName ?? 'Cancel' }}
+            {{ data.cancelActionName ?? t().cancel }}
         </button>
         <app-confirmation-button
                 [disabled]="optionsFormArray.invalid"
-                [text]="data.confirmActionName ?? 'Submit'"
+                [text]="data.confirmActionName ?? t().submit"
                 (clicked)="onConfirm()">
         </app-confirmation-button>
     </div>

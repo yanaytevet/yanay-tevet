@@ -6,6 +6,8 @@ import {FormsModule} from '@angular/forms';
 import {bootstrapCheck} from '@ng-icons/bootstrap-icons';
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
 import {SelectableBoxComponent} from '../../../components/selectable-box/selectable-box.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings} from '../../../../shared/i18n/strings';
 
 export interface MultipleSelectionOption {
   display: string;
@@ -38,6 +40,7 @@ export class MultipleSelectionDialogComponent extends BaseDialogComponent<
   filteredOptions: MultipleSelectionOption[] = [];
   protected readonly checkIcon = bootstrapCheck;
   readonly fb = inject(FormBuilder)
+  protected readonly t = injectStrings(COMMON_STRINGS);
 
   ngOnInit(): void {
     const optionsArray = this.fb.array(
@@ -88,7 +91,7 @@ export class MultipleSelectionDialogComponent extends BaseDialogComponent<
 
   getErrorMessage(): string | null {
     if (this.hasError('required')) {
-      return 'Please select at least one option';
+      return this.t().errors.selectAtLeastOne;
     }
 
     return null;

@@ -8,8 +8,9 @@ import {DarkModeService} from '../../common/services/dark-mode.service';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
 import {LayoutService} from '../layout-service';
 import {localizedHubApps} from '../../shared/apps/hub-apps';
-import {CHROME_STRINGS} from '../../shared/i18n/chrome-strings';
-import {LanguageService} from '../../shared/i18n/language.service';
+import {CHROME_STRINGS} from '../../shared/i18n/chrome';
+import {injectStrings} from '../../shared/i18n/strings';
+import {LanguagePickerComponent} from '../../shared/i18n/language-picker/language-picker.component';
 
 @Component({
   selector: 'app-navigation-left-drawer',
@@ -18,6 +19,7 @@ import {LanguageService} from '../../shared/i18n/language.service';
     RouterLink,
     RouterLinkActive,
     NgIcon,
+    LanguagePickerComponent,
   ],
   templateUrl: './app-navigation-left-drawer.component.html',
   styleUrl: './app-navigation-left-drawer.component.css',
@@ -28,9 +30,8 @@ export class AppNavigationLeftDrawer implements OnInit {
   public darkModeService = inject(DarkModeService);
   public layoutService = inject(LayoutService);
 
-  protected readonly languageService = inject(LanguageService);
-  protected readonly apps = computed(() => localizedHubApps(this.languageService.language()));
-  protected readonly t = computed(() => CHROME_STRINGS[this.languageService.language()]);
+  protected readonly apps = computed(() => localizedHubApps(this.t().appNames));
+  protected readonly t = injectStrings(CHROME_STRINGS);
   protected readonly homeUrl = this.routingService.getHomeUrl();
   protected readonly genreTrainerUrl = this.routingService.getGenreTrainerUrl();
   protected readonly japaneseUrl = this.routingService.getJapaneseHomeUrl();

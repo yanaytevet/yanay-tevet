@@ -1,8 +1,10 @@
-import { Component, input, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
 import {featherChevronDown} from '@ng-icons/feather-icons';
 import {NgClass} from '@angular/common';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings} from '../../../../shared/i18n/strings';
 
 export interface SelectOption {
   display: string;
@@ -26,7 +28,10 @@ export interface SelectOption {
 export class SelectInputComponent implements ControlValueAccessor {
   options = input.required<SelectOption[]>();
   allowEmpty = input<boolean>(false);
-  emptyValueDisplay = input<string>('No Value');
+  // Without one, the site language's "No value".
+  emptyValueDisplay = input<string | undefined>(undefined);
+  private readonly t = injectStrings(COMMON_STRINGS);
+  protected readonly emptyLabel = computed(() => this.emptyValueDisplay() ?? this.t().noValue);
   className = input<string>('flex-1');
   selectClassName = input<string>('');
   errorClassName = input<string>('border-danger');

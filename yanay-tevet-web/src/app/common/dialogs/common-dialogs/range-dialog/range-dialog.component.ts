@@ -3,6 +3,9 @@ import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {LanguageService} from '../../../../shared/i18n/language.service';
+import {injectStrings, fill} from '../../../../shared/i18n/strings';
 
 export interface RangeDialogInput {
   title: string;
@@ -35,6 +38,8 @@ export class RangeDialogComponent extends BaseDialogComponent<
 > implements OnInit {
   form: FormGroup;
   readonly fb = inject(FormBuilder)
+  protected readonly t = injectStrings(COMMON_STRINGS);
+  private readonly languageService = inject(LanguageService);
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -96,15 +101,15 @@ export class RangeDialogComponent extends BaseDialogComponent<
 
   getErrorMessage(control: 'min' | 'max'): string | null {
     if (this.hasError(control, 'required')) {
-      return 'This field is required';
+      return this.t().errors.required;
     }
 
     if (this.hasError(control, 'min')) {
-      return `Value must be at least ${this.data.globalMinValue}`;
+      return fill(this.t().errors.atLeast, {min: this.data.globalMinValue.toLocaleString(this.languageService.language())});
     }
 
     if (this.hasError(control, 'max')) {
-      return `Value must be at most ${this.data.globalMaxValue}`;
+      return fill(this.t().errors.atMost, {max: this.data.globalMaxValue.toLocaleString(this.languageService.language())});
     }
 
     return null;
@@ -112,7 +117,7 @@ export class RangeDialogComponent extends BaseDialogComponent<
 
   getFormErrorMessage(): string | null {
     if (this.form.errors?.['invalidRange']) {
-      return 'Minimum value must be less than or equal to maximum value';
+      return this.t().errors.invalidRange;
     }
 
     return null;

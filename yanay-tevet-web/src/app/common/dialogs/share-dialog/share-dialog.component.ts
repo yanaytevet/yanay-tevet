@@ -1,9 +1,11 @@
-import {Component, inject, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherX, featherUserPlus, featherMail} from '@ng-icons/feather-icons';
 import {BaseDialogComponent} from '../base-dialog.component';
 import {DialogService} from '../dialogs.service';
+import {COMMON_STRINGS} from '../../../common/i18n';
+import {injectStrings, fill} from '../../../shared/i18n/strings';
 
 export interface ShareDialogMember {
   user_id: number;
@@ -40,12 +42,17 @@ export interface ShareDialogData {
 })
 export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, null> {
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(COMMON_STRINGS);
 
   readonly members = signal<ShareDialogMember[]>([]);
   readonly pendingInvitations = signal<ShareDialogPendingInvitation[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly isSharing = signal<boolean>(false);
   readonly removingUserId = signal<number | null>(null);
+
+  // The remove button's label per member, for screen readers.
+  protected readonly removeLabels = computed<Record<number, string>>(() => Object.fromEntries(
+    this.members().map(member => [member.user_id, fill(this.t().share.remove, {name: member.full_name || member.username})])));
 
   readonly identifierCtrl = new FormControl<string>('', {nonNullable: true});
 
@@ -81,7 +88,7 @@ export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, n
       await this.loadMembers();
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Could not share',
+        title: this.t().share.couldNotShare,
         text: `${err}`,
       });
     } finally {
@@ -96,7 +103,7 @@ export class ShareDialogComponent extends BaseDialogComponent<ShareDialogData, n
       this.members.update(prev => prev.filter(m => m.user_id !== member.user_id));
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Could not remove',
+        title: this.t().share.couldNotRemove,
         text: `${err}`,
       });
     } finally {

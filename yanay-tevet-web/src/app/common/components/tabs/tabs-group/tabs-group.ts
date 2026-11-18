@@ -19,6 +19,8 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {Tab} from '../tab/tab';
 import {NgTemplateOutlet} from '@angular/common';
 import {featherChevronLeft, featherChevronRight} from '@ng-icons/feather-icons';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings} from '../../../../shared/i18n/strings';
 
 // In-page tabs (DESIGN.md §5, Tabs). The current tab lives in a query param so it survives a reload and can be
 // linked to; `tabChange` tells the page which tab is showing, including the one it opens on.
@@ -37,6 +39,7 @@ export class TabsGroup {
   route = inject(ActivatedRoute);
 
   readonly tabs = contentChildren(Tab);
+  protected readonly t = injectStrings(COMMON_STRINGS);
   tabsQueryParam = input<string>('tab');
   readonly tabChange = output<string>();
 

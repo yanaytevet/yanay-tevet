@@ -4,7 +4,7 @@
 
     <form [formGroup]="form">
         <div class="mb-4 flex flex-col">
-            <span class="input-label">Type "{{ data.validationText }}" below to confirm</span>
+            <span class="input-label">{{ typeToConfirm() }}</span>
             <input
                     type="text"
                     dir="auto"
@@ -17,11 +17,11 @@
 
     <div class="dialog-buttons-container">
         <button class="btn btn-secondary" (click)="onCancel()">
-            {{ data.cancelActionName ?? 'Cancel' }}
+            {{ data.cancelActionName ?? t().cancel }}
         </button>
         <!-- Typing the phrase is how every irreversible delete is confirmed, so this is always the danger button. -->
         <button class="btn btn-danger" [disabled]="form.invalid" (click)="onConfirm()">
-            {{ data.confirmActionName ?? 'Confirm' }}
+            {{ data.confirmActionName ?? t().confirm }}
         </button>
     </div>
 </div>

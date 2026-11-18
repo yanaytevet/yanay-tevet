@@ -1,10 +1,10 @@
-<div class="dialog-container" [attr.dir]="data.dir ?? null">
+<div class="dialog-container">
     <h2>{{ data.title }}</h2>
     <p>{{ data.text }}</p>
 
     <form [formGroup]="form">
         <div class="mb-4 flex flex-col">
-            <span class="input-label">Input {{ data.label }}</span>
+            <span class="input-label">{{ data.label }}</span>
             @if (!data.isTextArea) {
                 <input
                         [type]="data.inputType || 'text'"
@@ -38,11 +38,11 @@
         <button
                 class="btn btn-secondary"
                 (click)="emitClose(null)">
-            {{ data.cancelActionName ?? 'Cancel' }}
+            {{ data.cancelActionName ?? t().cancel }}
         </button>
         <app-confirmation-button
                 [disabled]="form.invalid"
-                [text]="data.confirmActionName ?? 'Submit'"
+                [text]="data.confirmActionName ?? t().submit"
                 (clicked)="onConfirm()">
         </app-confirmation-button>
     </div>

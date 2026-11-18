@@ -1,4 +1,4 @@
-<div class="page-narrow" [attr.dir]="languageService.dir()">
+<div class="page-narrow">
 
   <app-page-header [title]="t().settingsTitle"/>
 
@@ -10,17 +10,7 @@
         <h2 class="text-section font-semibold text-writing">{{ t().language }}</h2>
         <p class="text-meta text-writing-minor leading-relaxed">{{ t().languageHint }}</p>
       </div>
-      <div class="flex self-start rounded-md bg-layer-3 p-0.5" role="radiogroup" [attr.aria-label]="t().language">
-        @for (option of languages; track option.value) {
-          <button type="button" role="radio" class="px-4 py-1.5 rounded text-body font-medium"
-                  [attr.aria-checked]="option.value === languageService.language()"
-                  [class.bg-layer-2]="option.value === languageService.language()"
-                  [class.shadow-1]="option.value === languageService.language()"
-                  [class.text-writing]="option.value === languageService.language()"
-                  [class.text-writing-minor]="option.value !== languageService.language()"
-                  (click)="setLanguage(option.value)">{{ option.label }}</button>
-        }
-      </div>
+      <app-language-picker class="block sm:max-w-xs" [label]="t().language"/>
     </div>
 
     <!-- Profile Image -->

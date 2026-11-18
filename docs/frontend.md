@@ -114,13 +114,54 @@ Size comes from the text size: `text-sm` ≈ 14px, `text-base` ≈ 16px, `text-x
 
 ## Language
 
-The site language (English or Hebrew) is `User.language`, set from Account settings and read through
-`LanguageService` (`shared/i18n/`): the account's choice, else the last choice in this browser, else the
-browser's language. Only translated parts follow it: the chrome (top bar, drawer, footer, home, settings;
-strings in `shared/i18n/chrome-strings.ts`, app names in `hub-apps.ts`'s `nameHe`) and apps with their own
-strings (Workout Plan). Untranslated apps stay English, so `dir` is set on each translated component's root,
-never on `<html>`. To translate an app: a strings file with an `en` and `he` record, a computed `t` from
-`LanguageService.language()`, `[attr.dir]` on the page root, and user text wrapped in `<bdi>`.
+The site has nine languages: `en`, `he`, `ar`, `de`, `es`, `fr`, `ru`, `ja`, `zh-Hans` (the backend's
+`users.enums.language.Language`; the list, native names and directions are in `shared/i18n/languages.ts`).
+`LanguageService.language()` is the account's choice, else the last choice in this browser, else the best
+match among the browser's languages, else English. It sets `<html lang>` and `<html dir>`, so `he` and `ar`
+flip the whole app; components never set `dir` themselves. The switch is `<app-language-picker>` (drawer,
+account settings) or `LanguageChooserService.choose()` for a button or menu entry.
+
+**Every user-facing string is translated, in all nine languages, in the same change that adds it** —
+templates, dialog titles, menu entries, errors shown to the user, `aria-label`s and placeholders alike.
+Exceptions: admin-only pages (user management, Japanese ingest and review queue) stay English, and text that
+comes from users or the backend is shown as is.
+
+### Strings files
+
+Each area keeps its strings in an `i18n/` folder next to its components:
+
+```
+workout-plan/i18n/
+  en.ts       export const en = {...}; export type WorkoutStrings = typeof en;   ← the contract
+  he.ts       export const he: WorkoutStrings = {...};
+  ar.ts de.ts es.ts fr.ts ru.ts ja.ts zh-hans.ts (export const zhHans)
+  index.ts    export const WORKOUT_STRINGS: Translations<WorkoutStrings> = {en, he, ..., 'zh-Hans': zhHans};
+```
+
+The other languages are typed against `en`, so a missing, extra or misspelt key fails the build: **the compiler
+is the missing-translation check**. A component reads them with `protected readonly t =
+injectStrings(WORKOUT_STRINGS);` and the template with `{{ t().saveChanges }}`. The chrome (top bar, drawer,
+footer, home, account settings, app names) is `shared/i18n/chrome/`.
+
+- **Placeholders**: `'{count} days left'` with `fill(t().daysLeft, {count})` (`shared/i18n/strings.ts`).
+  Never build a sentence by concatenating fragments; word order differs between languages.
+- **Counts**: a `PluralForms` value (`{one: '{count} day', other: '{count} days'}`) and
+  `plural(language, count, forms)`. Russian needs `one`/`few`/`many`, Arabic `zero`/`one`/`two`/`few`/`many`.
+- **Enum labels**: a `Record<EnumType, string>` inside the strings, so a new enum value fails the build too.
+- **Dates and numbers**: `Intl.DateTimeFormat(language, ...)` / `toLocaleString(language)` with
+  `LanguageService.language()`; never a hard-coded `'en-US'` or the `date` pipe without a locale.
+- Strings are computed per call, not cached, so a language switch re-renders everything without a reload.
+- Translations are written by Claude in the same change; there is no external review. Write them as a native
+  app would (short, idiomatic), keep product names (Claude, PDF, MCP) as they are.
+
+### Direction
+
+Layout uses logical utilities only: `ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`, `text-start`/`text-end`,
+`border-s`/`border-e`, `rounded-s`/`rounded-e`, and in CSS `margin-inline-start`, `inset-inline-end` and so
+on. Never `ml-`/`mr-`/`pl-`/`pr-`/`left-`/`right-`/`text-left`/`text-right` or `margin-left` and friends,
+except for something that is physically fixed (a PDF page, a chart axis). Icons that point a direction (back,
+forward, chevrons, arrows) get `rtl:-scale-x-100`. User-entered text shown in a layout is wrapped in `<bdi>`;
+inputs that take free text get `dir="auto"`.
 
 ## New-version refresh
 

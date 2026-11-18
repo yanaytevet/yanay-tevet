@@ -5,6 +5,8 @@ import {featherChevronDown} from '@ng-icons/feather-icons';
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
 import {SelectableBoxComponent} from '../../../components/selectable-box/selectable-box.component';
 import {SelectInputComponent} from '../../../components/inputs/select-input/select-input.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings} from '../../../../shared/i18n/strings';
 
 export interface SingleSelectionOption {
   display: string;
@@ -41,6 +43,7 @@ export class SingleSelectionDialogComponent extends BaseDialogComponent<
 > implements OnInit {
   static readonly OTHER_SENTINEL = '__other__';
   readonly fb = inject(FormBuilder);
+  protected readonly t = injectStrings(COMMON_STRINGS);
 
   form: FormGroup;
   selectedOption: any = null;
@@ -55,7 +58,7 @@ export class SingleSelectionDialogComponent extends BaseDialogComponent<
     if (!this.data.otherOption) {
       return this.data.options;
     }
-    return [...this.data.options, {display: this.data.otherOptionLabel ?? 'Other', value: SingleSelectionDialogComponent.OTHER_SENTINEL}];
+    return [...this.data.options, {display: this.data.otherOptionLabel ?? this.t().other, value: SingleSelectionDialogComponent.OTHER_SENTINEL}];
   }
 
   ngOnInit(): void {
@@ -112,7 +115,7 @@ export class SingleSelectionDialogComponent extends BaseDialogComponent<
 
   getErrorMessage(): string | null {
     if (this.hasError('required')) {
-      return 'Please select an option';
+      return this.t().errors.selectOption;
     }
 
     return null;

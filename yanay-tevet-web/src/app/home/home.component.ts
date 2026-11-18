@@ -5,8 +5,8 @@ import {RoutingService} from '../shared/services/routing.service';
 import {BasePageComponent} from '../common/components/base-page-component';
 import {AuthenticationService} from '../common/authentication/authentication.service';
 import {localizedHubApps} from '../shared/apps/hub-apps';
-import {CHROME_STRINGS} from '../shared/i18n/chrome-strings';
-import {LanguageService} from '../shared/i18n/language.service';
+import {CHROME_STRINGS} from '../shared/i18n/chrome';
+import {injectStrings} from '../shared/i18n/strings';
 import {HubTileApp, HubTileComponent} from './hub-tile/hub-tile.component';
 
 @Component({
@@ -19,9 +19,8 @@ export class HomeComponent extends BasePageComponent {
   readonly routingService = inject(RoutingService);
   readonly authService = inject(AuthenticationService);
 
-  protected readonly languageService = inject(LanguageService);
-  protected readonly apps = computed(() => localizedHubApps(this.languageService.language()));
-  protected readonly t = computed(() => CHROME_STRINGS[this.languageService.language()]);
+  protected readonly apps = computed(() => localizedHubApps(this.t().appNames));
+  protected readonly t = injectStrings(CHROME_STRINGS);
   protected readonly userManagementApp = computed<HubTileApp>(
     () => ({name: this.t().userManagement, icon: bootstrapPeople, key: null}),
   );

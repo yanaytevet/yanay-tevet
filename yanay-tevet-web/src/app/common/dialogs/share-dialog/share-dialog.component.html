@@ -1,8 +1,8 @@
 <div class="dialog-container w-full">
 
     <div class="flex items-start justify-between mb-1">
-        <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
-        <button type="button" class="icon-btn text-writing-minor hover:text-writing" (click)="onClose()">
+        <h2 class="text-section font-bold text-writing"><bdi>{{ data.title }}</bdi></h2>
+        <button type="button" class="icon-btn text-writing-minor hover:text-writing" [attr.aria-label]="t().close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="h-5 w-5"></ng-icon>
         </button>
     </div>
@@ -11,38 +11,39 @@
     @if (data.isOwner) {
         <div class="flex items-end gap-2 mb-5">
             <div class="flex-1 flex flex-col gap-1.5">
-                <span class="input-label">Username or email</span>
-                <input type="text" dir="auto" class="main-input w-full" placeholder="username or email"
+                <span class="input-label">{{ t().share.usernameOrEmail }}</span>
+                <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().share.usernameOrEmail"
                        [formControl]="identifierCtrl"
                        (keyup.enter)="onShare()" />
             </div>
             <button type="button" class="btn btn-primary flex items-center gap-1.5"
                     [disabled]="isSharing()" (click)="onShare()">
                 <ng-icon [svg]="featherUserPlus" class="h-4 w-4"></ng-icon>
-                Add
+                {{ t().share.add }}
             </button>
         </div>
     }
 
-    <div class="eyebrow mb-2">People with access</div>
+    <div class="eyebrow mb-2">{{ t().share.peopleWithAccess }}</div>
 
     @if (isLoading()) {
-        <div class="text-center text-writing-minor text-meta py-6">Loading...</div>
+        <div class="text-center text-writing-minor text-meta py-6">{{ t().loading }}…</div>
     } @else {
         <div class="flex flex-col gap-1">
             @for (member of members(); track member.user_id) {
                 <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-layer-3">
                     <div class="min-w-0">
-                        <div class="text-body text-writing truncate">{{ member.full_name || member.username }}</div>
-                        <div class="text-caption text-writing-minor truncate">{{ member.username }}</div>
+                        <div class="text-body text-writing truncate"><bdi>{{ member.full_name || member.username }}</bdi></div>
+                        <div class="text-caption text-writing-minor truncate"><bdi>{{ member.username }}</bdi></div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
                         <span class="eyebrow px-2 py-0.5 rounded-full bg-layer-2">
-                            {{ member.role === 'owner' ? 'Owner' : 'Collaborator' }}
+                            {{ member.role === 'owner' ? t().share.owner : t().share.collaborator }}
                         </span>
                         @if (data.isOwner && member.role !== 'owner') {
                             <button type="button" class="icon-btn text-writing-minor hover:text-writing"
                                     [disabled]="removingUserId() === member.user_id"
+                                    [attr.aria-label]="removeLabels()[member.user_id]"
                                     (click)="onRemove(member)">
                                 <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
                             </button>
@@ -53,16 +54,16 @@
         </div>
 
         @if (pendingInvitations().length > 0) {
-            <div class="eyebrow mt-5 mb-2">Pending invitations</div>
+            <div class="eyebrow mt-5 mb-2">{{ t().share.pendingInvitations }}</div>
             <div class="flex flex-col gap-1">
                 @for (invitation of pendingInvitations(); track invitation.email) {
                     <div class="flex items-center justify-between gap-3 py-2 px-3 rounded-lg bg-layer-3">
                         <div class="flex items-center gap-2 min-w-0">
                             <ng-icon [svg]="featherMail" class="h-4 w-4 text-writing-minor shrink-0"></ng-icon>
-                            <div class="text-body text-writing truncate">{{ invitation.email }}</div>
+                            <div class="text-body text-writing truncate"><bdi>{{ invitation.email }}</bdi></div>
                         </div>
                         <span class="eyebrow px-2 py-0.5 rounded-full bg-layer-2 shrink-0">
-                            Invited
+                            {{ t().share.invited }}
                         </span>
                     </div>
                 }
@@ -71,6 +72,6 @@
     }
 
     <div class="flex justify-end mt-6">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Done</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().done }}</button>
     </div>
 </div>

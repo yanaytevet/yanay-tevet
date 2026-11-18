@@ -1,6 +1,6 @@
 <div class="flex items-center">
   @if (label() && labelOnLeft()) {
-    <span class="inline-flex items-center mr-2">{{ label() }}</span>
+    <span class="inline-flex items-center me-2">{{ label() }}</span>
   }
   <div class="relative h-5 w-5 border border-line rounded grid place-items-center transition-colors"
        [class.bg-accent]="value() && symbol() === 'v'"
@@ -19,6 +19,6 @@
     }
   </div>
   @if (label() && !labelOnLeft()) {
-    <span class="inline-flex items-center ml-2">{{ label() }}</span>
+    <span class="inline-flex items-center ms-2">{{ label() }}</span>
   }
 </div>

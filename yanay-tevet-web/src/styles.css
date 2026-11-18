@@ -254,14 +254,14 @@ html, body {
 
 .celebration-creature {
   top: 36%;
-  left: -18vw;
+  left: -18vw; /* rtl-ok: .celebration-creature-rtl mirrors it */
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
   animation: celebrationFly 2600ms linear forwards;
 }
 
 .celebration-creature-rtl {
-  left: auto;
-  right: -18vw;
+  left: auto; /* rtl-ok */
+  right: -18vw; /* rtl-ok */
   animation-name: celebrationFlyRtl;
 }
 

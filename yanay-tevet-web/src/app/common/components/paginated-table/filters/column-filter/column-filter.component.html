@@ -1,17 +1,19 @@
-<div class="inline-flex items-center ml-2">
+<div class="inline-flex items-center ms-2">
   <button
     class="bg-transparent border-0 cursor-pointer p-1 flex items-center justify-center rounded transition-colors duration-200 hover:bg-layer-overlay"
     [class.text-accent]="isActive()"
     (click)="openFilterDialog()"
-    title="Filter">
+    [title]="t().table.filter"
+    [attr.aria-label]="t().table.filter">
     <ng-icon [svg]="bootstrapFunnel" class="h-4 w-4"></ng-icon>
   </button>
 
   @if (isActive()) {
     <button
-      class="bg-transparent border-0 cursor-pointer p-1 flex items-center justify-center rounded transition-colors duration-200 hover:bg-layer-overlay ml-1"
+      class="bg-transparent border-0 cursor-pointer p-1 flex items-center justify-center rounded transition-colors duration-200 hover:bg-layer-overlay ms-1"
       (click)="clearFilter()"
-      title="Clear filter">
+      [title]="t().table.clearFilter"
+      [attr.aria-label]="t().table.clearFilter">
       <ng-icon [svg]="featherX" class="h-4 w-4"></ng-icon>
     </button>
   }

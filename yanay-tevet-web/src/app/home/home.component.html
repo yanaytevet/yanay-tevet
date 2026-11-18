@@ -1,6 +1,6 @@
 @if (authService.isLoggedIn()) {
 
-  <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-6" [attr.dir]="languageService.dir()">
+  <div class="flex-1 overflow-y-auto px-4 py-8 sm:px-6">
     <div class="mx-auto w-full max-w-4xl">
 
       <div class="text-center mb-8">
@@ -90,7 +90,7 @@
 
 } @else {
 
-  <div class="hero-section" [attr.dir]="languageService.dir()">
+  <div class="hero-section">
     <div class="hero-glow"></div>
     <div class="max-w-5xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
 

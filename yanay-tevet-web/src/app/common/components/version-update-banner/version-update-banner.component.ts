@@ -3,6 +3,8 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {bootstrapArrowClockwise} from '@ng-icons/bootstrap-icons';
 import {featherX} from '@ng-icons/feather-icons';
 import {VersionCheckService} from '../../services/version-check.service';
+import {COMMON_STRINGS} from '../../../common/i18n';
+import {injectStrings} from '../../../shared/i18n/strings';
 
 /**
  * Offers the reload rather than performing it, so half-filled forms aren't thrown away.
@@ -16,6 +18,8 @@ import {VersionCheckService} from '../../services/version-check.service';
 })
 export class VersionUpdateBannerComponent {
     private readonly versionCheckService = inject(VersionCheckService);
+
+    protected readonly t = injectStrings(COMMON_STRINGS);
 
     private readonly dismissedFingerprint = signal<string | null>(null);
 

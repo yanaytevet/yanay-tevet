@@ -1,4 +1,6 @@
-import {Component, input, output} from '@angular/core';
+import {Component, computed, input, output} from '@angular/core';
+import {COMMON_STRINGS} from '../../../common/i18n';
+import {injectStrings} from '../../../shared/i18n/strings';
 
 
 @Component({
@@ -9,7 +11,10 @@ import {Component, input, output} from '@angular/core';
 })
 export class ConfirmationButtonComponent {
   disabled = input<boolean>(false);
-  text = input<string>('Submit');
+  // Without a text, the site language's "Submit".
+  text = input<string | undefined>(undefined);
+  protected readonly t = injectStrings(COMMON_STRINGS);
+  protected readonly label = computed(() => this.text() ?? this.t().submit);
   clicked = output<void>();
 
   onClick(): void {

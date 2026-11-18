@@ -1,8 +1,8 @@
 <div class="flex flex-col min-w-0">
   <div class="relative">
     @if (canScrollLeft()) {
-      <div class="absolute left-0 top-0 bottom-px z-10 w-12 flex items-center justify-start bg-gradient-to-r from-layer-1 to-transparent pointer-events-none">
-        <button type="button" class="icon-btn pointer-events-auto" aria-label="Scroll tabs left" (click)="scroll('left')">
+      <!-- rtl-ok: the scroll logic works in physical left/right --><div class="absolute left-0 top-0 bottom-px z-10 w-12 flex items-center justify-start bg-gradient-to-r from-layer-1 to-transparent pointer-events-none">
+        <button type="button" class="icon-btn pointer-events-auto" [attr.aria-label]="t().scrollTabsLeft" (click)="scroll('left')">
           <ng-icon [svg]="featherChevronLeft"/>
         </button>
       </div>
@@ -41,8 +41,8 @@
     </div>
 
     @if (canScrollRight()) {
-      <div class="absolute right-0 top-0 bottom-px z-10 w-12 flex items-center justify-end bg-gradient-to-l from-layer-1 to-transparent pointer-events-none">
-        <button type="button" class="icon-btn pointer-events-auto" aria-label="Scroll tabs right" (click)="scroll('right')">
+      <!-- rtl-ok --><div class="absolute right-0 top-0 bottom-px z-10 w-12 flex items-center justify-end bg-gradient-to-l from-layer-1 to-transparent pointer-events-none">
+        <button type="button" class="icon-btn pointer-events-auto" [attr.aria-label]="t().scrollTabsRight" (click)="scroll('right')">
           <ng-icon [svg]="featherChevronRight"/>
         </button>
       </div>

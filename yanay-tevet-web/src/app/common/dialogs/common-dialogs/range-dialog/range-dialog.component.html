@@ -4,7 +4,7 @@
 
     <form [formGroup]="form">
         <div class="mb-4 flex flex-col">
-            <span class="input-label">{{ data.minLabel || 'Minimum Value' }}</span>
+            <span class="input-label">{{ data.minLabel || t().minimumValue }}</span>
             <input type="number"
                    dir="auto"
                    formControlName="minValue"
@@ -17,7 +17,7 @@
         </div>
 
         <div class="mb-4 flex flex-col">
-            <span class="input-label">{{ data.maxLabel || 'Maximum Value' }}</span>
+            <span class="input-label">{{ data.maxLabel || t().maximumValue }}</span>
             <input type="number"
                    dir="auto"
                    formControlName="maxValue"
@@ -39,11 +39,11 @@
         <button
                 class="btn btn-secondary"
                 (click)="emitClose(null)">
-            {{ data.cancelActionName ?? 'Cancel' }}
+            {{ data.cancelActionName ?? t().cancel }}
         </button>
         <app-confirmation-button
                 [disabled]="form.invalid || (!data.allowEmpty && minControl?.value === null && maxControl?.value === null)"
-                [text]="data.confirmActionName ?? 'Apply'"
+                [text]="data.confirmActionName ?? t().apply"
                 (clicked)="onConfirm()">
         </app-confirmation-button>
     </div>

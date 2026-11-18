@@ -3,10 +3,12 @@ import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {LanguageService} from '../../../../shared/i18n/language.service';
+import {injectStrings, fill} from '../../../../shared/i18n/strings';
 
 export interface NumberInputDialogInput {
   title: string;
-  dir?: 'ltr' | 'rtl';
   text: string;
   label: string;
   defaultValue?: number;
@@ -29,6 +31,8 @@ export class NumberInputDialogComponent extends BaseDialogComponent<
 > implements OnInit {
   form: FormGroup;
   readonly fb = inject(FormBuilder)
+  protected readonly t = injectStrings(COMMON_STRINGS);
+  private readonly languageService = inject(LanguageService);
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -68,15 +72,15 @@ export class NumberInputDialogComponent extends BaseDialogComponent<
 
   getErrorMessage(): string | null {
     if (this.hasError('required')) {
-      return 'This field is required';
+      return this.t().errors.required;
     }
 
     if (this.hasError('min')) {
-      return `Value must be at least ${this.data.minValue}`;
+      return fill(this.t().errors.atLeast, {min: this.data.minValue.toLocaleString(this.languageService.language())});
     }
 
     if (this.hasError('max')) {
-      return `Value must be at most ${this.data.maxValue}`;
+      return fill(this.t().errors.atMost, {max: this.data.maxValue.toLocaleString(this.languageService.language())});
     }
 
     return null;

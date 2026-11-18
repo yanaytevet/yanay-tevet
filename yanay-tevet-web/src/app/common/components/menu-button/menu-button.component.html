@@ -1,4 +1,4 @@
-<button type="button" [cdkMenuTriggerFor]="menu" class="icon-btn gap-1.5" [attr.aria-label]="text() ? null : ariaLabel()">
+<button type="button" [cdkMenuTriggerFor]="menu" class="icon-btn gap-1.5" [attr.aria-label]="text() ? null : ariaLabelText()">
   @if (icon()) {
     <ng-icon [svg]="icon()"></ng-icon>
   }

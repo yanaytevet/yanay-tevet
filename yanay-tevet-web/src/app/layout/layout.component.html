@@ -6,6 +6,7 @@
     <div class="flex items-center gap-1 min-w-0 flex-1">
       <button
         class="hover:bg-layer-overlay cursor-pointer transition-colors duration-200 flex items-center justify-center p-2 rounded-lg shrink-0"
+        [attr.aria-label]="common().menu"
         (click)="layoutService.toggleLeftDrawer()">
         <ng-icon [svg]="bootstrapList" class="h-6 w-6 text-writing"></ng-icon>
       </button>
@@ -13,17 +14,17 @@
         <a [routerLink]="parent.link"
            class="sm:hidden flex items-center justify-center p-2 rounded-lg text-writing-minor hover:text-writing hover:bg-layer-overlay transition-colors no-underline shrink-0"
            [title]="parent.label">
-          <ng-icon [svg]="bootstrapArrowLeft" class="h-5 w-5"></ng-icon>
+          <ng-icon [svg]="bootstrapArrowLeft" class="h-5 w-5 rtl:-scale-x-100"></ng-icon>
         </a>
-        <a routerLink="/" class="hidden sm:flex items-center gap-2 no-underline ml-1 shrink-0" aria-label="Yanay Tevet — Home">
+        <a routerLink="/" class="hidden sm:flex items-center gap-2 no-underline ms-1 shrink-0" [attr.aria-label]="common().homeLink">
           <img src="yanay_tevet_icon.jpg" width="24" height="24" alt="Yanay Tevet" class="rounded-md" />
         </a>
       } @else {
-        <a routerLink="/" class="flex items-center gap-2 no-underline ml-1 shrink-0" aria-label="Yanay Tevet — Home">
+        <a routerLink="/" class="flex items-center gap-2 no-underline ms-1 shrink-0" [attr.aria-label]="common().homeLink">
           <img src="yanay_tevet_icon.jpg" width="24" height="24" alt="Yanay Tevet" class="rounded-md" />
         </a>
       }
-      <div class="flex-1 min-w-0 ml-2">
+      <div class="flex-1 min-w-0 ms-2">
         <app-breadcrumb/>
       </div>
     </div>
@@ -47,8 +48,8 @@
           (click)="layoutService.toggleRightDrawer()">
           <ng-icon [svg]="layoutService.rightDrawerIcon()" class="h-6 w-6 text-writing"></ng-icon>
           @if (layoutService.rightDrawerBadge()) {
-            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-danger animate-ping opacity-75"></span>
-            <span class="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-danger"></span>
+            <span class="absolute top-1 end-1 h-2.5 w-2.5 rounded-full bg-danger animate-ping opacity-75"></span>
+            <span class="absolute top-1 end-1 h-2.5 w-2.5 rounded-full bg-danger"></span>
           }
         </button>
       }
@@ -79,7 +80,7 @@
     <!-- Right Drawer (inline, pushes content) -->
     @if (layoutService.isRightDrawerVisible()) {
       <div
-        class="flex flex-col bg-layer-2 transition-[width] duration-300 overflow-hidden border-l border-line shrink-0"
+        class="flex flex-col bg-layer-2 transition-[width] duration-300 overflow-hidden border-s border-line shrink-0"
         [ngClass]="layoutService.isRightDrawerOpen() ? 'w-full md:w-96' : 'w-0'">
 
         <!-- Drawer Header -->
@@ -89,8 +90,9 @@
           </h2>
 
           <button (click)="layoutService.toggleRightDrawer()"
-                  class="icon-btn">
-            <ng-icon [svg]="featherChevronRight" size="24" class="text-writing"></ng-icon>
+                  class="icon-btn"
+                  [attr.aria-label]="common().closePanel">
+            <ng-icon [svg]="featherChevronRight" size="24" class="text-writing rtl:-scale-x-100"></ng-icon>
           </button>
         </div>
 

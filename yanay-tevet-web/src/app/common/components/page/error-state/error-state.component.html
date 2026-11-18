@@ -5,8 +5,8 @@
   <p class="text-ui text-writing max-w-sm" dir="auto">{{ text() }}</p>
   @if (backUrl(); as url) {
     <a [routerLink]="url" class="btn btn-secondary mt-5 no-underline">
-      <ng-icon [svg]="featherArrowLeft"/>
-      {{ backLabel() }}
+      <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+      {{ backText() }}
     </a>
   }
 </div>

@@ -3,10 +3,12 @@ import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 
 import {ConfirmationButtonComponent} from '../../confirmation-button/confirmation-button.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {LanguageService} from '../../../../shared/i18n/language.service';
+import {injectStrings, plural} from '../../../../shared/i18n/strings';
 
 export interface TextInputDialogInput {
   title: string;
-  dir?: 'ltr' | 'rtl';
   text: string;
   label: string;
   defaultValue?: string;
@@ -30,6 +32,8 @@ export class TextInputDialogComponent extends BaseDialogComponent<
   string | null
 > implements OnInit {
   private fb = inject(FormBuilder);
+  protected readonly t = injectStrings(COMMON_STRINGS);
+  private readonly languageService = inject(LanguageService);
   form: FormGroup;
 
   constructor() {
@@ -70,11 +74,11 @@ export class TextInputDialogComponent extends BaseDialogComponent<
 
   getErrorMessage(): string | null {
     if (this.hasError('required')) {
-      return 'This field is required';
+      return this.t().errors.required;
     }
 
     if (this.hasError('maxlength')) {
-      return `Maximum length is ${this.data.maxLength} characters`;
+      return plural(this.languageService.language(), this.data.maxLength, this.t().errors.maxLength);
     }
 
     return null;

@@ -33,7 +33,7 @@ export type AuthSchema = {
 /**
  * Language
  */
-export type Language = 'en' | 'he';
+export type Language = 'en' | 'he' | 'de' | 'es' | 'fr' | 'ru' | 'ar' | 'ja' | 'zh-Hans';
 
 /**
  * Permissions

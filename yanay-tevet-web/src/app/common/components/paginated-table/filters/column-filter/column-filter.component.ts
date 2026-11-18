@@ -6,6 +6,8 @@ import {DialogService} from '../../../../dialogs/dialogs.service';
 import {NgIcon} from '@ng-icons/core';
 import {bootstrapFunnel} from '@ng-icons/bootstrap-icons';
 import {featherX} from '@ng-icons/feather-icons';
+import {COMMON_STRINGS} from '../../../../../common/i18n';
+import {injectStrings, fill} from '../../../../../shared/i18n/strings';
 
 @Component({
     selector: 'app-column-filter',
@@ -17,6 +19,7 @@ export class ColumnFilterComponent {
     paginatedDataHandler = input<PaginatedTableHandler<any, any>>();
 
     private dialogService = inject(DialogService);
+    protected readonly t = injectStrings(COMMON_STRINGS);
 
     protected readonly bootstrapFunnel = bootstrapFunnel;
     protected readonly featherX = featherX;
@@ -112,15 +115,16 @@ export class ColumnFilterComponent {
 
     private async openTextFilterDialog(): Promise<void> {
         const filter = this.filter();
+        const t = this.t().table;
         const filterKey = `${filter.filterName}__icontains`;
         const currentValue = this.getFilterValue(filterKey) || '';
 
         const result = await this.dialogService.getTextFromInputDialog({
-            title: `Filter by ${filter.displayName}`,
-            text: 'Enter text to filter by:',
+            title: fill(t.filterBy, {name: filter.displayName}),
+            text: t.enterText,
             label: filter.displayName,
             defaultValue: currentValue,
-            confirmActionName: 'Apply Filter',
+            confirmActionName: t.applyFilter,
             allowEmpty: true
         });
 
@@ -137,18 +141,19 @@ export class ColumnFilterComponent {
 
     private async openBooleanFilterDialog(): Promise<void> {
         const filter = this.filter();
+        const t = this.t().table;
         const filterKey = filter.filterName;
         const currentValue = this.getFilterValue(filterKey) ?? null;
 
         const result = await this.dialogService.getValueFromSelectionDialog({
-            title: `Filter by ${filter.displayName}`,
-            text: 'Select a value:',
+            title: fill(t.filterBy, {name: filter.displayName}),
+            text: t.selectValue,
             options: [
-                {value: true, display: 'True'},
-                {value: false, display: 'False'}
+                {value: true, display: t.yes},
+                {value: false, display: t.no}
             ],
             defaultValue: currentValue,
-            confirmActionName: 'Apply Filter',
+            confirmActionName: t.applyFilter,
             allowEmpty: true
         });
 
@@ -169,6 +174,7 @@ export class ColumnFilterComponent {
             return;
         }
 
+        const t = this.t().table;
         const filterKey = `${filter.filterName}__in`;
         const currentValues = this.getFilterValue(filterKey) || [];
 
@@ -179,10 +185,10 @@ export class ColumnFilterComponent {
         }));
 
         const result = await this.dialogService.getValuesFromMultipleSelectionDialog({
-            title: `Filter by ${filter.displayName}`,
-            text: 'Select one or more options:',
+            title: fill(t.filterBy, {name: filter.displayName}),
+            text: t.selectOptions,
             options: options,
-            confirmActionName: 'Apply Filter',
+            confirmActionName: t.applyFilter,
             allowEmpty: true
         });
 
@@ -199,6 +205,7 @@ export class ColumnFilterComponent {
 
     private async openNumberFilterDialog(): Promise<void> {
         const filter = this.filter();
+        const t = this.t().table;
         const minFilterKey = `${filter.filterName}__gte`;
         const maxFilterKey = `${filter.filterName}__lte`;
 
@@ -206,13 +213,13 @@ export class ColumnFilterComponent {
         const currentMaxValue = this.getFilterValue(maxFilterKey) || null;
 
         const result = await this.dialogService.getRangeFromRangeDialog({
-            title: `Filter by ${filter.displayName}`,
-            text: 'Enter a range of values:',
-            minLabel: 'Minimum Value',
-            maxLabel: 'Maximum Value',
+            title: fill(t.filterBy, {name: filter.displayName}),
+            text: t.enterRange,
+            minLabel: this.t().minimumValue,
+            maxLabel: this.t().maximumValue,
             defaultMinValue: currentMinValue,
             defaultMaxValue: currentMaxValue,
-            confirmActionName: 'Apply Filter',
+            confirmActionName: t.applyFilter,
             allowEmpty: true
         });
 

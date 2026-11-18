@@ -3,9 +3,9 @@
     <p>{{ data.text }}</p>
     <div class="dialog-buttons-container">
         @if (data.showCopyButton) {
-            <button class="btn" (click)="copyToClipboard()">Copy</button>
+            <button class="btn" (click)="copyToClipboard()">{{ t().copy }}</button>
         }
         <span class="flex-1"></span>
-        <button class="btn btn-primary" (click)="emitClose()">{{ data.confirmActionName ?? 'OK' }}</button>
+        <button class="btn btn-primary" (click)="emitClose()">{{ data.confirmActionName ?? t().ok }}</button>
     </div>
 </div>

@@ -1,6 +1,13 @@
 export enum LanguageEnum {
   EN = 'en',
   HE = 'he',
+  DE = 'de',
+  ES = 'es',
+  FR = 'fr',
+  RU = 'ru',
+  AR = 'ar',
+  JA = 'ja',
+  ZH_HANS = 'zh-Hans',
 }
 
 export enum PermissionsEnum {

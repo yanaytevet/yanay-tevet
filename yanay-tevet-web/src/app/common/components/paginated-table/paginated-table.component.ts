@@ -11,6 +11,8 @@ import {DarkModeService} from '../../services/dark-mode.service';
 import {PaginatedTableColumn, TableColumn} from './paginated-table-column';
 import {ColumnFilterComponent} from './filters/column-filter/column-filter.component';
 import {TooltipDirective} from '../tooltip/tooltip.directive';
+import {COMMON_STRINGS} from '../../../common/i18n';
+import {injectStrings} from '../../../shared/i18n/strings';
 
 // type ColumnMode = any;
 // type SortType = any;
@@ -35,6 +37,7 @@ export class PaginatedTableComponent<T, S extends PaginationInput> {
     @ViewChild('actionTmpl', {static: true}) actionTmpl: TemplateRef<any>;
     @ViewChild('colHeader', {static: true}) colHeaderTpl!: TemplateRef<any>;
     themeService = inject(DarkModeService);
+    protected readonly t = injectStrings(COMMON_STRINGS);
 
     paginatedDataHandler = input<PaginatedTableHandler<T, S>>();
 

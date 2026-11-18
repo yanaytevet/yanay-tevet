@@ -1,5 +1,7 @@
 import {Component} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings} from '../../../../shared/i18n/strings';
 
 
 export interface NotificationDialogInput {
@@ -19,6 +21,8 @@ export class NotificationDialogComponent extends BaseDialogComponent<
     NotificationDialogInput,
     void
 > {
+  protected readonly t = injectStrings(COMMON_STRINGS);
+
   copyToClipboard(): void {
     if (this.data.text) {
       navigator.clipboard.writeText(this.data.text)

@@ -22,7 +22,7 @@
             @if (events.length === 0) {
                 <p>No events yet</p>
             } @else {
-                <ul class="list-disc pl-5">
+                <ul class="list-disc ps-5">
                     @for (event of events; track $index) {
                         <li class="mb-1">{{ event }}</li>
                     }

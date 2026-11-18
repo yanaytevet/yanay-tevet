@@ -28,7 +28,7 @@
                             dir="auto"
                             [(ngModel)]="filterText"
                             (ngModelChange)="filterOptions()"
-                            placeholder="Filter options..."
+                            [placeholder]="t().filterOptions"
                             class="main-input"
                             [ngModelOptions]="{standalone: true}"
                         />
@@ -54,7 +54,7 @@
                         class="main-input w-full"
                         [(ngModel)]="otherText"
                         [ngModelOptions]="{standalone: true}"
-                        [placeholder]="data.otherOptionPlaceholder ?? 'Enter value...'"
+                        [placeholder]="data.otherOptionPlaceholder ?? t().enterValue"
                     />
                 </div>
             }
@@ -70,11 +70,11 @@
         <button
                 (click)="emitClose(null)"
                 class="btn btn-secondary">
-            {{ data.cancelActionName ?? 'Cancel' }}
+            {{ data.cancelActionName ?? t().cancel }}
         </button>
         <app-confirmation-button
                 [disabled]="form.invalid || (data.otherOption && (isOtherSelected() || selectionControl?.value === '__other__') && !data.otherOptionAllowEmpty && !otherText.trim())"
-                [text]="data.confirmActionName ?? 'Submit'"
+                [text]="data.confirmActionName ?? t().submit"
                 (clicked)="onConfirm()">
         </app-confirmation-button>
     </div>

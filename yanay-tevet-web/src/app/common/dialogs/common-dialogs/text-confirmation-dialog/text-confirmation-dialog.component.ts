@@ -1,6 +1,8 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, computed, inject, OnInit} from '@angular/core';
 import {BaseDialogComponent} from '../../base-dialog.component';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors} from '@angular/forms';
+import {COMMON_STRINGS} from '../../../../common/i18n';
+import {injectStrings, fill} from '../../../../shared/i18n/strings';
 
 export interface TextConfirmationDialogInput {
   title: string;
@@ -23,6 +25,8 @@ export class TextConfirmationDialogComponent extends BaseDialogComponent<
 > implements OnInit {
   private fb = inject(FormBuilder);
   form: FormGroup;
+  protected readonly t = injectStrings(COMMON_STRINGS);
+  protected readonly typeToConfirm = computed(() => fill(this.t().typeToConfirm, {text: this.data.validationText}));
 
   constructor() {
     super();

@@ -2,6 +2,8 @@ import {Component} from '@angular/core';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ConfirmationButtonComponent} from '../../../common/dialogs/confirmation-button/confirmation-button.component';
+import {COMMON_STRINGS} from '../../../common/i18n';
+import {injectStrings} from '../../../shared/i18n/strings';
 
 export interface NameDescriptionDialogInput {
   title: string;
@@ -32,6 +34,7 @@ export class NameDescriptionDialogComponent extends BaseDialogComponent<
     NameDescriptionDialogInput,
     NameDescriptionDialogOutput
 > {
+  protected readonly t = injectStrings(COMMON_STRINGS);
   form = new FormGroup({
     name: new FormControl(this.data.defaultName ?? '', Validators.required),
     description: new FormControl(this.data.defaultDescription ?? ''),

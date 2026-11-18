@@ -10,22 +10,22 @@
       <a [routerLink]="seg.link"
          class="hidden sm:inline truncate text-writing-minor hover:text-writing transition-colors no-underline"
          [title]="seg.label">
-        {{ seg.label }}
+        <bdi>{{ seg.label }}</bdi>
       </a>
     } @else {
       <span class="truncate font-semibold text-writing"
             [class.shrink-0]="segments.length === 1"
             [title]="seg.label">
-        {{ seg.label }}
+        <bdi>{{ seg.label }}</bdi>
       </span>
     }
   }
   @if (chip) {
-    <span class="hidden sm:inline text-writing-minor shrink-0 select-none opacity-60 ml-1">·</span>
+    <span class="hidden sm:inline text-writing-minor shrink-0 select-none opacity-60 ms-1">·</span>
     <a [routerLink]="chip.link"
        class="hidden sm:inline shrink-0 px-2 py-1 text-caption font-medium text-writing-minor hover:text-writing hover:bg-layer-overlay rounded-md transition-colors no-underline whitespace-nowrap"
        [title]="chip.label">
-      {{ chip.label }}
+      <bdi>{{ chip.label }}</bdi>
     </a>
   }
 </nav>

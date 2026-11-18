@@ -1,4 +1,5 @@
 import {inject, Injectable, InjectionToken, Injector, Type,} from '@angular/core';
+import {Directionality} from '@angular/cdk/bidi';
 import {Overlay, OverlayConfig, OverlayRef,} from '@angular/cdk/overlay';
 import {ComponentPortal} from '@angular/cdk/portal';
 import {BaseDialogComponent} from './base-dialog.component';
@@ -44,6 +45,8 @@ export class DialogService {
   private overlay = inject(Overlay);
   private injector = inject(Injector);
   private darkModeService = inject(DarkModeService);
+  // Kept in step with the site language by LanguageService; without it the overlay host is always dir="ltr".
+  private directionality = inject(Directionality);
 
   open<TInput, TOutput>(
       component: Type<BaseDialogComponent<TInput, TOutput>>,
@@ -93,6 +96,7 @@ export class DialogService {
     const isDarkMode = this.darkModeService.darkMode();
     const config: OverlayConfig = {
       hasBackdrop: true,
+      direction: this.directionality,
       backdropClass: isDarkMode ? 'cdk-overlay-black-backdrop' : 'cdk-overlay-dark-backdrop',
       positionStrategy: this.overlay
           .position()

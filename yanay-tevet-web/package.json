@@ -9,7 +9,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "create-api": "ts-node scripts/create-api.ts",
-    "lint": "ng lint"
+    "lint": "ng lint && npm run check:rtl",
+    "check:rtl": "node scripts/check-rtl.mjs src/app src/styles.css src/assets"
   },
   "private": true,
   "dependencies": {
