@@ -2,7 +2,7 @@ import type {Font, PDFDocument, PDFObject, PDFPage, Text} from 'mupdf';
 import {logicalToVisual} from './bidi';
 import {CharEncoder, ExistingFontEncoder, FallbackFontEncoder, FallbackFonts, GlyphCode} from './font-encoders';
 import {mupdf} from './mupdf-runtime';
-import {FontChoice, Point, Rect, TextStyle} from './pdf-engine.types';
+import {EngineError, FontChoice, Point, Rect, TextStyle} from './pdf-engine.types';
 import {CharStyle, fontChoiceOf} from './text-lines';
 
 // A character to write. `style` is the original character's style (or the style it inherits); `source`
@@ -377,9 +377,9 @@ export function writeText(doc: PDFDocument, pageIndex: number, page: PDFPage, re
   // Text is never dropped: a line whose characters no font here can draw stays as it was (the caller's journal
   // operation is abandoned, so the redaction that took it off comes back too).
   if (missing.size > 0) {
-    const listed = [...missing].slice(0, 8).map(c => `“${c}”`).join(' ') + (missing.size > 8 ? ' …' : '');
-    throw new Error(`No font here can draw ${listed}, so the text was left as it was. `
-      + 'Chinese, Korean and scripts besides Latin, Greek, Cyrillic, Hebrew and Japanese can only be edited with fonts installed on this computer, in Chrome or Edge.');
+    const chars = [...missing].slice(0, 8).join(' ') + (missing.size > 8 ? ' …' : '');
+    throw new EngineError('missingGlyphs', `No font here can draw ${chars}, so the text was left as it was. `
+      + 'Chinese, Korean and scripts besides Latin, Greek, Cyrillic, Hebrew and Japanese can only be edited with fonts installed on this computer, in Chrome or Edge.', {chars});
   }
 
   // Keep a character's original advance when its original neighbour still follows it, unless a substitute

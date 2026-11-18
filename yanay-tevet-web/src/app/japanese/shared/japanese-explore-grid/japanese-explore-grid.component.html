@@ -5,19 +5,19 @@
       class="btn btn-secondary"
       (click)="shuffle()"
       [disabled]="isLoading()">
-      Shuffle
+      {{ t().explore.shuffle }}
     </button>
   </div>
 
-  @if (error(); as err) {
-    <div class="rounded-xl p-4 mb-4 text-body text-danger bg-danger-soft">{{ err }}</div>
+  @if (failed()) {
+    <div class="rounded-xl p-4 mb-4 text-body text-danger bg-danger-soft">{{ t().explore.loadFailed }}</div>
   }
 
   @if (nodes().length === 0) {
     @if (isLoading()) {
       <app-loading-state/>
-    } @else if (!error()) {
-      <app-empty-state [title]="emptyTitle()" text="Ingested text and the entities generated from it show up here."/>
+    } @else if (!failed()) {
+      <app-empty-state [title]="emptyTitle()" [text]="t().explore.emptyText"/>
     }
   }
 

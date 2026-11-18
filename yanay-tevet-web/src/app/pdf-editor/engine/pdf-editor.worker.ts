@@ -3,6 +3,7 @@
 import type * as Mupdf from 'mupdf';
 import {setMupdf} from './mupdf-runtime';
 import {PdfEngine} from './pdf-engine';
+import {EngineError} from './pdf-engine.types';
 import type {RenderedPage, WorkerRequest, WorkerResponse} from './pdf-engine.types';
 
 // MuPDF is served as-is from /pdf-editor/mupdf (angular.json copies it there) rather than bundled: it
@@ -16,7 +17,7 @@ const engineReady: Promise<PdfEngine> = (async () => {
   return new PdfEngine(async name => {
     const response = await fetch(new URL(`/pdf-editor/fonts/${name}`, self.location.origin));
     if (!response.ok) {
-      throw new Error(`Could not load the font ${name}`);
+      throw new EngineError('fontLoadFailed', `Could not load the font ${name}`, {name});
     }
     return response.arrayBuffer();
   });
@@ -42,7 +43,9 @@ addEventListener('message', async (event: MessageEvent<WorkerRequest>) => {
     postMessage({id, result} satisfies WorkerResponse, transferables(result));
     return;
   } catch (error) {
-    response = {id, error: error instanceof Error ? error.message : String(error)};
+    response = error instanceof EngineError
+      ? {id, error: error.message, code: error.code, params: error.params}
+      : {id, error: error instanceof Error ? error.message : String(error)};
   }
   postMessage(response);
 });

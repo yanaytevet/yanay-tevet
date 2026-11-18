@@ -1,4 +1,4 @@
-import {PdfEngineApi, WorkerRequest, WorkerResponse} from './pdf-engine.types';
+import {EngineError, PdfEngineApi, WorkerRequest, WorkerResponse} from './pdf-engine.types';
 
 type Method = keyof PdfEngineApi;
 type Result<M extends Method> = Awaited<ReturnType<PdfEngineApi[M]>>;
@@ -18,13 +18,13 @@ export class PdfEngineClient {
       }
       this.pending.delete(response.id);
       if ('error' in response) {
-        call.reject(new Error(response.error));
+        call.reject(response.code ? new EngineError(response.code, response.error, response.params) : new Error(response.error));
       } else {
         call.resolve(response.result);
       }
     });
     this.worker.addEventListener('error', event => {
-      const error = new Error(event.message || 'The PDF engine failed to start');
+      const error = new EngineError('engineFailed', event.message || 'The PDF engine failed to start');
       for (const call of this.pending.values()) {
         call.reject(error);
       }

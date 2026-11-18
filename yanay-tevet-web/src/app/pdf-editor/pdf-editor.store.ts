@@ -1,5 +1,7 @@
 import {computed, DestroyRef, effect, inject, Injectable, signal} from '@angular/core';
 import {DialogService} from '../common/dialogs/dialogs.service';
+import {LanguageService} from '../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../shared/i18n/strings';
 import {PdfEditorLog} from './debug/pdf-editor-log';
 import {fontKey} from './engine/font-names';
 import {PdfEngineClient} from './engine/pdf-engine-client';
@@ -7,6 +9,7 @@ import {
   AddTextStyle,
   AnnotationInfo,
   DocState,
+  EngineError,
   FontChoice,
   FontFamily,
   MarkupType,
@@ -18,6 +21,7 @@ import {
   TextWriteResult,
   WidgetInfo,
 } from './engine/pdf-engine.types';
+import {PDF_EDITOR_STRINGS} from './i18n';
 
 export type PdfTool = 'select' | 'editText' | 'move' | 'addText' | 'erase' | 'markup' | 'note' | 'draw' | 'sign';
 
@@ -67,6 +71,8 @@ function overlaps(a: Rect, b: Rect): boolean {
 @Injectable()
 export class PdfEditorStore {
   private readonly dialogService = inject(DialogService);
+  private readonly languageService = inject(LanguageService);
+  private readonly t = injectStrings(PDF_EDITOR_STRINGS);
   readonly log = inject(PdfEditorLog);
   private client: PdfEngineClient | null = null;
   private nextMarkerId = 1;
@@ -138,8 +144,10 @@ export class PdfEditorStore {
     } catch (error) {
       this.log.log('error', {message: error instanceof Error ? error.message : String(error)});
       await this.dialogService.showNotificationDialog({
-        title: 'That didn\'t work',
-        text: error instanceof Error ? error.message : String(error),
+        title: this.t().dialogs.failedTitle,
+        text: error instanceof EngineError
+          ? fill(this.t().engineErrors[error.code], error.params)
+          : error instanceof Error ? error.message : String(error),
       });
       return null;
     } finally {
@@ -185,14 +193,15 @@ export class PdfEditorStore {
   }
 
   private async unlock(): Promise<boolean> {
-    let text = 'This PDF is protected. Enter its password to open it.';
+    let text = this.t().dialogs.passwordText;
     for (let attempt = 0; attempt < 3; attempt++) {
+      const strings = this.t().dialogs;
       const password = await this.dialogService.getTextFromInputDialog({
-        title: 'Password',
+        title: strings.passwordTitle,
         text,
-        label: 'password',
+        label: strings.passwordLabel,
         inputType: 'password',
-        confirmActionName: 'Open',
+        confirmActionName: strings.open,
       });
       if (password === null) {
         return false;
@@ -200,7 +209,7 @@ export class PdfEditorStore {
       if (await this.perform(() => this.engine.call('authenticate', password))) {
         return true;
       }
-      text = 'That password is wrong. Try again.';
+      text = this.t().dialogs.passwordWrong;
     }
     return false;
   }
@@ -341,8 +350,8 @@ export class PdfEditorStore {
     }
     if (result.missingCharacters.length > 0) {
       await this.dialogService.showNotificationDialog({
-        title: 'Some characters were left out',
-        text: `No available font can draw: ${result.missingCharacters.join(' ')}`,
+        title: this.t().dialogs.missingTitle,
+        text: fill(this.t().dialogs.missingText, {chars: result.missingCharacters.join(' ')}),
       });
     }
   }
@@ -407,12 +416,13 @@ export class PdfEditorStore {
   }
 
   async addNote(page: number, at: Point): Promise<void> {
+    const strings = this.t().dialogs;
     const text = await this.dialogService.getTextFromInputDialog({
-      title: 'Add a note',
-      text: 'The note shows as a comment icon on the page.',
-      label: 'note',
+      title: strings.noteTitle,
+      text: strings.noteText,
+      label: strings.noteLabel,
       isTextArea: true,
-      confirmActionName: 'Add note',
+      confirmActionName: strings.addNote,
     });
     if (text) {
       await this.pageOperation(page, () => this.engine.call('addNote', page, at, text), 'note', {at});
@@ -458,10 +468,11 @@ export class PdfEditorStore {
   }
 
   async deletePage(page: number): Promise<void> {
+    const strings = this.t().dialogs;
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: `Delete page ${page + 1}?`,
-      text: 'You can undo this until you close the file.',
-      confirmActionName: 'Delete page',
+      title: fill(strings.deletePageTitle, {page: page + 1}),
+      text: strings.deletePageText,
+      confirmActionName: strings.deletePage,
       danger: true,
     });
     if (confirmed) {
@@ -485,8 +496,11 @@ export class PdfEditorStore {
   async extractPages(pages: number[]): Promise<void> {
     const data = await this.perform(() => this.engine.call('extractPages', pages));
     if (data) {
-      const label = pages.length === 1 ? `page ${pages[0] + 1}` : `${pages.length} pages`;
-      this.saveFile(data, `${this.baseName()} (${label}).pdf`);
+      const files = this.t().files;
+      const name = pages.length === 1
+        ? fill(files.onePage, {name: this.baseName(), page: pages[0] + 1})
+        : fill(plural(this.languageService.language(), pages.length, files.pages), {name: this.baseName()});
+      this.saveFile(data, name);
     }
   }
 
@@ -501,7 +515,7 @@ export class PdfEditorStore {
   async download(): Promise<void> {
     const data = await this.perform(() => this.engine.call('save'));
     if (data) {
-      this.saveFile(data, `${this.baseName()} (edited).pdf`);
+      this.saveFile(data, fill(this.t().files.edited, {name: this.baseName()}));
       this.log.log('download', {bytes: data.byteLength});
     }
   }

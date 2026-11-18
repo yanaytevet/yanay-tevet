@@ -19,7 +19,10 @@ import {featherDownload, featherUpload, featherX, featherZoomIn, featherZoomOut}
 import {LoadingStateComponent} from '../common/components/page/loading-state/loading-state.component';
 import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
 import {DialogService} from '../common/dialogs/dialogs.service';
+import {LanguageService} from '../shared/i18n/language.service';
+import {fill, injectStrings} from '../shared/i18n/strings';
 import {FontFamily, MarkupType} from './engine/pdf-engine.types';
+import {PDF_EDITOR_STRINGS} from './i18n';
 import {PdfPageViewComponent} from './page-view/pdf-page-view.component';
 import {AddTextSettings, PdfEditorStore, PdfTool} from './pdf-editor.store';
 import {SignatureDialogComponent} from './signature-dialog/signature-dialog.component';
@@ -27,10 +30,21 @@ import {PdfThumbnailsComponent} from './thumbnails/pdf-thumbnails.component';
 
 interface ToolDef {
   tool: PdfTool;
-  label: string;
   icon: string;
-  hint: string;
 }
+
+const TOOLS: ToolDef[] = [
+  {tool: 'select', icon: bootstrapCursor},
+  {tool: 'editText', icon: bootstrapCursorText},
+  {tool: 'move', icon: bootstrapArrowsMove},
+  {tool: 'addText', icon: bootstrapFonts},
+  {tool: 'erase', icon: bootstrapEraser},
+  {tool: 'markup', icon: bootstrapHighlighter},
+  {tool: 'note', icon: bootstrapChatSquareText},
+  {tool: 'draw', icon: bootstrapPencil},
+  {tool: 'sign', icon: bootstrapPenFill},
+];
+const MARKUP_TYPES: MarkupType[] = ['Highlight', 'Underline', 'StrikeOut'];
 
 const ZOOM_STEPS = [0.25, 0.33, 0.5, 0.67, 0.8, 1, 1.25, 1.5, 2, 3, 4];
 const MIN_ZOOM = ZOOM_STEPS[0];
@@ -47,6 +61,8 @@ const MAX_ZOOM = ZOOM_STEPS[ZOOM_STEPS.length - 1];
 export class PdfEditorComponent {
   protected readonly store = inject(PdfEditorStore);
   private readonly dialogService = inject(DialogService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(PDF_EDITOR_STRINGS);
 
   protected readonly featherUpload = featherUpload;
   protected readonly featherDownload = featherDownload;
@@ -59,38 +75,33 @@ export class PdfEditorComponent {
   protected readonly bootstrapFlag = bootstrapFlag;
   protected readonly logEnabled = this.store.log.enabled;
 
-  protected readonly tools: ToolDef[] = [
-    {tool: 'select', label: 'Fill & select', icon: bootstrapCursor,
-      hint: 'Fill in form fields. Click a note, drawing or signature to move or delete it. Drag text to move it, double-click it to edit it.'},
-    {tool: 'editText', label: 'Edit text', icon: bootstrapCursorText,
-      hint: 'Click a line to change or delete it. It keeps its font; characters that font lacks are marked with a warning.'},
-    {tool: 'move', label: 'Move text', icon: bootstrapArrowsMove,
-      hint: 'Drag a line to move it. Drag a box or Shift+click to pick several. Arrow keys nudge (Shift: 10pt).'},
-    {tool: 'addText', label: 'Add text', icon: bootstrapFonts, hint: 'Click where the text should start.'},
-    {tool: 'erase', label: 'Erase', icon: bootstrapEraser, hint: 'Drag over text or images to remove them from the file.'},
-    {tool: 'markup', label: 'Highlight', icon: bootstrapHighlighter, hint: 'Drag across text to mark it.'},
-    {tool: 'note', label: 'Note', icon: bootstrapChatSquareText, hint: 'Click to leave a note.'},
-    {tool: 'draw', label: 'Draw', icon: bootstrapPencil, hint: 'Draw freehand on the page.'},
-    {tool: 'sign', label: 'Sign', icon: bootstrapPenFill, hint: 'Drag a box, or click, to place your signature.'},
-  ];
-  protected readonly markupTypes: {type: MarkupType; label: string}[] = [
-    {type: 'Highlight', label: 'Highlight'},
-    {type: 'Underline', label: 'Underline'},
-    {type: 'StrikeOut', label: 'Strike out'},
-  ];
+  protected readonly tools = computed(() => TOOLS.map(def => ({...def, ...this.t().tools[def.tool]})));
+  protected readonly markupTypes = computed(() => MARKUP_TYPES.map(type => ({type, label: this.t().markupTypes[type]})));
   // Ink colours: content, not interface, so they stay the same in both themes.
   protected readonly markupColors = ['#ffd400', '#7ee36b', '#ff8fd0', '#7cc7ff'];
   protected readonly inkColors = ['#14213d', '#1f4fd6', '#d62828', '#2a9d3f'];
   protected readonly drawWidths = [1, 2, 4];
 
-  protected readonly activeTool = computed(() => this.tools.find(t => t.tool === this.store.tool()) ?? this.tools[0]);
-  protected readonly isActiveTool = computed(() => Object.fromEntries(this.tools.map(t => [t.tool, t.tool === this.store.tool()])));
-  protected readonly isMarkupType = computed(() => Object.fromEntries(this.markupTypes.map(m => [m.type, m.type === this.store.markupType()])));
+  protected readonly activeTool = computed(() => this.t().tools[this.store.tool()]);
+  protected readonly isActiveTool = computed(() => Object.fromEntries(TOOLS.map(def => [def.tool, def.tool === this.store.tool()])));
+  protected readonly isMarkupType = computed(() => Object.fromEntries(MARKUP_TYPES.map(type => [type, type === this.store.markupType()])));
   protected readonly isMarkupColor = computed(() => Object.fromEntries(this.markupColors.map(c => [c, c === this.store.markupColor()])));
   protected readonly isInkColor = computed(() => Object.fromEntries(this.inkColors.map(c => [c, c === this.store.drawColor()])));
   protected readonly isDrawWidth = computed(() => Object.fromEntries(this.drawWidths.map(w => [w, w === this.store.drawWidth()])));
-  protected readonly zoomLabel = computed(() => `${Math.round(this.store.zoom() * 100)}%`);
-  protected readonly pageLabel = computed(() => `Page ${this.store.currentPage() + 1} of ${this.store.pageCount()}`);
+  protected readonly zoomLabel = computed(() =>
+    new Intl.NumberFormat(this.languageService.language(), {style: 'percent'}).format(Math.round(this.store.zoom() * 100) / 100));
+  protected readonly pageLabel = computed(() => {
+    const language = this.languageService.language();
+    return fill(this.t().toolbar.pageOf, {
+      page: (this.store.currentPage() + 1).toLocaleString(language),
+      count: this.store.pageCount().toLocaleString(language),
+    });
+  });
+  // Labels for the colour swatches and line widths, by value.
+  protected readonly colourLabels = computed(() => Object.fromEntries(
+    [...this.markupColors, ...this.inkColors].map(c => [c, fill(this.t().options.colourValue, {value: c})])));
+  protected readonly widthLabels = computed(() => Object.fromEntries(
+    this.drawWidths.map(w => [w, fill(this.t().options.widthValue, {value: w.toLocaleString(this.languageService.language())})])));
 
   protected readonly showPages = signal(typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches);
   protected readonly dragOver = signal(false);
@@ -161,7 +172,7 @@ export class PdfEditorComponent {
     const note = await this.dialogService.getTextFromInputDialog({
       title: 'What felt off?',
       text: 'Saved with what just happened, for Claude to read. A word or two is enough, or leave it empty.',
-      label: 'note',
+      label: 'Note',
       isTextArea: true,
       allowEmpty: true,
       confirmActionName: 'Flag it',
@@ -310,10 +321,11 @@ export class PdfEditorComponent {
 
   protected async close(): Promise<void> {
     if (this.store.canUndo()) {
+      const strings = this.t().closeDialog;
       const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-        title: 'Close without downloading?',
-        text: 'Your changes live only in this tab. Download the PDF first to keep them.',
-        confirmActionName: 'Close',
+        title: strings.title,
+        text: strings.text,
+        confirmActionName: strings.confirm,
         danger: true,
       });
       if (!confirmed) {

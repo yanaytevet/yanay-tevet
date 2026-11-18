@@ -1,4 +1,5 @@
 import {NodeStatus, NodeSummarySchema} from '../../../generated-files/api/japanese';
+import {JapaneseStrings} from '../i18n';
 
 const STATUS_CHIP_CLASS: Record<NodeStatus, string> = {
   published: 'chip-success',
@@ -32,11 +33,12 @@ export const EMPTY_NODE_DISPLAY: NodeDisplay = {
 // The display strings a node card or page shows, computed once so templates only read fields.
 export function nodeDisplay(
   node: Pick<NodeSummarySchema, 'type' | 'status' | 'jlpt_level' | 'word_data' | 'kanji_data'>,
+  strings: JapaneseStrings,
 ): NodeDisplay {
   const meanings = node.word_data?.meanings ?? node.kanji_data?.meanings ?? [];
   return {
-    typeLabel: node.type.charAt(0).toUpperCase() + node.type.slice(1),
-    statusLabel: node.status.replace(/_/g, ' '),
+    typeLabel: strings.nodeTypes[node.type],
+    statusLabel: strings.statuses[node.status],
     statusChipClass: STATUS_CHIP_CLASS[node.status],
     jlptLabel: node.jlpt_level?.toUpperCase() ?? '',
     meanings: meanings.join(', '),

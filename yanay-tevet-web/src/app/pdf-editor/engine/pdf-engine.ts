@@ -7,6 +7,7 @@ import {
   AddTextStyle,
   AnnotationInfo,
   DocState,
+  EngineError,
   FontChoice,
   LineRef,
   MarkupType,
@@ -235,7 +236,7 @@ export class PdfEngine implements PdfEngineApi {
     const m = mupdf();
     const doc = m.Document.openDocument(new Uint8Array(data), 'application/pdf').asPDF();
     if (!doc) {
-      throw new Error('This file is not a PDF');
+      throw new EngineError('notAPdf', 'This file is not a PDF');
     }
     this.doc = doc;
     this.registry = new FontRegistry(doc, this.fallbackFonts);
@@ -330,7 +331,7 @@ export class PdfEngine implements PdfEngineApi {
   private findLine(page: number, lineIndex: number, expectedText: string): EditableLine {
     const line = this.lines(page)[lineIndex];
     if (!line || line.text !== expectedText) {
-      throw new Error('The page changed; pick the line again');
+      throw new EngineError('pageChanged', 'The page changed; pick the line again');
     }
     return line;
   }
@@ -632,7 +633,7 @@ export class PdfEngine implements PdfEngineApi {
 
   async deletePage(page: number): Promise<DocState> {
     if (this.document.countPages() <= 1) {
-      throw new Error('A PDF needs at least one page');
+      throw new EngineError('lastPage', 'A PDF needs at least one page');
     }
     this.operation('Delete page', true, () => this.document.deletePage(page));
     return this.state();
@@ -660,10 +661,10 @@ export class PdfEngine implements PdfEngineApi {
   async insertPdf(at: number, data: ArrayBuffer): Promise<DocState> {
     const source = mupdf().Document.openDocument(new Uint8Array(data), 'application/pdf').asPDF();
     if (!source) {
-      throw new Error('That file is not a PDF');
+      throw new EngineError('insertedNotAPdf', 'That file is not a PDF');
     }
     if (source.needsPassword()) {
-      throw new Error('That PDF is password-protected');
+      throw new EngineError('insertedNeedsPassword', 'That PDF is password-protected');
     }
     repairToUnicodeMaps(source);
     this.operation('Insert PDF', true, () => {

@@ -1,6 +1,8 @@
 import {Component, OnDestroy, computed, input, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {bootstrapVolumeUpFill, bootstrapStopFill, bootstrapArrowRepeat} from '@ng-icons/bootstrap-icons';
+import {injectStrings} from '../../../shared/i18n/strings';
+import {JAPANESE_STRINGS} from '../../i18n';
 
 // Furigana annotations look like 漢字(かんじ); for speech we keep just the reading
 // so the synthesizer pronounces ambiguous kanji exactly as intended.
@@ -53,6 +55,7 @@ function clamp(value: number, min: number, max: number): number {
 export class SpeakButtonComponent implements OnDestroy {
   text = input.required<string>();
 
+  protected readonly t = injectStrings(JAPANESE_STRINGS);
   protected readonly bootstrapVolumeUpFill = bootstrapVolumeUpFill;
   protected readonly bootstrapStopFill = bootstrapStopFill;
   protected readonly bootstrapArrowRepeat = bootstrapArrowRepeat;

@@ -2,9 +2,9 @@
 
 <div class="page-wide">
   @if (isLoading() && !node()) {
-    <app-loading-state label="Loading"/>
-  } @else if (error(); as err) {
-    <app-error-state [text]="err" [backUrl]="japaneseHomeUrl" backLabel="Back to Japanese"/>
+    <app-loading-state [label]="t().detail.loading"/>
+  } @else if (notFound()) {
+    <app-error-state [text]="t().detail.notFound" [backUrl]="japaneseHomeUrl" [backLabel]="t().detail.backToJapanese"/>
   } @else if (node(); as n) {
     <app-page-header [title]="display().typeLabel">
       @if (n.jlpt_level) {
@@ -13,24 +13,24 @@
       <span class="chip {{ display().statusChipClass }}">{{ display().statusLabel }}</span>
       @if (authService.user()?.is_admin) {
         <button type="button" class="btn btn-secondary btn-sm" (click)="editTitle()" [disabled]="isWorking()">
-          Edit title
+          {{ t().detail.editTitle }}
         </button>
         @if (n.status === 'stub') {
           <button type="button" class="btn btn-primary btn-sm" (click)="generate()" [disabled]="isWorking()">
-            Generate content
+            {{ t().detail.generateContent }}
           </button>
         }
         @if (n.status === 'needs_review') {
           <button type="button" class="btn btn-primary btn-sm" (click)="approve()" [disabled]="isWorking()">
-            Approve
+            {{ t().detail.approve }}
           </button>
           <button type="button" class="btn btn-secondary btn-sm" (click)="generate()" [disabled]="isWorking()">
-            Regenerate
+            {{ t().detail.regenerate }}
           </button>
         }
         @if (n.status === 'published') {
           <button type="button" class="btn btn-secondary btn-sm" (click)="generate()" [disabled]="isWorking()">
-            Regenerate
+            {{ t().detail.regenerate }}
           </button>
         }
       }
@@ -38,9 +38,9 @@
 
     <div class="card p-5 sm:p-6 mb-6">
       @if (n.passage_data; as data) {
-        <div class="text-title font-bold mb-1">{{ data.title }}</div>
+        <div class="text-title font-bold mb-1"><bdi>{{ data.title }}</bdi></div>
         @if (data.source) {
-          <div class="text-body text-writing-minor">{{ data.source }}</div>
+          <div class="text-body text-writing-minor"><bdi>{{ data.source }}</bdi></div>
         }
       }
       @if (n.sentence_data; as data) {
@@ -50,7 +50,7 @@
           </div>
           <app-speak-button [text]="data.japanese"/>
         </div>
-        <div class="text-lead text-writing-minor">{{ data.english_translation }}</div>
+        <div class="text-lead text-writing-minor"><bdi>{{ data.english_translation }}</bdi></div>
       }
       @if (n.word_data; as data) {
         <div class="flex items-center gap-3 mb-2">
@@ -61,15 +61,15 @@
           <app-speak-button [text]="data.base_form"/>
         </div>
         <div class="text-caption text-writing-minor mb-2">
-          {{ data.word_type }}@if (data.word_sub_type) { · {{ data.word_sub_type }} }
+          <bdi>{{ data.word_type }}</bdi>@if (data.word_sub_type) { · <bdi>{{ data.word_sub_type }}</bdi> }
         </div>
-        <div class="text-ui text-writing">{{ display().meanings }}</div>
+        <div class="text-ui text-writing"><bdi>{{ display().meanings }}</bdi></div>
       }
       @if (n.kanji_data; as data) {
         <div class="flex items-baseline gap-6">
           <div class="text-7xl font-bold leading-none">{{ data.character }}</div>
           <div>
-            <div class="text-ui mb-1">{{ display().meanings }}</div>
+            <div class="text-ui mb-1"><bdi>{{ display().meanings }}</bdi></div>
             @if (display().readingsOn) {
               <div class="text-meta text-writing-minor">音 {{ display().readingsOn }}</div>
             }
@@ -77,7 +77,7 @@
               <div class="text-meta text-writing-minor">訓 {{ display().readingsKun }}</div>
             }
             @if (display().radicals) {
-              <div class="text-meta text-writing-minor">radicals: {{ display().radicals }}</div>
+              <div class="text-meta text-writing-minor">{{ radicalsLabel() }}</div>
             }
           </div>
         </div>
@@ -85,12 +85,12 @@
       @if (n.particle_data; as data) {
         <div class="flex items-baseline gap-6">
           <div class="text-5xl font-bold leading-none">{{ data.particle }}</div>
-          <div class="text-ui">{{ data.primary_function }}</div>
+          <div class="text-ui"><bdi>{{ data.primary_function }}</bdi></div>
         </div>
       }
       @if (n.rule_data; as data) {
-        <div class="text-title font-bold mb-1">{{ data.name }}</div>
-        <div class="text-meta text-writing-minor">{{ data.category }}</div>
+        <div class="text-title font-bold mb-1"><bdi>{{ data.name }}</bdi></div>
+        <div class="text-meta text-writing-minor"><bdi>{{ data.category }}</bdi></div>
       }
     </div>
 
@@ -98,13 +98,13 @@
       <div class="card p-5 sm:p-6 mb-8 japanese-content" [innerHTML]="contentHtml()"></div>
     } @else {
       <div class="card p-5 sm:p-6 mb-8 text-writing-minor text-body">
-        No content yet. @if (authService.user()?.is_admin) { Click "Generate content" to create it. }
+        {{ authService.user()?.is_admin ? t().detail.noContentAdmin : t().detail.noContent }}
       </div>
     }
 
     @if (outgoingGroups().length > 0) {
       <div class="mb-8">
-        <div class="text-section font-semibold mb-3 text-writing">Links from this node</div>
+        <div class="text-section font-semibold mb-3 text-writing">{{ t().detail.linksFrom }}</div>
         @for (group of outgoingGroups(); track group.label) {
           <div class="mb-5">
             <div class="eyebrow mb-2">{{ group.label }}</div>
@@ -120,7 +120,7 @@
 
     @if (incomingGroups().length > 0) {
       <div class="mb-8">
-        <div class="text-section font-semibold mb-3 text-writing">Links to this node</div>
+        <div class="text-section font-semibold mb-3 text-writing">{{ t().detail.linksTo }}</div>
         @for (group of incomingGroups(); track group.label) {
           <div class="mb-5">
             <div class="eyebrow mb-2">{{ group.label }}</div>

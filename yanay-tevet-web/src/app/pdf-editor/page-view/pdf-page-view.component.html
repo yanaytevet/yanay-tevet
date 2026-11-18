@@ -10,7 +10,7 @@
   <!-- Edit text: every line is a target -->
   @if (tool() === 'editText') {
     @for (box of lineBoxes(); track box.line.index) {
-      <button type="button" class="line-target absolute" [attr.aria-label]="'Edit line: ' + box.line.text"
+      <button type="button" class="line-target absolute" [attr.aria-label]="box.label"
               [style.left.px]="box.left" [style.top.px]="box.top" [style.width.px]="box.width" [style.height.px]="box.height"
               (click)="startEdit(box.line)"></button>
     }
@@ -27,7 +27,7 @@
       <img class="absolute z-10 pointer-events-none" alt="" [src]="ghost.url" [style.left.px]="ghost.left" [style.top.px]="ghost.top"
            [style.width.px]="ghost.width" [style.height.px]="ghost.height">
     }
-    <div class="absolute inset-0 z-20 touch-none cursor-default" role="application" [attr.aria-label]="tool() === 'move' ? 'Move text' : 'Page'"
+    <div class="absolute inset-0 z-20 touch-none cursor-default" role="application" [attr.aria-label]="tool() === 'move' ? t().page.moveText : t().page.page"
          (pointerdown)="onMoveDown($event)" (pointermove)="onMovePointer($event)" (pointerup)="onMoveUp()"
          (mousedown)="$event.preventDefault()">
       @for (box of view.lines; track box.line.index) {
@@ -63,33 +63,33 @@
              [style.min-width.px]="view.minWidth" [style.height.px]="view.height" [style.font-size.px]="view.fontSize"
              [style.font-family]="view.fontFamily" [style.font-weight]="view.fontWeight" [style.font-style]="view.fontStyle"
              [style.word-spacing.px]="view.wordSpacing" [style.letter-spacing.px]="view.letterSpacing"
-             [style.color]="view.color" aria-label="Line text"
+             [style.color]="view.color" [attr.aria-label]="t().page.lineText"
              (input)="setEditText($any($event.target).value)" (keydown)="onEditKey($event)">
       @if (!view.saving) {
-      <div class="edit-toolbar card shadow-2 mt-1 flex flex-wrap items-center gap-1 p-1.5" dir="ltr">
-        <select class="main-input !w-auto !py-1 !text-meta" aria-label="Font" [value]="editing()!.font"
+      <div class="edit-toolbar card shadow-2 mt-1 flex flex-wrap items-center gap-1 p-1.5">
+        <select class="main-input !w-auto !py-1 !text-meta" [attr.aria-label]="t().options.font" [value]="editing()!.font"
                 (change)="setEditFont($any($event.target).value)">
-          <option value="original">Original ({{ view.original }})</option>
+          <option value="original">{{ view.original }}</option>
           <option value="sans">Sans</option>
           <option value="serif">Serif</option>
           <option value="mono">Mono</option>
         </select>
         @if (view.custom) {
-          <button type="button" class="btn btn-sm btn-ghost font-bold" [attr.aria-pressed]="editing()!.bold"
+          <button type="button" class="btn btn-sm btn-ghost font-bold" [attr.aria-pressed]="editing()!.bold" [attr.aria-label]="t().options.bold" [title]="t().options.bold"
                   [class.bg-accent-soft]="editing()!.bold" [class.text-accent]="editing()!.bold" (click)="toggleEditBold()">B</button>
-          <button type="button" class="btn btn-sm btn-ghost italic" [attr.aria-pressed]="editing()!.italic"
+          <button type="button" class="btn btn-sm btn-ghost italic" [attr.aria-pressed]="editing()!.italic" [attr.aria-label]="t().options.italic" [title]="t().options.italic"
                   [class.bg-accent-soft]="editing()!.italic" [class.text-accent]="editing()!.italic" (click)="toggleEditItalic()">I</button>
         }
         <span class="flex-1"></span>
-        <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete line" title="Delete line" (click)="deleteLine()">
+        <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().page.deleteLine" [title]="t().page.deleteLine" (click)="deleteLine()">
           <ng-icon [svg]="featherTrash2"/>
         </button>
-        <button type="button" class="icon-btn" aria-label="Cancel" title="Cancel (Esc)" (click)="cancelEdit()">
+        <button type="button" class="icon-btn" [attr.aria-label]="t().page.cancel" [title]="t().page.cancelTitle" (click)="cancelEdit()">
           <ng-icon [svg]="featherX"/>
         </button>
         @if (!view.localFontOffer) {
           <button type="button" class="btn btn-sm btn-primary" (click)="commitEdit()">
-            <ng-icon [svg]="featherCheck"/> Save
+            <ng-icon [svg]="featherCheck"/> {{ t().page.save }}
           </button>
         }
         @if (view.substitutionNote) {
@@ -99,8 +99,8 @@
           <div class="basis-full flex flex-col gap-2 px-1 pt-1">
             <p class="text-caption text-writing-minor max-w-80">{{ view.localFontOffer }}</p>
             <div class="flex gap-1 justify-end">
-              <button type="button" class="btn btn-sm btn-ghost" (click)="useLookAlikes()">Use a look-alike</button>
-              <button type="button" class="btn btn-sm btn-primary" (click)="useLocalFonts()">Use my fonts</button>
+              <button type="button" class="btn btn-sm btn-ghost" (click)="useLookAlikes()">{{ t().page.useLookAlike }}</button>
+              <button type="button" class="btn btn-sm btn-primary" (click)="useLocalFonts()">{{ t().page.useMyFonts }}</button>
             </div>
           </div>
         }
@@ -120,7 +120,7 @@
         @if (box.selected) {
           <div class="absolute -top-10 start-0 card shadow-2 flex items-center gap-1 p-1 whitespace-nowrap" (pointerdown)="$event.stopPropagation()">
             <span class="text-caption text-writing-minor px-1">{{ box.name }}</span>
-            <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete annotation" (click)="deleteSelectedAnnotation()">
+            <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().page.deleteAnnotation" (click)="deleteSelectedAnnotation()">
               <ng-icon [svg]="featherTrash2"/>
             </button>
           </div>
@@ -186,10 +186,10 @@
       <textarea #draftInput class="paper-input draft-input" dir="auto" rows="1" [value]="draft()!.text"
                 [style.font-size.px]="view.fontSize" [style.font-family]="view.fontFamily"
                 [style.font-weight]="view.fontWeight" [style.font-style]="view.fontStyle" [style.color]="view.color"
-                aria-label="New text" (input)="setDraftText($any($event.target).value)" (keydown)="onDraftKey($event)"
+                [attr.aria-label]="t().page.newText" (input)="setDraftText($any($event.target).value)" (keydown)="onDraftKey($event)"
                 (blur)="onDraftBlur()"></textarea>
       <div class="draft-caption card text-caption text-writing-minor mt-1 px-2 py-0.5 w-max">
-        {{ view.caption }} · Enter to place, Shift+Enter for a new line
+        {{ view.caption }} · {{ t().page.draftHelp }}
       </div>
     </div>
   }

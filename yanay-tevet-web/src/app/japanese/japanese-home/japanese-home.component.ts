@@ -1,4 +1,6 @@
 import {Component} from '@angular/core';
+import {injectStrings} from '../../shared/i18n/strings';
+import {JAPANESE_STRINGS} from '../i18n';
 import {TabsGroup} from '../../common/components/tabs/tabs-group/tabs-group';
 import {Tab} from '../../common/components/tabs/tab/tab';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
@@ -11,4 +13,6 @@ import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.componen
   imports: [TabsGroup, Tab, JapaneseExploreGridComponent, JapaneseNavComponent, PageHeaderComponent],
   templateUrl: './japanese-home.component.html',
 })
-export class JapaneseHomeComponent {}
+export class JapaneseHomeComponent {
+  protected readonly t = injectStrings(JAPANESE_STRINGS);
+}

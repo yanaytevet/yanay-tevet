@@ -18,6 +18,8 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {UserWebsocketsService} from '../../common/services/user-websockets.service';
 import {WebsocketEvent} from '../../common/interfaces/websockets/websocket-event';
 import {RoutingService} from '../../shared/services/routing.service';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {JAPANESE_STRINGS} from '../i18n';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
@@ -26,28 +28,6 @@ import {JapaneseNavComponent} from '../shared/japanese-nav/japanese-nav.componen
 import {EMPTY_NODE_DISPLAY, nodeDisplay, NodeDisplay} from '../shared/node-display';
 import {NodeSummaryCardComponent} from '../shared/node-summary-card/node-summary-card.component';
 import {SpeakButtonComponent} from '../shared/speak-button/speak-button.component';
-
-const EDGE_TYPE_LABELS: Record<EdgeType, string> = {
-  contains: 'Contains',
-  composed_of: 'Composed of',
-  uses_rule: 'Uses rule',
-  example_of: 'Example of',
-  exception_to: 'Exception to',
-  synonym_of: 'Synonym of',
-  related_to: 'Related',
-  same_kanji_as: 'Same kanji as',
-};
-
-const INCOMING_EDGE_TYPE_LABELS: Record<EdgeType, string> = {
-  contains: 'Appears in',
-  composed_of: 'Used in words',
-  uses_rule: 'Sentences using this rule',
-  example_of: 'Examples',
-  exception_to: 'Exceptions',
-  synonym_of: 'Synonyms',
-  related_to: 'Related',
-  same_kanji_as: 'Same kanji as',
-};
 
 @Component({
   selector: 'app-japanese-node-detail',
@@ -65,6 +45,7 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
   private readonly routingService = inject(RoutingService);
   private readonly userWebsocketsService = inject(UserWebsocketsService);
   protected readonly authService = inject(AuthenticationService);
+  protected readonly t = injectStrings(JAPANESE_STRINGS);
 
   private currentNodeId: number | null = null;
   private nodeWsSubscription: Subscription | null = null;
@@ -72,14 +53,16 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
   readonly node = signal<NodeDetailSchema | null>(null);
   readonly isLoading = signal<boolean>(true);
   readonly isWorking = signal<boolean>(false);
-  readonly error = signal<string | null>(null);
+  readonly notFound = signal<boolean>(false);
 
   readonly japaneseHomeUrl = this.routingService.getJapaneseHomeUrl();
 
   readonly display = computed<NodeDisplay>(() => {
     const node = this.node();
-    return node ? nodeDisplay(node) : EMPTY_NODE_DISPLAY;
+    return node ? nodeDisplay(node, this.t()) : EMPTY_NODE_DISPLAY;
   });
+
+  readonly radicalsLabel = computed(() => fill(this.t().detail.radicals, {radicals: this.display().radicals}));
 
   readonly nodeTitle = computed<string>(() => {
     const node = this.node();
@@ -121,7 +104,7 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       buckets.set(edge.edge_type, existing);
     }
     return [...buckets.entries()].map(([type, edges]) => ({
-      label: EDGE_TYPE_LABELS[type],
+      label: this.t().detail.outgoing[type],
       edges,
     }));
   });
@@ -138,7 +121,7 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       buckets.set(edge.edge_type, existing);
     }
     return [...buckets.entries()].map(([type, edges]) => ({
-      label: INCOMING_EDGE_TYPE_LABELS[type],
+      label: this.t().detail.incoming[type],
       edges,
     }));
   });
@@ -157,12 +140,12 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.error.set(null);
+    this.notFound.set(false);
     try {
       const res = await readNodeView({path: {object_id: id}});
       this.node.set(res.data);
     } catch {
-      this.error.set('Node not found.');
+      this.notFound.set(true);
       this.node.set(null);
     } finally {
       this.isLoading.set(false);
@@ -200,14 +183,15 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       return;
     }
 
+    const strings = this.t().detail;
     const userNote = await this.dialogService.getTextFromInputDialog({
-      title: 'Generate content',
-      text: 'Optional notes to guide the model (e.g. "use the kanji form 中", "treat this as a noun, not a verb", "this is the polite copula"). Leave empty to generate with the default rules.',
-      label: 'Notes (optional)',
+      title: strings.generateContent,
+      text: strings.generateDialog.text,
+      label: strings.generateDialog.label,
       isTextArea: true,
       textAreaRows: 5,
       allowEmpty: true,
-      confirmActionName: 'Generate',
+      confirmActionName: strings.generateDialog.confirm,
     });
     if (userNote === null) {
       return;
@@ -225,8 +209,8 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
     } catch (err) {
       this.isWorking.set(false);
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to generate content: ${err}`,
+        title: this.t().detail.error,
+        text: fill(this.t().detail.generateFailed, {error: String(err)}),
       });
     }
   }
@@ -236,12 +220,13 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
     if (!node) {
       return;
     }
+    const strings = this.t().detail;
     const title = await this.dialogService.getTextFromInputDialog({
-      title: 'Edit title',
-      text: 'Update the main text shown for this node. For words and sentences you can include furigana like 漢字(かんじ).',
-      label: 'Title',
+      title: strings.editTitle,
+      text: strings.editTitleDialog.text,
+      label: strings.editTitleDialog.label,
       defaultValue: this.nodeTitle(),
-      confirmActionName: 'Save',
+      confirmActionName: strings.editTitleDialog.confirm,
     });
     if (title === null) {
       return;
@@ -252,8 +237,8 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       this.node.set(res.data);
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to update title: ${err}`,
+        title: this.t().detail.error,
+        text: fill(this.t().detail.updateTitleFailed, {error: String(err)}),
       });
     } finally {
       this.isWorking.set(false);
@@ -271,8 +256,8 @@ export class JapaneseNodeDetailComponent extends BasePageComponent {
       this.node.set(res.data);
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to approve: ${err}`,
+        title: this.t().detail.error,
+        text: fill(this.t().detail.approveFailed, {error: String(err)}),
       });
     } finally {
       this.isWorking.set(false);

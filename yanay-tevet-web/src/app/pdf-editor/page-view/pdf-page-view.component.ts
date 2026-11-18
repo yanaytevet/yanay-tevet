@@ -25,6 +25,8 @@ import {
   WidgetInfo,
 } from '../engine/pdf-engine.types';
 import {hexToRgb, PdfEditorStore, rgbToCss, SubstitutionMarker} from '../pdf-editor.store';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {PDF_EDITOR_STRINGS, PdfEditorStrings} from '../i18n';
 
 export const CSS_FONT_FAMILY: Record<FontFamily, string> = {
   sans: 'Arial, Helvetica, sans-serif',
@@ -32,10 +34,11 @@ export const CSS_FONT_FAMILY: Record<FontFamily, string> = {
   mono: '"Courier New", Courier, monospace',
 };
 
-const ANNOTATION_NAMES: Record<string, string> = {
-  Stamp: 'Signature', Ink: 'Drawing', Text: 'Note', FreeText: 'Text box', Highlight: 'Highlight',
-  Underline: 'Underline', StrikeOut: 'Strike-out', Square: 'Box', Circle: 'Circle', Line: 'Line',
-};
+// The user-facing name of a PDF annotation subtype; one this editor has no name for shows its PDF name.
+function annotationName(strings: PdfEditorStrings, type: string): string {
+  const names: Record<string, string> = strings.page.annotationNames;
+  return names[type] ?? type;
+}
 
 // The largest bitmap a page is rendered to, so a big zoom on a big page doesn't exhaust memory.
 const MAX_PIXELS = 16_000_000;
@@ -91,6 +94,7 @@ function distanceToRect(p: Point, r: Rect): number {
 })
 export class PdfPageViewComponent {
   protected readonly store = inject(PdfEditorStore);
+  protected readonly t = injectStrings(PDF_EDITOR_STRINGS);
   private readonly log = this.store.log;
   // The page version an editor or text box was opened on.
   private openedAtVersion = '';
@@ -138,6 +142,7 @@ export class PdfPageViewComponent {
       top: line.bbox[1] * z,
       width: (line.bbox[2] - line.bbox[0]) * z,
       height: (line.bbox[3] - line.bbox[1]) * z,
+      label: fill(this.t().page.editLine, {text: line.text}),
     }));
   });
 
@@ -147,7 +152,7 @@ export class PdfPageViewComponent {
       marker,
       left: marker.bbox[2] * z + 4,
       top: (marker.bbox[1] + marker.bbox[3]) / 2 * z - 10,
-      label: `Some characters are drawn in ${marker.fonts.join(', ')}: the original font doesn't have them. Click to pick a font for the line.`,
+      label: fill(this.t().page.substitutedMarker, {fonts: marker.fonts.join(', ')}),
     }));
   });
 
@@ -193,12 +198,12 @@ export class PdfPageViewComponent {
       dir: line.rtl ? 'rtl' : 'ltr',
       saving: this.editSavedAt() !== null,
       localFontOffer: edit.localFontOffer
-        ? `Some of these characters aren't in this PDF's copy of ${edit.localFontOffer.map(n => n.replace(',', ' ')).join(', ')}. Use the copy installed on this computer, so they match exactly? Your browser will ask once.`
+        ? fill(this.t().page.localFontOffer, {fonts: edit.localFontOffer.map(n => n.replace(',', ' ')).join(', ')})
         : null,
-      original: `${line.fontName} · ${line.size}pt`,
+      original: fill(this.t().page.original, {font: fill(this.t().page.fontAndSize, {font: line.fontName, size: line.size})}),
       custom: edit.font !== 'original',
       substitutionNote: edit.substitutedFonts
-        ? `The original font lacks some of these characters, so they're drawn in ${edit.substitutedFonts.join(', ')}. To draw the whole line in one font, pick it here.`
+        ? fill(this.t().page.substitutionNote, {fonts: edit.substitutedFonts.join(', ')})
         : null,
     };
   });
@@ -269,7 +274,9 @@ export class PdfPageViewComponent {
       fontWeight: (match ? match.font.bold : settings.bold) && !ownFont ? 700 : 400,
       fontStyle: (match ? match.font.italic : settings.italic) && !ownFont ? 'italic' : 'normal',
       color: match ? rgbToCss(match.color) : settings.color,
-      caption: match ? `Matching ${match.fontName} · ${match.size}pt` : `${family[0].toUpperCase()}${family.slice(1)} · ${size}pt`,
+      caption: match
+        ? fill(this.t().page.matching, {font: match.fontName, size: match.size})
+        : fill(this.t().page.fontAndSize, {font: `${family[0].toUpperCase()}${family.slice(1)}`, size}),
       rtl,
     };
   });
@@ -339,9 +346,9 @@ export class PdfPageViewComponent {
         height: Math.max((annotation.rect[3] - annotation.rect[1]) * z, 12),
         selected: annotation.index === this.selectedAnnotation(),
         label: annotation.contents
-          ? `${ANNOTATION_NAMES[annotation.type] ?? annotation.type}: ${annotation.contents}`
-          : (ANNOTATION_NAMES[annotation.type] ?? annotation.type),
-        name: ANNOTATION_NAMES[annotation.type] ?? annotation.type,
+          ? fill(this.t().page.annotationWithText, {name: annotationName(this.t(), annotation.type), text: annotation.contents})
+          : annotationName(this.t(), annotation.type),
+        name: annotationName(this.t(), annotation.type),
       };
     });
   });

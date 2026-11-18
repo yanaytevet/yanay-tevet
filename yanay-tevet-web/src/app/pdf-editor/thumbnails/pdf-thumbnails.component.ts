@@ -3,6 +3,8 @@ import {Component, computed, ElementRef, inject, output, viewChild} from '@angul
 import {NgIcon} from '@ng-icons/core';
 import {featherFilePlus, featherPlus, featherRotateCcw, featherRotateCw, featherScissors, featherTrash2} from '@ng-icons/feather-icons';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {PDF_EDITOR_STRINGS} from '../i18n';
 import {PdfEditorStore} from '../pdf-editor.store';
 import {PdfThumbnailComponent} from './pdf-thumbnail.component';
 
@@ -15,6 +17,7 @@ import {PdfThumbnailComponent} from './pdf-thumbnail.component';
 export class PdfThumbnailsComponent {
   protected readonly store = inject(PdfEditorStore);
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(PDF_EDITOR_STRINGS);
 
   readonly pageSelected = output<number>();
 
@@ -29,6 +32,10 @@ export class PdfThumbnailsComponent {
 
   protected readonly isCurrent = computed(() =>
     Object.fromEntries(this.store.pages().map(p => [p.index, p.index === this.store.currentPage()])),
+  );
+
+  protected readonly goToLabels = computed(() =>
+    Object.fromEntries(this.store.pages().map(p => [p.index, fill(this.t().thumbnails.goToPage, {page: p.index + 1})])),
   );
 
   protected async onDrop(event: CdkDragDrop<unknown>): Promise<void> {
@@ -51,11 +58,16 @@ export class PdfThumbnailsComponent {
   }
 
   protected async extract(): Promise<void> {
+    const strings = this.t().thumbnails;
     const pages = await this.dialogService.getValuesFromMultipleSelectionDialog({
-      title: 'Save pages as a new PDF',
-      text: 'Pick the pages to save. This file stays as it is.',
-      options: this.store.pages().map(p => ({display: `Page ${p.index + 1}`, value: p.index, isChecked: p.index === this.store.currentPage()})),
-      confirmActionName: 'Save PDF',
+      title: strings.savePages,
+      text: strings.extractText,
+      options: this.store.pages().map(p => ({
+        display: fill(strings.pageOption, {page: p.index + 1}),
+        value: p.index,
+        isChecked: p.index === this.store.currentPage(),
+      })),
+      confirmActionName: strings.savePdf,
     });
     if (pages && pages.length > 0) {
       await this.store.extractPages([...pages].sort((a, b) => a - b));

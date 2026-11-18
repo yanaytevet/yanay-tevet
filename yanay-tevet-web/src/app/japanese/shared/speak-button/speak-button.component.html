@@ -3,16 +3,16 @@
     <button
       type="button"
       (click)="toggleSpeak($event)"
-      [title]="isSpeaking() ? 'Stop' : 'Read aloud in Japanese'"
-      [attr.aria-label]="isSpeaking() ? 'Stop' : 'Read aloud in Japanese'"
+      [title]="isSpeaking() ? t().speak.stop : t().speak.readAloud"
+      [attr.aria-label]="isSpeaking() ? t().speak.stop : t().speak.readAloud"
       class="inline-flex items-center justify-center w-8 h-8 rounded-full border border-line bg-layer-2 text-writing-minor hover:text-writing hover:shadow-1 transition-colors">
       <ng-icon [svg]="isSpeaking() ? bootstrapStopFill : bootstrapVolumeUpFill" class="text-base"/>
     </button>
     <button
       type="button"
       (click)="toggleLoop($event)"
-      [title]="loopEnabled() ? 'Looping on' : 'Loop'"
-      aria-label="Loop"
+      [title]="loopEnabled() ? t().speak.loopOn : t().speak.loop"
+      [attr.aria-label]="t().speak.loop"
       [attr.aria-pressed]="loopEnabled()"
       [class.border-accent]="loopEnabled()"
       [class.text-accent]="loopEnabled()"

@@ -3,6 +3,8 @@ import {NgIcon} from '@ng-icons/core';
 import {featherTrash2} from '@ng-icons/feather-icons';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
+import {injectStrings} from '../../shared/i18n/strings';
+import {PDF_EDITOR_STRINGS} from '../i18n';
 
 const STORAGE_KEY = 'pdf_editor_signatures';
 const MAX_SAVED = 4;
@@ -66,6 +68,7 @@ function trimmedPng(canvas: HTMLCanvasElement): string | null {
 })
 export class SignatureDialogComponent extends BaseDialogComponent<void, string> implements AfterViewInit {
   protected readonly featherTrash2 = featherTrash2;
+  protected readonly t = injectStrings(PDF_EDITOR_STRINGS);
 
   private readonly pad = viewChild<ElementRef<HTMLCanvasElement>>('pad');
   protected readonly mode = signal<'draw' | 'upload'>('draw');

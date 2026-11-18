@@ -2,38 +2,38 @@
 
 @if (!store.state()) {
   <div class="page-narrow">
-    <app-page-header title="PDF Editor" subtitle="Edit text, fill forms, sign and rearrange pages. Your files never leave this browser."/>
+    <app-page-header [title]="t().title" [subtitle]="t().subtitle"/>
 
     @if (store.loading()) {
-      <app-loading-state label="Opening the PDF"/>
+      <app-loading-state [label]="t().opening"/>
     } @else {
       <div class="drop-zone card p-6 sm:p-8 flex flex-col items-center text-center gap-3 border-dashed"
            [class.drop-zone-active]="dragOver()"
            (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
         <div class="app-chip size-12 text-2xl" aria-hidden="true"><ng-icon [svg]="featherUpload"/></div>
         <div>
-          <div class="text-lead font-semibold text-writing">Open a PDF</div>
-          <p class="text-meta text-writing-minor mt-1">Drop it here, or choose a file. It's read and edited right here, not uploaded.</p>
+          <div class="text-lead font-semibold text-writing">{{ t().openPdf }}</div>
+          <p class="text-meta text-writing-minor mt-1">{{ t().dropHint }}</p>
         </div>
-        <button type="button" class="btn btn-primary" (click)="chooseFile()">Choose a PDF</button>
+        <button type="button" class="btn btn-primary" (click)="chooseFile()">{{ t().choosePdf }}</button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
         <div class="card p-4">
-          <div class="text-ui font-semibold text-writing">Real text editing</div>
-          <p class="text-meta text-writing-minor mt-1">Change a line in its own font, remove text for good, add text that matches what's around it. Hebrew included.</p>
+          <div class="text-ui font-semibold text-writing">{{ t().features.textTitle }}</div>
+          <p class="text-meta text-writing-minor mt-1">{{ t().features.text }}</p>
         </div>
         <div class="card p-4">
-          <div class="text-ui font-semibold text-writing">Forms and signatures</div>
-          <p class="text-meta text-writing-minor mt-1">Fill in form fields, then sign with a drawn or uploaded signature.</p>
+          <div class="text-ui font-semibold text-writing">{{ t().features.formsTitle }}</div>
+          <p class="text-meta text-writing-minor mt-1">{{ t().features.forms }}</p>
         </div>
         <div class="card p-4">
-          <div class="text-ui font-semibold text-writing">Highlights, notes, drawing</div>
-          <p class="text-meta text-writing-minor mt-1">Mark up the document the way you would on paper.</p>
+          <div class="text-ui font-semibold text-writing">{{ t().features.markupTitle }}</div>
+          <p class="text-meta text-writing-minor mt-1">{{ t().features.markup }}</p>
         </div>
         <div class="card p-4">
-          <div class="text-ui font-semibold text-writing">Pages</div>
-          <p class="text-meta text-writing-minor mt-1">Reorder, rotate, delete, add blank pages, merge in another PDF, or save some pages as their own file.</p>
+          <div class="text-ui font-semibold text-writing">{{ t().features.pagesTitle }}</div>
+          <p class="text-meta text-writing-minor mt-1">{{ t().features.pages }}</p>
         </div>
       </div>
     }
@@ -41,7 +41,7 @@
 } @else {
   <!-- Toolbar -->
   <div class="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-3 py-2 bg-layer-2 border-b border-line">
-    <button type="button" class="icon-btn" [attr.aria-pressed]="showPages()" aria-label="Show pages" title="Pages" (click)="togglePages()">
+    <button type="button" class="icon-btn" [attr.aria-pressed]="showPages()" [attr.aria-label]="t().toolbar.showPages" [title]="t().toolbar.pages" (click)="togglePages()">
       <ng-icon [svg]="bootstrapLayoutSidebar"/>
     </button>
     <div class="min-w-0 max-w-48 @lg:max-w-64">
@@ -49,13 +49,13 @@
       <div class="text-caption text-writing-minor tabular-nums">{{ pageLabel() }}</div>
     </div>
 
-    <div class="tool-group flex items-center gap-0.5 p-0.5 rounded-lg bg-layer-3 overflow-x-auto max-w-full order-last @3xl:order-none" role="toolbar" aria-label="Tools">
-      @for (t of tools; track t.tool) {
-        <button type="button" class="tool-btn" [class.tool-btn-active]="isActiveTool()[t.tool]" [attr.aria-pressed]="isActiveTool()[t.tool]"
-                [title]="t.label" (click)="setTool(t.tool)">
-          <ng-icon [svg]="t.icon" class="text-base"/>
-          <span class="hidden @5xl:inline">{{ t.label }}</span>
-          <span class="sr-only @5xl:hidden">{{ t.label }}</span>
+    <div class="tool-group flex items-center gap-0.5 p-0.5 rounded-lg bg-layer-3 overflow-x-auto max-w-full order-last @3xl:order-none" role="toolbar" [attr.aria-label]="t().toolbar.tools">
+      @for (tool of tools(); track tool.tool) {
+        <button type="button" class="tool-btn" [class.tool-btn-active]="isActiveTool()[tool.tool]" [attr.aria-pressed]="isActiveTool()[tool.tool]"
+                [title]="tool.label" (click)="setTool(tool.tool)">
+          <ng-icon [svg]="tool.icon" class="text-base"/>
+          <span class="hidden @5xl:inline">{{ tool.label }}</span>
+          <span class="sr-only @5xl:hidden">{{ tool.label }}</span>
         </button>
       }
     </div>
@@ -68,23 +68,23 @@
       </button>
     }
     @if (store.busy()) {
-      <span class="size-4 rounded-full border-2 border-layer-4 border-t-accent animate-spin" role="status" aria-label="Working"></span>
+      <span class="size-4 rounded-full border-2 border-layer-4 border-t-accent animate-spin" role="status" [attr.aria-label]="t().toolbar.working"></span>
     }
-    <button type="button" class="icon-btn" aria-label="Undo" title="Undo (Ctrl+Z)" [disabled]="!store.canUndo()" (click)="store.undo()">
-      <ng-icon [svg]="bootstrapArrowCounterclockwise"/>
+    <button type="button" class="icon-btn" [attr.aria-label]="t().toolbar.undo" [title]="t().toolbar.undoTitle" [disabled]="!store.canUndo()" (click)="store.undo()">
+      <ng-icon [svg]="bootstrapArrowCounterclockwise" class="rtl:-scale-x-100"/>
     </button>
-    <button type="button" class="icon-btn" aria-label="Redo" title="Redo (Ctrl+Shift+Z)" [disabled]="!store.canRedo()" (click)="store.redo()">
-      <ng-icon [svg]="bootstrapArrowClockwise"/>
+    <button type="button" class="icon-btn" [attr.aria-label]="t().toolbar.redo" [title]="t().toolbar.redoTitle" [disabled]="!store.canRedo()" (click)="store.redo()">
+      <ng-icon [svg]="bootstrapArrowClockwise" class="rtl:-scale-x-100"/>
     </button>
     <div class="hidden @md:flex items-center">
-      <button type="button" class="icon-btn" aria-label="Zoom out" title="Zoom out (Ctrl/⌘ −, or Ctrl/⌘ + scroll)" (click)="zoomBy(-1)"><ng-icon [svg]="featherZoomOut"/></button>
-      <button type="button" class="btn btn-sm btn-ghost tabular-nums w-16" title="Fit to width (Ctrl/⌘ 0)" (click)="fitWidth()">{{ zoomLabel() }}</button>
-      <button type="button" class="icon-btn" aria-label="Zoom in" title="Zoom in (Ctrl/⌘ +, or Ctrl/⌘ + scroll)" (click)="zoomBy(1)"><ng-icon [svg]="featherZoomIn"/></button>
+      <button type="button" class="icon-btn" [attr.aria-label]="t().toolbar.zoomOut" [title]="t().toolbar.zoomOutTitle" (click)="zoomBy(-1)"><ng-icon [svg]="featherZoomOut"/></button>
+      <button type="button" class="btn btn-sm btn-ghost tabular-nums w-16" [title]="t().toolbar.fitWidthTitle" (click)="fitWidth()">{{ zoomLabel() }}</button>
+      <button type="button" class="icon-btn" [attr.aria-label]="t().toolbar.zoomIn" [title]="t().toolbar.zoomInTitle" (click)="zoomBy(1)"><ng-icon [svg]="featherZoomIn"/></button>
     </div>
     <button type="button" class="btn btn-primary btn-sm" (click)="store.download()">
-      <ng-icon [svg]="featherDownload"/> <span class="hidden @sm:inline">Download</span>
+      <ng-icon [svg]="featherDownload"/> <span class="hidden @sm:inline">{{ t().toolbar.download }}</span>
     </button>
-    <button type="button" class="icon-btn" aria-label="Close file" title="Close file" (click)="close()">
+    <button type="button" class="icon-btn" [attr.aria-label]="t().toolbar.closeFile" [title]="t().toolbar.closeFile" (click)="close()">
       <ng-icon [svg]="featherX"/>
     </button>
   </div>
@@ -93,49 +93,49 @@
   <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-1.5 bg-layer-2 border-b border-line-subtle min-h-12">
     @switch (store.tool()) {
       @case ('addText') {
-        <select class="main-input !w-auto !py-1 !text-meta" aria-label="Font" [value]="store.addTextSettings().family"
+        <select class="main-input !w-auto !py-1 !text-meta" [attr.aria-label]="t().options.font" [value]="store.addTextSettings().family"
                 (change)="setAddTextFamily($any($event.target).value)">
-          <option value="match">Match nearby text</option>
+          <option value="match">{{ t().options.matchNearby }}</option>
           <option value="sans">Sans</option>
           <option value="serif">Serif</option>
           <option value="mono">Mono</option>
         </select>
         @if (store.addTextSettings().family !== 'match') {
           <button type="button" class="btn btn-sm btn-ghost font-bold" [class.option-on]="store.addTextSettings().bold"
-                  [attr.aria-pressed]="store.addTextSettings().bold" (click)="updateAddText({bold: !store.addTextSettings().bold})">B</button>
+                  [attr.aria-pressed]="store.addTextSettings().bold" [attr.aria-label]="t().options.bold" [title]="t().options.bold" (click)="updateAddText({bold: !store.addTextSettings().bold})">B</button>
           <button type="button" class="btn btn-sm btn-ghost italic" [class.option-on]="store.addTextSettings().italic"
-                  [attr.aria-pressed]="store.addTextSettings().italic" (click)="updateAddText({italic: !store.addTextSettings().italic})">I</button>
-          <input type="number" min="4" max="200" class="main-input !w-20 !py-1 !text-meta" aria-label="Font size"
+                  [attr.aria-pressed]="store.addTextSettings().italic" [attr.aria-label]="t().options.italic" [title]="t().options.italic" (click)="updateAddText({italic: !store.addTextSettings().italic})">I</button>
+          <input type="number" min="4" max="200" class="main-input !w-20 !py-1 !text-meta" [attr.aria-label]="t().options.fontSize"
                  [value]="store.addTextSettings().size" (change)="setAddTextSize($any($event.target).value)">
-          <input type="color" class="color-input" aria-label="Text colour" [value]="store.addTextSettings().color"
+          <input type="color" class="color-input" [attr.aria-label]="t().options.textColour" [value]="store.addTextSettings().color"
                  (change)="updateAddText({color: $any($event.target).value})">
         }
       }
       @case ('markup') {
         <div class="flex items-center gap-0.5 p-0.5 rounded-lg bg-layer-3">
-          @for (m of markupTypes; track m.type) {
+          @for (m of markupTypes(); track m.type) {
             <button type="button" class="tool-btn" [class.tool-btn-active]="isMarkupType()[m.type]"
                     [attr.aria-pressed]="isMarkupType()[m.type]" (click)="store.markupType.set(m.type)">{{ m.label }}</button>
           }
         </div>
-        <div class="flex items-center gap-1.5" role="group" aria-label="Colour">
+        <div class="flex items-center gap-1.5" role="group" [attr.aria-label]="t().options.colour">
           @for (c of markupColors; track c) {
             <button type="button" class="swatch" [class.swatch-active]="isMarkupColor()[c]" [style.background]="c"
-                    [attr.aria-pressed]="isMarkupColor()[c]" [attr.aria-label]="'Colour ' + c" (click)="store.markupColor.set(c)"></button>
+                    [attr.aria-pressed]="isMarkupColor()[c]" [attr.aria-label]="colourLabels()[c]" (click)="store.markupColor.set(c)"></button>
           }
         </div>
       }
       @case ('draw') {
-        <div class="flex items-center gap-1.5" role="group" aria-label="Colour">
+        <div class="flex items-center gap-1.5" role="group" [attr.aria-label]="t().options.colour">
           @for (c of inkColors; track c) {
             <button type="button" class="swatch" [class.swatch-active]="isInkColor()[c]" [style.background]="c"
-                    [attr.aria-pressed]="isInkColor()[c]" [attr.aria-label]="'Colour ' + c" (click)="store.drawColor.set(c)"></button>
+                    [attr.aria-pressed]="isInkColor()[c]" [attr.aria-label]="colourLabels()[c]" (click)="store.drawColor.set(c)"></button>
           }
         </div>
-        <div class="flex items-center gap-0.5 p-0.5 rounded-lg bg-layer-3" role="group" aria-label="Line width">
+        <div class="flex items-center gap-0.5 p-0.5 rounded-lg bg-layer-3" role="group" [attr.aria-label]="t().options.lineWidth">
           @for (w of drawWidths; track w) {
             <button type="button" class="tool-btn" [class.tool-btn-active]="isDrawWidth()[w]" [attr.aria-pressed]="isDrawWidth()[w]"
-                    [attr.aria-label]="'Width ' + w" (click)="store.drawWidth.set(w)">
+                    [attr.aria-label]="widthLabels()[w]" (click)="store.drawWidth.set(w)">
               <span class="block rounded-full bg-current w-5" [style.height.px]="w + 1"></span>
             </button>
           }
@@ -143,9 +143,9 @@
       }
       @case ('sign') {
         @if (store.signature(); as signature) {
-          <span class="signature-preview rounded-md border border-line px-2 py-0.5"><img [src]="signature" alt="Your signature" class="h-7"></span>
+          <span class="signature-preview rounded-md border border-line px-2 py-0.5"><img [src]="signature" [alt]="t().options.yourSignature" class="h-7"></span>
         }
-        <button type="button" class="btn btn-sm btn-secondary" (click)="chooseSignature()">Change signature</button>
+        <button type="button" class="btn btn-sm btn-secondary" (click)="chooseSignature()">{{ t().options.changeSignature }}</button>
       }
     }
     <span class="text-meta text-writing-minor">{{ activeTool().hint }}</span>

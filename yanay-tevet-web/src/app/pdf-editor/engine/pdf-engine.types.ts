@@ -144,4 +144,18 @@ export interface WorkerRequest {
   args: unknown[];
 }
 
-export type WorkerResponse = {id: number; result: unknown} | {id: number; error: string};
+// A failure the user can act on carries a code, so the page can say it in the site's language; the message is
+// the English version, for the log. Anything else (a MuPDF failure) arrives as a plain Error with its message.
+export type EngineErrorCode =
+  'notAPdf' | 'insertedNotAPdf' | 'insertedNeedsPassword' | 'lastPage' | 'pageChanged' | 'missingGlyphs' | 'fontLoadFailed'
+  | 'engineFailed';
+
+export class EngineError extends Error {
+  constructor(readonly code: EngineErrorCode, message: string, readonly params: Record<string, string> = {}) {
+    super(message);
+  }
+}
+
+export type WorkerResponse =
+  {id: number; result: unknown}
+  | {id: number; error: string; code?: EngineErrorCode; params?: Record<string, string>};

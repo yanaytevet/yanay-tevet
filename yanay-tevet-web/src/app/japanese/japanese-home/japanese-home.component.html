@@ -1,26 +1,25 @@
 <app-japanese-nav/>
 
 <div class="page-wide">
-  <app-page-header title="Japanese"
-                   subtitle="Explore a network of passages, sentences, words, kanji, particles, and grammar rules."/>
+  <app-page-header [title]="t().title" [subtitle]="t().subtitle"/>
 
   <app-tabs-group tabsQueryParam="type">
-    <app-tab name="passage" label="Passages">
+    <app-tab name="passage" [label]="t().tabs.passage">
       <app-japanese-explore-grid nodeType="passage"/>
     </app-tab>
-    <app-tab name="sentence" label="Sentences">
+    <app-tab name="sentence" [label]="t().tabs.sentence">
       <app-japanese-explore-grid nodeType="sentence"/>
     </app-tab>
-    <app-tab name="word" label="Words">
+    <app-tab name="word" [label]="t().tabs.word">
       <app-japanese-explore-grid nodeType="word"/>
     </app-tab>
-    <app-tab name="kanji" label="Kanji">
+    <app-tab name="kanji" [label]="t().tabs.kanji">
       <app-japanese-explore-grid nodeType="kanji"/>
     </app-tab>
-    <app-tab name="particle" label="Particles">
+    <app-tab name="particle" [label]="t().tabs.particle">
       <app-japanese-explore-grid nodeType="particle"/>
     </app-tab>
-    <app-tab name="rule" label="Rules">
+    <app-tab name="rule" [label]="t().tabs.rule">
       <app-japanese-explore-grid nodeType="rule"/>
     </app-tab>
   </app-tabs-group>
