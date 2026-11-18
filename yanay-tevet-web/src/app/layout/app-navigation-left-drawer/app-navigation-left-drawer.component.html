@@ -1,6 +1,6 @@
 <div
-    class="absolute top-0 start-0 h-full w-64 bg-layer-2 z-50 -translate-x-full transform transition-transform duration-300 flex flex-col border-e border-line shadow-3"
-    [class.translate-x-0]="layoutService.isLeftDrawerOpen()">
+    class="absolute top-0 start-0 h-full w-64 bg-layer-2 z-50 transform transition-transform duration-300 flex flex-col border-e border-line shadow-3"
+    [ngClass]="layoutService.isLeftDrawerOpen() ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'">
 
     <div class="flex-1 py-2 overflow-y-auto">
 

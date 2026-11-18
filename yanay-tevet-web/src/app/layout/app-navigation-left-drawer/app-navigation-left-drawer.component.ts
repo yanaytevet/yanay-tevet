@@ -1,3 +1,4 @@
+import {NgClass} from '@angular/common';
 import {Component, computed, inject, OnInit, signal} from '@angular/core';
 import {RouterLink, RouterLinkActive} from '@angular/router';
 import {RoutingService} from '../../shared/services/routing.service';
@@ -16,6 +17,7 @@ import {LanguagePickerComponent} from '../../shared/i18n/language-picker/languag
   selector: 'app-navigation-left-drawer',
   standalone: true,
   imports: [
+    NgClass,
     RouterLink,
     RouterLinkActive,
     NgIcon,
