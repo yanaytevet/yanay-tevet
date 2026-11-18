@@ -2,26 +2,26 @@
 
     <div class="flex items-start justify-between mb-5">
         <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().dialog.close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-heading"></ng-icon>
         </button>
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">Name <span class="text-writing-least">*</span></span>
-        <input type="text" class="main-input w-full" placeholder="e.g. Sunscreen" dir="auto"
+        <span class="input-label">{{ t().dialog.name }} <span class="text-writing-least">*</span></span>
+        <input type="text" class="main-input w-full" [placeholder]="isTask ? t().dialog.taskPlaceholder : t().dialog.itemPlaceholder" dir="auto"
                [formControl]="nameCtrl" (keyup.enter)="onSave()" />
     </div>
 
     <div class="mb-2 flex flex-col gap-1.5">
-        <span class="input-label">Description</span>
+        <span class="input-label">{{ t().dialog.description }}</span>
         <textarea class="main-input w-full leading-relaxed" rows="3" dir="auto"
-                  placeholder="Optional notes about this item..."
+                  [placeholder]="isTask ? t().dialog.taskNotesPlaceholder : t().dialog.itemNotesPlaceholder"
                   [formControl]="descriptionCtrl"></textarea>
     </div>
 
     <div class="flex items-center justify-end gap-2 mt-6">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().cancel }}</button>
         <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
             {{ data.confirmActionName }}
         </button>

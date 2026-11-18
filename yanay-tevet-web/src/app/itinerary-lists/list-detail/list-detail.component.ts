@@ -51,12 +51,13 @@ import {ErrorStateComponent} from '../../common/components/page/error-state/erro
 import {ItemDialogComponent, ItemDialogData, ItemDialogResult} from '../dialogs/item-dialog/item-dialog.component';
 import {
   ITEM_STATUS_CHIP_CLASS,
-  ITEM_STATUS_LABELS,
   ITEM_STATUS_NEXT,
   ITEM_STATUS_ORDER,
-  TASK_STATUS_LABELS,
 } from '../itinerary-lists.constants';
 import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {ITINERARY_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-itinerary-list-detail',
@@ -88,6 +89,8 @@ export class ListDetailComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(ITINERARY_STRINGS);
 
   readonly allListsUrl = this.routingService.getItineraryListsUrl();
 
@@ -96,7 +99,7 @@ export class ListDetailComponent {
   readonly items = signal<ItineraryItemSchema[]>([]);
   readonly tasks = signal<ItineraryTaskSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly isUpdatingStatus = signal<boolean>(false);
   readonly savingItemId = signal<number | null>(null);
   readonly savingTaskId = signal<number | null>(null);
@@ -131,28 +134,43 @@ export class ListDetailComponent {
     if (list === null) {
       return null;
     }
-    const items = this.items().length;
-    const tasks = this.tasks().length;
-    return `${items} item${items === 1 ? '' : 's'} · ${tasks} task${tasks === 1 ? '' : 's'}`
-      + ` · ${list.member_count} member${list.member_count === 1 ? '' : 's'}`;
+    const t = this.t();
+    const language = this.languageService.language();
+    return [
+      plural(language, this.items().length, t.itemsCount),
+      plural(language, this.tasks().length, t.tasksCount),
+      plural(language, list.member_count, t.membersCount),
+    ].join(' · ');
   });
+
+  // Summary chip text per item status, e.g. "3 Need to buy".
+  readonly statusCountLabels = computed(() => {
+    const t = this.t();
+    const language = this.languageService.language();
+    const counts = this.statusCounts();
+    return Object.fromEntries(ITEM_STATUS_ORDER.map(status => [status,
+      fill(t.detail.statusCount, {count: counts[status].toLocaleString(language), status: t.itemStatuses[status]})]));
+  });
+  readonly tasksDoneLabel = computed(() =>
+    plural(this.languageService.language(), this.taskCounts().done, this.t().detail.tasksDone));
+  readonly tasksToDoLabel = computed(() =>
+    plural(this.languageService.language(), this.taskCounts().toDo, this.t().detail.tasksToDo));
 
   // Activate/Finish and Share sit in the header; editing and deleting the list live behind "more".
   readonly overflowActions = computed<MenuItem[]>(() => {
+    const t = this.t().detail;
     const actions: MenuItem[] = [
-      {display: 'Edit list', icon: featherEdit, callback: () => void this.editList()},
+      {display: t.editList, icon: featherEdit, callback: () => void this.editList()},
     ];
     if (this.isOwner()) {
       actions.push(SEPARATOR);
-      actions.push({display: 'Delete list', icon: featherTrash2, danger: true, callback: () => void this.deleteList()});
+      actions.push({display: t.deleteList, icon: featherTrash2, danger: true, callback: () => void this.deleteList()});
     }
     return actions;
   });
 
-  readonly statusLabels = ITEM_STATUS_LABELS;
   readonly statusOrder = ITEM_STATUS_ORDER;
   readonly statusChipClass = ITEM_STATUS_CHIP_CLASS;
-  readonly taskStatusLabels = TASK_STATUS_LABELS;
   readonly statusIcon: Record<ItemStatus, string> = {
     need_to_buy: featherShoppingCart,
     in_the_house: featherHome,
@@ -184,7 +202,7 @@ export class ListDetailComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const [listRes, itemsRes, tasksRes] = await Promise.all([
         getItineraryListView({path: {object_id: id}}),
@@ -195,7 +213,7 @@ export class ListDetailComponent {
       this.items.set(itemsRes.data.data);
       this.tasks.set(tasksRes.data.data);
     } catch {
-      this.loadError.set('Could not load this list. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -213,7 +231,7 @@ export class ListDetailComponent {
       this.items.update(prev => [...prev, res.data]);
       this.newItemCtrl.setValue('');
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isAdding.set(false);
     }
@@ -232,14 +250,15 @@ export class ListDetailComponent {
     if (this.savingItemId() !== null) {
       return;
     }
+    const t = this.t();
     const value = await this.dialogService.getValueFromSelectionDialog({
-      title: 'Set status',
+      title: t.detail.setStatus,
       text: item.name,
       method: 'buttons',
-      options: this.statusOrder.map(status => ({display: this.statusLabels[status], value: status})),
+      options: this.statusOrder.map(status => ({display: t.itemStatuses[status], value: status})),
       defaultValue: item.status,
-      confirmActionName: 'Set',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.set,
+      cancelActionName: t.cancel,
     }, 40);
     if (value && value !== item.status) {
       await this.patchItemStatus(item, value as ItemStatus);
@@ -252,7 +271,7 @@ export class ListDetailComponent {
       const res = await updateItineraryItemView({body: {status}, path: {object_id: item.id}});
       this.items.update(prev => prev.map(i => (i.id === item.id ? res.data : i)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.savingItemId.set(null);
     }
@@ -261,7 +280,13 @@ export class ListDetailComponent {
   async editItem(item: ItineraryItemSchema): Promise<void> {
     const result = await this.dialogService.open<ItemDialogData, ItemDialogResult>(
       ItemDialogComponent,
-      {title: 'Edit item', name: item.name, description: item.description, confirmActionName: 'Save'},
+      {
+        kind: 'item',
+        title: this.t().detail.editItem,
+        name: item.name,
+        description: item.description,
+        confirmActionName: this.t().save,
+      },
       45,
     );
     if (!result) {
@@ -275,19 +300,20 @@ export class ListDetailComponent {
       });
       this.items.update(prev => prev.map(i => (i.id === item.id ? res.data : i)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.savingItemId.set(null);
     }
   }
 
   async deleteItem(item: ItineraryItemSchema): Promise<void> {
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete item',
-      text: `Delete "${item.name}"?`,
-      confirmActionName: 'Delete',
+      title: t.detail.deleteItem,
+      text: fill(t.detail.deleteConfirm, {name: item.name}),
+      confirmActionName: t.detail.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -296,7 +322,7 @@ export class ListDetailComponent {
       await deleteItineraryItemView({path: {object_id: item.id}});
       this.items.update(prev => prev.filter(i => i.id !== item.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -312,7 +338,7 @@ export class ListDetailComponent {
       this.tasks.update(prev => [...prev, res.data]);
       this.newTaskCtrl.setValue('');
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isAddingTask.set(false);
     }
@@ -328,7 +354,7 @@ export class ListDetailComponent {
       const res = await updateItineraryTaskView({body: {status: next}, path: {object_id: task.id}});
       this.tasks.update(prev => prev.map(t => (t.id === task.id ? res.data : t)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.savingTaskId.set(null);
     }
@@ -337,7 +363,13 @@ export class ListDetailComponent {
   async editTask(task: ItineraryTaskSchema): Promise<void> {
     const result = await this.dialogService.open<ItemDialogData, ItemDialogResult>(
       ItemDialogComponent,
-      {title: 'Edit task', name: task.name, description: task.description, confirmActionName: 'Save'},
+      {
+        kind: 'task',
+        title: this.t().detail.editTask,
+        name: task.name,
+        description: task.description,
+        confirmActionName: this.t().save,
+      },
       45,
     );
     if (!result) {
@@ -351,19 +383,20 @@ export class ListDetailComponent {
       });
       this.tasks.update(prev => prev.map(t => (t.id === task.id ? res.data : t)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.savingTaskId.set(null);
     }
   }
 
   async deleteTask(task: ItineraryTaskSchema): Promise<void> {
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete task',
-      text: `Delete "${task.name}"?`,
-      confirmActionName: 'Delete',
+      title: t.detail.deleteTask,
+      text: fill(t.detail.deleteConfirm, {name: task.name}),
+      confirmActionName: t.detail.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -372,7 +405,7 @@ export class ListDetailComponent {
       await deleteItineraryTaskView({path: {object_id: task.id}});
       this.tasks.update(prev => prev.filter(t => t.id !== task.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -383,11 +416,12 @@ export class ListDetailComponent {
     }
     const active = this.isActive();
     if (active) {
+      const t = this.t();
       const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-        title: 'Finish list',
-        text: 'Finish this list and return it to standby? Items that are not "need to buy" will be set back to "in the house".',
-        confirmActionName: 'Finish',
-        cancelActionName: 'Cancel',
+        title: t.detail.finishTitle,
+        text: t.detail.finishText,
+        confirmActionName: t.detail.finish,
+        cancelActionName: t.cancel,
       });
       if (!confirmed) {
         return;
@@ -402,7 +436,7 @@ export class ListDetailComponent {
       }
       await this.load(id);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isUpdatingStatus.set(false);
     }
@@ -416,8 +450,8 @@ export class ListDetailComponent {
     await this.dialogService.open(ShareDialogComponent, {
       objectId: id,
       isOwner: this.isOwner(),
-      title: 'Share list',
-      subtitle: 'People you add can view and edit this list and its items.',
+      title: this.t().detail.shareTitle,
+      subtitle: this.t().detail.shareSubtitle,
       listMembers: async (objectId: number) => {
         const data = (await listItineraryListMembersView({path: {object_id: objectId}})).data;
         return {members: data.members, pendingInvitations: data.pending_invitations};
@@ -445,13 +479,14 @@ export class ListDetailComponent {
     if (list === null) {
       return;
     }
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromTextConfirmationDialog({
-      title: 'Delete list',
-      text: 'This permanently deletes the list and all of its items. This cannot be undone.',
-      label: 'List name',
+      title: t.detail.deleteList,
+      text: t.detail.deleteListText,
+      label: t.detail.listName,
       validationText: list.name,
-      confirmActionName: 'Delete list',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.deleteList,
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -460,7 +495,7 @@ export class ListDetailComponent {
       await deleteItineraryListView({path: {object_id: list.id}});
       await this.routingService.navigateToItineraryLists();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 

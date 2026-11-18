@@ -1,11 +1,6 @@
-import {ItemStatus, ListStatus, TaskStatus} from '../../generated-files/api/itinerary-lists';
+import {ItemStatus} from '../../generated-files/api/itinerary-lists';
 
-export const ITEM_STATUS_LABELS: Record<ItemStatus, string> = {
-  need_to_buy: 'Need to buy',
-  in_the_house: 'In the house',
-  ready: 'Ready',
-  in_the_car: 'In the car',
-};
+// Status labels live in `i18n/` (itemStatuses, taskStatuses, listStatuses).
 
 export const ITEM_STATUS_ORDER: ItemStatus[] = ['need_to_buy', 'in_the_house', 'ready', 'in_the_car'];
 
@@ -22,16 +17,4 @@ export const ITEM_STATUS_CHIP_CLASS: Record<ItemStatus, string> = {
   in_the_house: 'status-in-house',
   ready: 'status-ready',
   in_the_car: 'status-in-car',
-};
-
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = {
-  to_do: 'To do',
-  done: 'Done',
-};
-
-export const TASK_STATUS_ORDER: TaskStatus[] = ['to_do', 'done'];
-
-export const LIST_STATUS_LABELS: Record<ListStatus, string> = {
-  standby: 'Standby',
-  active: 'Active',
 };

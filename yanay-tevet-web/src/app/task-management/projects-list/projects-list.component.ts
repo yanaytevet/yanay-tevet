@@ -7,6 +7,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {injectStrings, plural} from '../../shared/i18n/strings';
+import {TASKS_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-task-projects-list',
@@ -16,6 +19,8 @@ import {LoadingStateComponent} from '../../common/components/page/loading-state/
 })
 export class ProjectsListComponent {
   private readonly routingService = inject(RoutingService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(TASKS_STRINGS);
 
   readonly projects = signal<TaskProjectSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
@@ -24,13 +29,26 @@ export class ProjectsListComponent {
   readonly archivedProjects = computed(() => this.projects().filter(p => p.status === 'archived'));
 
   readonly subtitle = computed(() => {
+    const t = this.t().list;
     const active = this.activeProjects();
     if (this.isLoading() || active.length === 0) {
-      return 'Projects, tasks and subtasks — with due dates, priorities and sharing.';
+      return t.subtitle;
     }
+    const language = this.languageService.language();
     const openTasks = active.reduce((sum, p) => sum + p.open_task_count, 0);
-    const projectsLabel = `${active.length} project${active.length === 1 ? '' : 's'}`;
-    return `${projectsLabel} · ${openTasks} open task${openTasks === 1 ? '' : 's'}`;
+    return `${plural(language, active.length, t.projectsCount)} · ${plural(language, openTasks, t.openTasksCount)}`;
+  });
+
+  // Count labels per project, keyed by project id.
+  readonly countLabels = computed(() => {
+    const t = this.t().list;
+    const language = this.languageService.language();
+    return Object.fromEntries(this.projects().map(p => [p.id, {
+      openTasks: plural(language, p.open_task_count, t.openTasksLabel),
+      openTaskCount: p.open_task_count.toLocaleString(language),
+      members: plural(language, p.member_count, t.membersCount),
+      tasks: plural(language, p.task_count, t.tasksCount),
+    }]));
   });
 
   readonly projectUrls = computed(() =>

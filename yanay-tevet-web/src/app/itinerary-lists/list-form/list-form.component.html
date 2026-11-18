@@ -2,38 +2,38 @@
 
     <a [routerLink]="backUrl()"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        Back
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().back }}
     </a>
 
-    <app-page-header [title]="isEditMode() ? 'Edit list' : 'New list'"
-                     subtitle="A reusable list of things to pack and prepare for a trip or outing."/>
+    <app-page-header [title]="isEditMode() ? t().form.editTitle : t().form.newTitle"
+                     [subtitle]="t().form.subtitle"/>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading list"/>
+        <app-loading-state [label]="t().form.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="backUrl()"/>
+        <app-error-state [text]="t().loadError" [backUrl]="backUrl()" [backLabel]="t().back"/>
     } @else {
         <div class="card p-5 sm:p-6">
             <div class="mb-5 flex flex-col gap-1.5">
-                <span class="input-label">Name <span class="text-writing-least">*</span></span>
-                <input type="text" dir="auto" class="main-input" placeholder="e.g. Beach day, Camping trip"
-                       aria-label="Name"
+                <span class="input-label">{{ t().form.name }} <span class="text-writing-least">*</span></span>
+                <input type="text" dir="auto" class="main-input" [placeholder]="t().form.namePlaceholder"
+                       [attr.aria-label]="t().form.name"
                        [formControl]="nameCtrl" (keyup.enter)="onSave()" />
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <span class="input-label">Description</span>
+                <span class="input-label">{{ t().form.description }}</span>
                 <textarea dir="auto" class="main-input leading-relaxed" rows="4"
-                          aria-label="Description"
-                          placeholder="What is this list for? Any notes..."
+                          [attr.aria-label]="t().form.description"
+                          [placeholder]="t().form.descriptionPlaceholder"
                           [formControl]="descriptionCtrl"></textarea>
             </div>
 
             <div class="flex items-center justify-end gap-2 mt-6 pt-4 border-t border-line-subtle">
-                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">Cancel</button>
+                <button type="button" class="btn btn-secondary" [disabled]="isSaving()" (click)="onCancel()">{{ t().cancel }}</button>
                 <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
-                    {{ isSaving() ? 'Saving…' : (isEditMode() ? 'Save changes' : 'Create list') }}
+                    {{ isSaving() ? t().form.saving : (isEditMode() ? t().form.saveChanges : t().form.create) }}
                 </button>
             </div>
         </div>

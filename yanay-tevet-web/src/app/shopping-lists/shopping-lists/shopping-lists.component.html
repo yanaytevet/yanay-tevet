@@ -1,20 +1,19 @@
 <div class="page-narrow">
 
-    <app-page-header title="Shopping Lists" subtitle="Check things off as you shop — they're one tap away next time.">
+    <app-page-header [title]="t().lists.title" [subtitle]="t().lists.subtitle">
         <button type="button" class="btn btn-primary" [disabled]="isCreating()" (click)="createList()">
             <ng-icon [svg]="featherPlus"/>
-            New list
+            {{ t().lists.newList }}
         </button>
     </app-page-header>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading lists"/>
+        <app-loading-state [label]="t().lists.loading"/>
     } @else if (lists().length === 0) {
-        <app-empty-state title="Start your first list"
-                         text="One for groceries, the pharmacy, or anything else you buy regularly. What you check off stays a tap away.">
+        <app-empty-state [title]="t().lists.emptyTitle" [text]="t().lists.emptyText">
             <button type="button" class="btn btn-primary" [disabled]="isCreating()" (click)="createList()">
                 <ng-icon [svg]="featherPlus"/>
-                New list
+                {{ t().lists.newList }}
             </button>
         </app-empty-state>
     } @else {
@@ -24,7 +23,7 @@
                     <div class="text-ui font-semibold text-writing truncate mb-2" dir="auto">{{ list.name }}</div>
 
                     @if (list.preview_items.length === 0) {
-                        <p class="text-meta text-writing-least mb-3">Nothing to buy</p>
+                        <p class="text-meta text-writing-least mb-3">{{ t().lists.nothingToBuy }}</p>
                     } @else {
                         <div class="flex flex-col gap-1 mb-3">
                             @for (name of list.preview_items; track $index) {
@@ -34,18 +33,18 @@
                                 </div>
                             }
                             @if (moreCount()[list.id] > 0) {
-                                <div class="text-caption text-writing-minor ps-5">+ {{ moreCount()[list.id] }} more</div>
+                                <div class="text-caption text-writing-minor ps-5">{{ countLabels()[list.id].more }}</div>
                             }
                         </div>
                     }
 
                     <div class="flex items-center gap-2 text-caption text-writing-minor">
-                        <span>{{ list.checked_count }} checked</span>
+                        <span>{{ countLabels()[list.id].checked }}</span>
                         @if (list.member_count > 1) {
                             <span class="text-writing-least" aria-hidden="true">·</span>
                             <span class="inline-flex items-center gap-1">
                                 <ng-icon [svg]="featherUsers" aria-hidden="true"/>
-                                Shared
+                                {{ t().lists.shared }}
                             </span>
                         }
                     </div>

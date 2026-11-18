@@ -4,8 +4,12 @@ import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
 import {featherX} from '@ng-icons/feather-icons';
 import {BaseDialogComponent} from '../../../common/dialogs/base-dialog.component';
+import {injectStrings} from '../../../shared/i18n/strings';
+import {ITINERARY_STRINGS} from '../../i18n';
 
 export interface ItemDialogData {
+  // Picks the example placeholders: the dialog edits both packing items and tasks.
+  kind: 'item' | 'task';
   title: string;
   name: string;
   description: string;
@@ -25,6 +29,9 @@ export interface ItemDialogResult {
   templateUrl: './item-dialog.component.html',
 })
 export class ItemDialogComponent extends BaseDialogComponent<ItemDialogData, ItemDialogResult> {
+  protected readonly t = injectStrings(ITINERARY_STRINGS);
+  readonly isTask = this.data.kind === 'task';
+
   readonly nameCtrl = new FormControl<string>('', {nonNullable: true});
   readonly descriptionCtrl = new FormControl<string>('', {nonNullable: true});
 

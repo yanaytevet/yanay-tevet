@@ -2,27 +2,27 @@
 
     <a [routerLink]="allListsUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        All lists
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().detail.allLists }}
     </a>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading list"/>
+        <app-loading-state [label]="t().detail.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="allListsUrl" backLabel="Back to lists"/>
+        <app-error-state [text]="t().detail.loadError" [backUrl]="allListsUrl" [backLabel]="t().detail.backToLists"/>
     } @else if (list(); as list) {
 
         <app-page-header [title]="list.name" [subtitle]="headerSubtitle()">
             <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
                 <ng-icon [svg]="featherShare2"/>
-                Share
+                {{ t().detail.share }}
             </button>
             <button type="button" class="btn btn-secondary btn-sm" (click)="renameList()">
                 <ng-icon [svg]="featherEdit"/>
-                Rename
+                {{ t().detail.rename }}
             </button>
             @if (isOwner()) {
-                <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More list actions"/>
+                <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" [ariaLabel]="t().detail.moreActions"/>
             }
         </app-page-header>
 
@@ -30,8 +30,8 @@
             <div class="relative mb-2">
                 <div class="flex items-center gap-2">
                     <ng-icon [svg]="featherPlus" class="text-lead shrink-0 text-writing-minor" aria-hidden="true"/>
-                    <input type="text" dir="auto" class="main-input w-full" placeholder="Add item"
-                           aria-label="Add item" autocomplete="off" maxlength="255"
+                    <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().detail.addItem"
+                           [attr.aria-label]="t().detail.addItem" autocomplete="off" maxlength="255"
                            [formControl]="newItemCtrl"
                            (keydown)="onNewItemKeydown($event)"
                            (focus)="suggestionsOpen.set(true)"
@@ -55,9 +55,9 @@
             @if (uncheckedItems().length === 0) {
                 <div class="text-center text-writing-minor text-meta py-6">
                     @if (checkedItems().length === 0) {
-                        Add your first item above — what you check off stays here for next time.
+                        {{ t().detail.emptyFirst }}
                     } @else {
-                        Everything's checked off. Add what you need next above.
+                        {{ t().detail.allChecked }}
                     }
                 </div>
             } @else {
@@ -66,14 +66,14 @@
                         <div class="group flex items-center gap-2 py-1.5" dir="auto">
                             <button type="button"
                                     class="group/check flex items-center justify-center size-8 shrink-0 rounded-md"
-                                    aria-label="Check off" title="Check off" (click)="toggleItem(item)">
+                                    [attr.aria-label]="t().detail.checkOff" [title]="t().detail.checkOff" (click)="toggleItem(item)">
                                 <app-checkbox-mark [checked]="false"/>
                             </button>
                             <button type="button" class="min-w-0 flex-1 text-start text-ui text-writing truncate cursor-text"
-                                    title="Edit" (click)="renameItem(item)">{{ item.name }}</button>
+                                    [title]="t().detail.edit" (click)="renameItem(item)">{{ item.name }}</button>
                             <button type="button"
                                     class="icon-btn icon-btn-danger can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-                                    aria-label="Remove item" title="Remove" (click)="deleteItem(item)">
+                                    [attr.aria-label]="t().detail.removeItem" [title]="t().detail.remove" (click)="deleteItem(item)">
                                 <ng-icon [svg]="featherX"/>
                             </button>
                         </div>
@@ -87,8 +87,8 @@
                             class="flex items-center gap-1.5 rounded-md px-1 py-0.5 -ms-1 text-meta font-semibold text-writing-minor hover:text-writing transition-colors mb-1"
                             [attr.aria-expanded]="checkedExpanded()"
                             (click)="toggleCheckedExpanded()">
-                        <ng-icon [svg]="checkedExpanded() ? featherChevronDown : featherChevronRight"/>
-                        {{ checkedItems().length }} checked item{{ checkedItems().length === 1 ? '' : 's' }}
+                        <ng-icon [svg]="checkedExpanded() ? featherChevronDown : featherChevronRight" class="rtl:-scale-x-100"/>
+                        {{ checkedItemsLabel() }}
                     </button>
 
                     @if (checkedExpanded()) {
@@ -97,13 +97,13 @@
                                 <div class="group flex items-center gap-2 py-1.5 opacity-60" dir="auto">
                                     <button type="button"
                                             class="flex items-center justify-center size-8 shrink-0 rounded-md"
-                                            aria-label="Uncheck" title="Uncheck" (click)="toggleItem(item)">
+                                            [attr.aria-label]="t().detail.uncheck" [title]="t().detail.uncheck" (click)="toggleItem(item)">
                                         <app-checkbox-mark [checked]="true"/>
                                     </button>
                                     <span class="min-w-0 flex-1 text-ui text-writing-minor line-through truncate">{{ item.name }}</span>
                                     <button type="button"
                                             class="icon-btn icon-btn-danger can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-                                            aria-label="Remove from history" title="Remove from history" (click)="deleteItem(item)">
+                                            [attr.aria-label]="t().detail.removeFromHistory" [title]="t().detail.removeFromHistory" (click)="deleteItem(item)">
                                         <ng-icon [svg]="featherX"/>
                                     </button>
                                 </div>
@@ -112,7 +112,7 @@
                         @if (hiddenCheckedCount() > 0) {
                             <button type="button" class="rounded-md text-meta text-accent hover:underline mt-1"
                                     (click)="toggleShowAllChecked()">
-                                {{ showAllChecked() ? 'Show less' : 'Show all ' + checkedItems().length }}
+                                {{ showAllChecked() ? t().detail.showLess : showAllLabel() }}
                             </button>
                         }
                     }

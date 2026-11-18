@@ -2,29 +2,29 @@
 
     <a [routerLink]="allProjectsUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        All projects
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().detail.allProjects }}
     </a>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading project"/>
+        <app-loading-state [label]="t().detail.loading"/>
     } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="allProjectsUrl" backLabel="Back to projects"/>
+        <app-error-state [text]="t().loadError" [backUrl]="allProjectsUrl" [backLabel]="t().detail.backToProjects"/>
     } @else if (project(); as project) {
 
         <app-page-header [title]="project.name" [subtitle]="headerSubtitle()">
             @if (isArchived()) {
-                <span class="chip">Archived</span>
+                <span class="chip">{{ t().detail.archived }}</span>
             }
             <button type="button" class="btn btn-secondary btn-sm" (click)="openShareDialog()">
                 <ng-icon [svg]="featherShare2"/>
-                Share
+                {{ t().detail.share }}
             </button>
             <button type="button" class="btn btn-secondary btn-sm" (click)="editProject()">
                 <ng-icon [svg]="featherEdit"/>
-                Edit
+                {{ t().detail.edit }}
             </button>
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" ariaLabel="More project actions"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="overflowActions()" [ariaLabel]="t().detail.moreActions"/>
         </app-page-header>
 
         @if (project.description || progress().total > 0) {
@@ -34,7 +34,7 @@
                 }
                 @if (progress().total > 0) {
                     <div class="h-1.5 w-full rounded-full bg-layer-3 overflow-hidden" role="progressbar"
-                         [attr.aria-valuenow]="progress().pct" aria-valuemin="0" aria-valuemax="100" aria-label="Tasks done">
+                         [attr.aria-valuenow]="progress().pct" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="t().detail.tasksDone">
                         <div class="h-full rounded-full transition-all duration-500 ease-out {{ progress().pct === 100 ? 'bg-success' : 'bg-accent' }}"
                              [style.width.%]="progress().pct"></div>
                     </div>
@@ -44,17 +44,17 @@
 
         <div class="card flex items-center gap-2 p-1.5 ps-3 mb-4 transition-shadow focus-within:border-accent focus-within:ring-3 focus-within:ring-accent-soft">
             <ng-icon [svg]="featherPlus" class="text-lead text-writing-least shrink-0" aria-hidden="true"/>
-            <input type="text" dir="auto" aria-label="New task"
+            <input type="text" dir="auto" [attr.aria-label]="t().detail.newTask"
                    class="flex-1 min-w-0 bg-transparent text-lead text-writing placeholder:text-writing-least outline-none py-1"
-                   placeholder="Add a task"
+                   [placeholder]="t().detail.addTaskPlaceholder"
                    [formControl]="newTaskCtrl" (keyup.enter)="addTask()"/>
-            <button type="button" class="btn btn-primary btn-sm" [disabled]="isAdding()" (click)="addTask()">Add</button>
+            <button type="button" class="btn btn-primary btn-sm" [disabled]="isAdding()" (click)="addTask()">{{ t().detail.add }}</button>
         </div>
 
         @if (openTasks().length === 0) {
             <div class="mb-6">
-                <app-empty-state [title]="doneTasks().length > 0 ? 'Everything is done' : 'No tasks yet'"
-                                 text="Add a task above. Tick its box when it's done; open it to set a due date, priority, subtasks or a linked list."/>
+                <app-empty-state [title]="doneTasks().length > 0 ? t().detail.everythingDone : t().detail.noTasksYet"
+                                 [text]="t().detail.emptyText"/>
             </div>
         } @else {
             <div class="card overflow-hidden divide-y divide-line-subtle mb-6"
@@ -73,8 +73,8 @@
                     class="flex items-center gap-1.5 rounded-md px-1 py-0.5 -ms-1 text-meta font-semibold text-writing-minor hover:text-writing transition-colors mb-3"
                     [attr.aria-expanded]="showDone()"
                     (click)="toggleShowDone()">
-                <ng-icon [svg]="showDone() ? featherChevronDown : featherChevronRight"/>
-                Completed ({{ doneTasks().length }})
+                <ng-icon [svg]="showDone() ? featherChevronDown : featherChevronRight" class="rtl:-scale-x-100"/>
+                {{ completedLabel() }}
             </button>
             @if (showDone()) {
                 <div class="card overflow-hidden divide-y divide-line-subtle">
@@ -105,11 +105,11 @@
                 }
                 @if (addingSubtaskFor() === task.id) {
                     <div class="flex items-center gap-2 py-1.5 ps-1">
-                        <input type="text" dir="auto" class="main-input flex-1 !py-1" placeholder="Subtask name"
-                               aria-label="New subtask"
+                        <input type="text" dir="auto" class="main-input flex-1 !py-1" [placeholder]="t().detail.subtaskPlaceholder"
+                               [attr.aria-label]="t().detail.newSubtask"
                                [formControl]="newSubtaskCtrl" (keyup.enter)="addSubtask(task)"/>
                         <button type="button" class="btn btn-primary btn-sm" [disabled]="isAddingSubtask()"
-                                (click)="addSubtask(task)">Add</button>
+                                (click)="addSubtask(task)">{{ t().detail.add }}</button>
                     </div>
                 }
             </div>
@@ -121,7 +121,7 @@
 <ng-template #taskRow let-task let-isSubtask="isSubtask" let-draggable="draggable">
     <div class="group flex items-start gap-1 py-1">
         @if (draggable) {
-            <button type="button" cdkDragHandle aria-label="Drag to reorder"
+            <button type="button" cdkDragHandle [attr.aria-label]="t().detail.dragToReorder"
                     class="flex items-center justify-center w-5 h-8 shrink-0 -ms-1 rounded touch-none cursor-grab active:cursor-grabbing text-writing-least hover:text-writing-minor can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity">
                 <ng-icon [svg]="bootstrapGripVertical"/>
             </button>
@@ -133,40 +133,40 @@
                 class="group/check flex items-center justify-center size-8 shrink-0 rounded-md disabled:opacity-50"
                 [disabled]="savingTaskId() === task.id"
                 [attr.aria-pressed]="task.status === 'done'"
-                [attr.aria-label]="task.status === 'done' ? 'Mark as not done' : 'Mark as done'"
+                [attr.aria-label]="task.status === 'done' ? t().detail.markNotDone : t().detail.markDone"
                 (click)="toggleDone(task)">
             <app-checkbox-mark [checked]="task.status === 'done'" [size]="isSubtask ? 'sm' : 'md'"/>
         </button>
 
         <div class="min-w-0 flex-1 py-1.5" dir="auto">
-            <div class="{{ isSubtask ? 'text-meta' : 'text-body' }} text-writing break-words {{ task.status === 'done' ? 'line-through !text-writing-least' : '' }}">{{ task.name }}</div>
+            <div class="{{ isSubtask ? 'text-meta' : 'text-body' }} text-writing break-words {{ task.status === 'done' ? 'line-through !text-writing-least' : '' }}"><bdi>{{ task.name }}</bdi></div>
             @if (task.priority !== 'none' || task.due_at || task.is_repeating || (!isSubtask && task.subtask_count > 0) || task.itinerary_list_name || task.description) {
                 <div class="flex flex-wrap items-center gap-1.5 mt-1">
                     @if (task.priority !== 'none') {
-                        <span class="chip {{ priorityChipById()[task.id] }}">{{ priorityLabelById()[task.id] }}</span>
+                        <span class="chip {{ priorityChipById()[task.id] }}">{{ t().priorities[task.priority] }}</span>
                     }
                     @if (task.due_at) {
                         <span class="chip {{ overdueById()[task.id] ? 'chip-danger' : '' }}">
                             <ng-icon [svg]="featherClock" aria-hidden="true"/>
-                            {{ dueLabelById()[task.id] }}{{ overdueById()[task.id] ? ' · overdue' : '' }}
+                            {{ dueLabelById()[task.id] }}
                         </span>
                     }
                     @if (task.is_repeating) {
-                        <span class="chip" title="Resets to To do at 4 AM">
+                        <span class="chip" [title]="repeatTooltip()">
                             <ng-icon [svg]="featherRotateCcw" aria-hidden="true"/>
                             {{ repeatLabelById()[task.id] }}
                         </span>
                     }
                     @if (!isSubtask && task.subtask_count > 0) {
-                        <span class="chip" [attr.aria-label]="task.done_subtask_count + ' of ' + task.subtask_count + ' subtasks done'">
-                            <ng-icon [svg]="featherCornerDownRight" aria-hidden="true"/>
+                        <span class="chip" [attr.aria-label]="subtasksAriaById()[task.id]">
+                            <ng-icon [svg]="featherCornerDownRight" class="rtl:-scale-x-100" aria-hidden="true"/>
                             {{ task.done_subtask_count }}/{{ task.subtask_count }}
                         </span>
                     }
                     @if (task.itinerary_list_name) {
                         <button type="button" class="chip chip-accent hover:underline" (click)="openLinkedList(task)">
                             <ng-icon [svg]="featherLink" aria-hidden="true"/>
-                            {{ task.itinerary_list_name }}
+                            <bdi>{{ task.itinerary_list_name }}</bdi>
                         </button>
                     }
                     @if (task.description) {
@@ -178,19 +178,19 @@
 
         <div class="hidden sm:flex items-center shrink-0 can-hover:opacity-0 can-hover:group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             @if (!isSubtask) {
-                <button type="button" class="icon-btn" aria-label="Add subtask" title="Add subtask" (click)="toggleAddSubtask(task)">
+                <button type="button" class="icon-btn" [attr.aria-label]="t().detail.addSubtask" [title]="t().detail.addSubtask" (click)="toggleAddSubtask(task)">
                     <ng-icon [svg]="featherPlus"/>
                 </button>
             }
-            <button type="button" class="icon-btn" aria-label="Edit task" title="Edit" (click)="editTask(task)">
+            <button type="button" class="icon-btn" [attr.aria-label]="t().detail.editTask" [title]="t().detail.edit" (click)="editTask(task)">
                 <ng-icon [svg]="featherEdit"/>
             </button>
-            <button type="button" class="icon-btn icon-btn-danger" aria-label="Delete task" title="Delete" (click)="deleteTask(task)">
+            <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().detail.deleteTask" [title]="t().detail.delete" (click)="deleteTask(task)">
                 <ng-icon [svg]="featherTrash2"/>
             </button>
         </div>
         <div class="sm:hidden shrink-0">
-            <app-menu-button [icon]="featherMoreHorizontal" [actions]="taskMenuActionsById()[task.id]" ariaLabel="Task actions"/>
+            <app-menu-button [icon]="featherMoreHorizontal" [actions]="taskMenuActionsById()[task.id]" [ariaLabel]="t().detail.taskActions"/>
         </div>
     </div>
 </ng-template>

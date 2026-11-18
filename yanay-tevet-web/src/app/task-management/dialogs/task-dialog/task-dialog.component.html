@@ -2,54 +2,54 @@
 
     <div class="flex items-start justify-between mb-5">
         <h2 class="text-section font-bold text-writing">{{ data.title }}</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="Close" (click)="onClose()">
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().dialog.close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-heading"></ng-icon>
         </button>
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">Name <span class="text-writing-least">*</span></span>
-        <input type="text" dir="auto" class="main-input w-full" placeholder="e.g. Book flights"
+        <span class="input-label">{{ t().dialog.name }} <span class="text-writing-least">*</span></span>
+        <input type="text" dir="auto" class="main-input w-full" [placeholder]="t().dialog.namePlaceholder"
                [formControl]="nameCtrl" (keyup.enter)="onSave()" />
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">Description</span>
+        <span class="input-label">{{ t().dialog.description }}</span>
         <textarea class="main-input w-full leading-relaxed" rows="3" dir="auto"
-                  placeholder="Optional notes about this task..."
+                  [placeholder]="t().dialog.descriptionPlaceholder"
                   [formControl]="descriptionCtrl"></textarea>
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         @if (data.showStatus) {
             <div class="flex flex-col gap-1.5">
-                <span class="input-label">Status</span>
+                <span class="input-label">{{ t().dialog.status }}</span>
                 <button type="button"
                         class="main-input flex items-center gap-2 cursor-pointer text-start"
                         [attr.aria-pressed]="isDone()"
                         (click)="toggleDone()">
                     <app-checkbox-mark [checked]="isDone()"/>
-                    <span class="text-body text-writing">{{ isDone() ? 'Done' : 'To do' }}</span>
+                    <span class="text-body text-writing">{{ isDone() ? t().statuses.done : t().statuses.todo }}</span>
                 </button>
             </div>
         }
         <div class="flex flex-col gap-1.5">
-            <span class="input-label">Priority</span>
+            <span class="input-label">{{ t().dialog.priority }}</span>
             <select class="main-input w-full" [formControl]="priorityCtrl">
                 @for (priority of priorityOrder; track priority) {
-                    <option [value]="priority">{{ priorityLabels[priority] }}</option>
+                    <option [value]="priority">{{ t().priorities[priority] }}</option>
                 }
             </select>
         </div>
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">Due date</span>
+        <span class="input-label">{{ t().dialog.dueDate }}</span>
         <input type="datetime-local" dir="auto" class="main-input w-full" [formControl]="dueAtCtrl" />
     </div>
 
     <div class="mb-4 flex flex-col gap-1.5">
-        <span class="input-label">Repeat</span>
+        <span class="input-label">{{ t().dialog.repeat }}</span>
         <button type="button"
                 class="main-input flex items-center gap-2 cursor-pointer text-start"
                 [attr.aria-pressed]="isRepeating()"
@@ -58,9 +58,9 @@
             <span class="flex items-center gap-1.5 text-body text-writing">
                 <ng-icon [svg]="featherRotateCcw" class="text-writing-minor"></ng-icon>
                 @if (isRepeating()) {
-                    Repeats · {{ repeatSummary() }}
+                    {{ repeatSummary() }}
                 } @else {
-                    Does not repeat
+                    {{ t().dialog.doesNotRepeat }}
                 }
             </span>
         </button>
@@ -68,21 +68,21 @@
         @if (isRepeating()) {
             <div class="mt-1 rounded-lg border border-line bg-layer-1 p-3 flex flex-col gap-3">
                 <div class="flex flex-wrap gap-1.5">
-                    @for (day of weekdays; track day.value) {
+                    @for (day of weekdays; track day) {
                         <button type="button"
-                                class="h-8 w-9 rounded-full text-caption font-semibold border transition-colors {{ daySelected()[day.value] ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-line text-writing-minor hover:border-accent' }}"
-                                [attr.aria-pressed]="daySelected()[day.value]"
-                                (click)="toggleDay(day.value)">
-                            {{ day.short }}
+                                class="h-8 min-w-9 px-2 rounded-full text-caption font-semibold border transition-colors {{ daySelected()[day] ? 'bg-accent border-accent text-on-accent' : 'bg-layer-2 border-line text-writing-minor hover:border-accent' }}"
+                                [attr.aria-pressed]="daySelected()[day]"
+                                (click)="toggleDay(day)">
+                            {{ weekdayNames()[day] }}
                         </button>
                     }
                 </div>
                 <div class="flex flex-wrap gap-1.5">
-                    @for (preset of repeatPresets; track preset.label) {
+                    @for (preset of repeatPresets; track preset.key) {
                         <button type="button"
                                 class="chip"
                                 (click)="applyPreset(preset.days)">
-                            {{ preset.label }}
+                            {{ t().repeat[preset.key] }}
                         </button>
                     }
                 </div>
@@ -93,18 +93,18 @@
 
     @if (data.itineraryLists.length > 0) {
         <div class="mb-2 flex flex-col gap-1.5">
-            <span class="input-label">Linked itinerary list</span>
+            <span class="input-label">{{ t().dialog.linkedList }}</span>
             <select class="main-input w-full" [formControl]="itineraryListCtrl">
-                <option [ngValue]="null">None</option>
+                <option [ngValue]="null">{{ t().dialog.none }}</option>
                 @for (list of data.itineraryLists; track list.id) {
-                    <option [ngValue]="list.id">{{ list.name }}</option>
+                    <option [ngValue]="list.id" dir="auto">{{ list.name }}</option>
                 }
             </select>
         </div>
     }
 
     <div class="flex items-center justify-end gap-2 mt-6">
-        <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
+        <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().cancel }}</button>
         <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="onSave()">
             {{ data.confirmActionName }}
         </button>

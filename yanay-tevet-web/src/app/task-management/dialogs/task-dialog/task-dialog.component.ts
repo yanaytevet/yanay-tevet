@@ -1,4 +1,4 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {toSignal} from '@angular/core/rxjs-interop';
 import {FormControl, ReactiveFormsModule} from '@angular/forms';
 import {NgIcon, provideIcons} from '@ng-icons/core';
@@ -9,10 +9,13 @@ import {
   describeRepeatSchedule,
   formatRepeatDays,
   REPEAT_PRESETS,
-  TASK_PRIORITY_LABELS,
   TASK_PRIORITY_ORDER,
-  WEEKDAYS,
+  WEEKDAY_VALUES,
+  weekdayNames,
 } from '../../task-management.constants';
+import {LanguageService} from '../../../shared/i18n/language.service';
+import {fill, injectStrings} from '../../../shared/i18n/strings';
+import {TASKS_STRINGS} from '../../i18n';
 import {CheckboxMarkComponent} from '../../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 export interface TaskDialogItineraryList {
@@ -54,6 +57,9 @@ export interface TaskDialogResult {
   templateUrl: './task-dialog.component.html',
 })
 export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, TaskDialogResult> {
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(TASKS_STRINGS);
+
   readonly nameCtrl = new FormControl<string>('', {nonNullable: true});
   readonly descriptionCtrl = new FormControl<string>('', {nonNullable: true});
   readonly priorityCtrl = new FormControl<TaskPriority>('none', {nonNullable: true});
@@ -65,16 +71,20 @@ export class TaskDialogComponent extends BaseDialogComponent<TaskDialogData, Tas
   readonly repeatDays = signal<number[]>([]);
 
   readonly priorityOrder = TASK_PRIORITY_ORDER;
-  readonly priorityLabels = TASK_PRIORITY_LABELS;
-  readonly weekdays = WEEKDAYS;
+  readonly weekdays = WEEKDAY_VALUES;
   readonly repeatPresets = REPEAT_PRESETS;
 
+  readonly weekdayNames = computed(() => weekdayNames(this.languageService.language()));
   readonly daySelected = computed(() => {
     const selected = new Set(this.repeatDays());
-    return Object.fromEntries(WEEKDAYS.map(d => [d.value, selected.has(d.value)]));
+    return Object.fromEntries(WEEKDAY_VALUES.map(d => [d, selected.has(d)]));
   });
-  readonly repeatSummary = computed(() => formatRepeatDays(this.repeatDays()));
-  readonly repeatScheduleText = computed(() => describeRepeatSchedule(this.repeatDays()));
+  readonly repeatSummary = computed(() =>
+    fill(this.t().dialog.repeats, {
+      days: formatRepeatDays(this.repeatDays(), this.t(), this.languageService.language()),
+    }));
+  readonly repeatScheduleText = computed(() =>
+    describeRepeatSchedule(this.repeatDays(), this.t(), this.languageService.language()));
 
   private readonly nameValue = toSignal(this.nameCtrl.valueChanges, {initialValue: ''});
   readonly canSave = computed(() => !!this.nameValue()?.trim());

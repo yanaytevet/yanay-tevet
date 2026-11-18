@@ -1,20 +1,19 @@
 <div class="page-narrow">
 
-    <app-page-header title="Task Management" [subtitle]="subtitle()">
+    <app-page-header [title]="t().list.title" [subtitle]="subtitle()">
         <button type="button" class="btn btn-primary" (click)="createProject()">
             <ng-icon [svg]="featherPlus"/>
-            New project
+            {{ t().list.newProject }}
         </button>
     </app-page-header>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading projects"/>
+        <app-loading-state [label]="t().list.loading"/>
     } @else if (projects().length === 0) {
-        <app-empty-state title="Start your first project"
-                         text="A project holds tasks and subtasks, with due dates, priorities and the people you share it with.">
+        <app-empty-state [title]="t().list.emptyTitle" [text]="t().list.emptyText">
             <button type="button" class="btn btn-primary" (click)="createProject()">
                 <ng-icon [svg]="featherPlus"/>
-                New project
+                {{ t().list.newProject }}
             </button>
         </app-empty-state>
     } @else {
@@ -31,15 +30,15 @@
                         <div class="mt-auto pt-4 flex items-end justify-between gap-3">
                             @if (project.open_task_count > 0) {
                                 <div class="flex items-baseline gap-1.5">
-                                    <span class="text-display font-semibold text-writing tabular-nums">{{ project.open_task_count }}</span>
-                                    <span class="text-meta text-writing-minor">open task{{ project.open_task_count === 1 ? '' : 's' }}</span>
+                                    <span class="text-display font-semibold text-writing tabular-nums">{{ countLabels()[project.id].openTaskCount }}</span>
+                                    <span class="text-meta text-writing-minor">{{ countLabels()[project.id].openTasks }}</span>
                                 </div>
                             } @else if (project.task_count > 0) {
-                                <span class="chip chip-success">All done</span>
+                                <span class="chip chip-success">{{ t().list.allDone }}</span>
                             } @else {
-                                <span class="text-meta text-writing-least">No tasks yet</span>
+                                <span class="text-meta text-writing-least">{{ t().list.noTasksYet }}</span>
                             }
-                            <span class="text-caption text-writing-minor shrink-0">{{ project.member_count }} member{{ project.member_count === 1 ? '' : 's' }}</span>
+                            <span class="text-caption text-writing-minor shrink-0">{{ countLabels()[project.id].members }}</span>
                         </div>
                     </a>
                 }
@@ -47,7 +46,7 @@
         }
 
         @if (archivedProjects().length > 0) {
-            <div class="eyebrow mb-3">Archived</div>
+            <div class="eyebrow mb-3">{{ t().list.archived }}</div>
             <div class="card divide-y divide-line-subtle">
                 @for (project of archivedProjects(); track project.id) {
                     <a [routerLink]="projectUrls()[project.id]"
@@ -56,7 +55,7 @@
                             <div class="text-body font-medium text-writing-minor truncate" dir="auto">{{ project.name }}</div>
                         </div>
                         <span class="text-caption text-writing-least shrink-0">
-                            {{ project.task_count }} task{{ project.task_count === 1 ? '' : 's' }}
+                            {{ countLabels()[project.id].tasks }}
                         </span>
                     </a>
                 }

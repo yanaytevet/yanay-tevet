@@ -39,6 +39,9 @@ import {PageHeaderComponent} from '../../common/components/page/page-header/page
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {SHOPPING_STRINGS} from '../i18n';
 
 const CHECKED_PREVIEW_COUNT = 10;
 const MAX_SUGGESTIONS = 6;
@@ -70,6 +73,8 @@ export class ShoppingListDetailComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(SHOPPING_STRINGS);
 
   readonly allListsUrl = this.routingService.getShoppingListsUrl();
 
@@ -77,7 +82,7 @@ export class ShoppingListDetailComponent {
   readonly list = signal<ShoppingListSchema | null>(null);
   readonly items = signal<ShoppingItemSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
 
   readonly showAllChecked = signal<boolean>(false);
   readonly checkedExpanded = signal<boolean>(true);
@@ -102,19 +107,19 @@ export class ShoppingListDetailComponent {
     if (list === null) {
       return null;
     }
+    const t = this.t().detail;
     if (!this.isOwner()) {
-      return `Shared by ${list.owner_username}`;
+      return fill(t.sharedBy, {name: list.owner_username});
     }
     if (list.member_count > 1) {
-      const others = list.member_count - 1;
-      return `Shared with ${others} ${others === 1 ? 'person' : 'people'}`;
+      return plural(this.languageService.language(), list.member_count - 1, t.sharedWith);
     }
     return null;
   });
 
   // Share and Rename sit in the header; deleting the whole list lives behind "more".
   readonly overflowActions = computed<MenuItem[]>(() => [
-    {display: 'Delete list', icon: featherTrash2, danger: true, callback: () => void this.deleteList()},
+    {display: this.t().detail.deleteList, icon: featherTrash2, danger: true, callback: () => void this.deleteList()},
   ]);
 
   readonly uncheckedItems = computed(() =>
@@ -135,6 +140,11 @@ export class ShoppingListDetailComponent {
   });
 
   readonly hiddenCheckedCount = computed(() => Math.max(0, this.checkedItems().length - CHECKED_PREVIEW_COUNT));
+
+  readonly checkedItemsLabel = computed(() =>
+    plural(this.languageService.language(), this.checkedItems().length, this.t().detail.checkedItems));
+  readonly showAllLabel = computed(() =>
+    fill(this.t().detail.showAll, {count: this.checkedItems().length.toLocaleString(this.languageService.language())}));
 
   // Autocomplete is sourced from the checked items: things bought before, not already on the list.
   readonly suggestions = computed(() => {
@@ -208,11 +218,11 @@ export class ShoppingListDetailComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       await this.fetch(id);
     } catch {
-      this.loadError.set('Could not load this list. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -311,7 +321,7 @@ export class ShoppingListDetailComponent {
       const res = await this.runWrite(() => createShoppingItemView({body: {shopping_list_id: listId, name}}));
       this.upsertItem(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -331,18 +341,18 @@ export class ShoppingListDetailComponent {
       this.upsertItem(res.data);
     } catch (err) {
       this.upsertItem(item);
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
   async renameItem(item: ShoppingItemSchema): Promise<void> {
     const name = await this.dialogService.getTextFromInputDialog({
-      title: 'Edit item',
+      title: this.t().detail.editItem,
       text: '',
-      label: 'Name',
+      label: this.t().name,
       defaultValue: item.name,
-      confirmActionName: 'Save',
-      cancelActionName: 'Cancel',
+      confirmActionName: this.t().save,
+      cancelActionName: this.t().cancel,
       maxLength: 255,
     }, 40);
     const trimmed = name?.trim();
@@ -355,7 +365,7 @@ export class ShoppingListDetailComponent {
       );
       this.upsertItem(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -365,7 +375,7 @@ export class ShoppingListDetailComponent {
       await this.runWrite(() => deleteShoppingItemView({path: {object_id: item.id}}));
     } catch (err) {
       this.upsertItem(item);
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -383,12 +393,12 @@ export class ShoppingListDetailComponent {
       return;
     }
     const name = await this.dialogService.getTextFromInputDialog({
-      title: 'Rename list',
+      title: this.t().detail.renameList,
       text: '',
-      label: 'Name',
+      label: this.t().name,
       defaultValue: list.name,
-      confirmActionName: 'Save',
-      cancelActionName: 'Cancel',
+      confirmActionName: this.t().save,
+      cancelActionName: this.t().cancel,
       maxLength: 255,
     }, 40);
     const trimmed = name?.trim();
@@ -399,7 +409,7 @@ export class ShoppingListDetailComponent {
       const res = await updateShoppingListView({body: {name: trimmed}, path: {object_id: list.id}});
       this.list.set(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -411,8 +421,8 @@ export class ShoppingListDetailComponent {
     await this.dialogService.open(ShareDialogComponent, {
       objectId: id,
       isOwner: this.isOwner(),
-      title: 'Share list',
-      subtitle: 'People you add can view, add and check off items. Invite someone new by email.',
+      title: this.t().detail.shareTitle,
+      subtitle: this.t().detail.shareSubtitle,
       listMembers: async (objectId: number) => {
         const data = (await listShoppingListMembersView({path: {object_id: objectId}})).data;
         return {members: data.members, pendingInvitations: data.pending_invitations};
@@ -433,13 +443,14 @@ export class ShoppingListDetailComponent {
     if (list === null) {
       return;
     }
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromTextConfirmationDialog({
-      title: 'Delete list',
-      text: 'This permanently deletes the list, its items and its history for everyone it is shared with. This cannot be undone.',
-      label: 'List name',
+      title: t.detail.deleteList,
+      text: t.detail.deleteListText,
+      label: t.detail.listName,
       validationText: list.name,
-      confirmActionName: 'Delete list',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.deleteList,
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -448,7 +459,7 @@ export class ShoppingListDetailComponent {
       await deleteShoppingListView({path: {object_id: list.id}});
       await this.routingService.navigateToShoppingLists();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 }

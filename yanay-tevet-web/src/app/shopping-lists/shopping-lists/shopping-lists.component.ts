@@ -12,6 +12,9 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {SHOPPING_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-shopping-lists',
@@ -23,6 +26,8 @@ import {LoadingStateComponent} from '../../common/components/page/loading-state/
 export class ShoppingListsComponent {
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(SHOPPING_STRINGS);
 
   readonly lists = signal<ShoppingListSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
@@ -35,6 +40,16 @@ export class ShoppingListsComponent {
   readonly moreCount = computed(() =>
     Object.fromEntries(this.lists().map(l => [l.id, l.unchecked_count - l.preview_items.length])),
   );
+
+  readonly countLabels = computed(() => {
+    const t = this.t().lists;
+    const language = this.languageService.language();
+    const more = this.moreCount();
+    return Object.fromEntries(this.lists().map(l => [l.id, {
+      more: fill(t.more, {count: more[l.id].toLocaleString(language)}),
+      checked: plural(language, l.checked_count, t.checkedCount),
+    }]));
+  });
 
   protected readonly featherPlus = featherPlus;
   protected readonly featherSquare = featherSquare;
@@ -58,13 +73,14 @@ export class ShoppingListsComponent {
     if (this.isCreating()) {
       return;
     }
+    const t = this.t();
     const name = await this.dialogService.getTextFromInputDialog({
-      title: 'New shopping list',
+      title: t.lists.newList,
       text: '',
-      label: 'Name',
+      label: t.name,
       defaultValue: '',
-      confirmActionName: 'Create',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.lists.create,
+      cancelActionName: t.cancel,
       maxLength: 255,
     }, 40);
     const trimmed = name?.trim();
@@ -76,7 +92,7 @@ export class ShoppingListsComponent {
       const res = await createShoppingListView({body: {name: trimmed}});
       await this.routingService.navigateToShoppingList(res.data.id);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `Failed to create list: ${err}`});
+      await this.dialogService.showNotificationDialog({title: t.error, text: fill(t.lists.createFailed, {error: String(err)})});
     } finally {
       this.isCreating.set(false);
     }

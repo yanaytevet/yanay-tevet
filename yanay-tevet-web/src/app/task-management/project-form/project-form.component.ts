@@ -14,6 +14,8 @@ import {RoutingService} from '../../shared/services/routing.service';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {TASKS_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-task-project-form',
@@ -26,6 +28,7 @@ export class ProjectFormComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly routingService = inject(RoutingService);
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(TASKS_STRINGS);
 
   readonly projectId = signal<number | null>(null);
   readonly backUrl = computed(() => {
@@ -35,7 +38,7 @@ export class ProjectFormComponent {
   readonly isEditMode = computed(() => this.projectId() !== null);
   readonly isLoading = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
 
   readonly nameCtrl = new FormControl<string>('', {nonNullable: true});
   readonly descriptionCtrl = new FormControl<string>('', {nonNullable: true});
@@ -60,13 +63,13 @@ export class ProjectFormComponent {
 
   private async loadProject(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const res = await getTaskProjectView({path: {object_id: id}});
       this.nameCtrl.setValue(res.data.name);
       this.descriptionCtrl.setValue(res.data.description);
     } catch {
-      this.loadError.set('Could not load this project. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -93,8 +96,8 @@ export class ProjectFormComponent {
       }
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to save project: ${err}`,
+        title: this.t().error,
+        text: fill(this.t().form.saveFailed, {error: String(err)}),
       });
     } finally {
       this.isSaving.set(false);

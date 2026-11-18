@@ -56,9 +56,12 @@ import {
 } from '../dialogs/task-dialog/task-dialog.component';
 import {
   formatRepeatDays,
+  formatResetTime,
   TASK_PRIORITY_CHIP_CLASS,
-  TASK_PRIORITY_LABELS,
 } from '../task-management.constants';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {TASKS_STRINGS} from '../i18n';
 import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 @Component({
@@ -91,6 +94,8 @@ export class ProjectDetailComponent {
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);
   private readonly celebrationService = inject(CelebrationService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(TASKS_STRINGS);
 
   readonly allProjectsUrl = this.routingService.getTaskManagementUrl();
 
@@ -98,7 +103,7 @@ export class ProjectDetailComponent {
   readonly project = signal<TaskProjectSchema | null>(null);
   readonly tasks = signal<TaskSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
-  readonly loadError = signal<string | null>(null);
+  readonly loadError = signal<boolean>(false);
   readonly isUpdatingStatus = signal<boolean>(false);
   readonly savingTaskId = signal<number | null>(null);
   readonly showDone = signal<boolean>(false);
@@ -137,17 +142,36 @@ export class ProjectDetailComponent {
       [t.id, t.status !== 'done' && t.due_at !== null && new Date(t.due_at).getTime() < now]));
   });
 
-  readonly dueLabelById = computed(() =>
-    Object.fromEntries(this.tasks()
-      .filter(t => t.due_at !== null)
-      .map(t => [t.id, this.formatDue(t.due_at as string)])));
+  // The due-date chip text, with "overdue" added for open tasks past their due date.
+  readonly dueLabelById = computed(() => {
+    const language = this.languageService.language();
+    const format = new Intl.DateTimeFormat(language, {month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'});
+    const overdue = this.overdueById();
+    const template = this.t().detail.dueOverdue;
+    return Object.fromEntries(this.tasks()
+      .filter(task => task.due_at !== null)
+      .map(task => {
+        const date = format.format(new Date(task.due_at as string));
+        return [task.id, overdue[task.id] ? fill(template, {date}) : date];
+      }));
+  });
 
-  readonly priorityLabelById = computed(() =>
-    Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_LABELS[t.priority]])));
   readonly priorityChipById = computed(() =>
     Object.fromEntries(this.tasks().map(t => [t.id, TASK_PRIORITY_CHIP_CLASS[t.priority]])));
-  readonly repeatLabelById = computed(() =>
-    Object.fromEntries(this.tasks().map(t => [t.id, formatRepeatDays(t.repeat_days)])));
+  readonly repeatLabelById = computed(() => {
+    const language = this.languageService.language();
+    const strings = this.t();
+    return Object.fromEntries(this.tasks().map(t => [t.id, formatRepeatDays(t.repeat_days, strings, language)]));
+  });
+  readonly repeatTooltip = computed(() =>
+    fill(this.t().repeat.tooltip, {time: formatResetTime(this.languageService.language())}));
+  readonly subtasksAriaById = computed(() => {
+    const template = this.t().detail.subtasksDone;
+    return Object.fromEntries(this.tasks().map(t =>
+      [t.id, fill(template, {done: t.done_subtask_count, total: t.subtask_count})]));
+  });
+  readonly completedLabel = computed(() =>
+    fill(this.t().detail.completed, {count: this.doneTasks().length.toLocaleString(this.languageService.language())}));
 
   readonly progress = computed(() => {
     const top = this.topLevel();
@@ -158,17 +182,19 @@ export class ProjectDetailComponent {
 
   readonly headerSubtitle = computed(() => {
     const {total, done, pct} = this.progress();
+    const t = this.t().detail;
     if (total === 0) {
-      return 'No tasks yet';
+      return t.noTasksYet;
     }
-    return `${done} of ${total} done · ${pct}%`;
+    return fill(t.progress, {done, total, pct});
   });
 
   // Share and Edit sit in the header; the rarer and riskier actions live behind "more".
   readonly overflowActions = computed<MenuItem[]>(() => {
+    const t = this.t().detail;
     const actions: MenuItem[] = [
       {
-        display: this.isArchived() ? 'Unarchive' : 'Archive',
+        display: this.isArchived() ? t.unarchive : t.archive,
         icon: this.isArchived() ? featherRotateCcw : featherArchive,
         disabled: this.isUpdatingStatus(),
         callback: () => void this.toggleArchive(),
@@ -176,19 +202,20 @@ export class ProjectDetailComponent {
     ];
     if (this.isOwner()) {
       actions.push(SEPARATOR);
-      actions.push({display: 'Delete project', icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
+      actions.push({display: t.deleteProject, icon: featherTrash2, danger: true, callback: () => void this.deleteProject()});
     }
     return actions;
   });
 
   readonly taskMenuActionsById = computed<Record<number, MenuItem[]>>(() =>
     Object.fromEntries(this.tasks().map(task => {
+      const t = this.t().detail;
       const actions: MenuItem[] = [];
       if (task.parent_id === null) {
-        actions.push({display: 'Add subtask', icon: featherPlus, callback: () => this.toggleAddSubtask(task)});
+        actions.push({display: t.addSubtask, icon: featherPlus, callback: () => this.toggleAddSubtask(task)});
       }
-      actions.push({display: 'Edit', icon: featherEdit, callback: () => void this.editTask(task)});
-      actions.push({display: 'Delete', icon: featherTrash2, danger: true, callback: () => void this.deleteTask(task)});
+      actions.push({display: t.edit, icon: featherEdit, callback: () => void this.editTask(task)});
+      actions.push({display: t.delete, icon: featherTrash2, danger: true, callback: () => void this.deleteTask(task)});
       return [task.id, actions];
     })));
 
@@ -221,7 +248,7 @@ export class ProjectDetailComponent {
 
   private async load(id: number): Promise<void> {
     this.isLoading.set(true);
-    this.loadError.set(null);
+    this.loadError.set(false);
     try {
       const [projectRes, tasksRes] = await Promise.all([
         getTaskProjectView({path: {object_id: id}}),
@@ -230,7 +257,7 @@ export class ProjectDetailComponent {
       this.project.set(projectRes.data);
       this.tasks.set(tasksRes.data.data);
     } catch {
-      this.loadError.set('Could not load this project. You may not have access to it.');
+      this.loadError.set(true);
     } finally {
       this.isLoading.set(false);
     }
@@ -258,7 +285,7 @@ export class ProjectDetailComponent {
       this.tasks.update(prev => [...prev, res.data]);
       this.newTaskCtrl.setValue('');
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isAdding.set(false);
     }
@@ -282,7 +309,7 @@ export class ProjectDetailComponent {
       this.newSubtaskCtrl.setValue('');
       this.addingSubtaskFor.set(null);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isAddingSubtask.set(false);
     }
@@ -303,8 +330,8 @@ export class ProjectDetailComponent {
     const result = await this.dialogService.open<TaskDialogData, TaskDialogResult>(
       TaskDialogComponent,
       {
-        title: 'Edit task',
-        confirmActionName: 'Save',
+        title: this.t().detail.editTask,
+        confirmActionName: this.t().save,
         name: task.name,
         description: task.description,
         status: task.status,
@@ -343,23 +370,24 @@ export class ProjectDetailComponent {
       const res = await updateTaskView({body, path: {object_id: task.id}});
       this.tasks.update(prev => prev.map(t => (t.id === task.id ? res.data : t)));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.savingTaskId.set(null);
     }
   }
 
   async deleteTask(task: TaskSchema): Promise<void> {
+    const t = this.t();
     const subtaskCount = task.subtask_count;
     const text = subtaskCount > 0
-      ? `Delete "${task.name}" and its ${subtaskCount} subtask${subtaskCount === 1 ? '' : 's'}?`
-      : `Delete "${task.name}"?`;
+      ? fill(plural(this.languageService.language(), subtaskCount, t.detail.deleteTaskWithSubtasks), {name: task.name})
+      : fill(t.detail.deleteTaskConfirm, {name: task.name});
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete task',
+      title: t.detail.deleteTask,
       text,
-      confirmActionName: 'Delete',
+      confirmActionName: t.detail.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -368,7 +396,7 @@ export class ProjectDetailComponent {
       await deleteTaskView({path: {object_id: task.id}});
       this.tasks.update(prev => prev.filter(t => t.id !== task.id && t.parent_id !== task.id));
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -393,7 +421,7 @@ export class ProjectDetailComponent {
       const res = await getTaskProjectView({path: {object_id: id}});
       this.project.set(res.data);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     } finally {
       this.isUpdatingStatus.set(false);
     }
@@ -407,8 +435,8 @@ export class ProjectDetailComponent {
     await this.dialogService.open(ShareDialogComponent, {
       objectId: id,
       isOwner: this.isOwner(),
-      title: 'Share project',
-      subtitle: 'People you add can view and edit this project and its tasks.',
+      title: this.t().detail.shareTitle,
+      subtitle: this.t().detail.shareSubtitle,
       listMembers: async (objectId: number) => {
         const data = (await listTaskProjectMembersView({path: {object_id: objectId}})).data;
         return {members: data.members, pendingInvitations: data.pending_invitations};
@@ -436,13 +464,14 @@ export class ProjectDetailComponent {
     if (project === null) {
       return;
     }
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromTextConfirmationDialog({
-      title: 'Delete project',
-      text: 'This permanently deletes the project and all of its tasks. This cannot be undone.',
-      label: 'Project name',
+      title: t.detail.deleteProject,
+      text: t.detail.deleteProjectText,
+      label: t.detail.projectName,
       validationText: project.name,
-      confirmActionName: 'Delete project',
-      cancelActionName: 'Cancel',
+      confirmActionName: t.detail.deleteProject,
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -451,7 +480,7 @@ export class ProjectDetailComponent {
       await deleteTaskProjectView({path: {object_id: project.id}});
       await this.routingService.navigateToTaskManagement();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -488,7 +517,7 @@ export class ProjectDetailComponent {
       await reorderTasksView({path: {project_id: projectId}, body: {parent_id: parentId, ordered_ids: orderedIds}});
     } catch (err) {
       this.tasks.set(previous);
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.t().error, text: `${err}`});
     }
   }
 
@@ -499,15 +528,5 @@ export class ProjectDetailComponent {
       .sort((a, b) => (pos.get(a.id) ?? 0) - (pos.get(b.id) ?? 0));
     let i = 0;
     return tasks.map(t => (t.parent_id === parentId && pos.has(t.id) ? reordered[i++] : t));
-  }
-
-  private formatDue(iso: string): string {
-    const date = new Date(iso);
-    return date.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   }
 }
