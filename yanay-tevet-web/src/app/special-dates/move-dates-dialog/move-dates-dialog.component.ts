@@ -1,4 +1,4 @@
-import {Component, computed, signal} from '@angular/core';
+import {Component, computed, inject, signal} from '@angular/core';
 import {NgIcon} from '@ng-icons/core';
 import {featherX} from '@ng-icons/feather-icons';
 import {
@@ -10,7 +10,10 @@ import {
 } from '../../../generated-files/api/special-dates';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
-import {calendarColorClass, SPECIAL_DATE_CATEGORY_BY_VALUE} from '../special-dates.constants';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
+import {calendarColorClass, formatHebrewDate, SPECIAL_DATE_CATEGORY_BY_VALUE} from '../special-dates.constants';
 import {CheckboxMarkComponent} from '../../common/components/inputs/checkbox-mark/checkbox-mark.component';
 
 export interface MoveDatesDialogData {
@@ -31,6 +34,9 @@ function duplicateKey(specialDate: SpecialDateSchema): string {
   templateUrl: './move-dates-dialog.component.html',
 })
 export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialogData, boolean> {
+  private readonly language = inject(LanguageService).language;
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
+
   readonly target = signal<SpecialDateCalendarSchema | null>(null);
   readonly calendars = signal<SpecialDateCalendarSchema[]>([]);
   readonly candidates = signal<SpecialDateSchema[]>([]);
@@ -41,12 +47,15 @@ export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialo
   readonly errorMessage = signal<string>('');
 
   readonly rows = computed(() => {
+    const language = this.language();
+    const t = this.t();
     const calendarsById = new Map(this.calendars().map(c => [c.id, c]));
     const selected = this.selectedIds();
     const duplicates = this.duplicateIds();
     return this.candidates().map(d => ({
       specialDate: d,
       emoji: SPECIAL_DATE_CATEGORY_BY_VALUE[d.category].emoji,
+      hebrewDate: formatHebrewDate(d.date, d.after_sunset, d.hebrew_date, language, t),
       calendarName: calendarsById.get(d.calendar_id ?? -1)?.name ?? '',
       calendarColor: calendarColorClass(d.calendar_id ?? 0),
       isSelected: selected.has(d.id),
@@ -56,7 +65,10 @@ export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialo
   readonly selectedCount = computed(() => this.selectedIds().size);
   readonly allSelected = computed(() => this.candidates().length > 0
     && this.candidates().every(d => this.selectedIds().has(d.id) || this.duplicateIds().has(d.id)));
-  readonly title = this.data.isAfterJoin ? 'הצטרפת ללוח! 🎉' : 'העברת אירועים';
+  readonly title = computed(() => this.data.isAfterJoin ? this.t().move.titleAfterJoin : this.t().move.title);
+  readonly afterJoinEmptyText = computed(() => fill(this.t().move.afterJoinEmpty, {name: this.target()?.name ?? ''}));
+  readonly introText = computed(() => fill(this.t().move.intro, {name: this.target()?.name ?? ''}));
+  readonly moveButtonLabel = computed(() => plural(this.language(), this.selectedCount(), this.t().move.moveCount));
 
   protected readonly featherX = featherX;
 
@@ -120,7 +132,7 @@ export class MoveDatesDialogComponent extends BaseDialogComponent<MoveDatesDialo
       const res = await moveSpecialDatesView({body: {special_date_ids: ids, calendar_id: this.data.targetCalendarId}});
       if (res.error) {
         const err = res.error as {detail?: string};
-        this.errorMessage.set(err?.detail || 'ההעברה נכשלה, נסו שוב.');
+        this.errorMessage.set(err?.detail || this.t().move.moveFailed);
         return;
       }
       this.emitClose(true);

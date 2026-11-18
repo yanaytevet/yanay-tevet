@@ -15,6 +15,8 @@ import {
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
 import {buildJoinUrl} from '../special-dates.constants';
 
 export interface CalendarShareDialogData {
@@ -31,6 +33,7 @@ const COPIED_FEEDBACK_MS = 2000;
 })
 export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarShareDialogData, boolean> {
   private readonly dialogService = inject(DialogService);
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
 
   readonly calendar = signal<SpecialDateCalendarSchema | null>(null);
   readonly members = signal<SpecialDateCalendarMembersSchema | null>(null);
@@ -53,9 +56,10 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
     if (!calendar || !url) {
       return '';
     }
-    const text = `הצטרפו ללוח התאריכים "${calendar.name}" — ימי הולדת, ימי נישואין ואזכרות בלוח העברי והלועזי:\n${url}`;
+    const text = fill(this.t().share.whatsappText, {name: calendar.name, url});
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
   });
+  readonly onlyOwnerText = computed(() => fill(this.t().share.onlyOwnerInvites, {name: this.calendar()?.owner_name ?? ''}));
   readonly canInvite = computed(() => !!this.identifierValue().trim() && !this.isInviting());
 
   private changed = false;
@@ -98,7 +102,7 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      await this.dialogService.showNotificationDialog({title: 'קישור הצטרפות', text: url});
+      await this.dialogService.showNotificationDialog({title: this.t().share.joinLink, text: url});
       return;
     }
     this.copied.set(true);
@@ -110,12 +114,11 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
 
   async resetLink(): Promise<void> {
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'איפוס הקישור',
-      text: 'הקישור הנוכחי יפסיק לעבוד, ומי שכבר הצטרף יישאר בלוח. להמשיך?',
-      confirmActionName: 'איפוס',
+      title: this.t().share.resetLink,
+      text: this.t().share.resetText,
+      confirmActionName: this.t().share.resetConfirm,
       danger: true,
-      dir: 'rtl',
-      cancelActionName: 'ביטול',
+      cancelActionName: this.t().cancel,
     });
     if (!confirmed) {
       return;
@@ -138,7 +141,7 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
       const res = await shareSpecialDateCalendarView({path: {object_id: this.data.calendarId}, body: {identifier}});
       if (res.error) {
         const err = res.error as {detail?: string};
-        this.inviteError.set(err?.detail || 'ההזמנה נכשלה, נסו שוב.');
+        this.inviteError.set(err?.detail || this.t().share.inviteFailed);
         return;
       }
       this.changed = true;
@@ -146,7 +149,7 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
       await this.load();
       const joined = this.members()?.members.some(m => m.email.toLowerCase() === identifier.toLowerCase()
         || m.name.toLowerCase() === identifier.toLowerCase());
-      this.inviteMessage.set(joined ? 'נוסף/ה ללוח.' : 'נשלחה הזמנה במייל — ההצטרפות תהיה אוטומטית בהרשמה.');
+      this.inviteMessage.set(joined ? this.t().share.added : this.t().share.invitedByEmail);
     } finally {
       this.isInviting.set(false);
     }
@@ -154,12 +157,11 @@ export class CalendarShareDialogComponent extends BaseDialogComponent<CalendarSh
 
   async removeMember(userId: number, name: string): Promise<void> {
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'הסרה מהלוח',
-      text: `להסיר את ${name} מהלוח? האירועים שהוסיף/ה יישארו בלוח.`,
-      confirmActionName: 'הסרה',
+      title: this.t().share.removeFromCalendar,
+      text: fill(this.t().share.removeText, {name}),
+      confirmActionName: this.t().share.removeConfirm,
       danger: true,
-      dir: 'rtl',
-      cancelActionName: 'ביטול',
+      cancelActionName: this.t().cancel,
     });
     if (!confirmed) {
       return;

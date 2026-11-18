@@ -1,14 +1,14 @@
-<div class="dialog-container w-full max-h-[90vh] overflow-y-auto" dir="rtl" lang="he">
+<div class="dialog-container w-full max-h-[90vh] overflow-y-auto">
 
     <div class="flex items-start justify-between mb-5">
-        <h2 class="text-section font-bold text-writing">הלוחות שלי</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="סגירה" (click)="onClose()">
+        <h2 class="text-section font-bold text-writing">{{ t().calendars.title }}</h2>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-heading"/>
         </button>
     </div>
 
     @if (isLoading()) {
-        <app-loading-state label="טוען"/>
+        <app-loading-state [label]="t().loading"/>
     } @else {
         <div class="flex flex-col gap-3">
             @for (row of rows(); track row.calendar.id) {
@@ -22,10 +22,10 @@
                         @if (row.calendar.is_owner) {
                             <button type="button" class="btn btn-primary btn-sm shrink-0" (click)="share(row.calendar)">
                                 <ng-icon [svg]="featherUserPlus"/>
-                                שיתוף
+                                {{ t().calendars.share }}
                             </button>
                         } @else {
-                            <button type="button" class="btn btn-secondary btn-sm shrink-0" (click)="share(row.calendar)">חברים</button>
+                            <button type="button" class="btn btn-secondary btn-sm shrink-0" (click)="share(row.calendar)">{{ t().calendars.members }}</button>
                         }
                     </div>
 
@@ -35,24 +35,24 @@
                                 [attr.aria-pressed]="!row.calendar.hide_from_upcoming"
                                 (click)="toggleShowInUpcoming(row.calendar)">
                             <app-checkbox-mark [checked]="!row.calendar.hide_from_upcoming" size="sm"/>
-                            הצגה באירועים הקרובים
+                            {{ t().calendars.showInUpcoming }}
                         </button>
                         <button type="button" class="rounded-sm text-caption text-writing-minor hover:text-writing transition-colors" (click)="moveInto(row.calendar)">
-                            העברת אירועים לכאן
+                            {{ t().calendars.moveHere }}
                         </button>
                         <span class="flex-1"></span>
                         @if (row.calendar.is_owner) {
-                            <button type="button" class="icon-btn" aria-label="שינוי שם" title="שינוי שם" (click)="rename(row.calendar)">
+                            <button type="button" class="icon-btn" [attr.aria-label]="t().calendars.rename" [title]="t().calendars.rename" (click)="rename(row.calendar)">
                                 <ng-icon [svg]="featherEdit"/>
                             </button>
                             @if (row.canDelete) {
-                                <button type="button" class="icon-btn icon-btn-danger" aria-label="מחיקת הלוח" title="מחיקת הלוח" (click)="deleteCalendar(row.calendar)">
+                                <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().calendars.deleteCalendar" [title]="t().calendars.deleteCalendar" (click)="deleteCalendar(row.calendar)">
                                     <ng-icon [svg]="featherTrash2"/>
                                 </button>
                             }
                         } @else {
-                            <button type="button" class="icon-btn icon-btn-danger" aria-label="יציאה מהלוח" title="יציאה מהלוח" (click)="leave(row.calendar)">
-                                <ng-icon [svg]="featherLogOut"/>
+                            <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().calendars.leave" [title]="t().calendars.leave" (click)="leave(row.calendar)">
+                                <ng-icon [svg]="featherLogOut" class="rtl:-scale-x-100"/>
                             </button>
                         }
                     </div>
@@ -62,7 +62,7 @@
 
         <button type="button" class="btn btn-secondary w-full mt-4" (click)="createCalendar()">
             <ng-icon [svg]="featherPlus"/>
-            לוח חדש
+            {{ t().newCalendar }}
         </button>
     }
 </div>

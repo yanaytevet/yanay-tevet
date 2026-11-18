@@ -10,6 +10,9 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 import {ErrorStateComponent} from '../../common/components/page/error-state/error-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {HUB_APPS} from '../../shared/apps/hub-apps';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
 import {RoutingService} from '../../shared/services/routing.service';
 
 @Component({
@@ -23,6 +26,8 @@ export class JoinCalendarComponent {
   private readonly router = inject(Router);
   private readonly routingService = inject(RoutingService);
   readonly authService = inject(AuthenticationService);
+  private readonly language = inject(LanguageService).language;
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
 
   private readonly token = this.route.snapshot.paramMap.get('token') ?? '';
 
@@ -41,9 +46,11 @@ export class JoinCalendarComponent {
     if (!preview) {
       return '';
     }
-    const members = preview.member_count === 1 ? 'חבר/ה אחד/ת' : `${preview.member_count} חברים`;
-    return `${preview.event_count} אירועים · ${members}`;
+    const language = this.language();
+    const t = this.t();
+    return `${plural(language, preview.event_count, t.eventsCount)} · ${plural(language, preview.member_count, t.membersCount)}`;
   });
+  readonly invitesYouText = computed(() => fill(this.t().join.invitesYou, {name: this.preview()?.owner_name ?? ''}));
 
   constructor() {
     void this.loadPreview();
@@ -76,7 +83,7 @@ export class JoinCalendarComponent {
       const res = await joinSpecialDateCalendarView({body: {token: this.token}});
       if (res.error) {
         const err = res.error as {detail?: string};
-        this.errorMessage.set(err?.detail || 'ההצטרפות נכשלה, נסו שוב.');
+        this.errorMessage.set(err?.detail || this.t().join.joinFailed);
         return;
       }
       await this.routingService.navigateToSpecialDates(res.data.id);

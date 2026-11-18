@@ -12,6 +12,9 @@ import {
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
 import {SpecialDateCalendarsService} from '../special-date-calendars.service';
@@ -29,20 +32,24 @@ const CALENDAR_NAME_MAX_LENGTH = 100;
 export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean> {
   private readonly dialogService = inject(DialogService);
   private readonly calendarsService = inject(SpecialDateCalendarsService);
+  private readonly language = inject(LanguageService).language;
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
 
   readonly calendars = signal<SpecialDateCalendarSchema[]>([]);
   readonly isLoading = signal<boolean>(true);
 
   readonly rows = computed(() => {
+    const language = this.language();
+    const t = this.t();
     const ownedCount = this.calendars().filter(c => c.is_owner).length;
     return this.calendars().map(c => ({
       calendar: c,
       canDelete: c.is_owner && ownedCount > 1,
       colorClass: calendarColorClass(c.id),
       subtitle: [
-        `${c.event_count} אירועים`,
-        c.member_count > 1 ? `${c.member_count} חברים` : 'רק את/ה',
-        c.is_owner ? '' : `של ${c.owner_name}`,
+        plural(language, c.event_count, t.eventsCount),
+        c.member_count > 1 ? plural(language, c.member_count, t.membersCount) : t.calendars.onlyYou,
+        c.is_owner ? '' : fill(t.calendars.ownedBy, {name: c.owner_name}),
       ].filter(Boolean).join(' · '),
     }));
   });
@@ -79,7 +86,7 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
 
   private async showError(error: unknown, fallback: string): Promise<void> {
     const err = error as {detail?: string};
-    await this.dialogService.showNotificationDialog({title: 'שגיאה', text: err?.detail || fallback});
+    await this.dialogService.showNotificationDialog({title: this.t().error, text: err?.detail || fallback});
   }
 
   async createCalendar(): Promise<void> {
@@ -106,12 +113,12 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
 
   async rename(calendar: SpecialDateCalendarSchema): Promise<void> {
     const name = (await this.dialogService.getTextFromInputDialog({
-      title: 'שינוי שם הלוח',
+      title: this.t().calendars.renameTitle,
       text: '',
-      label: 'שם הלוח',
+      label: this.t().calendarName,
       defaultValue: calendar.name,
-      confirmActionName: 'שמירה',
-      cancelActionName: 'ביטול',
+      confirmActionName: this.t().save,
+      cancelActionName: this.t().cancel,
       maxLength: CALENDAR_NAME_MAX_LENGTH,
     }, 40))?.trim();
     if (!name || name === calendar.name) {
@@ -119,7 +126,7 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
     }
     const res = await renameSpecialDateCalendarView({path: {object_id: calendar.id}, body: {name}});
     if (res.error) {
-      await this.showError(res.error, 'שינוי השם נכשל.');
+      await this.showError(res.error, this.t().calendars.renameFailed);
       return;
     }
     await this.reloadAfterChange();
@@ -136,21 +143,21 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
   }
 
   async deleteCalendar(calendar: SpecialDateCalendarSchema): Promise<void> {
-    const others = calendar.member_count > 1 ? ' הלוח יימחק גם אצל כל החברים בו.' : '';
+    const t = this.t();
+    const forms = calendar.member_count > 1 ? t.calendars.deleteTextShared : t.calendars.deleteText;
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'מחיקת לוח',
-      text: `למחוק את "${calendar.name}" ואת כל ${calendar.event_count} האירועים שבו?${others} אי אפשר לבטל את זה.`,
-      confirmActionName: 'מחיקה',
+      title: t.calendars.deleteCalendar,
+      text: fill(plural(this.language(), calendar.event_count, forms), {name: calendar.name}),
+      confirmActionName: t.delete,
       danger: true,
-      dir: 'rtl',
-      cancelActionName: 'ביטול',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
     }
     const res = await deleteSpecialDateCalendarView({path: {object_id: calendar.id}});
     if (res.error) {
-      await this.showError(res.error, 'המחיקה נכשלה.');
+      await this.showError(res.error, this.t().calendars.deleteFailed);
       return;
     }
     await this.reloadAfterChange();
@@ -158,19 +165,18 @@ export class CalendarsDialogComponent extends BaseDialogComponent<void, boolean>
 
   async leave(calendar: SpecialDateCalendarSchema): Promise<void> {
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'יציאה מהלוח',
-      text: `לצאת מ"${calendar.name}"? האירועים יישארו בלוח אצל שאר החברים. אפשר לחזור בעזרת קישור ההצטרפות.`,
-      confirmActionName: 'יציאה',
+      title: this.t().calendars.leave,
+      text: fill(this.t().calendars.leaveText, {name: calendar.name}),
+      confirmActionName: this.t().calendars.leaveConfirm,
       danger: true,
-      dir: 'rtl',
-      cancelActionName: 'ביטול',
+      cancelActionName: this.t().cancel,
     });
     if (!confirmed) {
       return;
     }
     const res = await leaveSpecialDateCalendarView({path: {object_id: calendar.id}, body: {}});
     if (res.error) {
-      await this.showError(res.error, 'היציאה מהלוח נכשלה.');
+      await this.showError(res.error, this.t().calendars.leaveFailed);
       return;
     }
     await this.reloadAfterChange();

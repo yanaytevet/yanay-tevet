@@ -1,90 +1,142 @@
 import {CalendarType, SpecialDateCategory} from '../../generated-files/api/special-dates';
+import {Language} from '../../generated-files/api/users';
+import {fill, plural} from '../shared/i18n/strings';
+import {HebrewMonthKey, SpecialDatesStrings} from './i18n';
 
 export interface SpecialDateCategoryOption {
   value: SpecialDateCategory;
-  label: string;
   emoji: string;
-  nameLabel: string;
-  namePlaceholder: string;
-  namePrefix: string;
 }
 
 export const SPECIAL_DATE_CATEGORIES: SpecialDateCategoryOption[] = [
-  {
-    value: 'birthday', label: 'יום הולדת', emoji: '🎂',
-    nameLabel: 'של מי יום ההולדת?', namePlaceholder: 'סבתא חלי', namePrefix: 'יום ההולדת של',
-  },
-  {
-    value: 'anniversary', label: 'יום נישואין', emoji: '💍',
-    nameLabel: 'של מי יום הנישואין?', namePlaceholder: 'דני ורותי', namePrefix: 'יום הנישואין של',
-  },
-  {
-    value: 'memorial', label: 'אזכרה', emoji: '🕯️',
-    nameLabel: 'לזכר מי?', namePlaceholder: 'סבא משה', namePrefix: 'האזכרה של',
-  },
-  {
-    value: 'other', label: 'אחר', emoji: '📅',
-    nameLabel: 'שם האירוע', namePlaceholder: 'יום העלייה של המשפחה', namePrefix: '',
-  },
+  {value: 'birthday', emoji: '🎂'},
+  {value: 'anniversary', emoji: '💍'},
+  {value: 'memorial', emoji: '🕯️'},
+  {value: 'other', emoji: '📅'},
 ];
 
 export const SPECIAL_DATE_CATEGORY_BY_VALUE: Record<SpecialDateCategory, SpecialDateCategoryOption> =
   Object.fromEntries(SPECIAL_DATE_CATEGORIES.map(c => [c.value, c])) as Record<SpecialDateCategory, SpecialDateCategoryOption>;
 
-export const CALENDAR_CHIPS: Record<CalendarType, {label: string; cssClass: string}> = {
-  hebrew: {label: 'לפי הלוח העברי', cssClass: 'calendar-chip-hebrew'},
-  gregorian: {label: 'לפי הלוח הלועזי', cssClass: 'chip-info'},
+export const CALENDAR_CHIP_CLASSES: Record<CalendarType, string> = {
+  hebrew: 'calendar-chip-hebrew',
+  gregorian: 'chip-info',
 };
 
-const LONG_DATE_FORMAT = new Intl.DateTimeFormat('he-IL', {weekday: 'long', day: 'numeric', month: 'long'});
-const FULL_DATE_FORMAT = new Intl.DateTimeFormat('he-IL', {day: 'numeric', month: 'long', year: 'numeric'});
-const FULL_DATE_WITH_WEEKDAY_FORMAT = new Intl.DateTimeFormat('he-IL', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+type DateFormatKind = 'long' | 'full' | 'fullWithWeekday';
+
+const DATE_FORMAT_OPTIONS: Record<DateFormatKind, Intl.DateTimeFormatOptions> = {
+  long: {weekday: 'long', day: 'numeric', month: 'long'},
+  full: {day: 'numeric', month: 'long', year: 'numeric'},
+  fullWithWeekday: {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'},
+};
+
+const dateFormats = new Map<string, Intl.DateTimeFormat>();
+
+function dateFormat(language: Language, kind: DateFormatKind): Intl.DateTimeFormat {
+  const key = `${language}|${kind}`;
+  let format = dateFormats.get(key);
+  if (!format) {
+    format = new Intl.DateTimeFormat(language, DATE_FORMAT_OPTIONS[kind]);
+    dateFormats.set(key, format);
+  }
+  return format;
+}
 
 function parseIsoDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(year, month - 1, day);
 }
 
-export function formatLongDate(iso: string): string {
-  return LONG_DATE_FORMAT.format(parseIsoDate(iso));
+export function formatLongDate(iso: string, language: Language): string {
+  return dateFormat(language, 'long').format(parseIsoDate(iso));
 }
 
-export function formatFullDate(iso: string): string {
-  return FULL_DATE_FORMAT.format(parseIsoDate(iso));
+export function formatFullDate(iso: string, language: Language): string {
+  return dateFormat(language, 'full').format(parseIsoDate(iso));
 }
 
-export function formatFullDateWithWeekday(iso: string): string {
-  return FULL_DATE_WITH_WEEKDAY_FORMAT.format(parseIsoDate(iso));
+export function formatFullDateWithWeekday(iso: string, language: Language): string {
+  return dateFormat(language, 'fullWithWeekday').format(parseIsoDate(iso));
 }
 
-export function formatDaysUntil(days: number): string {
+export function formatDaysUntil(days: number, language: Language, t: SpecialDatesStrings): string {
   if (days === 0) {
-    return 'היום';
+    return t.today;
   }
   if (days === 1) {
-    return 'מחר';
+    return t.tomorrow;
   }
   if (days === 2) {
-    return 'מחרתיים';
+    return t.dayAfterTomorrow;
   }
-  return `בעוד ${days} ימים`;
+  return plural(language, days, t.inDays);
 }
 
-export function formatYears(category: SpecialDateCategory, years: number): string {
+export function formatYears(category: SpecialDateCategory, years: number, language: Language, t: SpecialDatesStrings): string {
   if (years <= 0) {
     return '';
   }
-  const yearsText = years === 1 ? 'שנה' : `${years} שנים`;
-  switch (category) {
-    case 'birthday':
-      return `יום הולדת ${years}`;
-    case 'anniversary':
-      return `${yearsText} לנישואין`;
-    case 'memorial':
-      return `${yearsText} לפטירה`;
-    default:
-      return yearsText;
+  return plural(language, years, t.years[category]);
+}
+
+// Hebrew-calendar dates outside Hebrew. The backend's own labels (gematria, Hebrew month names) are shown as
+// they are in Hebrew; in other languages the date is worked out by the browser's Hebrew calendar (Intl) from
+// the Gregorian date, and shown with the month names and order of the strings file. CLDR has no Hebrew month
+// names for Japanese or Chinese, so Intl's localized output can't be used directly.
+
+// The months as ICU's English Hebrew calendar names them.
+const ICU_HEBREW_MONTHS: Record<string, HebrewMonthKey> = {
+  'Tishri': 'tishri',
+  'Heshvan': 'heshvan',
+  'Kislev': 'kislev',
+  'Tevet': 'tevet',
+  'Shevat': 'shevat',
+  'Adar': 'adar',
+  'Adar I': 'adarI',
+  'Adar II': 'adarII',
+  'Nisan': 'nisan',
+  'Iyar': 'iyar',
+  'Sivan': 'sivan',
+  'Tamuz': 'tamuz',
+  'Av': 'av',
+  'Elul': 'elul',
+};
+
+// The backend numbers months from Nisan (1) to Adar II (13); 12 is Adar I in a leap year.
+const BACKEND_HEBREW_MONTHS: Record<number, HebrewMonthKey> = {
+  1: 'nisan', 2: 'iyar', 3: 'sivan', 4: 'tamuz', 5: 'av', 6: 'elul',
+  7: 'tishri', 8: 'heshvan', 9: 'kislev', 10: 'tevet', 11: 'shevat', 12: 'adar', 13: 'adarII',
+};
+
+const HEBREW_CALENDAR_PARTS = new Intl.DateTimeFormat('en-u-ca-hebrew', {
+  day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
+});
+
+export function hebrewMonthName(month: number, isLeapYear: boolean, t: SpecialDatesStrings): string {
+  const key = month === 12 && isLeapYear ? 'adarI' : BACKEND_HEBREW_MONTHS[month];
+  return key ? t.hebrewMonths[key] : String(month);
+}
+
+// `backendLabel` is the backend's Hebrew rendering of the same date, used as is in Hebrew. `afterSunset`
+// means the Hebrew date is that of the next Gregorian day (the Hebrew day starts at sunset).
+export function formatHebrewDate(
+  iso: string, afterSunset: boolean, backendLabel: string, language: Language, t: SpecialDatesStrings,
+): string {
+  if (language === 'he') {
+    return backendLabel;
   }
+  const [year, month, day] = iso.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + (afterSunset ? 1 : 0)));
+  const parts = HEBREW_CALENDAR_PARTS.formatToParts(date);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find(p => p.type === type)?.value ?? '';
+  const icuMonth = part('month');
+  const monthKey = ICU_HEBREW_MONTHS[icuMonth];
+  return fill(t.hebrewDateFormat, {
+    day: part('day'),
+    month: monthKey ? t.hebrewMonths[monthKey] : icuMonth,
+    year: part('year'),
+  });
 }
 
 export function todayIso(): string {

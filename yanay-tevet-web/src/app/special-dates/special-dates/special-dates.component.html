@@ -1,6 +1,6 @@
-<div class="page-narrow" dir="rtl" lang="he">
+<div class="page-narrow">
 
-    <app-page-header title="תאריכים חשובים" [subtitle]="subtitle()">
+    <app-page-header [title]="t().page.title" [subtitle]="subtitle()">
         <button type="button" class="btn btn-secondary" [disabled]="calendars().length === 0"
                 [attr.aria-label]="shareButtonLabel()" (click)="openSharing()">
             <ng-icon [svg]="featherUsers"/>
@@ -8,12 +8,12 @@
         </button>
         <button type="button" class="btn btn-primary" [disabled]="calendars().length === 0" (click)="addSpecialDate()">
             <ng-icon [svg]="featherPlus"/>
-            אירוע חדש
+            {{ t().page.newEvent }}
         </button>
     </app-page-header>
 
     @if (loadError()) {
-        <app-error-state text="לא הצלחנו לטעון את התאריכים. נסו לרענן את הדף."/>
+        <app-error-state [text]="t().page.loadError"/>
     } @else {
         @if (calendars().length > 0) {
             <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -30,40 +30,40 @@
                         class="chip px-3 py-1 bg-transparent border border-dashed border-line hover:border-accent"
                         (click)="createCalendar()">
                     <ng-icon [svg]="featherPlus"/>
-                    לוח חדש
+                    {{ t().newCalendar }}
                 </button>
-                <button type="button" class="icon-btn" aria-label="ניהול לוחות" title="ניהול לוחות" (click)="manageCalendars()">
+                <button type="button" class="icon-btn" [attr.aria-label]="t().page.manageCalendars" [title]="t().page.manageCalendars" (click)="manageCalendars()">
                     <ng-icon [svg]="featherSettings"/>
                 </button>
             </div>
         }
 
         <app-tabs-group (tabChange)="selectTab($event)">
-            <app-tab name="upcoming" label="בשבועיים הקרובים">
+            <app-tab name="upcoming" [label]="t().page.tabUpcoming">
                 @if (hiddenFromUpcomingLabel()) {
                     <div class="flex items-center gap-2 mb-3 text-caption text-writing-minor">
                         <ng-icon [svg]="featherBellOff" class="shrink-0"/>
-                        <span class="min-w-0 truncate">לא מוצג כאן: {{ hiddenFromUpcomingLabel() }}</span>
-                        <button type="button" class="text-accent font-semibold shrink-0 rounded-sm hover:underline" (click)="manageCalendars()">שינוי</button>
+                        <span class="min-w-0 truncate">{{ hiddenFromUpcomingText() }}</span>
+                        <button type="button" class="text-accent font-semibold shrink-0 rounded-sm hover:underline" (click)="manageCalendars()">{{ t().page.change }}</button>
                     </div>
                 }
                 @if (isLoadingUpcoming()) {
-                    <app-loading-state label="טוען את האירועים"/>
+                    <app-loading-state [label]="t().page.loadingEvents"/>
                 } @else if (upcomingRows().length === 0) {
                     @if (totalEventCount() === 0) {
-                        <app-empty-state title="עוד אין אירועים" [text]="emptyIntroText">
+                        <app-empty-state [title]="t().page.noEventsYet" [text]="t().page.emptyIntro">
                             <button type="button" class="btn btn-primary" (click)="addSpecialDate()">
                                 <ng-icon [svg]="featherPlus"/>
-                                הוספת אירוע ראשון
+                                {{ t().page.addFirstEvent }}
                             </button>
                         </app-empty-state>
                     } @else {
-                        <app-empty-state [title]="upcomingEmptyTitle()" [text]="upcomingEmptyText"/>
+                        <app-empty-state [title]="upcomingEmptyTitle()" [text]="t().page.upcomingEmptyText"/>
                     }
                 } @else {
                     @if (todayRows().length > 0) {
                         <div class="mb-6">
-                            <div class="text-meta font-bold text-accent mb-2">🎉 היום</div>
+                            <div class="text-meta font-bold text-accent mb-2">🎉 {{ t().page.todayHeading }}</div>
                             <div class="flex flex-col gap-3">
                                 @for (row of todayRows(); track row.key) {
                                     <div class="today-card rounded-xl p-4 flex items-center gap-4 shadow-1">
@@ -83,7 +83,7 @@
                                                 }
                                             </div>
                                         </div>
-                                        <button type="button" class="icon-btn" aria-label="עריכה" title="עריכה"
+                                        <button type="button" class="icon-btn" [attr.aria-label]="t().edit" [title]="t().edit"
                                                 (click)="editSpecialDate(row.specialDate)">
                                             <ng-icon [svg]="featherEdit"/>
                                         </button>
@@ -94,7 +94,7 @@
                     }
                     @if (laterRows().length > 0) {
                         @if (todayRows().length > 0) {
-                            <div class="text-meta font-bold text-writing-minor mb-2">בהמשך</div>
+                            <div class="text-meta font-bold text-writing-minor mb-2">{{ t().page.later }}</div>
                         }
                         <div class="flex flex-col gap-2">
                             @for (row of laterRows(); track row.key) {
@@ -121,7 +121,7 @@
                                             }
                                         </div>
                                     </div>
-                                    <button type="button" class="icon-btn" aria-label="עריכה" title="עריכה"
+                                    <button type="button" class="icon-btn" [attr.aria-label]="t().edit" [title]="t().edit"
                                             (click)="editSpecialDate(row.specialDate)">
                                         <ng-icon [svg]="featherEdit"/>
                                     </button>
@@ -131,11 +131,11 @@
                     }
                 }
             </app-tab>
-            <app-tab name="all" label="כל האירועים">
+            <app-tab name="all" [label]="t().page.tabAll">
                 <div class="relative mb-3">
                     <ng-icon [svg]="featherSearch" class="text-base text-writing-least absolute top-1/2 -translate-y-1/2 start-3"/>
-                    <input type="search" dir="auto" class="main-input w-full ps-9" placeholder="חיפוש לפי שם או תיאור..."
-                           aria-label="חיפוש אירועים" [value]="searchText()" (input)="onSearchInput($event)" />
+                    <input type="search" dir="auto" class="main-input w-full ps-9" [placeholder]="t().page.searchPlaceholder"
+                           [attr.aria-label]="t().page.searchLabel" [value]="searchText()" (input)="onSearchInput($event)" />
                 </div>
                 @if (hasMultipleCalendars()) {
                     <div class="flex flex-wrap gap-2 mb-2">
@@ -143,7 +143,7 @@
                                 [class.chip-selected]="selectedCalendarId() === null"
                                 [attr.aria-pressed]="selectedCalendarId() === null"
                                 (click)="selectCalendar(null)">
-                            כל הלוחות
+                            {{ t().page.allCalendars }}
                         </button>
                         @for (chip of calendarChips(); track chip.id) {
                             <button type="button"
@@ -159,7 +159,7 @@
                     </div>
                 }
                 <div class="flex flex-wrap gap-2 mb-4">
-                    @for (option of categories; track option.value) {
+                    @for (option of categories(); track option.value) {
                         <button type="button" class="chip px-3 py-1"
                                 [class.chip-selected]="categoryFilterSelected()[option.value]"
                                 [attr.aria-pressed]="categoryFilterSelected()[option.value]"
@@ -170,15 +170,15 @@
                 </div>
 
                 @if (isLoadingAll() && !hasLoadedAll()) {
-                    <app-loading-state label="טוען את האירועים"/>
+                    <app-loading-state [label]="t().page.loadingEvents"/>
                 } @else if (allRows().length === 0) {
                     @if (isFiltering()) {
-                        <app-empty-state title="לא נמצאו אירועים מתאימים" text="נסו חיפוש אחר, או הסירו את הסינון."/>
+                        <app-empty-state [title]="t().page.noMatches" [text]="t().page.noMatchesText"/>
                     } @else {
-                        <app-empty-state title="עוד אין אירועים" [text]="emptyIntroText">
+                        <app-empty-state [title]="t().page.noEventsYet" [text]="t().page.emptyIntro">
                             <button type="button" class="btn btn-primary" (click)="addSpecialDate()">
                                 <ng-icon [svg]="featherPlus"/>
-                                הוספת אירוע ראשון
+                                {{ t().page.addFirstEvent }}
                             </button>
                         </app-empty-state>
                     }
@@ -203,7 +203,7 @@
                                     </div>
                                     @if (row.hasReminders) {
                                         <div class="text-caption text-writing-least mt-0.5">
-                                            הבא — {{ row.nextLabel }}
+                                            {{ row.nextLabel }}
                                             @if (row.addedByLabel) {
                                                 <span> · {{ row.addedByLabel }}</span>
                                             }
@@ -211,16 +211,16 @@
                                     } @else {
                                         <span class="chip chip-warning mt-1">
                                             <ng-icon [svg]="featherBellOff"/>
-                                            ללא תזכורת
+                                            {{ t().page.noReminder }}
                                         </span>
                                     }
                                 </div>
                                 <div class="flex items-center gap-1 shrink-0">
-                                    <button type="button" class="icon-btn" aria-label="עריכה" title="עריכה"
+                                    <button type="button" class="icon-btn" [attr.aria-label]="t().edit" [title]="t().edit"
                                             (click)="editSpecialDate(row.specialDate)">
                                         <ng-icon [svg]="featherEdit"/>
                                     </button>
-                                    <button type="button" class="icon-btn icon-btn-danger" aria-label="מחיקה" title="מחיקה"
+                                    <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().delete" [title]="t().delete"
                                             (click)="deleteSpecialDate(row.specialDate)">
                                         <ng-icon [svg]="featherTrash2"/>
                                     </button>

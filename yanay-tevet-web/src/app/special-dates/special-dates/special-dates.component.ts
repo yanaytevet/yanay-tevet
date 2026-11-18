@@ -19,16 +19,20 @@ import {LoadingStateComponent} from '../../common/components/page/loading-state/
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {TabsGroup} from '../../common/components/tabs/tabs-group/tabs-group';
 import {Tab} from '../../common/components/tabs/tab/tab';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../../shared/i18n/strings';
 import {CalendarShareDialogComponent, CalendarShareDialogData} from '../calendar-share-dialog/calendar-share-dialog.component';
 import {CalendarsDialogComponent} from '../calendars-dialog/calendars-dialog.component';
 import {MoveDatesDialogComponent, MoveDatesDialogData} from '../move-dates-dialog/move-dates-dialog.component';
 import {SpecialDateCalendarsService} from '../special-date-calendars.service';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
 import {SpecialDateDialogComponent, SpecialDateDialogData} from '../special-date-dialog/special-date-dialog.component';
 import {
-  CALENDAR_CHIPS,
+  CALENDAR_CHIP_CLASSES,
   calendarColorClass,
   formatDaysUntil,
   formatFullDate,
+  formatHebrewDate,
   formatLongDate,
   formatYears,
   readLastCalendarId,
@@ -50,6 +54,8 @@ export class SpecialDatesComponent {
   private readonly calendarsService = inject(SpecialDateCalendarsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly language = inject(LanguageService).language;
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
 
   readonly calendars = signal<SpecialDateCalendarSchema[]>([]);
   readonly selectedCalendarId = signal<number | null>(null);
@@ -62,13 +68,14 @@ export class SpecialDatesComponent {
   readonly hasLoadedAll = signal<boolean>(false);
   readonly loadError = signal<boolean>(false);
 
-  readonly categories = SPECIAL_DATE_CATEGORIES;
-  readonly emptyIntroText = 'הוסיפו ימי הולדת, ימי נישואין ואזכרות, ונזכיר לכם בזמן — לפי התאריך העברי והלועזי.';
-  readonly upcomingEmptyText = 'אפשר לראות את כולם בלשונית "כל האירועים".';
+  readonly categories = computed(() => {
+    const t = this.t();
+    return SPECIAL_DATE_CATEGORIES.map(c => ({value: c.value, emoji: c.emoji, label: t.categories[c.value].label}));
+  });
 
   readonly hasMultipleCalendars = computed(() => this.calendars().length > 1);
   readonly totalEventCount = computed(() => this.calendars().reduce((sum, c) => sum + c.event_count, 0));
-  readonly shareButtonLabel = computed(() => this.hasMultipleCalendars() ? 'לוחות ושיתוף' : 'שיתוף');
+  readonly shareButtonLabel = computed(() => this.hasMultipleCalendars() ? this.t().page.calendarsAndSharing : this.t().page.share);
   readonly calendarsById = computed(() => new Map(this.calendars().map(c => [c.id, c])));
   readonly calendarChips = computed(() => {
     const selected = this.selectedCalendarId();
@@ -83,24 +90,29 @@ export class SpecialDatesComponent {
 
   readonly todayGregorian = computed(() => {
     const upcoming = this.upcoming();
-    return upcoming ? formatFullDate(upcoming.today) : '';
+    return upcoming ? formatFullDate(upcoming.today, this.language()) : '';
   });
-  readonly todayHebrew = computed(() => this.upcoming()?.today_hebrew_date ?? '');
+  readonly todayHebrew = computed(() => {
+    const upcoming = this.upcoming();
+    return upcoming ? formatHebrewDate(upcoming.today, false, upcoming.today_hebrew_date, this.language(), this.t()) : '';
+  });
   readonly upcomingDays = computed(() => this.upcoming()?.days ?? 14);
-  readonly upcomingEmptyTitle = computed(() => `אין אירועים ב-${this.upcomingDays()} הימים הקרובים`);
+  readonly upcomingEmptyTitle = computed(() =>
+    plural(this.language(), this.upcomingDays(), this.t().page.upcomingEmptyTitle));
 
   readonly subtitle = computed(() => {
     if (this.upcoming()) {
-      return `היום ${this.todayHebrew()} · ${this.todayGregorian()}`;
+      return fill(this.t().page.todaySubtitle, {hebrew: this.todayHebrew(), gregorian: this.todayGregorian()});
     }
-    return 'ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי.';
+    return this.t().page.defaultSubtitle;
   });
-
 
   readonly hiddenFromUpcomingLabel = computed(() =>
     this.calendars().filter(c => c.hide_from_upcoming).map(c => c.name).join(', '));
 
   readonly upcomingRows = computed(() => {
+    const language = this.language();
+    const t = this.t();
     const calendarsById = this.calendarsById();
     const showCalendar = this.hasMultipleCalendars();
     return (this.upcoming()?.occurrences ?? [])
@@ -111,14 +123,14 @@ export class SpecialDatesComponent {
           key: `${o.special_date.id}-${o.date}`,
           specialDate: o.special_date,
           emoji: category.emoji,
-          categoryLabel: category.label,
+          categoryLabel: t.categories[o.special_date.category].label,
           name: o.special_date.name,
-          daysLabel: formatDaysUntil(o.days_until),
+          daysLabel: formatDaysUntil(o.days_until, language, t),
           isToday: o.days_until === 0,
-          gregorianDate: formatLongDate(o.date),
-          hebrewDate: o.hebrew_date,
-          yearsLabel: formatYears(o.special_date.category, o.years),
-          calendarChips: o.calendars.map(c => CALENDAR_CHIPS[c]),
+          gregorianDate: formatLongDate(o.date, language),
+          hebrewDate: formatHebrewDate(o.date, false, o.hebrew_date, language, t),
+          yearsLabel: formatYears(o.special_date.category, o.years, language, t),
+          calendarChips: o.calendars.map(c => ({label: t.calendarChips[c], cssClass: CALENDAR_CHIP_CLASSES[c]})),
           calendarName: showCalendar ? (calendarsById.get(calendarId)?.name ?? '') : '',
           calendarColor: calendarColorClass(calendarId),
         };
@@ -128,33 +140,37 @@ export class SpecialDatesComponent {
   readonly laterRows = computed(() => this.upcomingRows().filter(r => !r.isToday));
 
   readonly allRows = computed(() => {
+    const language = this.language();
+    const t = this.t();
     const calendarsById = this.calendarsById();
     const showCalendar = this.hasMultipleCalendars();
     return this.allDates().map(d => {
       const category = SPECIAL_DATE_CATEGORY_BY_VALUE[d.category];
       const calendar = calendarsById.get(d.calendar_id ?? -1);
-      const gregorianDate = formatFullDate(d.date);
+      const gregorianDate = formatFullDate(d.date, language);
+      const hebrewDate = formatHebrewDate(d.date, d.after_sunset, d.hebrew_date, language, t);
       const next: string[] = [];
       if (d.next_hebrew_date) {
-        next.push(`עברי: ${formatFullDate(d.next_hebrew_date)}`);
+        next.push(fill(t.page.nextHebrew, {date: formatFullDate(d.next_hebrew_date, language)}));
       }
       if (d.next_gregorian_date) {
-        next.push(`לועזי: ${formatFullDate(d.next_gregorian_date)}`);
+        next.push(fill(t.page.nextGregorian, {date: formatFullDate(d.next_gregorian_date, language)}));
       }
       const isHebrewInput = d.input_calendar === 'hebrew';
       return {
         specialDate: d,
         emoji: category.emoji,
-        categoryLabel: category.label,
+        categoryLabel: t.categories[d.category].label,
         name: d.name,
-        primaryDate: isHebrewInput ? d.hebrew_date : gregorianDate,
-        secondaryDate: isHebrewInput ? gregorianDate : d.hebrew_date,
-        afterSunsetLabel: d.after_sunset ? (isHebrewInput ? 'בין השקיעה לחצות' : 'אחרי השקיעה') : '',
+        primaryDate: isHebrewInput ? hebrewDate : gregorianDate,
+        secondaryDate: isHebrewInput ? gregorianDate : hebrewDate,
+        afterSunsetLabel: d.after_sunset ? (isHebrewInput ? t.page.betweenSunsetAndMidnight : t.page.afterSunset) : '',
         hasReminders: d.remind_hebrew || d.remind_gregorian,
-        nextLabel: next.join(' · '),
+        nextLabel: fill(t.page.nextLine, {dates: next.join(' · ')}),
         calendarName: showCalendar ? (calendar?.name ?? '') : '',
         calendarColor: calendarColorClass(d.calendar_id ?? 0),
-        addedByLabel: calendar && calendar.member_count > 1 && d.created_by_name ? `נוסף ע״י ${d.created_by_name}` : '',
+        addedByLabel: calendar && calendar.member_count > 1 && d.created_by_name
+          ? fill(t.page.addedBy, {name: d.created_by_name}) : '',
       };
     });
   });
@@ -163,6 +179,7 @@ export class SpecialDatesComponent {
     const selected = this.categoryFilter();
     return Object.fromEntries(SPECIAL_DATE_CATEGORIES.map(c => [c.value, c.value === selected]));
   });
+  readonly hiddenFromUpcomingText = computed(() => fill(this.t().page.hiddenHere, {names: this.hiddenFromUpcomingLabel()}));
   readonly isFiltering = computed(() => !!this.searchText().trim() || this.categoryFilter() !== null);
 
   protected readonly featherBellOff = featherBellOff;
@@ -255,21 +272,21 @@ export class SpecialDatesComponent {
 
   async deleteSpecialDate(specialDate: SpecialDateSchema): Promise<void> {
     const calendar = this.calendarsById().get(specialDate.calendar_id ?? -1);
-    const shared = calendar && calendar.member_count > 1 ? ' הוא יימחק גם אצל שאר החברים בלוח.' : '';
+    const t = this.t();
+    const shared = !!calendar && calendar.member_count > 1;
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'מחיקת אירוע',
-      text: `למחוק את "${specialDate.name}"?${shared}`,
-      confirmActionName: 'מחיקה',
+      title: t.page.deleteTitle,
+      text: fill(shared ? t.page.deleteTextShared : t.page.deleteText, {name: specialDate.name}),
+      confirmActionName: t.delete,
       danger: true,
-      dir: 'rtl',
-      cancelActionName: 'ביטול',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
     }
     const res = await deleteSpecialDateView({path: {object_id: specialDate.id}});
     if (res.error) {
-      await this.dialogService.showNotificationDialog({title: 'שגיאה', text: 'המחיקה נכשלה, נסו שוב.'});
+      await this.dialogService.showNotificationDialog({title: t.error, text: t.page.deleteFailed});
       return;
     }
     await this.reload();

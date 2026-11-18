@@ -1,31 +1,31 @@
-<div class="page-narrow" dir="rtl" lang="he">
+<div class="page-narrow">
     @if (isLoading()) {
-        <app-loading-state label="טוען את ההזמנה"/>
+        <app-loading-state [label]="t().join.loadingInvite"/>
     } @else if (isInvalid()) {
         <div class="max-w-md mx-auto sm:pt-6">
-            <app-error-state text="הקישור לא תקף. ייתכן שבעלי הלוח איפסו אותו — בקשו מהם קישור חדש."/>
+            <app-error-state [text]="t().join.invalidLink"/>
         </div>
     } @else if (preview(); as preview) {
         <div class="card max-w-md mx-auto sm:mt-6 p-6 sm:p-8 flex flex-col items-center text-center">
             <div class="app-chip size-12 text-2xl mb-4" aria-hidden="true">
                 <ng-icon [svg]="appIcon"/>
             </div>
-            <p class="text-body text-writing-minor mb-1">{{ preview.owner_name }} מזמין/ה אותך ללוח</p>
+            <p class="text-body text-writing-minor mb-1">{{ invitesYouText() }}</p>
             <p class="text-title font-bold text-writing mb-2" dir="auto">{{ preview.calendar_name }}</p>
             <p class="text-meta text-writing-minor mb-6">{{ summary() }}</p>
-            <p class="text-meta text-writing-minor mb-6">ימי הולדת, ימי נישואין ואזכרות — בלוח העברי ובלוח הלועזי, עם תזכורות לשבועיים הקרובים.</p>
+            <p class="text-meta text-writing-minor mb-6">{{ t().join.description }}</p>
 
             @if (!isAuthKnown()) {
-                <p class="text-body text-writing-minor py-3">טוען…</p>
+                <p class="text-body text-writing-minor py-3">{{ t().join.loading }}</p>
             } @else if (isLoggedIn()) {
                 <button type="button" class="btn btn-primary w-full !py-3 text-ui" [disabled]="isJoining()" (click)="join()">
-                    הצטרפות ללוח
+                    {{ t().join.joinCalendar }}
                 </button>
             } @else {
                 <button type="button" class="btn btn-primary w-full !py-3 text-ui" (click)="loginAndJoin()">
-                    כניסה או הרשמה והצטרפות
+                    {{ t().join.signInAndJoin }}
                 </button>
-                <p class="text-caption text-writing-least mt-3">אחרי הכניסה נחזיר אותך לכאן.</p>
+                <p class="text-caption text-writing-least mt-3">{{ t().join.returnHere }}</p>
             }
             @if (errorMessage()) {
                 <p class="text-meta text-danger mt-3">{{ errorMessage() }}</p>

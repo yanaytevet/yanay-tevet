@@ -1,46 +1,46 @@
-<div class="dialog-container w-full max-h-[90vh] overflow-y-auto" dir="rtl" lang="he">
+<div class="dialog-container w-full max-h-[90vh] overflow-y-auto">
 
     <div class="flex items-start justify-between mb-5">
         <div class="min-w-0">
-            <h2 class="text-section font-bold text-writing">שיתוף הלוח</h2>
+            <h2 class="text-section font-bold text-writing">{{ t().share.title }}</h2>
             @if (calendar()) {
-                <p class="text-meta text-writing-minor truncate">{{ calendar()!.name }}</p>
+                <p class="text-meta text-writing-minor truncate" dir="auto">{{ calendar()!.name }}</p>
             }
         </div>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="סגירה" (click)="onClose()">
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-heading"/>
         </button>
     </div>
 
     @if (!calendar()) {
-        <app-loading-state label="טוען"/>
+        <app-loading-state [label]="t().loading"/>
     } @else {
         @if (isOwner()) {
             <div class="mb-6">
-                <span class="input-label">קישור הצטרפות</span>
-                <p class="text-caption text-writing-minor mt-1 mb-2">כל מי שיקבל את הקישור יוכל לראות ולערוך את האירועים בלוח.</p>
+                <span class="input-label">{{ t().share.joinLink }}</span>
+                <p class="text-caption text-writing-minor mt-1 mb-2">{{ t().share.joinLinkHint }}</p>
                 <div class="rounded-lg border border-line bg-layer-1 px-3 py-2 text-caption text-writing-minor truncate mb-2" dir="ltr">{{ joinUrl() }}</div>
                 <div class="grid grid-cols-2 gap-2">
                     <button type="button" class="btn btn-primary" (click)="copyLink()">
                         <ng-icon [svg]="copied() ? featherCheck : featherCopy"/>
-                        {{ copied() ? 'הועתק!' : 'העתקת קישור' }}
+                        {{ copied() ? t().share.copied : t().share.copyLink }}
                     </button>
                     <a class="btn btn-secondary no-underline" [href]="whatsappUrl()" target="_blank" rel="noopener">
-                        💬 שליחה בוואטסאפ
+                        💬 {{ t().share.sendWhatsapp }}
                     </a>
                 </div>
                 <button type="button" class="mt-2 inline-flex items-center gap-1 rounded-sm text-caption text-writing-minor hover:text-writing transition-colors" (click)="resetLink()">
                     <ng-icon [svg]="featherRefreshCw"/>
-                    איפוס הקישור
+                    {{ t().share.resetLink }}
                 </button>
             </div>
 
             <div class="mb-6">
-                <span class="input-label">הזמנה לפי מייל או שם משתמש</span>
+                <span class="input-label">{{ t().share.inviteLabel }}</span>
                 <div class="flex gap-2 mt-1.5">
                     <input type="text" dir="auto" class="main-input flex-1 min-w-0" placeholder="name@example.com"
                            [formControl]="identifierCtrl" (keyup.enter)="invite()" />
-                    <button type="button" class="btn btn-secondary shrink-0" [disabled]="!canInvite()" (click)="invite()">הזמנה</button>
+                    <button type="button" class="btn btn-secondary shrink-0" [disabled]="!canInvite()" (click)="invite()">{{ t().share.invite }}</button>
                 </div>
                 @if (inviteError()) {
                     <p class="text-caption text-danger mt-1.5">{{ inviteError() }}</p>
@@ -49,26 +49,26 @@
                 }
             </div>
         } @else {
-            <p class="text-meta text-writing-minor mb-5">רק הבעלים של הלוח ({{ calendar()!.owner_name }}) יכול/ה להזמין אנשים נוספים.</p>
+            <p class="text-meta text-writing-minor mb-5">{{ onlyOwnerText() }}</p>
         }
 
-        <span class="input-label">חברים בלוח</span>
+        <span class="input-label">{{ t().share.members }}</span>
         <div class="flex flex-col mt-1.5 divide-y divide-line-subtle">
             @for (member of members()?.members ?? []; track member.user_id) {
                 <div class="flex items-center gap-2 py-2">
                     <div class="flex-1 min-w-0">
                         <div class="text-body text-writing truncate" dir="auto">
-                            {{ member.name }}
+                            <bdi>{{ member.name }}</bdi>
                             @if (member.is_me) {
-                                <span class="text-writing-least">(את/ה)</span>
+                                <span class="text-writing-least">{{ t().share.you }}</span>
                             }
                         </div>
                         <div class="text-caption text-writing-least truncate" dir="ltr">{{ member.email }}</div>
                     </div>
                     @if (member.role === 'owner') {
-                        <span class="chip">בעלים</span>
+                        <span class="chip">{{ t().share.owner }}</span>
                     } @else if (isOwner()) {
-                        <button type="button" class="icon-btn icon-btn-danger" aria-label="הסרה מהלוח" title="הסרה מהלוח"
+                        <button type="button" class="icon-btn icon-btn-danger" [attr.aria-label]="t().share.removeFromCalendar" [title]="t().share.removeFromCalendar"
                                 (click)="removeMember(member.user_id, member.name)">
                             <ng-icon [svg]="featherUserMinus"/>
                         </button>
@@ -78,7 +78,7 @@
             @for (invitation of members()?.pending_invitations ?? []; track invitation.id) {
                 <div class="flex items-center gap-2 py-2">
                     <div class="flex-1 min-w-0 text-meta text-writing-minor truncate" dir="ltr">{{ invitation.email }}</div>
-                    <span class="chip">ממתין/ה להרשמה</span>
+                    <span class="chip">{{ t().share.awaitingSignup }}</span>
                 </div>
             }
         </div>

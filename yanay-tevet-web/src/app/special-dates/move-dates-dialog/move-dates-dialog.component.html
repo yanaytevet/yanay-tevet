@@ -1,33 +1,32 @@
-<div class="dialog-container w-full max-h-[90vh] flex flex-col" dir="rtl" lang="he">
+<div class="dialog-container w-full max-h-[90vh] flex flex-col">
 
     <div class="flex items-start justify-between mb-3">
-        <h2 class="text-section font-bold text-writing">{{ title }}</h2>
-        <button type="button" class="icon-btn -me-1.5 -mt-1" aria-label="סגירה" (click)="onClose()">
+        <h2 class="text-section font-bold text-writing">{{ title() }}</h2>
+        <button type="button" class="icon-btn -me-1.5 -mt-1" [attr.aria-label]="t().close" (click)="onClose()">
             <ng-icon [svg]="featherX" class="text-heading"/>
         </button>
     </div>
 
     @if (isLoading()) {
-        <app-loading-state label="טוען"/>
+        <app-loading-state [label]="t().loading"/>
     } @else if (rows().length === 0) {
         <p class="text-body text-writing-minor mb-4">
             @if (data.isAfterJoin) {
-                האירועים של "{{ target()?.name }}" מופיעים עכשיו אצלך.
+                {{ afterJoinEmptyText() }}
             } @else {
-                אין אירועים בלוחות שלך שאפשר להעביר ללוח הזה.
+                {{ t().move.nothingToMove }}
             }
         </p>
         <div class="flex justify-end">
-            <button type="button" class="btn btn-primary" (click)="onClose()">מעולה</button>
+            <button type="button" class="btn btn-primary" (click)="onClose()">{{ t().move.great }}</button>
         </div>
     } @else {
         <p class="text-body text-writing-minor mb-3">
-            רוצה להעביר אירועים מהלוחות שלך אל "{{ target()?.name }}"? כך כל החברים בלוח יראו אותם.
-            אירועים שנראה שכבר קיימים בלוח לא מסומנים.
+            {{ introText() }}
         </p>
 
         <button type="button" class="self-start rounded-sm text-meta font-semibold text-accent hover:underline mb-2" (click)="toggleAll()">
-            {{ allSelected() ? 'ביטול הסימון' : 'סימון הכל' }}
+            {{ allSelected() ? t().move.deselectAll : t().move.selectAll }}
         </button>
 
         <div class="flex-1 min-h-0 overflow-y-auto rounded-lg border border-line divide-y divide-line-subtle">
@@ -40,10 +39,10 @@
                     <span class="text-section shrink-0">{{ row.emoji }}</span>
                     <span class="flex-1 min-w-0">
                         <span class="block text-body text-writing truncate" dir="auto">{{ row.specialDate.name }}</span>
-                        <span class="block text-caption text-writing-least truncate">{{ row.specialDate.hebrew_date }}</span>
+                        <span class="block text-caption text-writing-least truncate">{{ row.hebrewDate }}</span>
                     </span>
                     @if (row.isDuplicate) {
-                        <span class="chip chip-warning shrink-0">כבר קיים בלוח</span>
+                        <span class="chip chip-warning shrink-0">{{ t().move.alreadyThere }}</span>
                     } @else {
                         <span class="chip calendar-chip {{ row.calendarColor }} block truncate shrink-0 max-w-[40%]" dir="auto">{{ row.calendarName }}</span>
                     }
@@ -56,9 +55,9 @@
         }
 
         <div class="flex items-center justify-end gap-2 mt-4">
-            <button type="button" class="btn btn-secondary" (click)="onClose()">לא עכשיו</button>
+            <button type="button" class="btn btn-secondary" (click)="onClose()">{{ t().move.notNow }}</button>
             <button type="button" class="btn btn-primary" [disabled]="selectedCount() === 0 || isMoving()" (click)="onMove()">
-                העברת {{ selectedCount() }} אירועים
+                {{ moveButtonLabel() }}
             </button>
         </div>
     }

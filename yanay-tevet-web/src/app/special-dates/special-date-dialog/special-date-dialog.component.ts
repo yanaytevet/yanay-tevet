@@ -16,9 +16,14 @@ import {
   updateSpecialDateView,
 } from '../../../generated-files/api/special-dates';
 import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {SPECIAL_DATES_STRINGS} from '../i18n';
 import {
   calendarColorClass,
   formatFullDateWithWeekday,
+  formatHebrewDate,
+  hebrewMonthName,
   SPECIAL_DATE_CATEGORIES,
   storeLastCalendarId,
   SPECIAL_DATE_CATEGORY_BY_VALUE,
@@ -43,10 +48,12 @@ const ADAR_II = 13;
 })
 export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateDialogData, SpecialDateSchema> {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly language = inject(LanguageService).language;
+  protected readonly t = injectStrings(SPECIAL_DATES_STRINGS);
 
   readonly isEdit = !!this.data.specialDate;
-  readonly title = this.isEdit ? 'עריכת אירוע' : 'אירוע חדש';
-  readonly confirmActionName = this.isEdit ? 'שמירה' : 'הוספה';
+  readonly title = computed(() => this.isEdit ? this.t().dialog.titleEdit : this.t().dialog.titleNew);
+  readonly confirmActionName = computed(() => this.isEdit ? this.t().save : this.t().dialog.add);
 
   readonly nameCtrl = new FormControl<string>(this.data.specialDate?.name ?? '', {nonNullable: true});
   readonly gregorianDateCtrl = new FormControl<string>(this.data.specialDate?.date ?? '', {nonNullable: true});
@@ -78,9 +85,12 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
   readonly isSaving = signal<boolean>(false);
   readonly errorMessage = signal<string>('');
 
-  readonly categories = SPECIAL_DATE_CATEGORIES;
+  readonly categories = computed(() => {
+    const t = this.t();
+    return SPECIAL_DATE_CATEGORIES.map(c => ({value: c.value, emoji: c.emoji, label: t.categories[c.value].label}));
+  });
 
-  readonly categoryOption = computed(() => SPECIAL_DATE_CATEGORY_BY_VALUE[this.category()]);
+  readonly categoryStrings = computed(() => this.t().categories[this.category()]);
   readonly categorySelected = computed(() => {
     const selected = this.category();
     return Object.fromEntries(SPECIAL_DATE_CATEGORIES.map(c => [c.value, c.value === selected]));
@@ -96,22 +106,44 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
     if (!name) {
       return '';
     }
-    const option = this.categoryOption();
-    return option.namePrefix ? `${option.emoji} ${option.namePrefix} ${name}` : `${option.emoji} ${name}`;
+    const emoji = SPECIAL_DATE_CATEGORY_BY_VALUE[this.category()].emoji;
+    return `${emoji} ${fill(this.categoryStrings().nameTemplate, {name})}`;
   });
+  // The picker's labels: the backend's Hebrew ones (gematria, Hebrew month names) in Hebrew, otherwise plain
+  // numbers and the month names of the strings file.
   readonly hebrewDayOptions = computed(() => {
     const year = this.hebrewYear();
     if (!year) {
       return [];
     }
+    const isHebrew = this.language() === 'he';
     const month = year.months.find(m => m.value === this.hebrewMonthValue());
-    return year.days.slice(0, month?.days ?? 30);
+    return year.days.slice(0, month?.days ?? 30)
+      .map(d => ({value: d.value, label: isHebrew ? d.label : String(d.value)}));
+  });
+  readonly hebrewMonthOptions = computed(() => {
+    const year = this.hebrewYear();
+    if (!year) {
+      return [];
+    }
+    const t = this.t();
+    const isHebrew = this.language() === 'he';
+    return year.months.map(m => ({value: m.value, label: isHebrew ? m.label : hebrewMonthName(m.value, year.is_leap, t)}));
+  });
+  readonly hebrewYearOptions = computed(() => {
+    const isHebrew = this.language() === 'he';
+    return (this.hebrewYear()?.years ?? []).map(y => ({value: y.value, label: isHebrew ? y.label : String(y.value)}));
   });
   readonly convertedGregorianLabel = computed(() => {
     const converted = this.converted();
-    return converted ? formatFullDateWithWeekday(converted.date) : '';
+    return converted ? formatFullDateWithWeekday(converted.date, this.language()) : '';
   });
-  readonly convertedHebrewLabel = computed(() => this.converted()?.hebrew_date ?? '');
+  readonly convertedHebrewLabel = computed(() => {
+    const converted = this.converted();
+    return converted
+      ? formatHebrewDate(converted.date, converted.after_sunset, converted.hebrew_date, this.language(), this.t())
+      : '';
+  });
   readonly canSave = computed(() => !!this.nameValue().trim() && !!this.converted() && !this.isSaving());
 
   private conversionRequestId = 0;
@@ -253,7 +285,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
     if (res.error) {
       const err = res.error as {detail?: string};
       this.converted.set(null);
-      this.conversionError.set(err?.detail || 'התאריך לא תקין.');
+      this.conversionError.set(err?.detail || this.t().dialog.invalidDate);
       return;
     }
     this.converted.set(res.data);
@@ -283,7 +315,7 @@ export class SpecialDateDialogComponent extends BaseDialogComponent<SpecialDateD
         : await createSpecialDateView({body});
       if (res.error) {
         const err = res.error as {detail?: string};
-        this.errorMessage.set(err?.detail || 'השמירה נכשלה, נסו שוב.');
+        this.errorMessage.set(err?.detail || this.t().dialog.saveFailed);
         return;
       }
       storeLastCalendarId(this.calendarId());
