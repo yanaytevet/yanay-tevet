@@ -22,6 +22,7 @@ from `import type … from 'mupdf'`.
 | `engine/bidi.ts` | Display order ↔ reading order for Hebrew/mixed lines (`bidi-js` for UAX #9) |
 | `engine/font-files.ts`, `engine/font-names.ts` | Installed fonts: the face in a collection, the embedding licence, matching PDF names |
 | `engine/decorations.ts` | Underlines and strike-throughs found under a line, carried along when it is edited or moved |
+| `engine/to-unicode-repair.ts` | Rebuilds a CID font's wrong `/ToUnicode` from the font's own cmap on open |
 | `engine/web-font.ts` | The PDF's embedded font as a browser font for the edit boxes (fresh Unicode cmap, OS/2 if missing) |
 | `engine/pdf-engine-client.ts` | The page's side: typed `call(method, …args)` over `postMessage` |
 | `pdf-editor.store.ts` | Component-level state shared by the editor's pieces; every edit goes through it |
@@ -134,6 +135,15 @@ saves the edit).
 - **A saved edit's box stays until the page re-renders** (`editSavedAt`, read-only and borderless), or the old
   line shows for the moment the worker takes, then jumps to the new one. Deleting a line works the same way.
 - **A redaction rewrites the page's content**; image and vector removal is on only for the Erase tool.
+- **MuPDF's redaction deletes overlapping annotations** (a FreeText that Preview's form filler put over a
+  line vanished when the line was edited). `keepingAnnotations` moves their `/Rect` off the page while a line
+  edit's or decoration's redaction runs; only the Erase tool still takes the annotations under it.
+- **A `/ToUnicode` can lie.** macOS re-saving a Word PDF wrote one for David that called the "2" glyph "1" and
+  the space "ב", and left out most glyphs: the page read as garbage, typing "1" drew a "2", and digits it
+  didn't list came from a fallback font. `to-unicode-repair.ts` checks each Identity CID TrueType font's
+  `/ToUnicode` against the program's own Unicode cmap when the file opens (code = glyph), and rebuilds it
+  from the cmap when it is empty or at least a fifth of its entries disagree (mirrored brackets don't count).
+  This happens before the journal starts, so it isn't an undo step, and the saved file keeps the fixed map.
 
 Zoom: the toolbar buttons, Ctrl/⌘ + scroll or a trackpad pinch (browsers send it as a Ctrl wheel), zooming
 around the pointer, and Ctrl/⌘ +, − and 0 (fit width).

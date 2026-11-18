@@ -82,30 +82,38 @@ function writeFont(version: number, tables: Table[]): Uint8Array {
   return out;
 }
 
-// Code → glyph from the font's own cmap: the (3,0) symbol or (1,0) Mac table that simple fonts carry.
-function codeToGlyph(cmap: Uint8Array): Map<number, number> {
+interface CmapRecord {
+  platform: number;
+  encoding: number;
+  offset: number;
+}
+
+function cmapRecords(cmap: Uint8Array): CmapRecord[] {
   const view = new DataView(cmap.buffer, cmap.byteOffset, cmap.byteLength);
-  const result = new Map<number, number>();
-  const count = view.getUint16(2);
-  const records: {platform: number; encoding: number; offset: number}[] = [];
-  for (let i = 0; i < count; i++) {
+  const records: CmapRecord[] = [];
+  const count = cmap.length >= 4 ? view.getUint16(2) : 0;
+  for (let i = 0; i < count && 12 + i * 8 <= cmap.length; i++) {
     records.push({platform: view.getUint16(4 + i * 8), encoding: view.getUint16(6 + i * 8), offset: view.getUint32(8 + i * 8)});
   }
-  const pick = records.find(r => r.platform === 3 && r.encoding === 0) ?? records.find(r => r.platform === 1 && r.encoding === 0)
-    ?? records.find(r => r.platform === 3 && r.encoding === 1);
-  if (!pick) {
+  return records;
+}
+
+// One cmap subtable, formats 0, 4, 6 and 12: character code → glyph.
+function readSubtable(cmap: Uint8Array, at: number): Map<number, number> {
+  const view = new DataView(cmap.buffer, cmap.byteOffset, cmap.byteLength);
+  const result = new Map<number, number>();
+  if (at + 2 > cmap.length) {
     return result;
   }
-  const at = pick.offset;
   const format = view.getUint16(at);
   if (format === 0) {
-    for (let code = 0; code < 256; code++) {
+    for (let code = 0; code < 256 && at + 6 + code < cmap.length; code++) {
       result.set(code, cmap[at + 6 + code]);
     }
   } else if (format === 6) {
     const first = view.getUint16(at + 6);
     const n = view.getUint16(at + 8);
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < n && at + 12 + i * 2 <= cmap.length; i++) {
       result.set(first + i, view.getUint16(at + 10 + i * 2));
     }
   } else if (format === 4) {
@@ -114,6 +122,9 @@ function codeToGlyph(cmap: Uint8Array): Map<number, number> {
     const starts = ends + segments * 2 + 2;
     const deltas = starts + segments * 2;
     const rangeOffsets = deltas + segments * 2;
+    if (rangeOffsets + segments * 2 > cmap.length) {
+      return result;
+    }
     for (let s = 0; s < segments; s++) {
       const end = view.getUint16(ends + s * 2);
       const start = view.getUint16(starts + s * 2);
@@ -133,12 +144,56 @@ function codeToGlyph(cmap: Uint8Array): Map<number, number> {
         }
       }
     }
+  } else if (format === 12) {
+    const groups = at + 16 <= cmap.length ? view.getUint32(at + 12) : 0;
+    // Capped at a full font's worth of characters: a bloated table can't blow the worker's memory.
+    for (let g = 0; g < groups && at + 28 + g * 12 <= cmap.length && result.size < 0x30000; g++) {
+      const start = view.getUint32(at + 16 + g * 12);
+      const end = Math.min(view.getUint32(at + 20 + g * 12), start + 0xffff);
+      const glyph = view.getUint32(at + 24 + g * 12);
+      for (let code = start; code <= end; code++) {
+        result.set(code, glyph + code - start);
+      }
+    }
   }
+  return result;
+}
+
+// Code → glyph from the font's own cmap: the (3,0) symbol or (1,0) Mac table that simple fonts carry.
+function codeToGlyph(cmap: Uint8Array): Map<number, number> {
+  const records = cmapRecords(cmap);
+  const pick = records.find(r => r.platform === 3 && r.encoding === 0) ?? records.find(r => r.platform === 1 && r.encoding === 0)
+    ?? records.find(r => r.platform === 3 && r.encoding === 1);
+  if (!pick) {
+    return new Map();
+  }
+  const result = readSubtable(cmap, pick.offset);
   // Symbol fonts often put their codes at 0xF000 + code.
   if (result.size > 0 && [...result.keys()].every(c => c >= 0xf000)) {
     return new Map([...result].map(([code, glyph]) => [code - 0xf000, glyph]));
   }
   return result;
+}
+
+// Unicode → glyph from a TrueType/OpenType program's own Unicode cmap (Windows or Unicode platform), or null
+// when it has none.
+export function unicodeCmapOf(program: Uint8Array): Map<number, number> | null {
+  if (program.length < 12) {
+    return null;
+  }
+  const cmap = readTables(program)?.find(t => t.tag === 'cmap');
+  if (!cmap) {
+    return null;
+  }
+  const records = cmapRecords(cmap.data);
+  // (0,5) is a variation-sequence table (format 14), not a character map.
+  const pick = records.find(r => r.platform === 3 && r.encoding === 10) ?? records.find(r => r.platform === 0 && (r.encoding === 4 || r.encoding === 6))
+    ?? records.find(r => r.platform === 3 && r.encoding === 1) ?? records.find(r => r.platform === 0 && r.encoding !== 5);
+  if (!pick) {
+    return null;
+  }
+  const result = readSubtable(cmap.data, pick.offset);
+  return result.size > 0 ? result : null;
 }
 
 // Browsers refuse a TrueType font without an OS/2 table, and macOS leaves it out of the subsets it embeds.

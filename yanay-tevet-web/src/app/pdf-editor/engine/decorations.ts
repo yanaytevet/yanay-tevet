@@ -1,7 +1,7 @@
 import type {Path, PDFDocument, PDFPage, StrokeState} from 'mupdf';
 import {mupdf} from './mupdf-runtime';
 import {Rect} from './pdf-engine.types';
-import {appendContent, colorOperator} from './text-writer';
+import {appendContent, colorOperator, keepingAnnotations} from './text-writer';
 
 // Underlines and strike-throughs. Word and most producers draw them as thin filled rectangles of their own,
 // not as part of the text, so a line that is edited or moved has to take them along: stretched to the new
@@ -100,7 +100,7 @@ export function removeDecorations(page: PDFPage, decorations: Decoration[]): voi
     const annotation = page.createAnnotation('Redact');
     annotation.setRect([d.rect[0] - 0.25, d.rect[1] - 0.25, d.rect[2] + 0.25, d.rect[3] + 0.25]);
   }
-  page.applyRedactions(false, m.REDACT_IMAGE_NONE, m.REDACT_LINE_ART_REMOVE_IF_COVERED, m.REDACT_TEXT_NONE);
+  keepingAnnotations(page, decorations.map(dec => dec.rect), () => page.applyRedactions(false, m.REDACT_IMAGE_NONE, m.REDACT_LINE_ART_REMOVE_IF_COVERED, m.REDACT_TEXT_NONE));
 }
 
 // Draws a line's bars again for its text's new place: the ends keep their distance from the text's ends, so

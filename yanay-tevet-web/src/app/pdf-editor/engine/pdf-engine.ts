@@ -23,6 +23,7 @@ import {
 } from './pdf-engine.types';
 import {Decoration, decorationsOf, pageBars, redrawDecorations, removeDecorations} from './decorations';
 import {dominantStyle, EditableLine, extractLines, fontChoiceOf, lineInfo, LineChar, textExtent, toRgb} from './text-lines';
+import {repairToUnicodeMaps} from './to-unicode-repair';
 import {CharToWrite, FontRegistry, redact, writeText} from './text-writer';
 import {webFontFromPdfFont} from './web-font';
 
@@ -242,6 +243,7 @@ export class PdfEngine implements PdfEngineApi {
     if (doc.needsPassword()) {
       return {needsPassword: true};
     }
+    repairToUnicodeMaps(doc);
     doc.enableJournal();
     return {needsPassword: false};
   }
@@ -249,6 +251,7 @@ export class PdfEngine implements PdfEngineApi {
   async authenticate(password: string): Promise<boolean> {
     const ok = this.document.authenticatePassword(password) !== 0;
     if (ok) {
+      repairToUnicodeMaps(this.document);
       this.document.enableJournal();
     }
     return ok;
@@ -662,6 +665,7 @@ export class PdfEngine implements PdfEngineApi {
     if (source.needsPassword()) {
       throw new Error('That PDF is password-protected');
     }
+    repairToUnicodeMaps(source);
     this.operation('Insert PDF', true, () => {
       const graft = this.document.newGraftMap();
       for (let i = 0; i < source.countPages(); i++) {

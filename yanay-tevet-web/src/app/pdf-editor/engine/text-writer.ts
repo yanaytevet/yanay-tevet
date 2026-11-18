@@ -256,16 +256,54 @@ export function appendContent(doc: PDFDocument, page: PDFPage, content: string):
   pageObject.put('Contents', array);
 }
 
+// MuPDF's redaction also deletes every annotation that overlaps it: a note or a form-filler's FreeText lying
+// over a line would vanish when the line is edited. Their /Rect is moved off the page while the redaction runs
+// (the raw object, so no appearance is rebuilt) and put back after. Only the ones overlapping `areas`.
+export function keepingAnnotations(page: PDFPage, areas: Rect[], apply: () => void): void {
+  const moved: {object: PDFObject; rect: PDFObject}[] = [];
+  const annots = page.getObject().get('Annots');
+  if (annots.isArray()) {
+    annots.forEach(ref => {
+      const object = ref.resolve();
+      const subtype = object.get('Subtype');
+      const rect = object.get('Rect');
+      if (!object.isDictionary() || !rect.isArray() || (subtype.isName() && subtype.asName() === 'Redact')) {
+        return;
+      }
+      const [x0, y0, x1, y1] = [0, 1, 2, 3].map(i => rect.get(i).asNumber());
+      const box = mupdf().Rect.transform([Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1)], page.getTransform());
+      const overlaps = areas.some(a => a[0] < box[2] && box[0] < a[2] && a[1] < box[3] && box[1] < a[3]);
+      if (overlaps) {
+        moved.push({object, rect});
+        object.put('Rect', [-100000, -100000, -99999, -99999]);
+      }
+    });
+  }
+  try {
+    apply();
+  } finally {
+    for (const {object, rect} of moved) {
+      object.put('Rect', rect);
+    }
+  }
+}
+
+// `images`: the Erase tool, which also takes images and drawings, and the annotations under it.
 export function redact(page: PDFPage, rect: Rect, images: boolean): void {
   const annotation = page.createAnnotation('Redact');
   annotation.setRect(rect);
   const m = mupdf().PDFPage;
-  page.applyRedactions(
+  const apply = (): void => page.applyRedactions(
     false,
     images ? m.REDACT_IMAGE_REMOVE : m.REDACT_IMAGE_NONE,
     images ? m.REDACT_LINE_ART_REMOVE_IF_COVERED : m.REDACT_LINE_ART_NONE,
     m.REDACT_TEXT_REMOVE,
   );
+  if (images) {
+    apply();
+  } else {
+    keepingAnnotations(page, [rect], apply);
+  }
 }
 
 interface PlacedGlyph {
