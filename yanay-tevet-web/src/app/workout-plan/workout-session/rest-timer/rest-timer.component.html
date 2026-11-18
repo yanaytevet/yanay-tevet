@@ -1,5 +1,5 @@
 @if (timer.isRunning() || timer.justFinished()) {
-    <div class="fixed bottom-4 inset-x-4 z-30 flex justify-center pointer-events-none" [attr.dir]="i18n.dir()">
+    <div class="fixed bottom-4 inset-x-4 z-30 flex justify-center pointer-events-none">
         <div class="card shadow-3 w-full max-w-md pointer-events-auto overflow-hidden" role="timer" aria-live="polite">
             @if (timer.isRunning()) {
                 <div class="h-1 bg-layer-4">

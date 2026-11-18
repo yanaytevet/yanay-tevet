@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon} from '@ng-icons/core';
-import {featherArrowLeft, featherArrowRight} from '@ng-icons/feather-icons';
+import {featherArrowLeft, featherGlobe} from '@ng-icons/feather-icons';
 import {
   ExerciseHistorySummarySchema,
   ExerciseProgressSchema,
@@ -12,6 +12,7 @@ import {
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {plural} from '../../shared/i18n/strings';
 import {RoutingService} from '../../shared/services/routing.service';
 import {ExerciseNamePipe} from '../shared/exercise-name.pipe';
 import {formatDuration, formatNumber} from '../shared/workout-format';
@@ -46,7 +47,8 @@ export class ProgressComponent {
   readonly isLoading = signal<boolean>(true);
 
   readonly plansUrl = this.routingService.getWorkoutPlanUrl();
-  readonly backIcon = computed(() => this.i18n.dir() === 'rtl' ? featherArrowRight : featherArrowLeft);
+  readonly workoutCount = computed(() =>
+    plural(this.i18n.language(), this.progress()?.points.length ?? 0, this.i18n.t().workoutCount));
   readonly exerciseUrls = computed(() => Object.fromEntries(
     this.summary().map(item => [item.exercise.id, this.routingService.getWorkoutProgressUrl(item.exercise.id)]),
   ));
@@ -82,8 +84,8 @@ export class ProgressComponent {
           : [{label: t.topWeight, pick: p => p.top_weight_kg, dashed: false}],
       },
       volume: {label: t.volume, lowerIsBetter: false, isTime: false, unit: t.weightKg, series: [{label: t.volume, pick: p => p.volume_kg, dashed: false}]},
-      maxReps: {label: t.maxReps, lowerIsBetter: false, isTime: false, unit: t.reps, series: [{label: t.maxReps, pick: p => p.max_reps, dashed: false}]},
-      totalReps: {label: t.totalReps, lowerIsBetter: false, isTime: false, unit: t.reps, series: [{label: t.totalReps, pick: p => p.total_reps, dashed: false}]},
+      maxReps: {label: t.maxReps, lowerIsBetter: false, isTime: false, unit: t.repsUnit, series: [{label: t.maxReps, pick: p => p.max_reps, dashed: false}]},
+      totalReps: {label: t.totalReps, lowerIsBetter: false, isTime: false, unit: t.repsUnit, series: [{label: t.totalReps, pick: p => p.total_reps, dashed: false}]},
       maxSeconds: {label: t.longestHold, lowerIsBetter: false, isTime: true, unit: '', series: [{label: t.longestHold, pick: p => p.max_seconds, dashed: false}]},
       totalSeconds: {label: t.time, lowerIsBetter: false, isTime: true, unit: '', series: [{label: t.time, pick: p => p.total_seconds, dashed: false}]},
       distance: {label: t.distance, lowerIsBetter: false, isTime: false, unit: t.distanceKm, series: [{label: t.distance, pick: p => p.distance_km, dashed: false}]},
@@ -163,6 +165,9 @@ export class ProgressComponent {
         .filter(text => text !== null).join(' · '),
     }));
   });
+
+  protected readonly featherArrowLeft = featherArrowLeft;
+  protected readonly featherGlobe = featherGlobe;
 
   constructor() {
     this.route.queryParamMap.subscribe(params => {

@@ -1,5 +1,7 @@
+import {Language} from '../../../generated-files/api/users';
 import {PlanExerciseSchema} from '../../../generated-files/api/workout-plan';
-import {WorkoutStrings} from './workout-strings';
+import {plural} from '../../shared/i18n/strings';
+import {WorkoutStrings} from '../i18n';
 
 export function formatDuration(totalSeconds: number | null | undefined): string {
   if (totalSeconds === null || totalSeconds === undefined) {
@@ -34,7 +36,7 @@ export function formatNumber(value: number | null | undefined): string {
 }
 
 // One line that says what a plan entry asks for, in the plan's own terms: "4 × 12 · 40 kg".
-export function targetSummary(entry: PlanExerciseSchema, t: WorkoutStrings): string {
+export function targetSummary(entry: PlanExerciseSchema, t: WorkoutStrings, language: Language): string {
   const parts: string[] = [];
   switch (entry.exercise.tracking_type) {
     case 'weight_reps':
@@ -54,7 +56,7 @@ export function targetSummary(entry: PlanExerciseSchema, t: WorkoutStrings): str
       break;
     case 'laps':
       if (entry.target_laps !== null) {
-        parts.push(`${entry.target_laps} ${t.laps}`);
+        parts.push(plural(language, entry.target_laps, t.lapCount));
       }
       break;
   }

@@ -5,7 +5,6 @@ import {NgIcon} from '@ng-icons/core';
 import {
   featherArrowDown,
   featherArrowLeft,
-  featherArrowRight,
   featherArrowUp,
   featherCheck,
   featherEdit,
@@ -46,6 +45,7 @@ import {LoadingStateComponent} from '../../common/components/page/loading-state/
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ShareDialogComponent} from '../../common/dialogs/share-dialog/share-dialog.component';
+import {fill, plural} from '../../shared/i18n/strings';
 import {RoutingService} from '../../shared/services/routing.service';
 import {ExercisePickerDialogComponent} from '../dialogs/exercise-picker-dialog/exercise-picker-dialog.component';
 import {
@@ -78,21 +78,21 @@ export class PlanDetailComponent {
 
   readonly plansUrl = this.routingService.getWorkoutPlanUrl();
   readonly isOwner = computed(() => this.plan()?.owner_id === this.authService.user()?.id);
-  readonly backIcon = computed(() => this.i18n.dir() === 'rtl' ? featherArrowRight : featherArrowLeft);
   readonly subtitle = computed(() => {
     const plan = this.plan();
     if (!plan) {
       return null;
     }
     const t = this.i18n.t();
-    const shared = plan.member_count > 1 ? ` · ${t.sharedWith}` : '';
-    return `${plan.days.length} ${t.days}${shared}`;
+    const days = plural(this.i18n.language(), plan.days.length, t.dayCount);
+    return plan.member_count > 1 ? `${days} · ${t.sharedWith}` : days;
   });
   readonly summaries = computed(() => {
     const plan = this.plan();
     const t = this.i18n.t();
+    const language = this.i18n.language();
     const entries = plan ? [...(plan.every_day?.exercises ?? []), ...plan.days.flatMap(day => day.exercises)] : [];
-    return Object.fromEntries(entries.map(entry => [entry.id, targetSummary(entry, t)]));
+    return Object.fromEntries(entries.map(entry => [entry.id, targetSummary(entry, t, language)]));
   });
   readonly dayMuscles = computed(() => {
     const plan = this.plan();
@@ -105,7 +105,7 @@ export class PlanDetailComponent {
   readonly menuItems = computed<MenuItem[]>(() => {
     const t = this.i18n.t();
     const items: MenuItem[] = [
-      {display: t.languageToggle, icon: featherGlobe, callback: () => void this.i18n.toggle()},
+      {display: t.language, icon: featherGlobe, callback: () => void this.i18n.chooseLanguage()},
       {display: t.renamePlan, icon: featherEdit, callback: () => void this.renamePlan()},
       {display: t.poolLength, icon: featherEdit, callback: () => void this.changePoolLength()},
     ];
@@ -115,6 +115,7 @@ export class PlanDetailComponent {
     return items;
   });
 
+  protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherArrowUp = featherArrowUp;
   protected readonly featherArrowDown = featherArrowDown;
   protected readonly featherCheck = featherCheck;
@@ -153,7 +154,7 @@ export class PlanDetailComponent {
     try {
       await action();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
     await this.reload();
   }
@@ -167,7 +168,7 @@ export class PlanDetailComponent {
       const res = await startWorkoutSessionView({body: day ? {day_id: day.id} : {plan_id: plan.id}});
       await this.routingService.navigateToWorkoutSession(res.data.id);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
@@ -181,7 +182,7 @@ export class PlanDetailComponent {
     }
     const name = await this.dialogService.getTextFromInputDialog({
       title: t.renamePlan, text: '', label: t.planName, defaultValue: plan.name, confirmActionName: t.save,
-      cancelActionName: t.cancel, dir: this.i18n.dir(),
+      cancelActionName: t.cancel
     });
     if (name?.trim()) {
       await this.run(() => updateWorkoutPlanView({path: {object_id: plan.id}, body: {name: name.trim()}}));
@@ -195,8 +196,8 @@ export class PlanDetailComponent {
       return;
     }
     const length = await this.dialogService.getNumberFromInputDialog({
-      title: t.poolLength, text: t.poolLengthText, label: 'm', defaultValue: plan.pool_length_m, minValue: 1,
-      confirmActionName: t.save, cancelActionName: t.cancel, dir: this.i18n.dir(),
+      title: t.poolLength, text: t.poolLengthText, label: t.poolLengthLabel, defaultValue: plan.pool_length_m, minValue: 1,
+      confirmActionName: t.save, cancelActionName: t.cancel
     });
     if (length) {
       await this.run(() => updateWorkoutPlanView({path: {object_id: plan.id}, body: {pool_length_m: length}}));
@@ -211,7 +212,7 @@ export class PlanDetailComponent {
     }
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: t.deletePlan, text: t.deletePlanText, confirmActionName: t.delete, cancelActionName: t.cancel,
-      danger: true, dir: this.i18n.dir(),
+      danger: true
     });
     if (!confirmed) {
       return;
@@ -220,7 +221,7 @@ export class PlanDetailComponent {
       await deleteWorkoutPlanView({path: {object_id: plan.id}});
       await this.routingService.navigateToWorkoutPlan();
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
@@ -258,8 +259,8 @@ export class PlanDetailComponent {
       return;
     }
     const name = await this.dialogService.getTextFromInputDialog({
-      title: t.addDay, text: '', label: t.dayName, defaultValue: `${t.day} ${plan.days.length + 1}`,
-      confirmActionName: t.add, cancelActionName: t.cancel, dir: this.i18n.dir(),
+      title: t.addDay, text: '', label: t.dayName, defaultValue: fill(t.defaultDayName, {number: plan.days.length + 1}),
+      confirmActionName: t.add, cancelActionName: t.cancel
     });
     if (name?.trim()) {
       await this.run(() => createPlanDayView({body: {plan_id: plan.id, name: name.trim()}}));
@@ -270,7 +271,7 @@ export class PlanDetailComponent {
     const t = this.i18n.t();
     const name = await this.dialogService.getTextFromInputDialog({
       title: t.renameDay, text: '', label: t.dayName, defaultValue: day.name, confirmActionName: t.save,
-      cancelActionName: t.cancel, dir: this.i18n.dir(),
+      cancelActionName: t.cancel
     });
     if (name?.trim()) {
       await this.run(() => updatePlanDayView({path: {object_id: day.id}, body: {name: name.trim()}}));
@@ -281,7 +282,7 @@ export class PlanDetailComponent {
     const t = this.i18n.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: t.deleteDay, text: t.deleteDayText, confirmActionName: t.delete, cancelActionName: t.cancel,
-      danger: true, dir: this.i18n.dir(),
+      danger: true
     });
     if (confirmed) {
       await this.run(() => deletePlanDayView({path: {object_id: day.id}}));
@@ -327,7 +328,7 @@ export class PlanDetailComponent {
     const t = this.i18n.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: t.removeExercise, text: t.removeExerciseText, confirmActionName: t.remove, cancelActionName: t.cancel,
-      danger: true, dir: this.i18n.dir(),
+      danger: true
     });
     if (confirmed) {
       await this.run(() => deletePlanExerciseView({path: {object_id: entry.id}}));

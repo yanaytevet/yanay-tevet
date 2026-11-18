@@ -1,7 +1,7 @@
 import {Component, computed, inject, signal} from '@angular/core';
 import {RouterLink} from '@angular/router';
 import {NgIcon} from '@ng-icons/core';
-import {featherBarChart2, featherPlus} from '@ng-icons/feather-icons';
+import {featherBarChart2, featherGlobe, featherPlus} from '@ng-icons/feather-icons';
 import {
   createWorkoutPlanView,
   paginateWorkoutPlansView,
@@ -13,6 +13,7 @@ import {DialogService} from '../../common/dialogs/dialogs.service';
 import {EmptyStateComponent} from '../../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
+import {plural} from '../../shared/i18n/strings';
 import {RoutingService} from '../../shared/services/routing.service';
 import {WorkoutI18nService} from '../shared/workout-i18n.service';
 
@@ -37,6 +38,16 @@ export class PlansListComponent {
   readonly planDaySummaries = computed(() =>
     Object.fromEntries(this.plans().map(plan => [plan.id, plan.day_names.filter(name => name).join(' · ')])),
   );
+  readonly planDayCounts = computed(() => {
+    const t = this.i18n.t();
+    const language = this.i18n.language();
+    return Object.fromEntries(this.plans().map(plan => [plan.id, plural(language, plan.day_names.length, t.dayCount)]));
+  });
+  readonly sessionSetCounts = computed(() => {
+    const t = this.i18n.t();
+    const language = this.i18n.language();
+    return Object.fromEntries(this.sessions().map(session => [session.id, plural(language, session.set_count, t.setCount)]));
+  });
   readonly sessionUrls = computed(() =>
     Object.fromEntries(this.sessions().map(session => [session.id, this.routingService.getWorkoutSessionUrl(session.id)])),
   );
@@ -47,6 +58,7 @@ export class PlansListComponent {
 
   protected readonly featherPlus = featherPlus;
   protected readonly featherBarChart2 = featherBarChart2;
+  protected readonly featherGlobe = featherGlobe;
 
   constructor() {
     void this.load();
@@ -70,7 +82,6 @@ export class PlansListComponent {
     const t = this.i18n.t();
     const name = await this.dialogService.getTextFromInputDialog({
       title: t.newPlan, text: '', label: t.planName, confirmActionName: t.createPlan, cancelActionName: t.cancel,
-      dir: this.i18n.dir(),
     });
     if (!name?.trim()) {
       return;
@@ -79,11 +90,11 @@ export class PlansListComponent {
       const res = await createWorkoutPlanView({body: {name: name.trim()}});
       await this.routingService.navigateToWorkoutPlanDetail(res.data.id);
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
-  async toggleLanguage(): Promise<void> {
-    await this.i18n.toggle();
+  async chooseLanguage(): Promise<void> {
+    await this.i18n.chooseLanguage();
   }
 }

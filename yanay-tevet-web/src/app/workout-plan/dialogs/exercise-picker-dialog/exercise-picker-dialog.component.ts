@@ -51,7 +51,8 @@ export class ExercisePickerDialogComponent extends BaseDialogComponent<void, Exe
     return this.exercises()
       .filter(exercise => group === null || exercise.muscle_group === group)
       .filter(exercise => !query
-        || exercise.name_en.toLowerCase().includes(query) || exercise.name_he.includes(query))
+        || exercise.name_en.toLowerCase().includes(query) || exercise.name_he.includes(query)
+          || exerciseName(exercise, language).toLowerCase().includes(query))
       .sort((a, b) => exerciseName(a, language).localeCompare(exerciseName(b, language), language));
   });
 

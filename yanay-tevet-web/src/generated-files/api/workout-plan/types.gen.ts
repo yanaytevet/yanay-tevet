@@ -37,6 +37,12 @@ export type ExerciseSchema = {
      * Name He
      */
     name_he: string;
+    /**
+     * Name Translations
+     */
+    name_translations: {
+        [key: string]: string;
+    };
     muscle_group: MuscleGroup;
     tracking_type: TrackingType;
     /**

@@ -4,7 +4,6 @@ import {ActivatedRoute, RouterLink} from '@angular/router';
 import {NgIcon} from '@ng-icons/core';
 import {
   featherArrowLeft,
-  featherArrowRight,
   featherBarChart2,
   featherCheck,
   featherClock,
@@ -31,6 +30,7 @@ import {ErrorStateComponent} from '../../common/components/page/error-state/erro
 import {LoadingStateComponent} from '../../common/components/page/loading-state/loading-state.component';
 import {PageHeaderComponent} from '../../common/components/page/page-header/page-header.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
+import {fill, plural} from '../../shared/i18n/strings';
 import {RoutingService} from '../../shared/services/routing.service';
 import {ExercisePickerDialogComponent} from '../dialogs/exercise-picker-dialog/exercise-picker-dialog.component';
 import {ExerciseNamePipe} from '../shared/exercise-name.pipe';
@@ -47,6 +47,7 @@ interface SetRow {
   setNumber: number;
   side: SetSide;
   label: string;
+  ariaLabel: string;
   log: SetLogSchema | null;
   // The logged values, as the inputs show them.
   values: Values;
@@ -66,6 +67,7 @@ interface ExerciseCard {
   summary: string;
   notes: string;
   restSeconds: number;
+  restText: string;
   doneCount: number;
 }
 
@@ -109,7 +111,6 @@ export class WorkoutSessionComponent {
     const planId = this.session()?.plan_id;
     return planId ? this.routingService.getWorkoutPlanDetailUrl(planId) : this.plansUrl;
   });
-  readonly backIcon = computed(() => this.i18n.dir() === 'rtl' ? featherArrowRight : featherArrowLeft);
   readonly isFinished = computed(() => !!this.session()?.finished_at);
   readonly title = computed(() => {
     const session = this.session();
@@ -144,7 +145,7 @@ export class WorkoutSessionComponent {
         key, entry, exercise: entry.exercise,
         section: entry.day_id === session.day_id ? 'day' : 'every',
         logs: entryLogs, targetSets: entry.target_sets + (extraSets[key] ?? 0),
-        summary: targetSummary(entry, t), notes: entry.notes, restSeconds: entry.rest_seconds,
+        summary: targetSummary(entry, t, this.i18n.language()), notes: entry.notes, restSeconds: entry.rest_seconds,
       }, session));
     }
     const extras = [...session.extra_exercises, ...this.addedExercises()];
@@ -206,7 +207,7 @@ export class WorkoutSessionComponent {
   readonly menuItems = computed<MenuItem[]>(() => {
     const t = this.i18n.t();
     const items: MenuItem[] = [
-      {display: t.languageToggle, icon: featherGlobe, callback: () => void this.i18n.toggle()},
+      {display: t.language, icon: featherGlobe, callback: () => void this.i18n.chooseLanguage()},
     ];
     if (this.isFinished()) {
       items.push({display: t.reopenWorkout, icon: featherClock, callback: () => void this.setFinished(false)});
@@ -215,6 +216,7 @@ export class WorkoutSessionComponent {
     return items;
   });
 
+  protected readonly featherArrowLeft = featherArrowLeft;
   protected readonly featherBarChart2 = featherBarChart2;
   protected readonly featherCheck = featherCheck;
   protected readonly featherClock = featherClock;
@@ -280,10 +282,12 @@ export class WorkoutSessionComponent {
         const previousSet = previous.find(l => l.set_number === setNumber && l.side === side)
           ?? [...previous].reverse().find(l => l.side === side) ?? null;
         const sideLabel = side === 'left' ? ` ${t.left}` : side === 'right' ? ` ${t.right}` : '';
+        const label = `${setNumber}${sideLabel}`;
         rows.push({
           key: `${source.key}:${setNumber}:${side}`,
           setNumber, side,
-          label: `${setNumber}${sideLabel}`,
+          label,
+          ariaLabel: fill(t.setLabel, {label}),
           log,
           values: log ? this.valuesOf(log) : {},
           placeholder: previousSet ? this.valuesOf(previousSet) : this.targetValues(source.entry),
@@ -294,6 +298,7 @@ export class WorkoutSessionComponent {
     return {
       key: source.key, entry: source.entry, exercise, section: source.section, fields, rows,
       summary: source.summary, notes: source.notes, restSeconds: source.restSeconds,
+      restText: fill(t.restFor, {seconds: source.restSeconds}),
       doneCount: rows.filter(row => row.log !== null).length,
     };
   }
@@ -342,7 +347,7 @@ export class WorkoutSessionComponent {
       case 'distance':
         return `${formatNumber(log.distance_km)} ${t.distanceKm}${log.duration_seconds ? ` · ${formatDuration(log.duration_seconds)}` : ''}`;
       case 'laps':
-        return `${log.laps ?? '–'} ${t.laps}${log.duration_seconds ? ` · ${formatDuration(log.duration_seconds)}` : ''}`;
+        return `${log.laps !== null ? plural(this.i18n.language(), log.laps, t.lapCount) : '–'}${log.duration_seconds ? ` · ${formatDuration(log.duration_seconds)}` : ''}`;
     }
   }
 
@@ -390,7 +395,7 @@ export class WorkoutSessionComponent {
         this.timer.start(card.restSeconds);
       }
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     } finally {
       this.setBusy(row.key, false);
     }
@@ -426,7 +431,7 @@ export class WorkoutSessionComponent {
         return next;
       });
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
@@ -489,7 +494,7 @@ export class WorkoutSessionComponent {
         (this.host.nativeElement as HTMLElement).scrollIntoView({behavior: 'smooth', block: 'start'});
       }
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
@@ -501,7 +506,7 @@ export class WorkoutSessionComponent {
     }
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
       title: t.deleteWorkout, text: t.deleteWorkoutText, confirmActionName: t.delete, cancelActionName: t.cancel,
-      danger: true, dir: this.i18n.dir(),
+      danger: true
     });
     if (!confirmed) {
       return;
@@ -515,7 +520,7 @@ export class WorkoutSessionComponent {
         await this.routingService.navigateToWorkoutPlan();
       }
     } catch (err) {
-      await this.dialogService.showNotificationDialog({title: 'Error', text: `${err}`});
+      await this.dialogService.showNotificationDialog({title: this.i18n.t().error, text: `${err}`});
     }
   }
 
@@ -538,7 +543,7 @@ export class WorkoutSessionComponent {
   private headlineUnit(exercise: ExerciseSchema, t: ReturnType<WorkoutI18nService['t']>): string {
     switch (exercise.tracking_type) {
       case 'weight_reps': return t.weightKg;
-      case 'reps': return t.reps;
+      case 'reps': return t.repsUnit;
       case 'time': return '';
       case 'distance':
       case 'laps': return t.distanceKm;

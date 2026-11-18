@@ -1,4 +1,4 @@
-<div class="dialog-container flex flex-col gap-4" [attr.dir]="i18n.dir()">
+<div class="dialog-container flex flex-col gap-4">
     <div>
         <h2><bdi>{{ data.exercise | exerciseName: i18n.language() }}</bdi></h2>
         <p class="text-meta text-writing-minor">
@@ -33,14 +33,14 @@
             }
             @case ('time') {
                 <div class="flex flex-col gap-1">
-                    <span class="input-label">{{ i18n.t().time }} (m:ss)</span>
+                    <span class="input-label">{{ i18n.t().timeLabel }}</span>
                     <input class="main-input tabular-nums" inputmode="numeric" dir="ltr" placeholder="1:00" [value]="duration()"
                            (input)="onInput('duration', $event)"/>
                 </div>
             }
             @case ('distance') {
                 <div class="flex flex-col gap-1">
-                    <span class="input-label">{{ i18n.t().distance }} ({{ i18n.t().distanceKm }})</span>
+                    <span class="input-label">{{ i18n.t().distanceLabel }}</span>
                     <input class="main-input tabular-nums" type="number" inputmode="decimal" min="0" step="0.1" [value]="distance()"
                            (input)="onInput('distance', $event)"/>
                 </div>

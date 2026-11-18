@@ -1,6 +1,9 @@
-<div class="page-narrow" [attr.dir]="i18n.dir()">
+<div class="page-narrow">
     <app-page-header [title]="i18n.t().appTitle" [subtitle]="i18n.t().plansSubtitle">
-        <button type="button" class="btn btn-ghost" (click)="toggleLanguage()">{{ i18n.t().languageToggle }}</button>
+        <button type="button" class="btn btn-ghost" (click)="chooseLanguage()">
+            <ng-icon [svg]="featherGlobe"/>
+            {{ i18n.t().language }}
+        </button>
         <a class="btn btn-secondary" [routerLink]="progressUrl">
             <ng-icon [svg]="featherBarChart2"/>
             {{ i18n.t().progress }}
@@ -31,7 +34,7 @@
                         }
                     </div>
                     <div class="text-meta text-writing-minor truncate">
-                        {{ plan.day_names.length }} {{ i18n.t().days }}@if (planDaySummaries()[plan.id]) { · <bdi>{{ planDaySummaries()[plan.id] }}</bdi>}
+                        {{ planDayCounts()[plan.id] }}@if (planDaySummaries()[plan.id]) { · <bdi>{{ planDaySummaries()[plan.id] }}</bdi>}
                     </div>
                 </a>
             }
@@ -45,7 +48,7 @@
                        class="flex items-center gap-3 p-4 hover:bg-layer-overlay first:rounded-t-xl last:rounded-b-xl">
                         <span class="text-meta text-writing-minor tabular-nums w-24 shrink-0">{{ sessionDates()[session.id] }}</span>
                         <span class="text-ui text-writing truncate flex-1"><bdi>{{ session.day_name || session.plan_name || i18n.t().freeWorkout }}</bdi></span>
-                        <span class="text-caption text-writing-minor shrink-0">{{ session.set_count }} {{ i18n.t().setsDone }}</span>
+                        <span class="text-caption text-writing-minor shrink-0">{{ sessionSetCounts()[session.id] }}</span>
                     </a>
                 }
             </div>

@@ -12,6 +12,8 @@ class ExerciseSchema(Schema):
     id: int
     name_en: str
     name_he: str
+    # Names in the other site languages, keyed by language code; empty for a user's own exercise.
+    name_translations: dict[str, str]
     muscle_group: MuscleGroup
     tracking_type: TrackingType
     per_side: bool
@@ -33,6 +35,7 @@ class ExerciseSerializer(Serializer[ExerciseSchema]):
             id=obj.id,
             name_en=obj.name_en,
             name_he=obj.name_he,
+            name_translations=obj.name_translations,
             muscle_group=MuscleGroup(obj.muscle_group),
             tracking_type=TrackingType(obj.tracking_type),
             per_side=obj.per_side,

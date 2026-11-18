@@ -1,11 +1,14 @@
-<div class="page-narrow" [attr.dir]="i18n.dir()">
+<div class="page-narrow">
     <a [routerLink]="plansUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="backIcon()"/>
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
         {{ i18n.t().backToPlans }}
     </a>
     <app-page-header [title]="i18n.t().progress" [subtitle]="i18n.t().progressSubtitle">
-        <button type="button" class="btn btn-ghost" (click)="i18n.toggle()">{{ i18n.t().languageToggle }}</button>
+        <button type="button" class="btn btn-ghost" (click)="i18n.chooseLanguage()">
+            <ng-icon [svg]="featherGlobe"/>
+            {{ i18n.t().language }}
+        </button>
     </app-page-header>
 
     @if (isLoading()) {
@@ -26,7 +29,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="text-section font-bold text-writing"><bdi>{{ progress.exercise | exerciseName: i18n.language() }}</bdi></div>
                         <div class="text-meta text-writing-minor">
-                            {{ i18n.t().muscle[progress.exercise.muscle_group] }} · {{ progress.points.length }} {{ i18n.t().sessionsLogged }}
+                            {{ i18n.t().muscle[progress.exercise.muscle_group] }} · {{ workoutCount() }}
                         </div>
                     </div>
                     @if (metrics().length > 1) {
@@ -43,9 +46,9 @@
 
                 @if (headline(); as headline) {
                     <div class="flex items-baseline gap-3 mb-4">
-                        <span class="text-display font-bold text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ headline.value }}</span>
+                        <span class="text-display font-bold text-writing tabular-nums">{{ headline.value }}</span>
                         @if (headline.delta) {
-                            <span class="chip tabular-nums" [attr.dir]="i18n.dir()" [class.chip-success]="headline.better" [class.chip-warning]="!headline.better">{{ headline.delta }}</span>
+                            <span class="chip tabular-nums" [class.chip-success]="headline.better" [class.chip-warning]="!headline.better">{{ headline.delta }}</span>
                             <span class="text-caption text-writing-minor">{{ i18n.t().sinceFirst }}</span>
                         }
                     </div>
@@ -65,7 +68,7 @@
                     <a [routerLink]="sessionUrls()[row.sessionId]"
                        class="flex items-center gap-3 p-4 hover:bg-layer-overlay first:rounded-t-xl last:rounded-b-xl">
                         <span class="flex-1 text-meta text-writing-minor">{{ row.date }}</span>
-                        <span class="text-body text-writing tabular-nums" [attr.dir]="i18n.dir()">{{ row.value }}</span>
+                        <span class="text-body text-writing tabular-nums">{{ row.value }}</span>
                     </a>
                 }
             </div>

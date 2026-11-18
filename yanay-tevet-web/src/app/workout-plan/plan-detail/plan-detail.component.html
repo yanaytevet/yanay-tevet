@@ -1,7 +1,7 @@
-<div class="page-narrow" [attr.dir]="i18n.dir()">
+<div class="page-narrow">
     <a [routerLink]="plansUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="backIcon()"/>
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
         {{ i18n.t().backToPlans }}
     </a>
 

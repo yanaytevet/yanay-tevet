@@ -24,6 +24,9 @@ class Exercise(models.Model):
     catalog_key = models.CharField(max_length=64, null=True, blank=True, unique=True)
     name_en = models.CharField(max_length=255, blank=True, default='')
     name_he = models.CharField(max_length=255, blank=True, default='')
+    # The other site languages' names, {language code: name}. Filled for the built-in catalog only
+    # (catalog/exercise_name_translations.py); a user's own exercise has just the names they typed.
+    name_translations = models.JSONField(default=dict, blank=True)
     muscle_group: MuscleGroup = models.CharField(
         max_length=16, choices=MuscleGroup.choices(), default=MuscleGroup.OTHER, blank=True,
     )
