@@ -1,9 +1,11 @@
 import {computed, Injectable, signal} from '@angular/core';
 import {GenreProfileSchema, getGenresView, getRandomTrackView, TrackSchema} from '../../generated-files/api/genre-trainer';
-import {GenreTypeDisplay} from '../shared/string-display/genre-type-display';
+import {GenreFamilyId, GenreTypeDisplay} from '../shared/string-display/genre-type-display';
+import {fill, injectStrings} from '../shared/i18n/strings';
+import {GENRE_STRINGS} from './i18n';
 
 export interface GenreFamily {
-  name: string;
+  id: GenreFamilyId;
   genres: string[];
 }
 
@@ -31,7 +33,8 @@ export interface RoleChip {
 export type Listening = 'track' | 'compare';
 
 export type Trait = 'tempo' | 'drums' | 'bass' | 'signature' | 'mood';
-export type Verdict = 'Very close' | 'Close' | 'Not close';
+export type Verdict = 'veryClose' | 'close' | 'notClose';
+export type GenreError = 'loadTrack' | 'loadCompare';
 
 export interface TraitRow {
   trait: Trait;
@@ -49,7 +52,7 @@ export interface Explanation {
   otherLabel: string;
   // How the compared genre relates to the answer: the guess itself, or the closest genre of the guessed family.
   otherNote: string;
-  verdict: Verdict;
+  verdict: string;
   reason: string;
   rows: TraitRow[];
   tip: string;
@@ -64,25 +67,39 @@ const TELLING_TEMPO_GAP_BPM = 5;
 const STATS_VERSION = 2;
 const GENRES_CHANGED_IN_V2 = ['psy_bass', 'hightek', 'forest_psy'];
 
+// Family focus used to be saved by English family name.
+const LEGACY_FAMILY_IDS: Record<string, GenreFamilyId> = {
+  'Psychedelic Trance': 'psy',
+  'Bass Music': 'bass',
+  'Tek / Free Party': 'tek',
+  'Techno': 'techno',
+  'House': 'house',
+};
+
 @Injectable()
 export class GenreTrainerService {
   private readonly genreDisplay = new GenreTypeDisplay();
+  private readonly t = injectStrings(GENRE_STRINGS);
 
   readonly track = signal<TrackSchema | null>(null);
   readonly genres = signal<string[]>([]);
   readonly displayedGenres = signal<string[]>([]);
   readonly isLoading = signal(false);
   readonly selectedGenre = signal<string | null>(null);
-  readonly selectedFamily = signal<string | null>(null);
+  readonly selectedFamily = signal<GenreFamilyId | null>(null);
   readonly revealed = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly error = signal<GenreError | null>(null);
+  readonly errorMessage = computed(() => {
+    const error = this.error();
+    return error ? this.t().errors[error] : null;
+  });
   readonly autoStart = signal(true);
   readonly autoStopLoops = signal(10);
   readonly streak = signal(0);
   readonly totalAnswered = signal(0);
   readonly totalCorrect = signal(0);
   readonly focusGenres = signal<Set<string>>(this.loadFocusFromStorage());
-  readonly focusFamilies = signal<Set<string>>(this.loadFamilyFocusFromStorage());
+  readonly focusFamilies = signal<Set<GenreFamilyId>>(this.loadFamilyFocusFromStorage());
   readonly easyMode = signal<boolean>(this.loadEasyModeFromStorage());
   // Per-genre running record (persisted). Drives adaptive track selection so the
   // next track leans toward genres the user keeps missing or hasn't heard yet.
@@ -106,7 +123,7 @@ export class GenreTrainerService {
     if (this.easyMode()) {
       const sf = this.selectedFamily();
       if (!sf) { return false; }
-      const family = this.allFamilies.find(f => f.name === sf);
+      const family = this.allFamilies.find(f => f.id === sf);
       return family?.genres.includes(t.genre) ?? false;
     } else {
       const s = this.selectedGenre();
@@ -123,8 +140,8 @@ export class GenreTrainerService {
 
   readonly playDisabledMessage = computed(() =>
     this.easyMode()
-      ? 'Select at least 2 families in settings'
-      : 'Select at least 2 genres in settings'
+      ? this.t().player.selectFamilies
+      : this.t().player.selectGenres
   );
 
   readonly genreLabelMap = computed(() =>
@@ -141,8 +158,8 @@ export class GenreTrainerService {
     const profile = t ? this.profiles()[t.genre] : undefined;
     if (!profile) { return []; }
     return [
-      {label: this.genreDisplay.traitLabels['tempo'], text: `${profile.bpm_min}–${profile.bpm_max} BPM`},
-      ...TRAITS.map(trait => ({label: this.genreDisplay.traitLabels[trait], text: profile[trait]})),
+      {label: this.t().traits.tempo, text: `${profile.bpm_min}–${profile.bpm_max} BPM`},
+      ...TRAITS.map(trait => ({label: this.t().traits[trait], text: profile[trait]})),
     ];
   });
 
@@ -152,7 +169,7 @@ export class GenreTrainerService {
     const profile = t ? this.profiles()[t.genre] : undefined;
     if (!profile || !this.revealed() || !this.isCorrect()) { return null; }
     const trait = profile.key_trait as Exclude<Trait, 'tempo'>;
-    return {label: this.genreDisplay.traitLabels[trait], text: profile[trait]};
+    return {label: fill(this.t().reveal.giveaway, {trait: this.t().traits[trait]}), text: profile[trait]};
   });
 
   readonly trackGenreFamily = computed(() => {
@@ -197,7 +214,7 @@ export class GenreTrainerService {
     const t = this.track();
     if (!t || !this.revealed() || this.isCorrect()) { return null; }
     if (!this.easyMode()) { return this.selectedGenre(); }
-    const family = this.allFamilies.find(f => f.name === this.selectedFamily());
+    const family = this.allFamilies.find(f => f.id === this.selectedFamily());
     if (!family) { return null; }
     const profiles = this.profiles();
     const center = (genre: string): number => {
@@ -211,7 +228,7 @@ export class GenreTrainerService {
   readonly compareLabel = computed(() => {
     const genre = this.compareGenre();
     if (!genre) { return ''; }
-    return this.easyMode() ? this.genreDisplay.get(genre) : `Your guess: ${this.genreDisplay.get(genre)}`;
+    return this.easyMode() ? this.genreDisplay.get(genre) : fill(this.t().reveal.yourGuess, {genre: this.genreDisplay.get(genre)});
   });
 
   readonly explanation = computed<Explanation | null>(() => {
@@ -222,34 +239,38 @@ export class GenreTrainerService {
     const o = other ? profiles[other] : undefined;
     if (!t || !other || !a || !o) { return null; }
 
+    const strings = this.t().reveal;
     const actualLabel = this.genreDisplay.get(t.genre);
     const otherLabel = this.genreDisplay.get(other);
-    const familyOf = (genre: string): string | undefined => this.allFamilies.find(f => f.genres.includes(genre))?.name;
+    const familyOf = (genre: string): GenreFamilyId | undefined => this.allFamilies.find(f => f.genres.includes(genre))?.id;
     const sameFamily = familyOf(t.genre) === familyOf(other);
     const tempoGap = Math.max(o.bpm_min - a.bpm_max, a.bpm_min - o.bpm_max, 0);
     const overlap = a.bpm_min <= o.bpm_max && o.bpm_min <= a.bpm_max;
-    const verdict: Verdict = sameFamily && overlap ? 'Very close' : sameFamily || overlap ? 'Close' : 'Not close';
+    const verdict: Verdict = sameFamily && overlap ? 'veryClose' : sameFamily || overlap ? 'close' : 'notClose';
     const decider = this.decidingTrait(a, o, tempoGap);
 
-    const familyPart = sameFamily ? 'Same family' : 'Different families';
-    const tempoPart = overlap
-      ? ', overlapping tempo'
-      : `; ${actualLabel} is ${a.bpm_min > o.bpm_max ? 'faster' : 'slower'} (${a.bpm_min}–${a.bpm_max} vs ${o.bpm_min}–${o.bpm_max} BPM)`;
-    const deciderLabel = this.genreDisplay.traitLabels[decider].toLowerCase();
-    const gives = decider === 'drums' ? 'give' : 'gives';
-    const reason = `${familyPart}${tempoPart} — the ${deciderLabel} ${gives} it away.`;
+    const actualRange = `${a.bpm_min}–${a.bpm_max}`;
+    const otherRange = `${o.bpm_min}–${o.bpm_max}`;
+    const faster = a.bpm_min > o.bpm_max;
+    const relation = sameFamily
+      ? (overlap ? strings.sameFamilyOverlap : faster ? strings.sameFamilyFaster : strings.sameFamilySlower)
+      : (overlap ? strings.differentFamiliesOverlap : faster ? strings.differentFamiliesFaster : strings.differentFamiliesSlower);
+    const reason = [
+      fill(relation, {actual: actualLabel, actualRange, otherRange}),
+      strings.givesItAway[decider],
+    ].join(strings.sentenceSeparator);
 
     const rows: TraitRow[] = [
       {
         trait: 'tempo',
-        label: this.genreDisplay.traitLabels['tempo'],
-        actual: `${a.bpm_min}–${a.bpm_max} BPM (this track: ${t.bpm})`,
-        other: `${o.bpm_min}–${o.bpm_max} BPM`,
+        label: this.t().traits.tempo,
+        actual: fill(strings.tempoThisTrack, {range: actualRange, bpm: t.bpm}),
+        other: `${otherRange} BPM`,
         isKey: decider === 'tempo',
       },
       ...TRAITS.map(trait => ({
         trait,
-        label: this.genreDisplay.traitLabels[trait],
+        label: this.t().traits[trait],
         actual: a[trait],
         other: o[trait],
         isKey: decider === trait,
@@ -257,11 +278,11 @@ export class GenreTrainerService {
     ];
 
     const tip = decider === 'tempo'
-      ? `Next time, feel the tempo: ${actualLabel} runs at ${a.bpm_min}–${a.bpm_max} BPM, ${otherLabel} at ${o.bpm_min}–${o.bpm_max}.`
-      : `Next time, listen for the ${deciderLabel} — ${a[decider as Exclude<Trait, 'tempo'>]}.`;
+      ? fill(strings.tipTempo, {actual: actualLabel, actualRange, other: otherLabel, otherRange})
+      : fill(strings.tipListenFor[decider], {description: a[decider]});
 
-    const otherNote = this.easyMode() ? 'closest in the family you picked' : 'your guess';
-    return {actualLabel, otherLabel, otherNote, verdict, reason, rows, tip};
+    const otherNote = this.easyMode() ? strings.noteClosest : strings.noteYourGuess;
+    return {actualLabel, otherLabel, otherNote, verdict: strings.verdicts[verdict], reason, rows, tip};
   });
 
   readonly activeTrack = computed(() =>
@@ -275,14 +296,14 @@ export class GenreTrainerService {
     const roles = new Set(t.layers.map(l => l.role));
     return this.genreDisplay.roleOrder
       .filter(role => roles.has(role))
-      .map(role => ({role, label: this.genreDisplay.roleLabels[role] ?? role, isKey: role === t.key_role}));
+      .map(role => ({role, label: this.t().roles[role], isKey: role === t.key_role}));
   });
 
   readonly keyRoleHint = computed(() => {
     const t = this.activeTrack();
     if (!t?.key_role) { return ''; }
-    const part = (this.genreDisplay.roleLabels[t.key_role] ?? t.key_role).toLowerCase();
-    return `The ${part} is what gives ${this.genreDisplay.get(t.genre)} away.`;
+    const roles: Record<string, string> = this.t().roles;
+    return fill(this.t().reveal.keyRoleHint, {genre: this.genreDisplay.get(t.genre), part: roles[t.key_role] ?? t.key_role});
   });
 
   readonly genreButtonState = computed(() => {
@@ -303,10 +324,10 @@ export class GenreTrainerService {
     const track = this.track();
     const rev = this.revealed();
     return Object.fromEntries(
-      this.allFamilies.map(f => [f.name, {
-        isSelected: f.name === selected,
+      this.allFamilies.map(f => [f.id, {
+        isSelected: f.id === selected,
         isCorrect: rev && track !== null && f.genres.includes(track.genre),
-        isWrong: rev && f.name === selected && (track === null || !f.genres.includes(track.genre)),
+        isWrong: rev && f.id === selected && (track === null || !f.genres.includes(track.genre)),
       }])
     );
   });
@@ -318,13 +339,13 @@ export class GenreTrainerService {
 
   readonly focusFamilyState = computed(() => {
     const focus = this.focusFamilies();
-    return Object.fromEntries(this.allFamilies.map(f => [f.name, focus.has(f.name)]));
+    return Object.fromEntries(this.allFamilies.map(f => [f.id, focus.has(f.id)]));
   });
 
   readonly displayedFamilies = computed(() => {
     const focus = this.focusFamilies();
     if (focus.size === 0) { return this.allFamilies; }
-    return this.allFamilies.filter(f => focus.has(f.name));
+    return this.allFamilies.filter(f => focus.has(f.id));
   });
 
   // What tells the two genres apart, easiest cue first: a clear tempo gap, then a different kick
@@ -355,17 +376,21 @@ export class GenreTrainerService {
     localStorage.setItem('genre_trainer_focus', JSON.stringify([...focus]));
   }
 
-  private loadFamilyFocusFromStorage(): Set<string> {
+  private loadFamilyFocusFromStorage(): Set<GenreFamilyId> {
+    const ids = new Set<string>(this.genreDisplay.families.map(f => f.id));
     try {
       const raw = localStorage.getItem('genre_trainer_family_focus');
-      if (raw) { return new Set(JSON.parse(raw) as string[]); }
+      if (raw) {
+        const saved = (JSON.parse(raw) as string[]).map(value => LEGACY_FAMILY_IDS[value] ?? value);
+        return new Set(saved.filter((value): value is GenreFamilyId => ids.has(value)));
+      }
     } catch {
       // ignore
     }
     return new Set();
   }
 
-  private saveFamilyFocusToStorage(focus: Set<string>): void {
+  private saveFamilyFocusToStorage(focus: Set<GenreFamilyId>): void {
     localStorage.setItem('genre_trainer_family_focus', JSON.stringify([...focus]));
   }
 
@@ -445,7 +470,7 @@ export class GenreTrainerService {
     if (this.easyMode()) {
       const fams = this.focusFamilies();
       if (fams.size > 0) {
-        return this.allFamilies.filter(f => fams.has(f.name)).flatMap(f => f.genres);
+        return this.allFamilies.filter(f => fams.has(f.id)).flatMap(f => f.genres);
       }
       return this.genres();
     }
@@ -499,7 +524,7 @@ export class GenreTrainerService {
     if (this.easyMode()) {
       const fams = this.focusFamilies();
       if (fams.size > 0) {
-        return this.allFamilies.filter(f => fams.has(f.name)).flatMap(f => f.genres).join(',');
+        return this.allFamilies.filter(f => fams.has(f.id)).flatMap(f => f.genres).join(',');
       }
       return undefined;
     }
@@ -547,7 +572,7 @@ export class GenreTrainerService {
         this.displayedGenres.set(focus.size > 0 ? [...focus] : this.genres());
       }
     } catch {
-      this.error.set('Failed to load track. Is the backend running?');
+      this.error.set('loadTrack');
     } finally {
       this.isLoading.set(false);
     }
@@ -568,7 +593,7 @@ export class GenreTrainerService {
       this.compareTrack.set(res.data.track);
       return res.data.track;
     } catch {
-      this.error.set('Failed to load the comparison track.');
+      this.error.set('loadCompare');
       return null;
     } finally {
       this.isCompareLoading.set(false);
@@ -595,14 +620,14 @@ export class GenreTrainerService {
     }
   }
 
-  selectFamily(familyName: string): void {
+  selectFamily(familyId: GenreFamilyId): void {
     if (this.revealed()) { return; }
-    this.selectedFamily.set(familyName);
+    this.selectedFamily.set(familyId);
     this.revealed.set(true);
     this.totalAnswered.update(n => n + 1);
     const track = this.track();
     if (track) {
-      const family = this.allFamilies.find(f => f.name === familyName);
+      const family = this.allFamilies.find(f => f.id === familyId);
       const correct = family?.genres.includes(track.genre) ?? false;
       this.recordResult(track.genre, correct);
       if (correct) {
@@ -630,10 +655,10 @@ export class GenreTrainerService {
     this.clearTrack();
   }
 
-  toggleFocusFamily(familyName: string): void {
+  toggleFocusFamily(familyId: GenreFamilyId): void {
     this.focusFamilies.update(prev => {
       const next = new Set(prev);
-      if (next.has(familyName)) { next.delete(familyName); } else { next.add(familyName); }
+      if (next.has(familyId)) { next.delete(familyId); } else { next.add(familyId); }
       this.saveFamilyFocusToStorage(next);
       return next;
     });
@@ -654,7 +679,7 @@ export class GenreTrainerService {
 
   applyConfig(config: {
     focusGenres: Set<string>;
-    focusFamilies: Set<string>;
+    focusFamilies: Set<GenreFamilyId>;
     easyMode: boolean;
     autoStopLoops: number;
     resetProgress: boolean;

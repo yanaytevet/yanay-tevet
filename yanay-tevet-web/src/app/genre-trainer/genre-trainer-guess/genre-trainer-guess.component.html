@@ -2,23 +2,23 @@
   @if (service.easyMode()) {
     <div class="mt-6">
       <h2 class="text-section font-bold text-writing mb-4 text-center">
-        What family of genres is this?
+        {{ t().whatFamily }}
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        @for (family of service.displayedFamilies(); track family.name) {
+        @for (family of service.displayedFamilies(); track family.id) {
           <button
             type="button"
             [disabled]="service.revealed()"
-            (click)="service.selectFamily(family.name)"
+            (click)="service.selectFamily(family.id)"
             class="py-3 px-3 rounded-xl text-body font-semibold transition-all duration-150 border"
-            [class]="service.familyButtonState()[family.name].isCorrect
+            [class]="service.familyButtonState()[family.id].isCorrect
               ? 'bg-success-soft border-success/30 text-success'
-              : service.familyButtonState()[family.name].isWrong
+              : service.familyButtonState()[family.id].isWrong
                 ? 'bg-danger-soft border-danger/30 text-danger'
-                : service.familyButtonState()[family.name].isSelected
+                : service.familyButtonState()[family.id].isSelected
                   ? 'bg-accent text-on-accent border-transparent'
                   : 'bg-layer-overlay text-writing border-line hover:bg-layer-3'">
-            {{ family.name }}
+            {{ t().families[family.id] }}
           </button>
         }
       </div>
@@ -26,7 +26,7 @@
   } @else if (service.displayedGenres().length > 0) {
     <div class="mt-6">
       <h2 class="text-section font-bold text-writing mb-4 text-center">
-        What genre is this?
+        {{ t().whatGenre }}
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         @for (genre of service.displayedGenres(); track genre) {

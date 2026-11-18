@@ -16,6 +16,9 @@ import {NgIcon, provideIcons} from '@ng-icons/core';
 import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
 import {EmptyStateComponent} from '../common/components/page/empty-state/empty-state.component';
 import {LoadingStateComponent} from '../common/components/page/loading-state/loading-state.component';
+import {LanguageService} from '../shared/i18n/language.service';
+import {fill, injectStrings, plural} from '../shared/i18n/strings';
+import {DREAM_DIARY_STRINGS} from './i18n';
 
 interface CalendarDay {
   date: string;
@@ -41,6 +44,8 @@ export class DreamDiaryComponent {
   private dialogService = inject(DialogService);
   private filesUploadService = inject(FilesUploadService);
   private routingService = inject(RoutingService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(DREAM_DIARY_STRINGS);
 
   entries = signal<DreamDiaryEntrySchema[]>([]);
   totalAmount = signal<number>(0);
@@ -56,14 +61,22 @@ export class DreamDiaryComponent {
   readonly subtitle = computed(() => {
     const total = this.totalAmount();
     if (total === 0) {
-      return 'Capture your dreams before they fade.';
+      return this.t().subtitleEmpty;
     }
-    return `${total} ${total === 1 ? 'entry' : 'entries'}`;
+    return plural(this.languageService.language(), total, this.t().entryCount);
   });
 
-  readonly entryTimeLabels = computed(() =>
-    Object.fromEntries(this.entries().map(e => [e.id, this.formatTime(e.time)]))
-  );
+  readonly entryTimeLabels = computed(() => {
+    const format = new Intl.DateTimeFormat(this.languageService.language(), {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return Object.fromEntries(this.entries().map(e => [e.id, format.format(new Date(e.time))]));
+  });
 
   calendarDays = computed<CalendarDay[]>(() => {
     const logged = new Set(this.loggedDates());
@@ -101,7 +114,11 @@ export class DreamDiaryComponent {
     return days;
   });
 
-  readonly weekDayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  // Sunday first, to match the grid. 7 January 2024 was a Sunday.
+  readonly weekDayLabels = computed(() => {
+    const format = new Intl.DateTimeFormat(this.languageService.language(), {weekday: 'short'});
+    return Array.from({length: 7}, (_, i) => format.format(new Date(2024, 0, 7 + i)));
+  });
   readonly featherTrash2 = featherTrash2;
   readonly featherPlus = featherPlus;
   readonly featherUpload = featherUpload;
@@ -167,12 +184,13 @@ export class DreamDiaryComponent {
   }
 
   async deleteEntry(entry: DreamDiaryEntrySchema): Promise<void> {
+    const t = this.t();
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Delete Entry',
-      text: 'Are you sure you want to delete this dream diary entry?',
-      confirmActionName: 'Delete',
+      title: t.deleteTitle,
+      text: t.deleteText,
+      confirmActionName: t.delete,
       danger: true,
-      cancelActionName: 'Cancel',
+      cancelActionName: t.cancel,
     });
     if (!confirmed) {
       return;
@@ -184,8 +202,8 @@ export class DreamDiaryComponent {
       await this.loadCalendar();
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to delete entry: ${err}`,
+        title: this.t().error,
+        text: fill(this.t().deleteFailed, {error: String(err)}),
       });
     }
   }
@@ -208,8 +226,8 @@ export class DreamDiaryComponent {
       );
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to upload image: ${err}`,
+        title: this.t().error,
+        text: fill(this.t().uploadFailed, {error: String(err)}),
       });
     } finally {
       this.uploadingId.set(null);
@@ -226,22 +244,11 @@ export class DreamDiaryComponent {
       this.entries.update(prev => prev.map(e => (e.id === entry.id ? res.data : e)));
     } catch (err) {
       await this.dialogService.showNotificationDialog({
-        title: 'Error',
-        text: `Failed to generate image: ${err}`,
+        title: this.t().error,
+        text: fill(this.t().generateFailed, {error: String(err)}),
       });
     } finally {
       this.generatingImageId.set(null);
     }
-  }
-
-  private formatTime(isoString: string): string {
-    return new Date(isoString).toLocaleString(undefined, {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   }
 }

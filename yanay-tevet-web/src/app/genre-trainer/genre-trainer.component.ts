@@ -5,6 +5,8 @@ import {GenreTrainerPlayerComponent} from './genre-trainer-player/genre-trainer-
 import {GenreTrainerGuessComponent} from './genre-trainer-guess/genre-trainer-guess.component';
 import {GenreTrainerRevealComponent} from './genre-trainer-reveal/genre-trainer-reveal.component';
 import {PageHeaderComponent} from '../common/components/page/page-header/page-header.component';
+import {injectStrings} from '../shared/i18n/strings';
+import {GENRE_STRINGS} from './i18n';
 
 @Component({
   selector: 'app-genre-trainer',
@@ -22,6 +24,7 @@ import {PageHeaderComponent} from '../common/components/page/page-header/page-he
 export class GenreTrainerComponent {
   protected readonly service = inject(GenreTrainerService);
   private readonly audio = inject(GenreTrainerAudioService);
+  protected readonly t = injectStrings(GENRE_STRINGS);
 
   constructor() {
     afterNextRender(() => {
@@ -39,5 +42,4 @@ export class GenreTrainerComponent {
       await this.audio.play(track, this.service.autoStopLoops());
     }
   }
-
 }

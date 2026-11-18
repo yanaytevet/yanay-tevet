@@ -3,11 +3,16 @@ import {BaseDialogComponent} from '../../common/dialogs/base-dialog.component';
 import {ConfirmationButtonComponent} from '../../common/dialogs/confirmation-button/confirmation-button.component';
 import {DialogService} from '../../common/dialogs/dialogs.service';
 import {ConfusionPair, GenreFamily} from '../genre-trainer.service';
+import {GenreFamilyId} from '../../shared/string-display/genre-type-display';
+import {LanguageService} from '../../shared/i18n/language.service';
+import {injectStrings, plural} from '../../shared/i18n/strings';
+import {GENRE_STRINGS} from '../i18n';
+import {fillParts} from '../i18n/text-parts';
 
 export interface GenreTrainerConfigDialogInput {
   genres: string[];
   focusGenres: Set<string>;
-  focusFamilies: Set<string>;
+  focusFamilies: Set<GenreFamilyId>;
   easyMode: boolean;
   autoStopLoops: number;
   genreLabelMap: Record<string, string>;
@@ -18,7 +23,7 @@ export interface GenreTrainerConfigDialogInput {
 
 export interface GenreTrainerConfigDialogOutput {
   focusGenres: Set<string>;
-  focusFamilies: Set<string>;
+  focusFamilies: Set<GenreFamilyId>;
   easyMode: boolean;
   autoStopLoops: number;
   resetProgress: boolean;
@@ -36,20 +41,31 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
 > {
   readonly localEasyMode = signal(this.data.easyMode);
   readonly localFocus = signal<Set<string>>(new Set(this.data.focusGenres));
-  readonly localFocusFamilies = signal<Set<string>>(new Set(this.data.focusFamilies));
+  readonly localFocusFamilies = signal<Set<GenreFamilyId>>(new Set(this.data.focusFamilies));
   readonly localAutoStopLoops = signal(this.data.autoStopLoops);
   // Applied with the rest of the settings, so Cancel still keeps the old progress.
   readonly localResetProgress = signal(false);
 
   private readonly dialogService = inject(DialogService);
+  private readonly languageService = inject(LanguageService);
+  protected readonly t = injectStrings(GENRE_STRINGS);
+
+  readonly repetitionsLabel = computed(() => {
+    const loops = this.localAutoStopLoops();
+    return loops === 0
+      ? this.t().config.repetitionsNeverStops
+      : plural(this.languageService.language(), loops, this.t().config.repetitions);
+  });
 
   readonly confusionRows = computed(() =>
     this.localResetProgress()
       ? []
       : this.data.topConfusions.map(c => ({
         key: `${c.actual}>${c.guessed}`,
-        actual: this.data.genreLabelMap[c.actual] ?? c.actual,
-        guessed: this.data.genreLabelMap[c.guessed] ?? c.guessed,
+        parts: fillParts(this.t().config.confusionRow, {
+          actual: this.data.genreLabelMap[c.actual] ?? c.actual,
+          guessed: this.data.genreLabelMap[c.guessed] ?? c.guessed,
+        }),
         count: c.count,
       }))
   );
@@ -70,7 +86,7 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
   );
 
   readonly localFocusFamilyState = computed(() =>
-    Object.fromEntries(this.data.allFamilies.map(f => [f.name, this.localFocusFamilies().has(f.name)]))
+    Object.fromEntries(this.data.allFamilies.map(f => [f.id, this.localFocusFamilies().has(f.id)]))
   );
 
   setEasyMode(value: boolean): void {
@@ -89,10 +105,10 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
     this.localFocus.set(new Set());
   }
 
-  toggleFamily(familyName: string): void {
+  toggleFamily(familyId: GenreFamilyId): void {
     this.localFocusFamilies.update(prev => {
       const next = new Set(prev);
-      if (next.has(familyName)) { next.delete(familyName); } else { next.add(familyName); }
+      if (next.has(familyId)) { next.delete(familyId); } else { next.add(familyId); }
       return next;
     });
   }
@@ -110,10 +126,12 @@ export class GenreTrainerConfigDialogComponent extends BaseDialogComponent<
   }
 
   async resetProgress(): Promise<void> {
+    const strings = this.t().config;
     const confirmed = await this.dialogService.getBooleanFromConfirmationDialog({
-      title: 'Reset your progress?',
-      text: 'Your per-genre record and the list of genres you mix up are cleared when you apply.',
-      confirmActionName: 'Reset',
+      title: strings.resetTitle,
+      text: strings.resetText,
+      confirmActionName: strings.reset,
+      cancelActionName: strings.cancel,
       danger: true,
     });
     if (confirmed) {

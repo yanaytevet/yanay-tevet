@@ -8,7 +8,7 @@
     <canvas #vizCanvas class="w-full h-full block"></canvas>
     @if (audio.isPlaying()) {
       <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <p class="text-white/60 text-body font-medium">Click to stop</p>
+        <p class="text-white/60 text-body font-medium">{{ t().player.clickToStop }}</p>
       </div>
     }
     @if (!audio.isPlaying() && !service.isLoading()) {
@@ -16,13 +16,13 @@
         @if (service.playDisabled()) {
           <p class="text-white/40 text-body font-medium">{{ service.playDisabledMessage() }}</p>
         } @else {
-          <p class="text-white/30 text-body font-medium">Press Play to start</p>
+          <p class="text-white/30 text-body font-medium">{{ t().player.pressPlay }}</p>
         }
       </div>
     }
     @if (service.isLoading()) {
       <div class="absolute inset-0 flex items-center justify-center">
-        <p class="text-white/40 text-body">Loading track...</p>
+        <p class="text-white/40 text-body">{{ t().player.loadingTrack }}</p>
       </div>
     }
   </div>
@@ -41,10 +41,10 @@
         <span
           class="absolute top-0.5 w-2.5 h-2.5 rounded-full shadow-sm transition-all duration-200"
           [class]="service.autoStart() ? 'bg-on-accent' : 'bg-writing-minor'"
-          [style.left]="service.autoStart() ? '15px' : '2px'">
+          [style.inset-inline-start]="service.autoStart() ? '15px' : '2px'">
         </span>
       </span>
-      Auto
+      {{ t().player.auto }}
     </button>
 
     <!-- Volume slider -->
@@ -58,6 +58,7 @@
         max="1"
         step="0.01"
         class="flex-1 h-1 rounded-full cursor-pointer"
+        [attr.aria-label]="t().player.volume"
         [value]="audio.volume()"
         (input)="setVolume(+$any($event.target).value)">
       <span class="hidden sm:flex flex-shrink-0">
@@ -71,7 +72,7 @@
       class="btn btn-primary px-5 flex-shrink-0 text-body"
       [disabled]="service.isLoading() || service.playDisabled() || audio.isRendering()"
       (click)="togglePlay()">
-      @if (audio.isPlaying()) { Stop } @else { Play }
+      @if (audio.isPlaying()) { {{ t().player.stop }} } @else { {{ t().player.play }} }
     </button>
 
     <!-- Admin: Download JSON -->
@@ -106,8 +107,8 @@
     <button
       type="button"
       class="icon-btn"
-      aria-label="Training settings"
-      title="Training settings"
+      [attr.aria-label]="t().player.settings"
+      [title]="t().player.settings"
       (click)="openConfig()">
       <ng-icon [svg]="bootstrapGearFill" class="text-base" />
     </button>

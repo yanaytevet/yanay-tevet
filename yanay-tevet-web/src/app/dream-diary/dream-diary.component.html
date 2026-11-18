@@ -1,19 +1,19 @@
 <div class="page-narrow">
 
-    <app-page-header title="Dream Diary" [subtitle]="subtitle()">
+    <app-page-header [title]="t().title" [subtitle]="subtitle()">
         <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
             <ng-icon [svg]="featherPlus"/>
-            New entry
+            {{ t().newEntry }}
         </button>
     </app-page-header>
 
     <!-- Calendar: last 4 weeks -->
     <div class="card mb-6 p-4">
         <div class="eyebrow mb-3">
-            Last 4 Weeks
+            {{ t().lastFourWeeks }}
         </div>
         <div class="grid grid-cols-7 gap-1 mb-1">
-            @for (label of weekDayLabels; track label) {
+            @for (label of weekDayLabels(); track $index) {
                 <div class="text-center text-label font-semibold text-writing-minor">{{ label }}</div>
             }
         </div>
@@ -39,12 +39,12 @@
     </div>
 
     @if (isLoadingEntries()) {
-        <app-loading-state label="Loading dreams"/>
+        <app-loading-state [label]="t().loadingDreams"/>
     } @else if (entries().length === 0) {
-        <app-empty-state title="Log your first dream" text="Write it down as soon as you wake up, before it fades.">
+        <app-empty-state [title]="t().emptyTitle" [text]="t().emptyText">
             <button type="button" class="btn btn-primary" (click)="goToCreatePage()">
                 <ng-icon [svg]="featherPlus"/>
-                New entry
+                {{ t().newEntry }}
             </button>
         </app-empty-state>
     } @else {
@@ -65,12 +65,12 @@
                             <button
                                 type="button"
                                 class="icon-btn"
-                                aria-label="Generate image with AI"
-                                title="Generate image with AI"
+                                [attr.aria-label]="t().generateImage"
+                                [title]="t().generateImage"
                                 [disabled]="generatingImageId() === entry.id"
                                 (click)="generateImage(entry)">
                                 @if (generatingImageId() === entry.id) {
-                                    <span class="text-label font-medium">Generating…</span>
+                                    <span class="text-label font-medium">{{ t().generating }}</span>
                                 } @else {
                                     <ng-icon [svg]="featherZap"/>
                                 }
@@ -78,12 +78,12 @@
                             <button
                                 type="button"
                                 class="icon-btn"
-                                aria-label="Upload image"
-                                title="Upload image"
+                                [attr.aria-label]="t().uploadImage"
+                                [title]="t().uploadImage"
                                 [disabled]="uploadingId() === entry.id"
                                 (click)="uploadImage(entry)">
                                 @if (uploadingId() === entry.id) {
-                                    <span class="text-label font-medium">Uploading…</span>
+                                    <span class="text-label font-medium">{{ t().uploading }}</span>
                                 } @else {
                                     <ng-icon [svg]="featherUpload"/>
                                 }
@@ -91,16 +91,16 @@
                             <button
                                 type="button"
                                 class="icon-btn"
-                                aria-label="Edit entry"
-                                title="Edit entry"
+                                [attr.aria-label]="t().editEntry"
+                                [title]="t().editEntry"
                                 (click)="goToEditPage(entry)">
                                 <ng-icon [svg]="featherEdit"/>
                             </button>
                             <button
                                 type="button"
                                 class="icon-btn icon-btn-danger"
-                                aria-label="Delete entry"
-                                title="Delete entry"
+                                [attr.aria-label]="t().deleteEntry"
+                                [title]="t().deleteEntry"
                                 (click)="deleteEntry(entry)">
                                 <ng-icon [svg]="featherTrash2"/>
                             </button>
@@ -109,12 +109,12 @@
 
                     <!-- The image fades in from the card above it; clicking opens it full size. -->
                     @if (entry.image_url) {
-                        <button type="button" class="relative block w-full" aria-label="View image"
+                        <button type="button" class="relative block w-full" [attr.aria-label]="t().viewImage"
                                 (click)="openImageDialog(entry.image_url)">
                             <span class="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-layer-2 to-transparent z-10 pointer-events-none"></span>
                             <img
                                 [src]="entry.image_url"
-                                alt="Dream image"
+                                [alt]="t().dreamImage"
                                 class="block w-full object-cover max-h-64" />
                         </button>
                     }
@@ -129,7 +129,7 @@
                     class="btn btn-secondary"
                     [disabled]="isLoadingMore()"
                     (click)="loadMore()">
-                    @if (isLoadingMore()) { Loading… } @else { Load More }
+                    @if (isLoadingMore()) { {{ t().loading }} } @else { {{ t().loadMore }} }
                 </button>
             </div>
         }

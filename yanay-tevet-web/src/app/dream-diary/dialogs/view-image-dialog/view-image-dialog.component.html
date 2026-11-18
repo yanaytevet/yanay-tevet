@@ -2,13 +2,13 @@
 <div class="relative rounded-xl overflow-hidden bg-black">
     <button
         type="button"
-        class="absolute top-3 right-3 z-10 flex items-center justify-center size-8 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
-        aria-label="Close"
+        class="absolute top-3 end-3 z-10 flex items-center justify-center size-8 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+        [attr.aria-label]="t().close"
         (click)="emitClose(null)">
         <ng-icon [svg]="featherX"/>
     </button>
     <img
         [src]="data"
-        alt="Dream image"
+        [alt]="t().dreamImage"
         class="w-full object-contain max-h-[80vh]" />
 </div>

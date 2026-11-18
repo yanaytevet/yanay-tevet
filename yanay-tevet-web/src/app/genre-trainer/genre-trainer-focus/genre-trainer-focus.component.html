@@ -1,13 +1,13 @@
 @if (service.genres().length > 0) {
   <div class="mt-5 card p-4">
-    <div class="eyebrow mb-3">Train on</div>
+    <div class="eyebrow mb-3">{{ t().trainOn }}</div>
     <div class="flex flex-wrap gap-2">
       <button
         type="button"
         class="chip px-3 py-1"
         [class.chip-selected]="service.noFocus()"
         (click)="service.clearFocus()">
-        All
+        {{ t().all }}
       </button>
       @for (genre of service.genres(); track genre) {
         <button

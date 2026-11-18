@@ -3,6 +3,9 @@ import {bootstrapStarFill} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
 import {GenreTrainerService, Listening} from '../genre-trainer.service';
 import {GenreTrainerAudioService} from '../genre-trainer-audio.service';
+import {fill, injectStrings} from '../../shared/i18n/strings';
+import {GENRE_STRINGS} from '../i18n';
+import {fillParts} from '../i18n/text-parts';
 
 type ChipMode = 'solo' | 'mute';
 
@@ -20,6 +23,34 @@ export class GenreTrainerRevealComponent {
   protected readonly audio = inject(GenreTrainerAudioService);
 
   protected readonly bootstrapStarFill = bootstrapStarFill;
+  protected readonly t = injectStrings(GENRE_STRINGS);
+
+  protected readonly youGuessedParts = computed(() =>
+    fillParts(this.t().reveal.youGuessed, {genre: this.service.selectedGenreLabel()}));
+
+  protected readonly recordParts = computed(() =>
+    fillParts(this.t().reveal.record, {genre: this.service.trackGenreLabel()}));
+
+  protected readonly familyName = computed(() => {
+    const family = this.service.trackGenreFamily();
+    return family ? this.t().families[family.id] : '';
+  });
+
+  protected readonly familyHeading = computed(() => fill(this.t().reveal.familyHeading, {family: this.familyName()}));
+
+  protected readonly whyNot = computed(() => {
+    const ex = this.service.explanation();
+    return ex ? fill(this.t().reveal.whyNot, {actual: ex.actualLabel, other: ex.otherLabel}) : '';
+  });
+
+  protected readonly columnHeadings = computed(() => {
+    const ex = this.service.explanation();
+    const strings = this.t().reveal;
+    return {
+      actual: ex ? fill(strings.columnThisTrack, {genre: ex.actualLabel}) : '',
+      other: ex ? fill(strings.columnOther, {genre: ex.otherLabel, note: ex.otherNote}) : '',
+    };
+  });
 
   protected readonly chipMode = signal<ChipMode>('solo');
 

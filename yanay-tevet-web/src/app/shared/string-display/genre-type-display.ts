@@ -1,5 +1,10 @@
 import {EnumDisplay} from '../../common/string-display/enum-display';
 
+export type GenreFamilyId = 'psy' | 'bass' | 'tek' | 'techno' | 'house';
+export type GenreRole = 'kick' | 'snare' | 'hihat' | 'perc' | 'bass' | 'sub' | 'lead' | 'stab' | 'pad';
+
+// Genre names are proper names and stay in English in every language.
+
 export class GenreTypeDisplay extends EnumDisplay {
   override data: Record<string, string> = {
     psytrance: 'Full-On Psytrance',
@@ -20,34 +25,17 @@ export class GenreTypeDisplay extends EnumDisplay {
     weird_finnish_trance: 'Weird Finnish Trance',
   };
 
-  families: { name: string; genres: string[] }[] = [
-    { name: 'Psychedelic Trance', genres: ['psytrance', 'progressive_psy', 'goa', 'dark_psy', 'hightek', 'weird_finnish_trance'] },
-    { name: 'Bass Music', genres: ['psy_bass', 'drum_and_bass', 'jungle'] },
-    { name: 'Tek / Free Party', genres: ['tek'] },
-    { name: 'Techno', genres: ['techno', 'hard_techno', 'acid_techno', 'minimal_techno', 'melodic_techno'] },
-    { name: 'House', genres: ['house'] },
+  // The families of the Easy mode. Their names are translated (GENRE_STRINGS.families); the ids are what
+  // settings store.
+  families: {id: GenreFamilyId; genres: string[]}[] = [
+    {id: 'psy', genres: ['psytrance', 'progressive_psy', 'goa', 'dark_psy', 'hightek', 'weird_finnish_trance']},
+    {id: 'bass', genres: ['psy_bass', 'drum_and_bass', 'jungle']},
+    {id: 'tek', genres: ['tek']},
+    {id: 'techno', genres: ['techno', 'hard_techno', 'acid_techno', 'minimal_techno', 'melodic_techno']},
+    {id: 'house', genres: ['house']},
   ];
 
-  // Layer roles in mix order (drums first), as the reveal's solo/mute chips show them.
-  roleOrder: string[] = ['kick', 'snare', 'hihat', 'perc', 'bass', 'sub', 'lead', 'stab', 'pad'];
-
-  traitLabels: Record<'tempo' | 'drums' | 'bass' | 'signature' | 'mood', string> = {
-    tempo: 'Tempo',
-    drums: 'Drums',
-    bass: 'Bass',
-    signature: 'Signature sound',
-    mood: 'Mood',
-  };
-
-  roleLabels: Record<string, string> = {
-    kick: 'Kick',
-    snare: 'Snare / clap',
-    hihat: 'Hi-hats',
-    perc: 'Percussion',
-    bass: 'Bass',
-    sub: 'Sub',
-    lead: 'Lead',
-    stab: 'Stabs',
-    pad: 'Pads',
-  };
+  // Layer roles in mix order (drums first), as the reveal's solo/mute chips show them. Their names are
+  // translated (GENRE_STRINGS.roles).
+  roleOrder: GenreRole[] = ['kick', 'snare', 'hihat', 'perc', 'bass', 'sub', 'lead', 'stab', 'pad'];
 }

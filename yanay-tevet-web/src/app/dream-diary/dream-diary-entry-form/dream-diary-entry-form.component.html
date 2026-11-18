@@ -2,38 +2,38 @@
 
     <a [routerLink]="backUrl"
        class="inline-flex items-center gap-1.5 rounded-md text-meta text-writing-minor no-underline hover:text-writing transition-colors mb-4">
-        <ng-icon [svg]="featherArrowLeft"/>
-        Back to diary
+        <ng-icon [svg]="featherArrowLeft" class="rtl:-scale-x-100"/>
+        {{ t().form.backToDiary }}
     </a>
 
-    <app-page-header [title]="isEditMode() ? 'Edit dream' : 'New dream'"
-                     [subtitle]="isEditMode() ? 'Update the details of this dream.' : 'Capture it before it fades.'"/>
+    <app-page-header [title]="isEditMode() ? t().form.editTitle : t().form.newTitle"
+                     [subtitle]="isEditMode() ? t().form.editSubtitle : t().form.newSubtitle"/>
 
     @if (isLoading()) {
-        <app-loading-state label="Loading dream"/>
-    } @else if (loadError()) {
-        <app-error-state [text]="loadError()!" [backUrl]="backUrl" backLabel="Back to diary"/>
+        <app-loading-state [label]="t().form.loadingDream"/>
+    } @else if (loadFailed()) {
+        <app-error-state [text]="t().form.loadFailed" [backUrl]="backUrl" [backLabel]="t().form.backToDiary"/>
     } @else {
         <div class="card p-5 sm:p-6">
 
             <div class="mb-5 flex flex-col gap-1.5">
-                <span class="input-label">Dream <span class="text-writing-least">*</span></span>
+                <span class="input-label">{{ t().form.dream }} <span class="text-writing-least">*</span></span>
                 <textarea
                     dir="auto"
                     class="main-input leading-relaxed"
-                    aria-label="Dream"
-                    placeholder="Describe your dream in as much detail as you can remember..."
+                    [attr.aria-label]="t().form.dream"
+                    [placeholder]="t().form.dreamPlaceholder"
                     rows="12"
                     [formControl]="textCtrl"></textarea>
             </div>
 
             <div class="flex flex-col gap-1.5">
-                <span class="input-label">Date & Time</span>
+                <span class="input-label">{{ t().form.dateTime }}</span>
                 <input
                     type="datetime-local"
                     dir="auto"
                     class="main-input sm:w-auto"
-                    aria-label="Date and time"
+                    [attr.aria-label]="t().form.dateTimeAria"
                     [formControl]="timeCtrl" />
             </div>
 
@@ -42,16 +42,16 @@
                         class="btn btn-secondary"
                         [disabled]="isSaving()"
                         (click)="onCancel()">
-                    Cancel
+                    {{ t().cancel }}
                 </button>
                 <button type="button"
                         class="btn btn-primary"
                         [disabled]="!canSave()"
                         (click)="onSave()">
                     @if (isSaving()) {
-                        {{ isEditMode() ? 'Blaming your mother...' : 'Consulting Freud...' }}
+                        {{ isEditMode() ? t().form.savingEdit : t().form.savingNew }}
                     } @else {
-                        {{ isEditMode() ? 'Save Changes' : 'Save Dream' }}
+                        {{ isEditMode() ? t().form.saveChanges : t().form.saveDream }}
                     }
                 </button>
             </div>

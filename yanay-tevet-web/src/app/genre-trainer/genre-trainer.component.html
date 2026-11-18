@@ -1,16 +1,16 @@
 <div class="page-narrow">
 
-  <app-page-header title="Genre Trainer" subtitle="Listen and identify the electronic music genre">
+  <app-page-header [title]="t().title" [subtitle]="t().subtitle">
     @if (service.totalAnswered() > 0) {
       <div class="flex items-center gap-4">
         <div class="flex flex-col items-center">
           <span class="text-section font-bold text-writing tabular-nums">{{ service.streak() }}</span>
-          <span class="text-caption text-writing-minor">Streak</span>
+          <span class="text-caption text-writing-minor">{{ t().streak }}</span>
         </div>
         <div class="w-px h-8 bg-line" aria-hidden="true"></div>
         <div class="flex flex-col items-center">
           <span class="text-section font-bold text-writing tabular-nums">{{ service.totalCorrect() }}/{{ service.totalAnswered() }}</span>
-          <span class="text-caption text-writing-minor">Correct</span>
+          <span class="text-caption text-writing-minor">{{ t().correct }}</span>
         </div>
       </div>
     }
@@ -18,16 +18,16 @@
 
   <app-genre-trainer-player />
 
-  @if (service.error()) {
+  @if (service.errorMessage(); as errorMessage) {
     <div class="mt-4 p-4 rounded-xl text-body text-danger bg-danger-soft">
-      {{ service.error() }}
+      {{ errorMessage }}
     </div>
   }
 
   @if (service.revealed()) {
     <div class="mt-4 flex justify-center">
       <button type="button" class="btn btn-primary px-8" (click)="onNextTrack()">
-        Next Track
+        {{ t().nextTrack }}
       </button>
     </div>
   }

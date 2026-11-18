@@ -2,47 +2,45 @@
   <div class="mt-5 card p-4">
     <p class="font-bold text-lead mb-1"
        [class]="service.isCorrect() ? 'text-success' : 'text-danger'">
-      @if (service.isCorrect()) { Correct! } @else { Not quite. }
+      @if (service.isCorrect()) { {{ t().reveal.correct }} } @else { {{ t().reveal.notQuite }} }
     </p>
 
     @if (!service.isCorrect() && !service.easyMode() && service.selectedGenreLabel()) {
-      <p class="text-danger text-body mb-1">
-        You guessed <span class="font-semibold">{{ service.selectedGenreLabel() }}</span>.
-      </p>
+      <p class="text-danger text-body mb-1">@for (part of youGuessedParts(); track $index) {<span [class]="part.isValue ? 'font-semibold' : ''">{{ part.text }}</span>}</p>
     }
 
     @if (service.easyMode()) {
       <p class="text-writing-minor text-body">
-        Family: <span class="font-semibold text-writing">{{ service.trackGenreFamily()?.name }}</span>
+        {{ t().reveal.familyLabel }} <span class="font-semibold text-writing">{{ familyName() }}</span>
       </p>
       <p class="text-writing-minor text-body mt-0.5">
-        Genre: <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>
+        {{ t().reveal.genreLabel }} <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>
       </p>
     } @else {
       <p class="text-writing-minor text-body">
-        Genre: <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>
+        {{ t().reveal.genreLabel }} <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>
       </p>
     }
 
     @if (service.giveaway(); as giveaway) {
       <p class="text-body text-writing mt-2 flex items-start gap-1.5">
         <ng-icon [svg]="bootstrapStarFill" class="text-xs text-accent mt-1 flex-shrink-0" aria-hidden="true" />
-        <span><span class="font-semibold">What gave it away — {{ giveaway.label }}:</span> {{ giveaway.text }}</span>
+        <span><span class="font-semibold">{{ giveaway.label }}</span> {{ giveaway.text }}</span>
       </p>
     }
 
     @if (service.explanation(); as ex) {
       <div class="mt-3 pt-3 border-t border-line">
         <div class="flex flex-wrap items-center gap-2 mb-1">
-          <p class="text-ui font-semibold text-writing">Why it's {{ ex.actualLabel }}, not {{ ex.otherLabel }}</p>
+          <p class="text-ui font-semibold text-writing">{{ whyNot() }}</p>
           <span class="chip chip-accent">{{ ex.verdict }}</span>
         </div>
         <p class="text-meta text-writing-minor mb-2">{{ ex.reason }}</p>
 
         <div class="hidden @md:grid grid-cols-[8rem_1fr_1fr] gap-x-4 pb-1 text-caption font-semibold text-writing-minor">
           <span></span>
-          <span>{{ ex.actualLabel }} · this track</span>
-          <span>{{ ex.otherLabel }} · {{ ex.otherNote }}</span>
+          <span>{{ columnHeadings().actual }}</span>
+          <span>{{ columnHeadings().other }}</span>
         </div>
         @for (row of ex.rows; track row.trait) {
           <div class="grid grid-cols-1 @md:grid-cols-[8rem_1fr_1fr] gap-x-4 gap-y-0.5 py-2 border-t border-line-subtle">
@@ -54,10 +52,10 @@
               {{ row.label }}
             </span>
             <span class="text-meta text-writing">
-              <span class="@md:hidden font-semibold">{{ ex.actualLabel }}: </span>{{ row.actual }}
+              <span class="@md:hidden font-semibold"><bdi>{{ ex.actualLabel }}</bdi>: </span>{{ row.actual }}
             </span>
             <span class="text-meta text-writing-minor">
-              <span class="@md:hidden font-semibold">{{ ex.otherLabel }}: </span>{{ row.other }}
+              <span class="@md:hidden font-semibold"><bdi>{{ ex.otherLabel }}</bdi>: </span>{{ row.other }}
             </span>
           </div>
         }
@@ -70,16 +68,16 @@
             [attr.aria-pressed]="audio.isAlternating()"
             [disabled]="service.isCompareLoading()"
             (click)="toggleCompare()">
-            @if (audio.isAlternating()) { Stop comparing } @else { Compare A/B }
+            @if (audio.isAlternating()) { {{ t().reveal.stopComparing }} } @else { {{ t().reveal.compare }} }
           </button>
-          <div class="flex flex-wrap rounded-md border border-line overflow-hidden w-fit max-w-full" role="group" aria-label="Which track to play">
+          <div class="flex flex-wrap rounded-md border border-line overflow-hidden w-fit max-w-full" role="group" [attr.aria-label]="t().reveal.whichTrack">
             <button
               type="button"
               class="px-3 py-1.5 text-caption font-semibold transition-all duration-150"
               [attr.aria-pressed]="selectedSide() === 'track'"
               [class]="selectedSide() === 'track' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
               (click)="listenTo('track')">
-              This track
+              {{ t().reveal.thisTrack }}
             </button>
             <button
               type="button"
@@ -88,30 +86,30 @@
               [disabled]="service.isCompareLoading()"
               [class]="selectedSide() === 'compare' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
               (click)="listenTo('compare')">
-              @if (service.isCompareLoading()) { Loading… } @else { {{ service.compareLabel() }} }
+              @if (service.isCompareLoading()) { {{ t().reveal.loading }} } @else { {{ service.compareLabel() }} }
             </button>
           </div>
         </div>
         @if (audio.isAlternating()) {
           <p class="text-caption text-writing-minor mt-2">
-            Switching every two loops, both in the same key.
+            {{ t().reveal.switching }}
           </p>
         }
       </div>
     }
 
     <div class="mt-3 pt-3 border-t border-line">
-      <p class="eyebrow mb-2">Listen closer</p>
+      <p class="eyebrow mb-2">{{ t().reveal.listenCloser }}</p>
 
       <div class="flex flex-wrap items-center gap-2">
-        <div class="flex rounded-md border border-line overflow-hidden" role="group" aria-label="What tapping a part does">
+        <div class="flex rounded-md border border-line overflow-hidden" role="group" [attr.aria-label]="t().reveal.tapMode">
           <button
             type="button"
             class="px-3 py-1 text-caption font-semibold transition-all duration-150"
             [attr.aria-pressed]="chipMode() === 'solo'"
             [class]="chipMode() === 'solo' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
             (click)="chipMode.set('solo')">
-            Solo
+            {{ t().reveal.solo }}
           </button>
           <button
             type="button"
@@ -119,7 +117,7 @@
             [attr.aria-pressed]="chipMode() === 'mute'"
             [class]="chipMode() === 'mute' ? 'bg-accent text-on-accent' : 'text-writing-minor hover:text-writing'"
             (click)="chipMode.set('mute')">
-            Mute
+            {{ t().reveal.mute }}
           </button>
         </div>
         <button
@@ -128,7 +126,7 @@
           [class.chip-selected]="isFullMix()"
           [attr.aria-pressed]="isFullMix()"
           (click)="audio.resetRoles()">
-          Full mix
+          {{ t().reveal.fullMix }}
         </button>
         @for (chip of service.roleChips(); track chip.role) {
           <button
@@ -163,20 +161,20 @@
         }
       }
       <p class="text-caption text-writing-minor mt-1">
-        This track: <span class="font-semibold text-writing">{{ service.track()!.bpm }} BPM</span>
+        {{ t().reveal.thisTrackBpm }} <span class="font-semibold text-writing">{{ service.track()!.bpm }} BPM</span>
         @if (service.compareTrack(); as compare) {
-          · your guess's track: <span class="font-semibold text-writing">{{ compare.bpm }} BPM</span>
+          · {{ t().reveal.guessTrackBpm }} <span class="font-semibold text-writing">{{ compare.bpm }} BPM</span>
         }
       </p>
       @if (service.currentGenreStat(); as stat) {
         <p class="text-caption text-writing-minor mt-1">
-          Your record on <span class="font-semibold text-writing">{{ service.trackGenreLabel() }}</span>:
+@for (part of recordParts(); track $index) {<span [class]="part.isValue ? 'font-semibold text-writing' : ''">{{ part.text }}</span>}
           <span class="font-semibold text-writing">{{ stat.correct }}/{{ stat.seen }}</span>
         </p>
       }
       @if (service.currentConfusions().length > 0) {
         <p class="text-caption text-writing-minor mt-1">
-          You've taken it for
+          {{ t().reveal.takenFor }}
           @for (c of service.currentConfusions(); track c.label; let last = $last) {
             <span class="font-semibold text-writing">{{ c.label }}</span> {{ c.count }}×@if (!last) { · }
           }
@@ -186,7 +184,7 @@
 
     @if (service.trackGenreFamily(); as family) {
       <div class="mt-3 pt-3 border-t border-line">
-        <p class="eyebrow mb-2">{{ family.name }} family</p>
+        <p class="eyebrow mb-2">{{ familyHeading() }}</p>
         <div class="flex flex-wrap gap-2">
           @for (g of family.genres; track g) {
             <span class="chip px-3 py-1" [class.chip-selected]="g === service.track()!.genre">

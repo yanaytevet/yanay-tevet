@@ -6,6 +6,8 @@ import {GenreTrainerConfigDialogComponent} from '../genre-trainer-config-dialog/
 import {bootstrapDownload, bootstrapFileMusic, bootstrapGearFill, bootstrapVolumeDownFill, bootstrapVolumeUpFill} from '@ng-icons/bootstrap-icons';
 import {NgIcon} from '@ng-icons/core';
 import {AuthenticationService} from '../../common/authentication/authentication.service';
+import {injectStrings} from '../../shared/i18n/strings';
+import {GENRE_STRINGS} from '../i18n';
 
 @Component({
   selector: 'app-genre-trainer-player',
@@ -16,6 +18,7 @@ import {AuthenticationService} from '../../common/authentication/authentication.
 export class GenreTrainerPlayerComponent {
   protected readonly service = inject(GenreTrainerService);
   protected readonly audio = inject(GenreTrainerAudioService);
+  protected readonly t = injectStrings(GENRE_STRINGS);
   private readonly destroyRef = inject(DestroyRef);
   private readonly dialogService = inject(DialogService);
   private readonly authService = inject(AuthenticationService);

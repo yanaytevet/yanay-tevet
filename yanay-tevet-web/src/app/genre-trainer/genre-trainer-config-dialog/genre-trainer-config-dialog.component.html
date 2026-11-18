@@ -1,9 +1,9 @@
 <div class="dialog-container flex flex-col">
-  <h2>Training Configuration</h2>
+  <h2>{{ t().config.title }}</h2>
 
   <div class="mb-5">
     <div class="flex items-center gap-3 mb-3">
-      <span class="eyebrow">Difficulty</span>
+      <span class="eyebrow">{{ t().config.difficulty }}</span>
       <div class="flex rounded-full border border-line overflow-hidden">
         <button
           type="button"
@@ -13,7 +13,7 @@
           [class]="!localEasyMode()
             ? 'bg-accent text-on-accent'
             : 'text-writing-minor hover:text-writing'">
-          Hard
+          {{ t().config.hard }}
         </button>
         <button
           type="button"
@@ -23,12 +23,12 @@
           [class]="localEasyMode()
             ? 'bg-accent text-on-accent'
             : 'text-writing-minor hover:text-writing'">
-          Easy
+          {{ t().config.easy }}
         </button>
       </div>
     </div>
 
-    <span class="eyebrow block mb-3">Train on</span>
+    <span class="eyebrow block mb-3">{{ t().trainOn }}</span>
 
     @if (localEasyMode()) {
       <div class="flex flex-wrap gap-2">
@@ -39,13 +39,13 @@
           (click)="clearFamilySelection()">
           All
         </button>
-        @for (family of data.allFamilies; track family.name) {
+        @for (family of data.allFamilies; track family.id) {
           <button
             type="button"
             class="chip px-3 py-1"
-            [class.chip-selected]="localFocusFamilyState()[family.name]"
-            (click)="toggleFamily(family.name)">
-            {{ family.name }}
+            [class.chip-selected]="localFocusFamilyState()[family.id]"
+            (click)="toggleFamily(family.id)">
+            {{ t().families[family.id] }}
           </button>
         }
       </div>
@@ -72,12 +72,12 @@
   </div>
 
   <div class="pt-4 border-t border-line">
-    <span class="eyebrow block mb-3">Auto-stop</span>
+    <span class="eyebrow block mb-3">{{ t().config.autoStop }}</span>
     <div class="flex items-center gap-3">
       <button
         type="button"
         class="icon-btn border border-line text-section font-bold"
-        aria-label="Fewer repetitions"
+        [attr.aria-label]="t().config.fewerRepetitions"
         (click)="decrementLoops()">−</button>
       <span class="w-10 text-center text-lead font-semibold text-writing tabular-nums">
         @if (localAutoStopLoops() === 0) { ∞ } @else { {{ localAutoStopLoops() }} }
@@ -85,40 +85,38 @@
       <button
         type="button"
         class="icon-btn border border-line text-section font-bold"
-        aria-label="More repetitions"
+        [attr.aria-label]="t().config.moreRepetitions"
         (click)="incrementLoops()">+</button>
       <span class="text-body text-writing-minor">
-        @if (localAutoStopLoops() === 0) { repetitions (never stops) } @else { repetitions }
+        {{ repetitionsLabel() }}
       </span>
     </div>
   </div>
 
   <div class="pt-4 mt-5 border-t border-line">
     <div class="flex items-center gap-3 mb-3">
-      <span class="eyebrow flex-1">Genres you mix up</span>
+      <span class="eyebrow flex-1">{{ t().config.mixUps }}</span>
       <button type="button" class="btn btn-secondary btn-sm" [disabled]="!canReset()" (click)="resetProgress()">
-        Reset progress
+        {{ t().config.resetProgress }}
       </button>
     </div>
     @if (localResetProgress()) {
-      <p class="text-meta text-writing-minor">Your record and mix-ups will be cleared when you apply.</p>
+      <p class="text-meta text-writing-minor">{{ t().config.resetPending }}</p>
     } @else {
       @for (row of confusionRows(); track row.key) {
         <div class="flex items-baseline gap-2 py-1 text-body">
-          <span class="font-semibold text-writing">{{ row.actual }}</span>
-          <span class="text-writing-minor">taken for</span>
-          <span class="font-semibold text-writing flex-1">{{ row.guessed }}</span>
+          <span class="flex-1 text-writing-minor">@for (part of row.parts; track $index) {<span [class]="part.isValue ? 'font-semibold text-writing' : ''">{{ part.text }}</span>}</span>
           <span class="text-writing-minor tabular-nums">{{ row.count }}×</span>
         </div>
       } @empty {
-        <p class="text-meta text-writing-minor">No mix-ups yet. Wrong guesses in Hard mode show up here.</p>
+        <p class="text-meta text-writing-minor">{{ t().config.noMixUps }}</p>
       }
     }
   </div>
 
   <div class="dialog-buttons-container">
     <span class="flex-1"></span>
-    <button type="button" class="btn btn-secondary" (click)="emitClose(null)">Cancel</button>
-    <app-confirmation-button text="Apply" [disabled]="!canConfirm()" (clicked)="confirm()"></app-confirmation-button>
+    <button type="button" class="btn btn-secondary" (click)="emitClose(null)">{{ t().config.cancel }}</button>
+    <app-confirmation-button [text]="t().config.apply" [disabled]="!canConfirm()" (clicked)="confirm()"></app-confirmation-button>
   </div>
 </div>
